@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">3D Model</string>
+    <string name="app_version">Version 0.1</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_menu">MenuActivity</string>
+
+    <string-array name="menu_items">
+        <item>Load...</item>
+        <item>Load2...</item>
+        <item>Load3...</item>
+        <item>Load4...</item>
+    </string-array>
+
+    <string name="app_logo_desc">Teapot animated logo</string>
+    <string name="title_activity_view_model">ViewModelActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_activity_model">ModelActivity</string>
+
+</resources>
