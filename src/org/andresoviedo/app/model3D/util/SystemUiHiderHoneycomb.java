@@ -1,4 +1,4 @@
-package org.andresoviedo.dddmodel.util;
+package org.andresoviedo.app.model3D.util;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

@@ -1,4 +1,4 @@
-package org.andresoviedo.dddmodel;
+package org.andresoviedo.app.model3D;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.andresoviedo.dddmodel.R;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -17,7 +18,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
-import android.webkit.WebView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -26,9 +26,12 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		WebView myWebView = (WebView) findViewById(R.id.main_logo_webview);
-		myWebView.loadUrl("file:///android_res/raw/ic_launcher.gif");
-		init();
+		// WebView myWebView = (WebView) findViewById(R.id.main_logo_webview);
+		// myWebView.loadUrl("file:///android_res/raw/ic_launcher.gif");
+//		init();
+		MainActivity.this.startActivity(new Intent(MainActivity.this
+				.getApplicationContext(), ModelActivity.class));
+		MainActivity.this.finish();
 	}
 
 	private void init() {
@@ -52,10 +55,10 @@ public class MainActivity extends Activity {
 				@Override
 				public void run() {
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(000);
 						MainActivity.this.startActivity(new Intent(
 								MainActivity.this.getApplicationContext(),
-								MenuActivity.class));
+								ModelActivity.class));
 						MainActivity.this.finish();
 					} catch (InterruptedException ex) {
 						Toast.makeText(
@@ -67,14 +70,18 @@ public class MainActivity extends Activity {
 					}
 				}
 			});
-			tcopy.start();
-			tsplash.start();
+			// tcopy.start();
+			// tsplash.start();
 		} catch (Exception ex) {
 			Toast.makeText(MainActivity.this.getApplicationContext(),
 					"Unexpected error: " + ex.getMessage(), Toast.LENGTH_SHORT)
 					.show();
 			Log.e("init", "Unexpected error: " + ex.getMessage(), ex);
 		}
+
+		MainActivity.this.startActivity(new Intent(MainActivity.this
+				.getApplicationContext(), ModelActivity.class));
+		MainActivity.this.finish();
 	}
 
 	@Override

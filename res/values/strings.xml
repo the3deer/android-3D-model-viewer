@@ -11,7 +11,6 @@
         <item>Load...</item>
         <item>Load2...</item>
         <item>Load3...</item>
-        <item>Load4...</item>
     </string-array>
 
     <string name="app_logo_desc">Teapot animated logo</string>

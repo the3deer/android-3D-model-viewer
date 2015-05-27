@@ -1,4 +1,5 @@
-//package org.andresoviedo.dddmodel.impl1;
+package org.andresoviedo.app.model3D.gui;
+//package org.andresoviedo.app.model3D.impl1;
 //
 //import android.app.Activity;
 //import android.app.AlertDialog;
@@ -639,7 +640,3 @@
 //  }
 //}
 //
-///* Location:           C:\Users\Andres Oviedo\Downloads\android\3D Model Viewer_unzipped_undexed\classes_dex2jar.jar
-// * Qualified Name:     net.mcmiracom.modelviewer.GLActivity
-// * JD-Core Version:    0.6.2
-// */

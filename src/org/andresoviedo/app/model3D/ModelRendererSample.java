@@ -1,4 +1,5 @@
-//package org.andresoviedo.dddmodel.impl1;
+package org.andresoviedo.app.model3D;
+//package org.andresoviedo.app.model3D.impl1;
 //
 //import android.content.Context;
 //import android.content.SharedPreferences;
@@ -54,7 +55,7 @@
 //	private boolean lightingEnabled;
 //	private SharedPreferences mPreferences;
 //	private String modelName;
-//	private ArrayList<ObjModel> models = new ArrayList();
+//	private ArrayList<Model3D> models = new ArrayList();
 //	private int oldPointerCount;
 //	private float oldX;
 //	private float oldX1;
@@ -68,7 +69,7 @@
 //	int status = 8;
 //	private String textureName;
 //	private boolean texturesEnabled;
-//	private ObjModel theModel;
+//	private Model3D theModel;
 //	private boolean toggleLight;
 //	private boolean toggleTexture;
 //	private boolean wireframesEnabled;
@@ -274,7 +275,7 @@
 ////				ObjLoader.clearMemory();
 ////				return 3;
 ////			}
-////			((ObjModel) this.models.get(i))
+////			((Model3D) this.models.get(i))
 ////					.setWireFrame(this.wireframesEnabled);
 ////			i++;
 ////		}
@@ -721,7 +722,7 @@
 //			this.editor.putBoolean("Wireframe", this.wireframesEnabled);
 //			this.editor.commit();
 //			return;
-//			((ObjModel) this.models.get(i)).toggleWireframe();
+//			((Model3D) this.models.get(i)).toggleWireframe();
 //			i++;
 //			break;
 //		}
@@ -750,7 +751,3 @@
 //}
 //
 ///*
-// * Location: C:\Users\Andres Oviedo\Downloads\android\3D Model
-// * Viewer_unzipped_undexed\classes_dex2jar.jar Qualified Name:
-// * net.mcmiracom.modelviewer.GLEnvironment JD-Core Version: 0.6.2
-// */

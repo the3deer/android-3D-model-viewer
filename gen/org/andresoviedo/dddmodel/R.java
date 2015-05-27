@@ -43,15 +43,14 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int ic_launcher=0x7f020003;
     }
     public static final class id {
-        public static final int action_settings=0x7f0c0008;
-        public static final int activity_menu_item=0x7f0c0001;
-        public static final int dummy_button=0x7f0c0004;
-        public static final int explorer_fragment=0x7f0c0005;
-        public static final int file_icon=0x7f0c0006;
-        public static final int file_name=0x7f0c0007;
-        public static final int fullscreen_content=0x7f0c0002;
-        public static final int fullscreen_content_controls=0x7f0c0003;
-        public static final int main_logo_webview=0x7f0c0000;
+        public static final int action_settings=0x7f0c0007;
+        public static final int activity_menu_item=0x7f0c0000;
+        public static final int dummy_button=0x7f0c0003;
+        public static final int explorer_fragment=0x7f0c0004;
+        public static final int file_icon=0x7f0c0005;
+        public static final int file_name=0x7f0c0006;
+        public static final int fullscreen_content=0x7f0c0001;
+        public static final int fullscreen_content_controls=0x7f0c0002;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
