@@ -3,7 +3,7 @@ Android 3DModel Viewer
 
 This is a demo of OpenGL ES 2.0. 
 
-It is basically an android application with a 3D renderer (OpenGL ES 2.0) that can loads 3D model,
+It is basically an android application with a 3D renderer (OpenGL ES 2.0) that can load 3D models.
 
 The purpose of this application was to learn android and the OpenGL language
 
