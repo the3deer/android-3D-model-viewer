@@ -32,6 +32,7 @@ Try it
   1. Compile project from your android IDE
   2. Connect your android device and run application 
   3. You should see a 3D arrow and some triangles, squares and a teacup in the middle. Also a square with texture.
+  4. Pinch and rotate to see the 3D scene from another perspective. 
 
 
 Tests
