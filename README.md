@@ -35,6 +35,11 @@ Try it
   4. Pinch and rotate to see the 3D scene from another perspective. 
 
 
+Screenshot
+==========
+
+![Screenshot](https://github.com/andresoviedo/desktop-3DModel-viewer/blob/master/screenshot.png)
+
 Tests
 =====
 
