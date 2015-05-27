@@ -38,7 +38,7 @@ Try it
 Screenshot
 ==========
 
-![Screenshot](https://github.com/andresoviedo/desktop-3DModel-viewer/blob/master/screenshot.png)
+![Screenshot](https://github.com/andresoviedo/android-3DModel/blob/master/screenshot.png)
 
 Tests
 =====
