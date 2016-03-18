@@ -56,6 +56,7 @@ import android.util.Log;
 public class WavefrontLoader {
 	public String MODEL_DIR = "models/";
 	private static final float DUMMY_Z_TC = -5.0f;
+	static final boolean INDEXES_START_AT_1 = true; 
 
 	// collection of vertices, normals and texture coords for the model
 	private ArrayList<Tuple3> verts;
@@ -207,8 +208,8 @@ public class WavefrontLoader {
 		try {
 			while (((line = br.readLine()) != null) && isLoaded) {
 				lineNum++;
+				line = line.trim();
 				if (line.length() > 0) {
-					line = line.trim();
 
 					if (line.startsWith("v ")) { // vertex
 						isLoaded = addVert(line, isFirstCoord);
@@ -385,7 +386,7 @@ public class WavefrontLoader {
 		}
 	} // end of centerScale()
 
-	public GLES20Object createGLES20Object(AssetManager am) throws IOException
+	public GLES20Object createGLES20Object(AssetManager am, int drawType, int drawSize) throws IOException
 	/*
 	 * render the model to a display list, so it can be drawn quicker later
 	 */
@@ -436,7 +437,8 @@ public class WavefrontLoader {
 		// TODO: removed because i im refactoring the GLES20Object.. return new GLES20Object(vertexBuffer, indexBuffer, normalsBuffer,
 		// textCoordsBuffer, GLES20.GL_TRIANGLES, 3,
 		// materials != null ? materials.materials.get(0).getTexture() : null);
-		return new GLES20Object(vertexBuffer, indexBuffer, normalsBuffer, textCoordsBuffer, GLES20.GL_TRIANGLE_STRIP, -1, textureIs);
+
+		return new GLES20Object(vertexBuffer, indexBuffer, normalsBuffer, textCoordsBuffer, drawType, drawSize, textureIs);
 
 		// if (materials != null) {
 		// // materials.readMaterials();
@@ -1042,6 +1044,12 @@ class Faces {
 				vn[i] = (numSeps > 2) ? Integer.parseInt(st2.nextToken()) : 0;
 				// add 0's if the vt or vn index values are missing;
 				// 0 is a good choice since real indicies start at 1
+				
+				if (WavefrontLoader.INDEXES_START_AT_1){
+					v[i] = v[i]-1;
+					vt[i] = vt[i]-1;
+					vn[i] = vn[i]-1;
+				}
 			}
 			// store the indicies for this face
 			facesVertIdxs.add(v);

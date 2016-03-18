@@ -32,8 +32,8 @@ class ModelRenderer implements GLSurfaceView.Renderer {
 	private Square mSquare;
 	private Square mSquare2;
 	private GLES20Object mSquare3;
-	private WavefrontLoader objModel1;
-	private GLES20Object penguin;
+	private WavefrontLoader wavefrontLoader;
+	private GLES20Object wavefrontModel;
 	private GLES20Object bicho;
 
 	// mMVPMatrix is an abbreviation for "Model View Projection Matrix"
@@ -58,15 +58,14 @@ class ModelRenderer implements GLSurfaceView.Renderer {
 		GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 		// Use culling to remove back faces.
-//		GLES20.glEnable(GLES20.GL_CULL_FACE);
+		GLES20.glEnable(GLES20.GL_CULL_FACE);
 
-		// Enable depth testing
-//		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+		// Enable depth testing for hidden-surface elimination.
+		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
-		//
-		// GLES20.glEnable(GLES20.GL_BLEND);
-
-		// GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		// Enable blending for combining colors when there is transparency
+		GLES20.glEnable(GLES20.GL_BLEND);
+		GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
 		axis = new Axis();
 		camera = new Camera();
@@ -115,7 +114,7 @@ class ModelRenderer implements GLSurfaceView.Renderer {
 		}
 		bicho.setColor(new float[] { 0f, 0.0f, 1f, 0.5f });
 
-		objModel1 = new WavefrontLoader("penguin");
+		wavefrontLoader = new WavefrontLoader("wavefront_loader");
 
 		initializeModels();
 
@@ -130,10 +129,11 @@ class ModelRenderer implements GLSurfaceView.Renderer {
 		mSquare3.setPosition(new float[] { 0f, 0.0f, -1.0f });
 
 		try {
-			objModel1.loadModelFromClasspath(main.getContext().getAssets(), "models/teapot.obj");
-			penguin = objModel1.createGLES20Object(main.getContext().getAssets());
-			penguin.setPosition(new float[] { 0f, 0.0f, 0.0f });
-			penguin.setColor(new float[] { 0.9f, 0.0f, 0.0f, 0.5f });
+			wavefrontLoader.loadModelFromClasspath(main.getContext().getAssets(), "models/teapot.obj");
+			wavefrontModel = wavefrontLoader.createGLES20Object(main.getContext().getAssets(), GLES20.GL_TRIANGLE_STRIP,
+					3);
+			wavefrontModel.setPosition(new float[] { 0f, 0.0f, 0.0f });
+			wavefrontModel.setColor(new float[] { 0.9f, 0.0f, 0.0f, 0.5f });
 		} catch (Exception ex) {
 			Log.e("renderer", ex.getMessage(), ex);
 		}
@@ -154,8 +154,8 @@ class ModelRenderer implements GLSurfaceView.Renderer {
 		// INFO: Set the camera position (View matrix)
 		// camera.xPos, camera.yPos, camera.zPos, camera.xView, camera.yView,
 		// camera.zView, camera.xUp, camera.yUp, camera.zUp);
-		Matrix.setLookAtM(mViewMatrix, 0, camera.xPos, camera.yPos, camera.zPos, camera.xView, camera.yView, camera.zView, camera.xUp,
-				camera.yUp, camera.zUp);
+		Matrix.setLookAtM(mViewMatrix, 0, camera.xPos, camera.yPos, camera.zPos, camera.xView, camera.yView,
+				camera.zView, camera.xUp, camera.yUp, camera.zUp);
 
 		// this projection matrix is applied to object coordinates
 		// in the onDrawFrame() method
@@ -171,14 +171,14 @@ class ModelRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onDrawFrame(GL10 unused) {
-		float[] scratch = new float[16];
+		float[] result = new float[16];
 
 		// Draw background color
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
 		if (camera.hasChanged()) {
-			Matrix.setLookAtM(mViewMatrix, 0, camera.xPos, camera.yPos, camera.zPos, camera.xView, camera.yView, camera.zView, camera.xUp,
-					camera.yUp, camera.zUp);
+			Matrix.setLookAtM(mViewMatrix, 0, camera.xPos, camera.yPos, camera.zPos, camera.xView, camera.yView,
+					camera.zView, camera.xUp, camera.yUp, camera.zUp);
 			// Log.d("Camera", "Changed! :"+camera.ToStringVector());
 			Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 			camera.setChanged(false);
@@ -188,56 +188,63 @@ class ModelRenderer implements GLSurfaceView.Renderer {
 
 		// Log.d(TAG, "angle: " + mAngle + ", tr: " + tr);
 
-		float[] cubeRotationMatrix = new float[16];
-		float[] cubeTranslateMatrix = new float[16];
+		float[] rotationMatrix = new float[16];
+		float[] translationMatrix = new float[16];
 
 		// Draw square 1
-		Matrix.setIdentityM(cubeRotationMatrix, 0);
-		Matrix.setRotateM(cubeRotationMatrix, 0, mSquare.getRotationZ(), 0, 0, 1.0f);
-		Matrix.setIdentityM(cubeTranslateMatrix, 0);
-		Matrix.translateM(cubeTranslateMatrix, 0, mSquare.getPosition()[0], mSquare.getPosition()[1], mSquare.getPosition()[2]);
-		Matrix.multiplyMM(scratch, 0, cubeTranslateMatrix, 0, cubeRotationMatrix, 0);
-		Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, scratch, 0);
+		Matrix.setIdentityM(rotationMatrix, 0);
+		Matrix.setRotateM(rotationMatrix, 0, mSquare.getRotationZ(), 0, 0, 1.0f);
+		Matrix.setIdentityM(translationMatrix, 0);
+		Matrix.translateM(translationMatrix, 0, mSquare.getPosition()[0], mSquare.getPosition()[1],
+				mSquare.getPosition()[2]);
+		Matrix.multiplyMM(result, 0, translationMatrix, 0, rotationMatrix, 0);
+		Matrix.multiplyMM(result, 0, mMVPMatrix, 0, result, 0);
 
-		mSquare.draw(scratch);
+		mSquare.draw(result);
 
 		// Draw square 2
-		Matrix.setIdentityM(cubeRotationMatrix, 0);
-		Matrix.setRotateM(cubeRotationMatrix, 0, mSquare2.getRotationZ(), 0, 0, 1.0f);
-		Matrix.setIdentityM(cubeTranslateMatrix, 0);
-		Matrix.translateM(cubeTranslateMatrix, 0, mSquare2.getPosition()[0], mSquare2.getPosition()[1], mSquare2.getPosition()[2]);
-		Matrix.multiplyMM(scratch, 0, cubeTranslateMatrix, 0, cubeRotationMatrix, 0);
-		Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, scratch, 0);
-		mSquare2.draw(scratch);
+		Matrix.setIdentityM(rotationMatrix, 0);
+		Matrix.setRotateM(rotationMatrix, 0, mSquare2.getRotationZ(), 0, 0, 1.0f);
+		Matrix.setIdentityM(translationMatrix, 0);
+		Matrix.translateM(translationMatrix, 0, mSquare2.getPosition()[0], mSquare2.getPosition()[1],
+				mSquare2.getPosition()[2]);
+		Matrix.multiplyMM(result, 0, translationMatrix, 0, rotationMatrix, 0);
+		Matrix.multiplyMM(result, 0, mMVPMatrix, 0, result, 0);
+		mSquare2.draw(result);
 
 		// Draw square 3
-		Matrix.setIdentityM(cubeRotationMatrix, 0);
-		Matrix.setRotateM(cubeRotationMatrix, 0, mSquare3.getRotationZ(), 0, 0, 1.0f);
-		Matrix.setIdentityM(cubeTranslateMatrix, 0);
-		Matrix.translateM(cubeTranslateMatrix, 0, mSquare3.getPosition()[0], mSquare3.getPosition()[1], mSquare3.getPosition()[2]);
-		Matrix.multiplyMM(scratch, 0, cubeTranslateMatrix, 0, cubeRotationMatrix, 0);
-		Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, scratch, 0);
-		mSquare3.draw(scratch, mViewMatrix);
-		mSquare3.drawBoundingBox(scratch, mViewMatrix);
+		Matrix.setIdentityM(rotationMatrix, 0);
+		Matrix.setRotateM(rotationMatrix, 0, mSquare3.getRotationZ(), 0, 0, 1.0f);
+		Matrix.setIdentityM(translationMatrix, 0);
+		Matrix.translateM(translationMatrix, 0, mSquare3.getPosition()[0], mSquare3.getPosition()[1],
+				mSquare3.getPosition()[2]);
+		Matrix.multiplyMM(result, 0, translationMatrix, 0, rotationMatrix, 0);
+		Matrix.multiplyMM(result, 0, mMVPMatrix, 0, result, 0);
+		mSquare3.draw(result, mViewMatrix);
+		mSquare3.drawBoundingBox(result, mViewMatrix);
 
-		Matrix.setIdentityM(cubeRotationMatrix, 0);
-		Matrix.setRotateM(cubeRotationMatrix, 0, 0, bicho.getRotation()[1], 0, 1.0f);
-		Matrix.setIdentityM(cubeTranslateMatrix, 0);
-		Matrix.translateM(cubeTranslateMatrix, 0, bicho.getPosition()[0], bicho.getPosition()[1], bicho.getPosition()[2]);
-		Matrix.multiplyMM(scratch, 0, cubeTranslateMatrix, 0, cubeRotationMatrix, 0);
-		Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, scratch, 0);
-		bicho.draw(scratch, mViewMatrix);
-		bicho.drawBoundingBox(scratch, mViewMatrix);
+		Matrix.setIdentityM(rotationMatrix, 0);
+		Matrix.setRotateM(rotationMatrix, 0, 0, bicho.getRotation()[1], 0, 1.0f);
+		Matrix.setIdentityM(translationMatrix, 0);
+		Matrix.translateM(translationMatrix, 0, bicho.getPosition()[0], bicho.getPosition()[1], bicho.getPosition()[2]);
+		Matrix.multiplyMM(result, 0, translationMatrix, 0, rotationMatrix, 0);
+		Matrix.multiplyMM(result, 0, mMVPMatrix, 0, result, 0);
+		bicho.draw(result, mViewMatrix);
+		// bicho.drawBoundingBox(scratch, mViewMatrix);
 
 		// Draw penguin
-		Matrix.setIdentityM(cubeRotationMatrix, 0);
-		Matrix.setRotateM(cubeRotationMatrix, 0, penguin.getRotationZ(), 0, 0, 1.0f);
-		Matrix.setIdentityM(cubeTranslateMatrix, 0);
-		Matrix.translateM(cubeTranslateMatrix, 0, penguin.getPosition()[0], penguin.getPosition()[1], penguin.getPosition()[2]);
-		Matrix.multiplyMM(scratch, 0, cubeTranslateMatrix, 0, cubeRotationMatrix, 0);
-		Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, scratch, 0);
-		penguin.draw(scratch, mViewMatrix);
-		penguin.drawBoundingBox(scratch, mViewMatrix);
+		Matrix.setIdentityM(rotationMatrix, 0);
+		Matrix.setRotateM(rotationMatrix, 0, wavefrontModel.getRotationZ(), 0, 0, 1.0f);
+		Matrix.setIdentityM(translationMatrix, 0);
+		Matrix.translateM(translationMatrix, 0, wavefrontModel.getPosition()[0], wavefrontModel.getPosition()[1],
+				wavefrontModel.getPosition()[2]);
+		Matrix.multiplyMM(result, 0, translationMatrix, 0, rotationMatrix, 0);
+		Matrix.multiplyMM(result, 0, mMVPMatrix, 0, result, 0);
+		// wavefrontModel.setColor(new float[] { 0, 0, 1.0f, 1 });
+		// wavefrontModel.draw(result, mViewMatrix);
+		wavefrontModel.setColor(new float[] { 0, 0, 1, 0 });
+		wavefrontModel.draw(result, mViewMatrix);
+		wavefrontModel.drawBoundingBox(result, mViewMatrix);
 
 		// Create a rotation for the triangle
 
@@ -252,16 +259,18 @@ class ModelRenderer implements GLSurfaceView.Renderer {
 		float[] matrix = new float[16];
 		Matrix.setIdentityM(matrix, 0);
 		// Matrix.rotateM(triangleTranslateMatrix, 0, mTriangle.getRotationZ(), 0, 0f, 1f);
-		Matrix.translateM(matrix, 0, mTriangle.getPosition()[0], mTriangle.getPosition()[1], mTriangle.getPosition()[2]);
-		Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, matrix, 0);
+		Matrix.translateM(matrix, 0, mTriangle.getPosition()[0], mTriangle.getPosition()[1],
+				mTriangle.getPosition()[2]);
+		Matrix.multiplyMM(result, 0, mMVPMatrix, 0, matrix, 0);
 		// Draw triangle
-		mTriangle.draw(scratch);
+		mTriangle.draw(result);
 
 		Matrix.setIdentityM(matrix, 0);
 		// Matrix.rotateM(triangleTranslateMatrix, 0, mTriangle.getRotationZ(), 0, 0f, 1f);
-		Matrix.translateM(matrix, 0, mTriangle2.getPosition()[0], mTriangle2.getPosition()[1], mTriangle2.getPosition()[2]);
-		Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, matrix, 0);
-		mTriangle2.draw(scratch);
+		Matrix.translateM(matrix, 0, mTriangle2.getPosition()[0], mTriangle2.getPosition()[1],
+				mTriangle2.getPosition()[2]);
+		Matrix.multiplyMM(result, 0, mMVPMatrix, 0, matrix, 0);
+		mTriangle2.draw(result);
 	}
 
 	public int getWidth() {

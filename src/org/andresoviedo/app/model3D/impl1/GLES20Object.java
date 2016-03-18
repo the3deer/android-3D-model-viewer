@@ -17,7 +17,7 @@ import android.util.Log;
 
 public class GLES20Object {
 
-//@formatter:off
+	//@formatter:off
 	protected static final String vertexShaderCode =
 	// This matrix member variable provides a hook to manipulate
 	// the coordinates of the objects that use this vertex shader
@@ -41,135 +41,135 @@ public class GLES20Object {
 	// @formatter:on
 
 	// @formatter:off
-				protected static final String fragmentShaderCode_lighted = 
-						"precision mediump float;"+
-				
-						//The position of the light in eye space.
-						"uniform vec3 u_LightPos;"+
-						
-	 					// Interpolated position for this fragment.
-	 					"varying vec3 v_Position;"+
-	 					
-	          			// This is the color from the vertex shader interpolated across the
-						"varying vec4 v_Color;"+
-	                    
-						// triangle per fragment.
-						// Interpolated normal for this fragment.
-						"varying vec3 v_Normal;"+         
-						
-						"uniform sampler2D u_Texture;"+    // The input texture.
-						"varying vec2 v_TexCoordinate;"+ // Interpolated texture coordinate per fragment.
-						
-						"void main() {"	+ 
-						// Will be used for attenuation.
-					    "  float distance = length(u_LightPos - v_Position);"+
-						  
-	  					// Get a lighting direction vector from the light to the vertex.
-						"  vec3 lightVector = normalize(u_LightPos - v_Position);"+
-	  					 
-						// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
-						// pointing in the same direction then it will get max illumination.
-						"  float diffuse = max(dot(v_Normal, lightVector), 0.1);"+
-						
-						//  Add attenuation.
-//						"  diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));"+
-						"  diffuse = diffuse * (1.0 / (1.0 + (0.10 * distance)));"+
-//	                    "  diffuse = 1.0;"+
-						
-						//  Add ambient lighting
-						"  diffuse = diffuse + 0.3;"+
-									
-						//  Multiply the color by the diffuse illumination level to get final output color.
-						"  gl_FragColor = v_Color * diffuse;"+
-						"}";
-				// @formatter:on
-
-	// @formatter:off
-				protected static final String vertexShaderCode_textured =
-						// This matrix member variable provides a hook to manipulate
-						// the coordinates of the objects that use this vertex shader
-								"uniform mat4 u_MVPMatrix;" + 
-								"uniform mat4 u_MVMatrix;"+       // A constant representing the combined model/view matrix.
-								
-								"attribute vec4 a_Position;"+    // Per-vertex position information we will pass in.
-								"attribute vec3 a_Normal;"+      // Per-vertex normal information we will pass in.
-								"uniform vec4 a_Color;"+       // Per-vertex color information we will pass in.
-								
-								"varying vec3 v_Position;"+       // This will be passed into the fragment shader.
-								"varying vec4 v_Color;"+         // This will be passed into the fragment shader.
-								"varying vec3 v_Normal;"+         // This will be passed into the fragment shader.
-								
-//								"attribute int a_useTextures;"+
-//								"varying int v_useTextures;"+
-								"attribute vec2 a_TexCoordinate;"+ // Per-vertex texture coordinate information we will pass in.
-								"varying vec2 v_TexCoordinate;"+   // This will be passed into the fragment shader.
-								
-								"void main() {" +
-								    // Transform the vertex into eye space.
-									"  v_Position = vec3(u_MVMatrix * a_Position);" + 
-								
-									// Pass through the color.
-									"  v_Color = a_Color;"+
-									
-									// Transform the normal's orientation into eye space.
-									"  v_Normal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));"+
-									
-//									"  v_useTextures = a_useTextures;"+
-									"  v_TexCoordinate = a_TexCoordinate;"+
-//									"  v_TexCoordinate = a_TexCoordinate.st * vec2(1.0, -1.0);"+
-									
-									// gl_Position is a special variable used to store the final position.
-								    // Multiply the vertex by the matrix to get the final point in normalized screen coordinates.
-								    "  gl_Position = u_MVPMatrix * a_Position;"+
-									
-								"}";
-						// @formatter:on
-
-	// @formatter:off
-			protected static final String fragmentShaderCode_textured = 
-					"precision mediump float;"+
+	protected static final String fragmentShaderCode_lighted = 
+			"precision mediump float;"+
+	
+			//The position of the light in eye space.
+			"uniform vec3 u_LightPos;"+
 			
-					//The position of the light in eye space.
-					"uniform vec3 u_LightPos;"+
-					
- 					// Interpolated position for this fragment.
- 					"varying vec3 v_Position;"+
- 					
-          			// This is the color from the vertex shader interpolated across the
-					"varying vec4 v_Color;"+
-                    
-					// triangle per fragment.
-					// Interpolated normal for this fragment.
-					"varying vec3 v_Normal;"+         
-					
-					"uniform sampler2D u_Texture;"+    // The input texture.
-					"varying vec2 v_TexCoordinate;"+ // Interpolated texture coordinate per fragment.
-					
-					"void main() {"	+ 
-					// Will be used for attenuation.
-				    "  float distance = length(u_LightPos - v_Position);"+
-					  
-  					// Get a lighting direction vector from the light to the vertex.
-					"  vec3 lightVector = normalize(u_LightPos - v_Position);"+
-  					 
-					// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
-					// pointing in the same direction then it will get max illumination.
-					"  float diffuse = max(dot(v_Normal, lightVector), 0.1);"+
-					
-					//  Add attenuation.
+			// Interpolated position for this fragment.
+			"varying vec3 v_Position;"+
+			
+  			// This is the color from the vertex shader interpolated across the
+			"varying vec4 v_Color;"+
+            
+			// triangle per fragment.
+			// Interpolated normal for this fragment.
+			"varying vec3 v_Normal;"+         
+			
+			"uniform sampler2D u_Texture;"+    // The input texture.
+			"varying vec2 v_TexCoordinate;"+ // Interpolated texture coordinate per fragment.
+			
+			"void main() {"	+ 
+			// Will be used for attenuation.
+		    "  float distance = length(u_LightPos - v_Position);"+
+			  
+			// Get a lighting direction vector from the light to the vertex.
+			"  vec3 lightVector = normalize(u_LightPos - v_Position);"+
+			 
+			// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
+			// pointing in the same direction then it will get max illumination.
+			"  float diffuse = max(dot(v_Normal, lightVector), 0.1);"+
+			
+			//  Add attenuation.
+//						"  diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));"+
+			"  diffuse = diffuse * (1.0 / (1.0 + (0.10 * distance)));"+
+//	                    "  diffuse = 1.0;"+
+			
+			//  Add ambient lighting
+			"  diffuse = diffuse + 0.3;"+
+						
+			//  Multiply the color by the diffuse illumination level to get final output color.
+			"  gl_FragColor = v_Color * diffuse;"+
+			"}";
+	// @formatter:on
+
+	// @formatter:off
+	protected static final String vertexShaderCode_textured =
+			// This matrix member variable provides a hook to manipulate
+			// the coordinates of the objects that use this vertex shader
+			"uniform mat4 u_MVPMatrix;" + 
+			"uniform mat4 u_MVMatrix;"+       // A constant representing the combined model/view matrix.
+			
+			"attribute vec4 a_Position;"+    // Per-vertex position information we will pass in.
+			"attribute vec3 a_Normal;"+      // Per-vertex normal information we will pass in.
+			"uniform vec4 a_Color;"+       // Per-vertex color information we will pass in.
+			
+			"varying vec3 v_Position;"+       // This will be passed into the fragment shader.
+			"varying vec4 v_Color;"+         // This will be passed into the fragment shader.
+			"varying vec3 v_Normal;"+         // This will be passed into the fragment shader.
+			
+	//								"attribute int a_useTextures;"+
+	//								"varying int v_useTextures;"+
+			"attribute vec2 a_TexCoordinate;"+ // Per-vertex texture coordinate information we will pass in.
+			"varying vec2 v_TexCoordinate;"+   // This will be passed into the fragment shader.
+			
+			"void main() {" +
+			    // Transform the vertex into eye space.
+				"  v_Position = vec3(u_MVMatrix * a_Position);" + 
+			
+				// Pass through the color.
+				"  v_Color = a_Color;"+
+				
+				// Transform the normal's orientation into eye space.
+				"  v_Normal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));"+
+				
+	//									"  v_useTextures = a_useTextures;"+
+				"  v_TexCoordinate = a_TexCoordinate;"+
+	//									"  v_TexCoordinate = a_TexCoordinate.st * vec2(1.0, -1.0);"+
+				
+				// gl_Position is a special variable used to store the final position.
+			    // Multiply the vertex by the matrix to get the final point in normalized screen coordinates.
+			    "  gl_Position = u_MVPMatrix * a_Position;"+
+				
+			"}";
+	// @formatter:on
+
+	// @formatter:off
+	protected static final String fragmentShaderCode_textured = 
+			"precision mediump float;"+
+	
+			//The position of the light in eye space.
+			"uniform vec3 u_LightPos;"+
+			
+			// Interpolated position for this fragment.
+			"varying vec3 v_Position;"+
+			
+  			// This is the color from the vertex shader interpolated across the
+			"varying vec4 v_Color;"+
+            
+			// triangle per fragment.
+			// Interpolated normal for this fragment.
+			"varying vec3 v_Normal;"+         
+			
+			"uniform sampler2D u_Texture;"+    // The input texture.
+			"varying vec2 v_TexCoordinate;"+ // Interpolated texture coordinate per fragment.
+			
+			"void main() {"	+ 
+			// Will be used for attenuation.
+		    "  float distance = length(u_LightPos - v_Position);"+
+			  
+			// Get a lighting direction vector from the light to the vertex.
+			"  vec3 lightVector = normalize(u_LightPos - v_Position);"+
+			 
+			// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
+			// pointing in the same direction then it will get max illumination.
+			"  float diffuse = max(dot(v_Normal, lightVector), 0.1);"+
+			
+			//  Add attenuation.
 //					"  diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));"+
-					"  diffuse = diffuse * (1.0 / (1.0 + (0.10 * distance)));"+
+			"  diffuse = diffuse * (1.0 / (1.0 + (0.10 * distance)));"+
 //                    "  diffuse = 1.0;"+
-					
-					//  Add ambient lighting
-					"  diffuse = diffuse + 0.3;"+
-								
-					//  Multiply the color by the diffuse illumination level to get final output color.
+			
+			//  Add ambient lighting
+			"  diffuse = diffuse + 0.3;"+
+						
+			//  Multiply the color by the diffuse illumination level to get final output color.
 //					"  gl_FragColor = v_Color * diffuse;"+
 //					"  gl_FragColor = (v_Color * diffuse * texture2D(u_Texture, v_TexCoordinate));"+
-					"  gl_FragColor = texture2D(u_Texture, v_TexCoordinate);"+
-					"}";
-			// @formatter:on
+			"  gl_FragColor = texture2D(u_Texture, v_TexCoordinate);"+
+			"}";
+	// @formatter:on
 
 //	// @formatter:off
 //			protected static final String fragmentShaderCode_stippled = 
@@ -231,19 +231,22 @@ public class GLES20Object {
 	private static ByteBuffer createNativeByteBuffer(int length) {
 		// initialize vertex byte buffer for shape coordinates
 		ByteBuffer bb = ByteBuffer.allocateDirect(
-		// (number of coordinate values * n bytes per type)
+				// (number of coordinate values * n bytes per type)
 				length);
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());
 		return bb;
 	}
 
-	public GLES20Object(float[] objCoords, short[] drawOrder, float[] vNormals, float[] textCoord, int drawType, int drawSize,
-			InputStream open) {
-		this(createNativeByteBuffer(4 * objCoords.length).asFloatBuffer().put(objCoords).asReadOnlyBuffer(), createNativeByteBuffer(
-				2 * drawOrder.length).asShortBuffer().put(drawOrder).asReadOnlyBuffer(), createNativeByteBuffer(4 * vNormals.length)
-				.asFloatBuffer().put(vNormals).asReadOnlyBuffer(), textCoord == null ? null : createNativeByteBuffer(4 * objCoords.length)
-				.asFloatBuffer().put(textCoord).asReadOnlyBuffer(), drawType, drawSize, open);
+	public GLES20Object(float[] objCoords, short[] drawOrder, float[] vNormals, float[] textCoord, int drawType,
+			int drawSize, InputStream open) {
+		this(createNativeByteBuffer(4 * objCoords.length).asFloatBuffer().put(objCoords).asReadOnlyBuffer(),
+				createNativeByteBuffer(2 * drawOrder.length).asShortBuffer().put(drawOrder).asReadOnlyBuffer(),
+				createNativeByteBuffer(4 * vNormals.length).asFloatBuffer().put(vNormals).asReadOnlyBuffer(),
+				textCoord == null ? null
+						: createNativeByteBuffer(4 * objCoords.length).asFloatBuffer().put(textCoord)
+								.asReadOnlyBuffer(),
+				drawType, drawSize, open);
 	}
 
 	/**
@@ -253,8 +256,8 @@ public class GLES20Object {
 	 * @param textureIs
 	 *            TODO
 	 */
-	public GLES20Object(FloatBuffer objCoords, ShortBuffer drawOrder, FloatBuffer normalsBuffer, FloatBuffer textureCoords, int drawType,
-			int drawSize, InputStream textureIs) {
+	public GLES20Object(FloatBuffer objCoords, ShortBuffer drawOrder, FloatBuffer normalsBuffer,
+			FloatBuffer textureCoords, int drawType, int drawSize, InputStream textureIs) {
 		// { 0, 1, 2, 0, 2, 3, 3, 4, 5, 5, 4, 0 }
 
 		this.vertexBuffer = objCoords;
@@ -275,8 +278,8 @@ public class GLES20Object {
 		vertexShaderHandle = GLUtil.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode_textured);
 
 		Log.i("fa", "Using texture [" + textureIs + "]");
-		fragmentShaderHandle = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER, textureIs != null ? fragmentShaderCode_textured
-				: fragmentShaderCode_lighted);
+		fragmentShaderHandle = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER,
+				textureIs != null ? fragmentShaderCode_textured : fragmentShaderCode_lighted);
 
 		mProgram = GLES20.glCreateProgram(); // create empty OpenGL Program
 
@@ -376,7 +379,12 @@ public class GLES20Object {
 	}
 
 	public void draw(float[] mvpMatrix, float[] mvMatrix) {
-		this.draw_with_textures(mvpMatrix, mvMatrix);
+		this.draw(mvpMatrix, mvMatrix, -1, -1);
+	}
+
+	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawType, int drawSize) {
+		this.draw_with_textures(mvpMatrix, mvMatrix, drawType != -1 ? drawType : this.drawType,
+				drawSize != -1 ? drawSize : this.drawSize);
 	}
 
 	/**
@@ -396,7 +404,8 @@ public class GLES20Object {
 		GLES20.glEnableVertexAttribArray(mPositionHandle);
 
 		// Prepare the triangle coordinate data
-		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, vertexBuffer);
+		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
+				vertexBuffer);
 
 		// get handle to fragment shader's vColor member
 		mColorHandle = GLES20.glGetUniformLocation(mProgram, "a_Color");
@@ -442,8 +451,12 @@ public class GLES20Object {
 	 *            - The Model View Project matrix in which to draw this shape.
 	 * @param mvMatrix
 	 *            TODO
+	 * @param drawType
+	 *            The method used for drawing the polygons. For example GLES20.GL_TRIANGLE_STRIP or GLES20.GL_LINE_STRIP
+	 * @param drawSize
+	 *            The number of vertices of the polygon to draw
 	 */
-	public void draw_with_textures(float[] mvpMatrix, float[] mvMatrix) {
+	public void draw_with_textures(float[] mvpMatrix, float[] mvMatrix, int drawType, int drawSize) {
 		// Add program to OpenGL environment
 		GLES20.glUseProgram(mProgram);
 
@@ -524,17 +537,19 @@ public class GLES20Object {
 		GLUtil.checkGlError("glUniformMatrix4fv");
 
 		//
-		if (drawSize != -1 && drawListBuffer.capacity() % drawSize != 0) {
-			throw new RuntimeException(drawListBuffer.capacity() + "<>" + drawSize);
+		int capacity = drawListBuffer.capacity();
+		if (drawSize != -1 && capacity % drawSize != 0) {
+			throw new RuntimeException(capacity + "<>" + drawSize);
 		}
 
-		// Draw the square
+		// Draw the model
 		if (drawSize == -1) {
 			// GLES20.glDrawElements(drawType, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 			// GLES20.glDrawArrays(drawType, 0, vertexBuffer.limit());
-			GLES20.glDrawElements(drawType, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+			GLES20.glDrawElements(drawType, drawSize != -1 ? drawSize : capacity, GLES20.GL_UNSIGNED_SHORT,
+					drawListBuffer);
 		} else {
-			for (int i = 0; i < drawListBuffer.capacity(); i += drawSize) {
+			for (int i = 0; i < capacity; i += drawSize) {
 				drawListBuffer.position(i);
 				GLES20.glDrawElements(drawType, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 			}
@@ -573,7 +588,8 @@ public class GLES20Object {
 		GLES20.glEnableVertexAttribArray(mPositionHandle);
 
 		// Prepare the triangle coordinate data
-		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, vertexBuffer);
+		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
+				vertexBuffer);
 
 		// get handle to fragment shader's vColor member
 		mColorHandle = GLES20.glGetUniformLocation(mProgram, "a_Color");
@@ -597,7 +613,8 @@ public class GLES20Object {
 
 		// Enable a handle to the triangle vertices
 		GLES20.glEnableVertexAttribArray(normalHandle);
-		GLES20.glVertexAttribPointer(normalHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, normalsBuffer);
+		GLES20.glVertexAttribPointer(normalHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
+				normalsBuffer);
 
 		// get handle to shape's transformation matrix
 		mMVMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
@@ -658,12 +675,12 @@ public class GLES20Object {
 		if (boundingBox == null) {
 			// init bounding box
 			boundingBox = new BoundingBox(vertexBuffer.asReadOnlyBuffer());
-			boundingBoxObject = new GLES20Object(boundingBox.getVertices(), boundingBox.getDrawOrder(), boundingBox.getNormals(), null,
-					boundingBox.getDrawType(), boundingBox.getDrawSize(), null);
+			boundingBoxObject = new GLES20Object(boundingBox.getVertices(), boundingBox.getDrawOrder(),
+					boundingBox.getNormals(), null, boundingBox.getDrawType(), boundingBox.getDrawSize(), null);
 			boundingBoxObject.setPosition(getPosition());
 			boundingBoxObject.setColor(getColor());
 		}
-		boundingBoxObject.draw(mvpMatrix, mvMatrix);
+		boundingBoxObject.draw(mvpMatrix, mvMatrix, boundingBox.getDrawType(), -1);
 
 	}
 
@@ -694,9 +711,11 @@ public class GLES20Object {
 
 	// public static GLES20Object createSphere(float radius, int stacks, int slices) {
 	// int vertexCount = (stacks + 1) * (slices + 1);
-	// FloatBuffer vertexBuffer = ByteBuffer.allocateDirect(vertexCount * GLHelpers.BYTES_PER_VERTEX).order(ByteOrder.nativeOrder())
+	// FloatBuffer vertexBuffer = ByteBuffer.allocateDirect(vertexCount *
+	// GLHelpers.BYTES_PER_VERTEX).order(ByteOrder.nativeOrder())
 	// .asFloatBuffer();
-	// FloatBuffer normalBuffer = ByteBuffer.allocateDirect(vertexCount * GLHelpers.BYTES_PER_NORMAL).order(ByteOrder.nativeOrder())
+	// FloatBuffer normalBuffer = ByteBuffer.allocateDirect(vertexCount *
+	// GLHelpers.BYTES_PER_NORMAL).order(ByteOrder.nativeOrder())
 	// .asFloatBuffer();
 	// FloatBuffer textureCoordBuffer = ByteBuffer.allocateDirect(vertexCount * GLHelpers.BYTES_PER_TEXTURE_COORD)
 	// .order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -759,7 +778,8 @@ public class GLES20Object {
 	// indexBuffer.rewind();
 	// textureCoordBuffer.rewind();
 	//
-	// GLES20Object sphere = new GLES20Object().setVertexBuffer(vertexBuffer).setNormalBuffer(normalBuffer).setIndexBuffer(indexBuffer)
+	// GLES20Object sphere = new
+	// GLES20Object().setVertexBuffer(vertexBuffer).setNormalBuffer(normalBuffer).setIndexBuffer(indexBuffer)
 	// .setTexture(R.drawable.earth).setTextureCoordBuffer(textureCoordBuffer).setDiffuseLighting(-3f, 2.3f, 2f);
 	// return sphere;
 	//
