@@ -42,23 +42,24 @@ public class Camera {
 
 	public Camera() {
 		// Initialize variables...
-		this(0, 0, 2, 0, 0, -1.25f, 0, 1, 0);
+		this(0, 0, 1, 0, 0, -1, 0, 1, 0);
 
 	}
 
-	public Camera(float x, float y, float z, float xv, float yv, float zv, float xu, float yu, float zu) {
+	public Camera(float xPos, float yPos, float zPos, float xView, float yView, float zView, float xUp, float yUp,
+			float zUp) {
 		// Here we set the camera to the values sent in to us. This is mostly
 		// used to set up a
 		// default position.
-		xPos = x;
-		yPos = y;
-		zPos = z;
-		xView = xv;
-		yView = yv;
-		zView = zv;
-		xUp = xu;
-		yUp = yu;
-		zUp = zu;
+		this.xPos = xPos;
+		this.yPos = yPos;
+		this.zPos = zPos;
+		this.xView = xView;
+		this.yView = yView;
+		this.zView = zView;
+		this.xUp = xUp;
+		this.yUp = yUp;
+		this.zUp = zUp;
 	}
 
 	private void normalize() {
@@ -264,8 +265,8 @@ public class Camera {
 		zLookDirection = zView - zPos;
 
 		// Normalize the direction.
-		float dp = 1 / (float) Math.sqrt(xLookDirection * xLookDirection + yLookDirection * yLookDirection + zLookDirection
-				* zLookDirection);
+		float dp = 1 / (float) Math.sqrt(
+				xLookDirection * xLookDirection + yLookDirection * yLookDirection + zLookDirection * zLookDirection);
 		xLookDirection *= dp;
 		yLookDirection *= dp;
 		zLookDirection *= dp;
@@ -386,6 +387,7 @@ public class Camera {
 		zArriba /= vlen;
 
 		// Get the cross product of the direction and the up.
+		// A x B = (a1, a2, a3) x (b1, b2, b3) = (a2 * b3 - b2 * a3 , - a1 * b3 + b1 * a3 , a1 * b2 - b1 * a2)
 		xRight = (yLook * zArriba) - (zLook * yArriba);
 		yRight = (zLook * xArriba) - (xLook * zArriba);
 		zRight = (xLook * yArriba) - (yLook * xArriba);
@@ -394,6 +396,16 @@ public class Camera {
 		xRight /= vlen;
 		yRight /= vlen;
 		zRight /= vlen;
+
+		// Once we have the look & right, we can recalculate where is the final up vector
+		xArriba = (yRight * zLook) - (zRight * yLook);
+		yArriba = (zRight * xLook) - (xRight * zLook);
+		zArriba = (xRight * yLook) - (yRight * xLook);
+		// Normalize the Right.
+		vlen = Matrix.length(xArriba, yArriba, zArriba);
+		xArriba /= vlen;
+		yArriba /= vlen;
+		zArriba /= vlen;
 
 		float[] coordinates = new float[] { xPos, yPos, zPos, 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
 
@@ -411,59 +423,19 @@ public class Camera {
 		yUp = buffer[8 + 1] / buffer[8 + 3];
 		zUp = buffer[8 + 2] / buffer[8 + 3];
 
-		// Influence 1
-		// @formatter:off
-//		xPos = (buffer[0] / buffer[3]            +   buffer[0 + 12] / buffer[3 + 12]           )/2;
-//		yPos = (buffer[1] / buffer[3]            +   buffer[1 + 12] / buffer[3 + 12]			)/2;
-//		zPos = (buffer[2] / buffer[3]            +   buffer[2 + 12] / buffer[3 + 12]			)/2;
-//		xView = (buffer[4 + 0] / buffer[4 + 3]   +   buffer[4 + 0 + 12] / buffer[4 + 3 + 12]	)/2;
-//		yView = (buffer[4 + 1] / buffer[4 + 3]   +   buffer[4 + 1 + 12] / buffer[4 + 3 + 12]	)/2;
-//		zView = (buffer[4 + 2] / buffer[4 + 3]   +   buffer[4 + 2 + 12] / buffer[4 + 3 + 12]	)/2;
-//		xUp = (buffer[8 + 0] / buffer[8 + 3]     +   buffer[8 + 0 + 12] / buffer[8 + 3 + 12]	)/2;
-//		yUp = (buffer[8 + 1] / buffer[8 + 3]     +   buffer[8 + 1 + 12] / buffer[8 + 3 + 12]	)/2;
-//		zUp = (buffer[8 + 2] / buffer[8 + 3]     +   buffer[8 + 2 + 12] / buffer[8 + 3 + 12]	)/2;
-		// @formatter:on
-
 		createRotationMatrixAroundVector(buffer, 40, dY, xRight, yRight, zRight);
 		coordinates = new float[] { xPos, yPos, zPos, 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
 		multiplyMMV(buffer, 0, buffer, 40, coordinates, 0);
 
-		xPos = buffer[0];
-		yPos = buffer[1];
-		zPos = buffer[2];
-		xView = buffer[4 + 0];
-		yView = buffer[4 + 1];
-		zView = buffer[4 + 2];
-		xUp = buffer[8 + 0];
-		yUp = buffer[8 + 1];
-		zUp = buffer[8 + 2];
-
-		// xPos = buffer[0] / buffer[3];
-		// yPos = buffer[1] / buffer[3];
-		// zPos = buffer[2] / buffer[3];
-		// xView = buffer[4 + 0] / buffer[4 + 3];
-		// yView = buffer[4 + 1] / buffer[4 + 3];
-		// zView = buffer[4 + 2] / buffer[4 + 3];
-		// xUp = buffer[8 + 0] / buffer[8 + 3];
-		// yUp = buffer[8 + 1] / buffer[8 + 3];
-		// zUp = buffer[8 + 2] / buffer[8 + 3];
-
-		// normalize();
-		//
-		// createRotationMatrixAroundVector(buffer, 12, dY, xRight, yRight, zRight);
-		// coordinates = new float[] { xPos, yPos, zPos, 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
-		// // createRotationMatrixAroundVector(buffer, 16, dY, xRight, yRight, zRight);
-		// multiplyMMV(buffer, 0, buffer, 12, coordinates, 0);
-		//
-		// xPos = buffer[0] / buffer[3];
-		// yPos = buffer[1] / buffer[3];
-		// zPos = buffer[2] / buffer[3];
-		// xView = buffer[4 + 0] / buffer[4 + 3];
-		// yView = buffer[4 + 1] / buffer[4 + 3];
-		// zView = buffer[4 + 2] / buffer[4 + 3];
-		// xUp = buffer[8 + 0] / buffer[8 + 3];
-		// yUp = buffer[8 + 1] / buffer[8 + 3];
-		// zUp = buffer[8 + 2] / buffer[8 + 3];
+		xPos = buffer[0] / buffer[3];
+		yPos = buffer[1] / buffer[3];
+		zPos = buffer[2] / buffer[3];
+		xView = buffer[4 + 0] / buffer[4 + 3];
+		yView = buffer[4 + 1] / buffer[4 + 3];
+		zView = buffer[4 + 2] / buffer[4 + 3];
+		xUp = buffer[8 + 0] / buffer[8 + 3];
+		yUp = buffer[8 + 1] / buffer[8 + 3];
+		zUp = buffer[8 + 2] / buffer[8 + 3];
 
 		setChanged(true);
 
@@ -474,7 +446,8 @@ public class Camera {
 	}
 
 	public String ToStringVector() {
-		return xPos + "," + yPos + "," + zPos + " ; " + xView + "," + yView + "," + zView + " ; " + xUp + "," + yUp + "," + zUp;
+		return xPos + "," + yPos + "," + zPos + " ; " + xView + "," + yView + "," + zView + " ; " + xUp + "," + yUp
+				+ "," + zUp;
 	}
 
 	public float[] getVectors() {
@@ -486,7 +459,8 @@ public class Camera {
 		// @formatter:on
 	}
 
-	public static void createRotationMatrixAroundVector(float[] matrix, int offset, float angle, float x, float y, float z) {
+	public static void createRotationMatrixAroundVector(float[] matrix, int offset, float angle, float x, float y,
+			float z) {
 		float cos = (float) Math.cos(angle);
 		float sin = (float) Math.sin(angle);
 		float cos_1 = 1 - cos;
@@ -500,7 +474,8 @@ public class Camera {
 		// @formatter:on
 	}
 
-	public static void multiplyMMV(float[] result, int retOffset, float[] matrix, int matOffet, float[] vector4Matrix, int vecOffset) {
+	public static void multiplyMMV(float[] result, int retOffset, float[] matrix, int matOffet, float[] vector4Matrix,
+			int vecOffset) {
 		for (int i = 0; i < vector4Matrix.length / 4; i++) {
 			Matrix.multiplyMV(result, retOffset + (i * 4), matrix, matOffet, vector4Matrix, vecOffset + (i * 4));
 		}
@@ -532,8 +507,8 @@ public class Camera {
 
 	@Override
 	public String toString() {
-		return "Camera [xPos=" + xPos + ", yPos=" + yPos + ", zPos=" + zPos + ", xView=" + xView + ", yView=" + yView + ", zView=" + zView
-				+ ", xUp=" + xUp + ", yUp=" + yUp + ", zUp=" + zUp + "]";
+		return "Camera [xPos=" + xPos + ", yPos=" + yPos + ", zPos=" + zPos + ", xView=" + xView + ", yView=" + yView
+				+ ", zView=" + zView + ", xUp=" + xUp + ", yUp=" + yUp + ", zUp=" + zUp + "]";
 	}
 
 	public void Rotate(float rotViewerZ) {
