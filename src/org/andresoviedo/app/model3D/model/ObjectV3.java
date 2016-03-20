@@ -1,4 +1,4 @@
-package org.andresoviedo.app.model3D.impl1;
+package org.andresoviedo.app.model3D.model;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -6,7 +6,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-import org.andresoviedo.app.model3D.models.BoundingBox;
+import org.andresoviedo.app.model3D.entities.BoundingBox;
 import org.andresoviedo.app.model3D.util.GLUtil;
 
 import android.graphics.Bitmap;
@@ -15,7 +15,13 @@ import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
 
-public class GLES20Object {
+/**
+ * A 3D Object in OpenGLES 2.0 using texture & light shaders
+ * 
+ * @author andres
+ *
+ */
+public class ObjectV3 implements Object3D {
 
 	//@formatter:off
 	protected static final String vertexShaderCode =
@@ -199,11 +205,6 @@ public class GLES20Object {
 	protected final FloatBuffer normalsBuffer;
 	protected final FloatBuffer textureCoordBuffer;
 
-	// protected float objCoords[] = { -0.5f, 0.5f, 0.0f, // top left
-	// -0.5f, -0.5f, 0.0f, // bottom left
-	// 0.5f, -0.5f, 0.0f, // bottom right
-	// 0.5f, 0.5f, 0.0f }; // top right
-
 	protected float lightPos[] = { 0.0f, 1, 0f, 0.0f };
 	protected float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
 	protected float[] position = new float[] { 0f, 0f, 0f };
@@ -217,11 +218,11 @@ public class GLES20Object {
 	protected int lightPositionHandle;
 
 	// Lazy objects
-	protected final int drawType;
+	protected final int drawMode;
 	protected final int drawSize;
 	protected BoundingBox boundingBox;
 
-	protected GLES20Object boundingBoxObject;
+	protected Object3D boundingBoxObject;
 
 	private final int vertexShaderHandle;
 	private final int fragmentShaderHandle;
@@ -238,7 +239,7 @@ public class GLES20Object {
 		return bb;
 	}
 
-	public GLES20Object(float[] objCoords, short[] drawOrder, float[] vNormals, float[] textCoord, int drawType,
+	public ObjectV3(float[] objCoords, short[] drawOrder, float[] vNormals, float[] textCoord, int drawType,
 			int drawSize, InputStream open) {
 		this(createNativeByteBuffer(4 * objCoords.length).asFloatBuffer().put(objCoords).asReadOnlyBuffer(),
 				createNativeByteBuffer(2 * drawOrder.length).asShortBuffer().put(drawOrder).asReadOnlyBuffer(),
@@ -252,12 +253,12 @@ public class GLES20Object {
 	/**
 	 * Sets up the drawing object data for use in an OpenGL ES context.
 	 * 
-	 * @param objCoords
+	 * @param vertices
 	 * @param textureIs
 	 *            TODO
 	 */
-	public GLES20Object(FloatBuffer objCoords, ShortBuffer drawOrder, FloatBuffer normalsBuffer,
-			FloatBuffer textureCoords, int drawType, int drawSize, InputStream textureIs) {
+	public ObjectV3(FloatBuffer objCoords, ShortBuffer drawOrder, FloatBuffer normalsBuffer, FloatBuffer textureCoords,
+			int drawMode, int drawSize, InputStream textureIs) {
 		// { 0, 1, 2, 0, 2, 3, 3, 4, 5, 5, 4, 0 }
 
 		this.vertexBuffer = objCoords;
@@ -271,7 +272,7 @@ public class GLES20Object {
 
 		this.textureCoordBuffer = textureCoords;
 
-		this.drawType = drawType;
+		this.drawMode = drawMode;
 		this.drawSize = drawSize;
 
 		// prepare shaders and OpenGL program
@@ -308,7 +309,7 @@ public class GLES20Object {
 	}
 
 	public static int loadTexture(final InputStream is) {
-		Log.v("loadTexture", "Loading texture from stream...");
+		Log.v("loadTexture", "Loading texture '" + is + "' from stream...");
 
 		final int[] textureHandle = new int[1];
 
@@ -362,28 +363,64 @@ public class GLES20Object {
 		return textureId;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#getPosition()
+	 */
+	@Override
 	public float[] getPosition() {
 		return position;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#setPosition(float[])
+	 */
+	@Override
 	public void setPosition(float[] position) {
 		this.position = position;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#getColor()
+	 */
+	@Override
 	public float[] getColor() {
 		return color;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#setColor(float[])
+	 */
+	@Override
 	public void setColor(float[] color) {
 		this.color = color;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#draw(float[], float[])
+	 */
+	@Override
 	public void draw(float[] mvpMatrix, float[] mvMatrix) {
 		this.draw(mvpMatrix, mvMatrix, -1, -1);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#draw(float[], float[], int, int)
+	 */
+	@Override
 	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawType, int drawSize) {
-		this.draw_with_textures(mvpMatrix, mvMatrix, drawType != -1 ? drawType : this.drawType,
+		this.draw_with_textures(mvpMatrix, mvMatrix, drawType != -1 ? drawType : this.drawMode,
 				drawSize != -1 ? drawSize : this.drawSize);
 	}
 
@@ -393,7 +430,7 @@ public class GLES20Object {
 	 * @param mvpMatrix
 	 *            - The Model View Project matrix in which to draw this shape.
 	 */
-	public void draw_ok(float[] mvpMatrix, float[] mvMatrix) {
+	private void draw_ok(float[] mvpMatrix, float[] mvMatrix) {
 		// Add program to OpenGL environment
 		GLES20.glUseProgram(mProgram);
 
@@ -433,11 +470,11 @@ public class GLES20Object {
 
 		// Draw the square
 		if (drawSize == -1) {
-			GLES20.glDrawElements(drawType, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+			GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 		} else {
 			for (int i = 0; i < drawListBuffer.capacity(); i += drawSize) {
 				drawListBuffer.position(i);
-				GLES20.glDrawElements(drawType, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+				GLES20.glDrawElements(drawMode, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 			}
 		}
 		// Disable vertex array
@@ -451,7 +488,7 @@ public class GLES20Object {
 	 *            - The Model View Project matrix in which to draw this shape.
 	 * @param mvMatrix
 	 *            TODO
-	 * @param drawType
+	 * @param drawMode
 	 *            The method used for drawing the polygons. For example GLES20.GL_TRIANGLE_STRIP or GLES20.GL_LINE_STRIP
 	 * @param drawSize
 	 *            The number of vertices of the polygon to draw
@@ -544,8 +581,8 @@ public class GLES20Object {
 
 		// Draw the model
 		if (drawSize == -1) {
-			// GLES20.glDrawElements(drawType, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-			// GLES20.glDrawArrays(drawType, 0, vertexBuffer.limit());
+			// GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+			// GLES20.glDrawArrays(drawMode, 0, vertexBuffer.limit());
 			GLES20.glDrawElements(drawType, drawSize != -1 ? drawSize : capacity, GLES20.GL_UNSIGNED_SHORT,
 					drawListBuffer);
 		} else {
@@ -577,7 +614,7 @@ public class GLES20Object {
 	 * @param mvMatrix
 	 *            TODO
 	 */
-	public void drawOkWithLighting_OK(float[] mvpMatrix, float[] mvMatrix) {
+	private void drawOkWithLighting_OK(float[] mvpMatrix, float[] mvMatrix) {
 		// Add program to OpenGL environment
 		GLES20.glUseProgram(mProgram);
 
@@ -629,11 +666,11 @@ public class GLES20Object {
 
 		// Draw the square
 		if (drawSize == -1) {
-			GLES20.glDrawElements(drawType, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+			GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 		} else {
 			for (int i = 0; i < drawListBuffer.capacity(); i += drawSize) {
 				drawListBuffer.position(i);
-				GLES20.glDrawElements(drawType, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+				GLES20.glDrawElements(drawMode, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 			}
 		}
 
@@ -671,11 +708,17 @@ public class GLES20Object {
 		// }
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#drawBoundingBox(float[], float[])
+	 */
+	@Override
 	public void drawBoundingBox(float[] mvpMatrix, float[] mvMatrix) {
 		if (boundingBox == null) {
 			// init bounding box
 			boundingBox = new BoundingBox(vertexBuffer.asReadOnlyBuffer());
-			boundingBoxObject = new GLES20Object(boundingBox.getVertices(), boundingBox.getDrawOrder(),
+			boundingBoxObject = new ObjectV3(boundingBox.getVertices(), boundingBox.getDrawOrder(),
 					boundingBox.getNormals(), null, boundingBox.getDrawType(), boundingBox.getDrawSize(), null);
 			boundingBoxObject.setPosition(getPosition());
 			boundingBoxObject.setColor(getColor());
@@ -684,32 +727,68 @@ public class GLES20Object {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#translateX(float)
+	 */
+	@Override
 	public void translateX(float f) {
 		position[0] += f;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#translateY(float)
+	 */
+	@Override
 	public void translateY(float f) {
 		position[1] += f;
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#getRotation()
+	 */
+	@Override
 	public float[] getRotation() {
 		return rotation;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#setRotationZ(float)
+	 */
+	@Override
 	public void setRotationZ(float rz) {
 		rotation[2] = rz;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#getRotationZ()
+	 */
+	@Override
 	public float getRotationZ() {
 		return rotation[2];
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.andresoviedo.app.model3D.model.Object3D#setRotation(float[])
+	 */
+	@Override
 	public void setRotation(float[] rotation) {
 		this.rotation = rotation;
 	}
 
-	// public static GLES20Object createSphere(float radius, int stacks, int slices) {
+	// public static ObjectV3 createSphere(float radius, int stacks, int slices) {
 	// int vertexCount = (stacks + 1) * (slices + 1);
 	// FloatBuffer vertexBuffer = ByteBuffer.allocateDirect(vertexCount *
 	// GLHelpers.BYTES_PER_VERTEX).order(ByteOrder.nativeOrder())
@@ -778,8 +857,8 @@ public class GLES20Object {
 	// indexBuffer.rewind();
 	// textureCoordBuffer.rewind();
 	//
-	// GLES20Object sphere = new
-	// GLES20Object().setVertexBuffer(vertexBuffer).setNormalBuffer(normalBuffer).setIndexBuffer(indexBuffer)
+	// ObjectV3 sphere = new
+	// ObjectV3().setVertexBuffer(vertexBuffer).setNormalBuffer(normalBuffer).setIndexBuffer(indexBuffer)
 	// .setTexture(R.drawable.earth).setTextureCoordBuffer(textureCoordBuffer).setDiffuseLighting(-3f, 2.3f, 2f);
 	// return sphere;
 	//

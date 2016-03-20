@@ -1,4 +1,4 @@
-package org.andresoviedo.app.model3D.models;
+package org.andresoviedo.app.model3D.entities;
 
 import java.nio.FloatBuffer;
 

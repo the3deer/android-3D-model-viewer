@@ -1,19 +1,21 @@
-package org.andresoviedo.app.model3D;
+package org.andresoviedo.app.model3D.view;
+
+import org.andresoviedo.app.util.Utils;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.pm.PackageManager;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
-import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 
+/**
+ * This activity represents the container for our 3D viewer.
+ * 
+ * @author andresoviedo
+ */
 public class ModelActivity extends Activity {
-
-	private static final String TAG = ModelSurfaceView.class.getName();
 
 	private GLSurfaceView mGLView;
 
@@ -29,20 +31,9 @@ public class ModelActivity extends Activity {
 		// Show the Up button in the action bar.
 		setupActionBar();
 
-		printTouchCapabilities();
-
-	}
-
-	private void printTouchCapabilities() {
-		if (getPackageManager().hasSystemFeature(
-				PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH)) {
-			Log.i(TAG, "System supports multitouch (2 fingers)");
-		}
-		if (getPackageManager().hasSystemFeature(
-				PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT)) {
-			Log.i(TAG,
-					"System supports advanced multitouch (multiple fingers). Cool!");
-		}
+		// TODO: Alert user when there is no multitouch support (2 fingers). He won't be able to rotate or zoom for
+		// example
+		Utils.printTouchCapabilities(getPackageManager());
 	}
 
 	/**
@@ -50,18 +41,19 @@ public class ModelActivity extends Activity {
 	 */
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void setupActionBar() {
-//		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-//			getActionBar().setDisplayHomeAsUpEnabled(true);
-//		}
+		// if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+		// getActionBar().setDisplayHomeAsUpEnabled(true);
+		// }
 	}
 
-//	@Override
-//	public boolean onCreateOptionsMenu(Menu menu) {
-//		// Inflate the menu; this adds items to the action bar if it is present.
-//		getMenuInflater().inflate(R.menu.model, menu);
-//		return true;
-//	}
+	// @Override
+	// public boolean onCreateOptionsMenu(Menu menu) {
+	// // Inflate the menu; this adds items to the action bar if it is present.
+	// getMenuInflater().inflate(R.menu.model, menu);
+	// return true;
+	// }
 
+	// TODO: set up menu & buttons
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {

@@ -1,4 +1,4 @@
-package org.andresoviedo.app.model3D.models;
+package org.andresoviedo.app.model3D.model;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -10,31 +10,39 @@ import org.andresoviedo.app.model3D.util.GLUtil;
 import android.opengl.GLES20;
 
 /**
- * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
+ * A 3D object OpenGL ES 2.0 using indices {@link GLES20#glDrawElements(int, int, int, java.nio.Buffer)}
  */
-public class Square {
+public class ObjectV2 implements Object3D {
+
+	@SuppressWarnings("unused")
+	private float vertices[]; // top right
+	private final short drawOrder[]; // order to draw vertices
+	private final int drawMode;
+	private float color[] = { 0, 1.0f, 0, 1.0f }; // default color is blue
+	private float[] position = new float[] { 0f, 0f, 0f };
+	private float[] rotation = new float[] { 0f, 0f, 0f };
 
 	// @formatter:off
 	private final String vertexShaderCode =
-	// This matrix member variable provides a hook to manipulate
-	// the coordinates of the objects that use this vertex shader
-			"uniform mat4 uMVPMatrix;" + 
-			"attribute vec4 vPosition;" + 
-			"void main() {" +
-				// The matrix must be included as a modifier of gl_Position.
-				// Note that the uMVPMatrix factor *must be first* in order
-				// for the matrix multiplication product to be correct.
-				"  gl_Position = uMVPMatrix * vPosition;" +
-			"}";
+		// This matrix member variable provides a hook to manipulate
+		// the coordinates of the objects that use this vertex shader
+		"uniform mat4 uMVPMatrix;" + 
+		"attribute vec4 vPosition;" + 
+		"void main() {" +
+			// The matrix must be included as a modifier of gl_Position.
+			// Note that the uMVPMatrix factor *must be first* in order
+			// for the matrix multiplication product to be correct.
+			"  gl_Position = uMVPMatrix * vPosition;" + 
+		"}";
 	// @formatter:on
 
 	// @formatter:off
 	private final String fragmentShaderCode = 
-			"precision mediump float;"+ 
-			"uniform vec4 vColor;" + 
-			"void main() {"	+ 
-			"  gl_FragColor = vColor;" +
-			"}";
+		"precision mediump float;"+ 
+		"uniform vec4 vColor;" + 
+		"void main() {"+ 
+		"  gl_FragColor = vColor;" + 
+		"}";
 	// @formatter:on
 
 	private final FloatBuffer vertexBuffer;
@@ -46,43 +54,34 @@ public class Square {
 
 	// number of coordinates per vertex in this array
 	static final int COORDS_PER_VERTEX = 3;
-	static float objCoords[] = { -0.5f, 0.5f, 0.0f, // top left
-			-0.5f, -0.5f, 0.0f, // bottom left
-			0.5f, -0.5f, 0.0f, // bottom right
-			0.5f, 0.5f, 0.0f }; // top right
 
-	private final short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw
-															// vertices
-
-	private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per
-															// vertex
-
-	float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
-
-	float[] position = new float[] { 0f, 0f, 0f };
-	float[] rotation = new float[] { 0f, 0f, 0f };
+	private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
 	/**
 	 * Sets up the drawing object data for use in an OpenGL ES context.
 	 */
-	public Square() {
+	public ObjectV2(float[] vertices, short[] drawOrder, int drawMode) {
+		this.vertices = vertices;
+		this.drawOrder = drawOrder;
+		this.drawMode = drawMode;
+
 		// initialize vertex byte buffer for shape coordinates
 		ByteBuffer bb = ByteBuffer.allocateDirect(
-		// (number of coordinate values * 4 bytes per float)
-				objCoords.length * 4);
+				// (number of coordinate values * 4 bytes per float)
+				vertices.length * 4);
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());
 
 		// create a floating point buffer from the ByteBuffer
 		vertexBuffer = bb.asFloatBuffer();
 		// add the coordinates to the FloatBuffer
-		vertexBuffer.put(objCoords);
+		vertexBuffer.put(vertices);
 		// set the buffer to read the first coordinate
 		vertexBuffer.position(0);
 
 		// initialize byte buffer for the draw list
 		ByteBuffer dlb = ByteBuffer.allocateDirect(
-		// (# of coordinate values * 2 bytes per short)
+				// (# of coordinate values * 2 bytes per short)
 				drawOrder.length * 2);
 		dlb.order(ByteOrder.nativeOrder());
 		drawListBuffer = dlb.asShortBuffer();
@@ -109,6 +108,30 @@ public class Square {
 		this.position = position;
 	}
 
+	public float[] getColor() {
+		return color;
+	}
+
+	public void setColor(float[] color) {
+		this.color = color;
+	}
+
+	@Override
+	public void draw(float[] mvpMatrix, float[] mvMatrix) {
+		this.draw(mvpMatrix);
+	}
+
+	@Override
+	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawType, int drawSize) {
+		this.draw(mvpMatrix);
+
+	}
+
+	@Override
+	public void drawBoundingBox(float[] mvpMatrix, float[] mvMatrix) {
+		// TODO: implement this
+	}
+
 	/**
 	 * Encapsulates the OpenGL ES instructions for drawing this shape.
 	 * 
@@ -126,7 +149,8 @@ public class Square {
 		GLES20.glEnableVertexAttribArray(mPositionHandle);
 
 		// Prepare the triangle coordinate data
-		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, vertexBuffer);
+		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
+				vertexBuffer);
 
 		// get handle to fragment shader's vColor member
 		mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
@@ -142,8 +166,8 @@ public class Square {
 		GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 		GLUtil.checkGlError("glUniformMatrix4fv");
 
-		// Draw the square
-		GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+		// Draw the model
+		GLES20.glDrawElements(drawMode, drawOrder.length, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 
 		// Disable vertex array
 		GLES20.glDisableVertexAttribArray(mPositionHandle);
@@ -173,5 +197,4 @@ public class Square {
 	public void setRotation(float[] rotation) {
 		this.rotation = rotation;
 	}
-
 }

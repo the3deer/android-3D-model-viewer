@@ -27,7 +27,7 @@
  - drawToList() sets and uses flipTexCoords
  */
 
-package org.andresoviedo.app.model3D.loader3D.wavefront;
+package org.andresoviedo.app.model3D.services;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,8 +46,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.andresoviedo.app.model3D.impl1.GLES20Object;
-import org.andresoviedo.app.model3D.models.BoundingBox;
+import org.andresoviedo.app.model3D.entities.BoundingBox;
+import org.andresoviedo.app.model3D.model.Object3D;
+import org.andresoviedo.app.model3D.model.ObjectV3;
 
 import android.content.res.AssetManager;
 import android.opengl.GLES20;
@@ -386,7 +387,7 @@ public class WavefrontLoader {
 		}
 	} // end of centerScale()
 
-	public GLES20Object createGLES20Object(AssetManager am, int drawType, int drawSize) throws IOException
+	public ObjectV3 createGLES20Object(AssetManager am, int drawType, int drawSize) throws IOException
 	/*
 	 * render the model to a display list, so it can be drawn quicker later
 	 */
@@ -434,11 +435,11 @@ public class WavefrontLoader {
 			textureIs = am.open(materials.materials.get(0).getTexture());
 		}
 
-		// TODO: removed because i im refactoring the GLES20Object.. return new GLES20Object(vertexBuffer, indexBuffer, normalsBuffer,
+		// TODO: removed because i im refactoring the ObjectV3.. return new ObjectV3(vertexBuffer, indexBuffer, normalsBuffer,
 		// textCoordsBuffer, GLES20.GL_TRIANGLES, 3,
 		// materials != null ? materials.materials.get(0).getTexture() : null);
 
-		return new GLES20Object(vertexBuffer, indexBuffer, normalsBuffer, textCoordsBuffer, drawType, drawSize, textureIs);
+		return new ObjectV3(vertexBuffer, indexBuffer, normalsBuffer, textCoordsBuffer, drawType, drawSize, textureIs);
 
 		// if (materials != null) {
 		// // materials.readMaterials();

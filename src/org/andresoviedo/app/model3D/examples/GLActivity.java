@@ -1,5 +1,5 @@
-package org.andresoviedo.app.model3D.gui;
-//package org.andresoviedo.app.model3D.impl1;
+package org.andresoviedo.app.model3D.examples;
+//package org.andresoviedo.app.model3D.model;
 //
 //import android.app.Activity;
 //import android.app.AlertDialog;
@@ -267,9 +267,9 @@ package org.andresoviedo.app.model3D.gui;
 ////      this.editor.commit();
 ////      this.glSurface.setInitialRotationAxes(false);
 ////      return;
-////      this.editor.putBoolean("Horizontal Rotation Axis Inversion", paramBoolean);
+////      this.editor.putBoolean("Horizontal Rotation GLES20Axis Inversion", paramBoolean);
 ////      continue;
-////      this.editor.putBoolean("Vertical Rotation Axis Inversion", paramBoolean);
+////      this.editor.putBoolean("Vertical Rotation GLES20Axis Inversion", paramBoolean);
 ////    }
 //  }
 //
@@ -294,22 +294,22 @@ package org.andresoviedo.app.model3D.gui;
 ////      this.editor.commit();
 ////      return;
 ////      this.glSurface.setAxisRotation(2131296341);
-////      this.editor.putInt("Horizontal Rotation Axis", paramInt);
+////      this.editor.putInt("Horizontal Rotation GLES20Axis", paramInt);
 ////      continue;
 ////      this.glSurface.setAxisRotation(2131296342);
-////      this.editor.putInt("Horizontal Rotation Axis", paramInt);
+////      this.editor.putInt("Horizontal Rotation GLES20Axis", paramInt);
 ////      continue;
 ////      this.glSurface.setAxisRotation(2131296343);
-////      this.editor.putInt("Horizontal Rotation Axis", paramInt);
+////      this.editor.putInt("Horizontal Rotation GLES20Axis", paramInt);
 ////      continue;
 ////      this.glSurface.setAxisRotation(2131296348);
-////      this.editor.putInt("Vertical Rotation Axis", paramInt);
+////      this.editor.putInt("Vertical Rotation GLES20Axis", paramInt);
 ////      continue;
 ////      this.glSurface.setAxisRotation(2131296349);
-////      this.editor.putInt("Vertical Rotation Axis", paramInt);
+////      this.editor.putInt("Vertical Rotation GLES20Axis", paramInt);
 ////      continue;
 ////      this.glSurface.setAxisRotation(2131296350);
-////      this.editor.putInt("Vertical Rotation Axis", paramInt);
+////      this.editor.putInt("Vertical Rotation GLES20Axis", paramInt);
 ////    }
 //  }
 //
@@ -341,10 +341,10 @@ package org.andresoviedo.app.model3D.gui;
 //      this.verticalGroup.check(2131296348);
 //      this.horizontalInversionToggleButton.setChecked(false);
 //      this.verticalInversionToggleButton.setChecked(false);
-//      this.editor.putInt("Horizontal Rotation Axis", this.horizontalGroup.getCheckedRadioButtonId());
-//      this.editor.putInt("Vertical Rotation Axis", this.verticalGroup.getCheckedRadioButtonId());
-//      this.editor.putBoolean("Horizontal Rotation Axis Inversion", this.horizontalInversionToggleButton.isChecked());
-//      this.editor.putBoolean("Vertical Rotation Axis Inversion", this.verticalInversionToggleButton.isChecked());
+//      this.editor.putInt("Horizontal Rotation GLES20Axis", this.horizontalGroup.getCheckedRadioButtonId());
+//      this.editor.putInt("Vertical Rotation GLES20Axis", this.verticalGroup.getCheckedRadioButtonId());
+//      this.editor.putBoolean("Horizontal Rotation GLES20Axis Inversion", this.horizontalInversionToggleButton.isChecked());
+//      this.editor.putBoolean("Vertical Rotation GLES20Axis Inversion", this.verticalInversionToggleButton.isChecked());
 //      this.editor.commit();
 //      this.glSurface.setInitialRotationAxes(true);
 //    }
@@ -419,12 +419,12 @@ package org.andresoviedo.app.model3D.gui;
 //    this.horizontalInversionToggleButton.setOnCheckedChangeListener(this);
 //    this.verticalInversionToggleButton.setOnCheckedChangeListener(this);
 //    this.rotationResetButton.setOnClickListener(this);
-//    int i = this.mPreferences.getInt("Horizontal Rotation Axis", 2131296342);
+//    int i = this.mPreferences.getInt("Horizontal Rotation GLES20Axis", 2131296342);
 //    int j;
 ////    if (i == 2131296319)
 ////    {
 ////      i = 2131296341;
-////      j = this.mPreferences.getInt("Vertical Rotation Axis", 2131296348);
+////      j = this.mPreferences.getInt("Vertical Rotation GLES20Axis", 2131296348);
 ////      if (j != 2131296326)
 ////        break label732;
 ////      j = 2131296348;
@@ -433,8 +433,8 @@ package org.andresoviedo.app.model3D.gui;
 ////    {
 ////      this.horizontalGroup.check(i);
 ////      this.verticalGroup.check(j);
-////      this.horizontalInversionToggleButton.setChecked(this.mPreferences.getBoolean("Horizontal Rotation Axis Inversion", false));
-////      this.verticalInversionToggleButton.setChecked(this.mPreferences.getBoolean("Vertical Rotation Axis Inversion", false));
+////      this.horizontalInversionToggleButton.setChecked(this.mPreferences.getBoolean("Horizontal Rotation GLES20Axis Inversion", false));
+////      this.verticalInversionToggleButton.setChecked(this.mPreferences.getBoolean("Vertical Rotation GLES20Axis Inversion", false));
 ////      AlertDialog.Builder localBuilder1 = new AlertDialog.Builder(this);
 ////      localBuilder1.setView(localView1);
 ////      localBuilder1.setTitle(2131034143);

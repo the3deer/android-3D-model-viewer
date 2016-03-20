@@ -1,5 +1,5 @@
-package org.andresoviedo.app.model3D;
-//package org.andresoviedo.app.model3D.impl1;
+package org.andresoviedo.app.model3D.examples;
+//package org.andresoviedo.app.model3D.model;
 //
 //import android.content.Context;
 //import android.content.SharedPreferences;
@@ -676,12 +676,12 @@ package org.andresoviedo.app.model3D;
 //
 //	public void setInitialRotationAxes(boolean paramBoolean) {
 //		int i = this.mPreferences
-//				.getInt("Horizontal Rotation Axis", 2131296342);
-//		int j = this.mPreferences.getInt("Vertical Rotation Axis", 2131296348);
+//				.getInt("Horizontal Rotation GLES20Axis", 2131296342);
+//		int j = this.mPreferences.getInt("Vertical Rotation GLES20Axis", 2131296348);
 //		boolean bool1 = this.mPreferences.getBoolean(
-//				"Horizontal Rotation Axis Inversion", false);
+//				"Horizontal Rotation GLES20Axis Inversion", false);
 //		boolean bool2 = this.mPreferences.getBoolean(
-//				"Vertical Rotation Axis Inversion", false);
+//				"Vertical Rotation GLES20Axis Inversion", false);
 //		if (paramBoolean) {
 //			this.xrot = 0.0F;
 //			this.yrot = 0.0F;

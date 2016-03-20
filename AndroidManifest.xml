@@ -52,7 +52,7 @@
         </activity>
         -->
         <activity
-            android:name="org.andresoviedo.app.model3D.ModelActivity"
+            android:name="org.andresoviedo.app.model3D.view.ModelActivity"
             android:label="@string/title_activity_model"
             android:parentActivityName="org.andresoviedo.app.model3D.MainActivity"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >

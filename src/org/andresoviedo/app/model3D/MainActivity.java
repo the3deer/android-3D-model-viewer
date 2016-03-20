@@ -1,16 +1,10 @@
 package org.andresoviedo.app.model3D;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
+import org.andresoviedo.app.model3D.view.ModelActivity;
+import org.andresoviedo.app.util.Utils;
 import org.andresoviedo.dddmodel.R;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -20,20 +14,48 @@ import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
+/**
+ * This is the main android activity. From here we launch the whole stuff.
+ * 
+ * Basically, this activity may serve to show a Splash screen and copy the assets (obj models) from the jar to external
+ * directory.
+ * 
+ * @author andresoviedo
+ *
+ */
 public class MainActivity extends Activity {
+
+	/**
+	 * User's directory where we are going store the assets (models, textures, etc). It will be copied to
+	 * /storage/OpenSource3DModelViewer
+	 */
+	private static final String ASSETS_TARGET_DIRECTORY = Environment.getExternalStorageDirectory() + File.separator
+			+ "OpenSource3DModelViewer";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		// Set main layout controls.
+		// Basically, this is a screen with the app name just in the middle of the scree
 		setContentView(R.layout.activity_main);
+
+		// TODO: Enable this when I have stabilized the app
+		// This is the animated logo
+		// From here we get the WebView component then we load the gif from the jar
 		// WebView myWebView = (WebView) findViewById(R.id.main_logo_webview);
 		// myWebView.loadUrl("file:///android_res/raw/ic_launcher.gif");
-//		init();
-		MainActivity.this.startActivity(new Intent(MainActivity.this
-				.getApplicationContext(), ModelActivity.class));
+		// init();
+
+		// Install example models & textures so the user can get started with app
+		installExamples();
+
+		// Start Model activity.
+		MainActivity.this.startActivity(new Intent(MainActivity.this.getApplicationContext(), ModelActivity.class));
 		MainActivity.this.finish();
 	}
 
+	@SuppressWarnings("unused")
 	private void init() {
 		try {
 			Thread tcopy = new Thread(new Runnable() {
@@ -42,12 +64,9 @@ public class MainActivity extends Activity {
 					try {
 						installExamples();
 					} catch (Exception ex) {
-						Toast.makeText(
-								MainActivity.this.getApplicationContext(),
-								"Unexpected error: " + ex.getMessage(),
-								Toast.LENGTH_SHORT).show();
-						Log.e("init", "Unexpected error: " + ex.getMessage(),
-								ex);
+						Toast.makeText(MainActivity.this.getApplicationContext(),
+								"Unexpected error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+						Log.e("init", "Unexpected error: " + ex.getMessage(), ex);
 					}
 				}
 			});
@@ -56,31 +75,25 @@ public class MainActivity extends Activity {
 				public void run() {
 					try {
 						Thread.sleep(000);
-						MainActivity.this.startActivity(new Intent(
-								MainActivity.this.getApplicationContext(),
-								ModelActivity.class));
+						MainActivity.this.startActivity(
+								new Intent(MainActivity.this.getApplicationContext(), ModelActivity.class));
 						MainActivity.this.finish();
 					} catch (InterruptedException ex) {
-						Toast.makeText(
-								MainActivity.this.getApplicationContext(),
-								"Unexpected error: " + ex.getMessage(),
-								Toast.LENGTH_SHORT).show();
-						Log.e("init", "Unexpected error: " + ex.getMessage(),
-								ex);
+						Toast.makeText(MainActivity.this.getApplicationContext(),
+								"Unexpected error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+						Log.e("init", "Unexpected error: " + ex.getMessage(), ex);
 					}
 				}
 			});
 			// tcopy.start();
 			// tsplash.start();
 		} catch (Exception ex) {
-			Toast.makeText(MainActivity.this.getApplicationContext(),
-					"Unexpected error: " + ex.getMessage(), Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(MainActivity.this.getApplicationContext(), "Unexpected error: " + ex.getMessage(),
+					Toast.LENGTH_SHORT).show();
 			Log.e("init", "Unexpected error: " + ex.getMessage(), ex);
 		}
 
-		MainActivity.this.startActivity(new Intent(MainActivity.this
-				.getApplicationContext(), ModelActivity.class));
+		MainActivity.this.startActivity(new Intent(MainActivity.this.getApplicationContext(), ModelActivity.class));
 		MainActivity.this.finish();
 	}
 
@@ -91,69 +104,20 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
+	/**
+	 * Copy all models from jar to the user's sd card.
+	 * 
+	 * TODO: Alert when the directory already exists and our app is not the directory owner (cause copy will fail)
+	 */
 	private void installExamples() {
-
-		if (!Environment.MEDIA_MOUNTED.equals(Environment
-				.getExternalStorageState()))
+		// TODO: Enable TODO: copy also in internal memory
+		if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+			Toast.makeText(MainActivity.this.getApplicationContext(), "Couldn't copy assets. Please install an sd-card",
+					Toast.LENGTH_SHORT).show();
 			return;
-
-		copyAssets("models");
-		copyAssets("textures");
-	}
-
-	private void copyAssets(String sourceDirectory) {
-		OutputStream fileOutputStream = null;
-		try {
-			String[] files = getAssets().list(sourceDirectory);
-			if (ArrayUtils.isEmpty(files)) {
-				throw new IllegalStateException(
-						"No se han encontrado los ficheros fuente de instalación");
-			}
-			File targetDir = new File(Environment.getExternalStorageDirectory()
-					// TODO: asegurarnos que el directorio no colisione con otra
-					// aplicación
-					+ File.separator + "3DModelViewer2013" + File.separator
-					+ sourceDirectory);
-			if (!targetDir.exists()) {
-				Log.d("copyAssets", "Creación del directorio '" + targetDir
-						+ "' retorno '" + targetDir.mkdirs() + "'");
-			}
-			for (String file : files) {
-				File sdFile = new File(targetDir, file);
-				if (sdFile.exists()) {
-					Log.d("copyAssets", "Fichero '" + sdFile
-							+ "' ya existe. Continuando...");
-					continue;
-				}
-				sdFile.createNewFile();
-				fileOutputStream = new BufferedOutputStream(
-						new FileOutputStream(sdFile));
-				Log.d("copyAssets", "Copiando fichero '" + file + "' a '"
-						+ sdFile + "'...");
-				InputStream assetStream = getAssets().open(
-						sourceDirectory + File.separator + file);
-				IOUtils.copy(new BufferedInputStream(assetStream),
-						fileOutputStream);
-				assetStream.close();
-				fileOutputStream.close();
-			}
-			Log.i("copyAssets", "Copiado directorio de assets '"
-					+ sourceDirectory + "'");
-		} catch (IOException ex) {
-			Log.e("copyAssets",
-					"Se ha producido una exepción copiando el directorio de assets '"
-							+ sourceDirectory + "'", ex);
-		} finally {
-			if (fileOutputStream != null) {
-				try {
-					fileOutputStream.close();
-				} catch (IOException ex) {
-					Log.e("copyAssets",
-							"Se ha producido una exepción copiando ficheros desde '"
-									+ sourceDirectory + "'", ex);
-				}
-			}
 		}
 
+		Utils.copyAssets(getApplicationContext(), "models", new File(ASSETS_TARGET_DIRECTORY, "models"));
+		Utils.copyAssets(getApplicationContext(), "textures", new File(ASSETS_TARGET_DIRECTORY, "textures"));
 	}
 }
