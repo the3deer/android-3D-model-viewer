@@ -8,6 +8,14 @@ It is basically an android application with a 3D renderer (OpenGL ES 2.0) that c
 The purpose of this application was to learn android and the OpenGL language
 
 
+News (21/03/2016)
+=================
+
+* I have just fixed the wavefront loader to load textures.
+* I implemented a menu 
+* Many more improvements coming soon...
+
+
 Features
 ========
   - OpenGL ES 2.0 API
@@ -38,7 +46,10 @@ Try it
 Screenshot
 ==========
 
-![Screenshot](https://github.com/andresoviedo/android-3DModel/blob/master/screenshot.png)
+![Screenshot1](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot1.png)
+![Screenshot2](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot2.png)
+![Screenshot3](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot3.png)
+![Screenshot4](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot4.png)
 
 
 Tests

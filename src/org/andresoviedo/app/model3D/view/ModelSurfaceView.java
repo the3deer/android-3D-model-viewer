@@ -2,7 +2,6 @@ package org.andresoviedo.app.model3D.view;
 
 import org.andresoviedo.app.model3D.controller.TouchController;
 
-import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
 
@@ -14,11 +13,15 @@ import android.view.MotionEvent;
  */
 public class ModelSurfaceView extends GLSurfaceView {
 
+	private ModelActivity parent;
 	private ModelRenderer mRenderer;
 	private TouchController touchHandler;
 
-	public ModelSurfaceView(Context context) {
-		super(context);
+	public ModelSurfaceView(ModelActivity parent) {
+		super(parent);
+
+		// parent component
+		this.parent = parent;
 
 		// Create an OpenGL ES 2.0 context.
 		setEGLContextClientVersion(2);
@@ -36,6 +39,10 @@ public class ModelSurfaceView extends GLSurfaceView {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		return touchHandler.onTouchEvent(event);
+	}
+
+	public ModelActivity getModelActivity() {
+		return parent;
 	}
 
 }

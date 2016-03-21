@@ -20,7 +20,7 @@ import android.util.Log;
  * @author andresoviedo
  *
  */
-public class ExampleSceneLoader {
+public class ExampleSceneLoader extends SceneLoader {
 
 	private final ModelSurfaceView main;
 
@@ -33,7 +33,6 @@ public class ExampleSceneLoader {
 	private Object3D square3;
 	private WavefrontLoader wavefrontLoader;
 	private Object3D wavefrontModel;
-	private Object3D bicho;
 
 	/**
 	 * Set of 3D objects this scene has
@@ -41,6 +40,7 @@ public class ExampleSceneLoader {
 	private List<Object3D> objects = new ArrayList<Object3D>();
 
 	public ExampleSceneLoader(ModelSurfaceView main) {
+		super(main, null);
 		this.main = main;
 	}
 
@@ -84,7 +84,6 @@ public class ExampleSceneLoader {
 				0.5f, -0.5f, 0.0f, // bottom right
 				0.5f, 0.5f, 0.0f }, new short[] { 0, 1, 2, 0, 2, 3 }, GLES20.GL_TRIANGLES);
 		square1.setColor(new float[] { 0.2f, 0.709803922f, 0.898039216f, 1.0f });
-		square1.setColor(new float[] { 0.2f, 0.709803922f, 0.898039216f, 1.0f });
 
 		square2 = new ObjectV2(new float[] { -0.5f, 0.5f, 0.0f, // top left
 				-0.5f, -0.5f, 0.0f, // bottom left
@@ -107,25 +106,6 @@ public class ExampleSceneLoader {
 
 		square3.setColor(new float[] { 0f, 0.76953125f, 0.22265625f, 0.5f });
 
-		try {
-			InputStream open = main.getContext().getAssets().open("models/penguin.bmp");
-			bicho = new ObjectV3(
-					new float[] {
-						//@formatter:off
-						-0.5f, 0.5f, 0.0f, // top left
-						-0.5f, -0.5f, 0.0f, // bottom left
-						0.5f, -0.5f, 0.0f, // bottom right
-						0.5f, 0.5f, 0.0f, /* up right */}, 
-						// @formatter:on
-					new short[] { 0, 1, 2, 0, 2, 3, }, new float[] { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
-					new float[] { 0f, 1f, 0f, 0f, 1f, 0f, 1f, 1f }, GLES20.GL_TRIANGLE_STRIP, -1, open);
-
-			open.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		bicho.setColor(new float[] { 0f, 0.0f, 1f, 0.5f });
-
 		wavefrontLoader = new WavefrontLoader("wavefront_loader");
 
 		square1.setPosition(new float[] { -1.5f, -1.5f, -1.5f });
@@ -137,23 +117,19 @@ public class ExampleSceneLoader {
 
 		try {
 			wavefrontLoader.loadModelFromClasspath(main.getContext().getAssets(), "models/teapot.obj");
-			wavefrontModel = wavefrontLoader.createGLES20Object(main.getContext().getAssets(), GLES20.GL_TRIANGLE_STRIP,
-					3);
+			wavefrontModel = wavefrontLoader.createGLES20Object(null, main.getContext().getAssets(),
+					GLES20.GL_TRIANGLES, 3);
 			wavefrontModel.setPosition(new float[] { 0f, 0.0f, 0.0f });
 			wavefrontModel.setColor(new float[] { 0.9f, 0.0f, 0.0f, 0.5f });
 		} catch (Exception ex) {
 			Log.e("renderer", ex.getMessage(), ex);
 		}
 
-		bicho.setPosition(new float[] { -0.5f, 0.0f, 0.0f });
-		bicho.setRotation(new float[] { 0f, 1.0f, 0.0f });
-
 		objects.add(axis);
 		objects.add(triangle1);
 		objects.add(triangle2);
 		objects.add(square1);
 		objects.add(square2);
-		objects.add(bicho);
 		objects.add(wavefrontModel);
 	}
 

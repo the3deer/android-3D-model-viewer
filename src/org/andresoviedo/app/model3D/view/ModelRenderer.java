@@ -1,11 +1,14 @@
 package org.andresoviedo.app.model3D.view;
 
+import java.io.File;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import org.andresoviedo.app.model3D.entities.Camera;
 import org.andresoviedo.app.model3D.model.Object3D;
 import org.andresoviedo.app.model3D.services.ExampleSceneLoader;
+import org.andresoviedo.app.model3D.services.SceneLoader;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -23,7 +26,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	private Camera camera;
 
 	// 3D world
-	private ExampleSceneLoader scene;
+	private SceneLoader scene;
 
 	// 3D matrices to project our 3D world
 	private final float[] modelProjectionMatrix = new float[16];
@@ -44,7 +47,12 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	 */
 	public ModelRenderer(ModelSurfaceView modelSurfaceView) {
 		this.main = modelSurfaceView;
-		this.scene = new ExampleSceneLoader(modelSurfaceView);
+		String paramUri = modelSurfaceView.getModelActivity().getParamUri();
+		if (paramUri != null) {
+			this.scene = new SceneLoader(modelSurfaceView, new File(paramUri));
+		} else {
+			this.scene = new ExampleSceneLoader(modelSurfaceView);
+		}
 	}
 
 	@Override
@@ -124,7 +132,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 		}
 	}
 
-	public ExampleSceneLoader getScene() {
+	public SceneLoader getScene() {
 		return scene;
 	}
 

@@ -2,6 +2,7 @@ package org.andresoviedo.app.model3D;
 
 import java.io.File;
 
+import org.andresoviedo.app.model3D.view.MenuActivity;
 import org.andresoviedo.app.model3D.view.ModelActivity;
 import org.andresoviedo.app.util.Utils;
 import org.andresoviedo.dddmodel.R;
@@ -30,7 +31,7 @@ public class MainActivity extends Activity {
 	 * /storage/OpenSource3DModelViewer
 	 */
 	private static final String ASSETS_TARGET_DIRECTORY = Environment.getExternalStorageDirectory() + File.separator
-			+ "OpenSource3DModelViewer";
+			+ "3DModelViewerOS";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,7 @@ public class MainActivity extends Activity {
 		installExamples();
 
 		// Start Model activity.
-		MainActivity.this.startActivity(new Intent(MainActivity.this.getApplicationContext(), ModelActivity.class));
+		MainActivity.this.startActivity(new Intent(MainActivity.this.getApplicationContext(), MenuActivity.class));
 		MainActivity.this.finish();
 	}
 
@@ -118,6 +119,6 @@ public class MainActivity extends Activity {
 		}
 
 		Utils.copyAssets(getApplicationContext(), "models", new File(ASSETS_TARGET_DIRECTORY, "models"));
-		Utils.copyAssets(getApplicationContext(), "textures", new File(ASSETS_TARGET_DIRECTORY, "textures"));
+		// Utils.copyAssets(getApplicationContext(), "textures", new File(ASSETS_TARGET_DIRECTORY, "textures"));
 	}
 }

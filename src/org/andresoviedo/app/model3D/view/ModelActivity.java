@@ -17,11 +17,22 @@ import android.view.MenuItem;
  */
 public class ModelActivity extends Activity {
 
+	/**
+	 * The file to load. Passed as input parameter
+	 */
+	private String paramUri;
+
 	private GLSurfaceView mGLView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		// Try to get input parameters
+		Bundle b = getIntent().getExtras();
+		if (b != null) {
+			this.paramUri = b.getString("uri");
+		}
 
 		// Create a GLSurfaceView instance and set it
 		// as the ContentView for this Activity.
@@ -71,4 +82,7 @@ public class ModelActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	public String getParamUri() {
+		return paramUri;
+	}
 }

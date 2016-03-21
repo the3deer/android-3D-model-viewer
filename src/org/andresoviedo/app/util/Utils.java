@@ -12,6 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.util.Log;
@@ -79,6 +80,23 @@ public final class Utils {
 		if (packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT)) {
 			Log.i("utils", "System supports advanced multitouch (multiple fingers). Cool!");
 		}
+	}
+
+	/**
+	 * Get the Intent for selecting content to be used in an Intent Chooser.
+	 * 
+	 * @return The intent for opening a file with Intent.createChooser()
+	 * 
+	 * @author paulburke
+	 */
+	public static Intent createGetContentIntent() {
+		// Implicitly allow the user to select a particular kind of data
+		final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+		// The MIME data type filter
+		intent.setType("*/*");
+		// Only return URIs that can be opened with ContentResolver
+		intent.addCategory(Intent.CATEGORY_OPENABLE);
+		return intent;
 	}
 
 }

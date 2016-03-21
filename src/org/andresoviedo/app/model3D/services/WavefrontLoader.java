@@ -30,6 +30,8 @@
 package org.andresoviedo.app.model3D.services;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,7 +49,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.andresoviedo.app.model3D.entities.BoundingBox;
-import org.andresoviedo.app.model3D.model.Object3D;
 import org.andresoviedo.app.model3D.model.ObjectV3;
 
 import android.content.res.AssetManager;
@@ -57,15 +58,16 @@ import android.util.Log;
 public class WavefrontLoader {
 	public String MODEL_DIR = "models/";
 	private static final float DUMMY_Z_TC = -5.0f;
-	static final boolean INDEXES_START_AT_1 = true; 
+	static final boolean INDEXES_START_AT_1 = true;
+	static final boolean DRAW_ARRAYS = true;
+	private boolean flipTexCoords = false;
+	private boolean hasTCs3D = false;
 
 	// collection of vertices, normals and texture coords for the model
 	private ArrayList<Tuple3> verts;
 	private ArrayList<Tuple3> normals;
 	private ArrayList<Tuple3> texCoords;
-	private boolean hasTCs3D = true;
 	// whether the model uses 3D or 2D tex coords
-	private boolean flipTexCoords = false;
 	// whether tex coords should be flipped around the y-axis
 
 	private Faces faces; // model faces
@@ -137,7 +139,7 @@ public class WavefrontLoader {
 	private static ByteBuffer createNativeByteBuffer(int length) {
 		// initialize vertex byte buffer for shape coordinates
 		ByteBuffer bb = ByteBuffer.allocateDirect(
-		// (number of coordinate values * 2 bytes per short)
+				// (number of coordinate values * 2 bytes per short)
 				length);
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());
@@ -179,23 +181,43 @@ public class WavefrontLoader {
 	// }
 	// } // end of loadModel()
 
+	public void loadModelFromFileSystem(AssetManager am, File file) {
+		// String fnm = MODEL_DIR + modelNm + ".obj";
+		try {
+			System.out.println("Loading model from path " + file.getAbsolutePath() + " ...");
+			FileInputStream is = new FileInputStream(file);
+			loadModelImpl(am, is, file.getParentFile());
+			is.close();
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			System.exit(1);
+		}
+	}
+
 	public void loadModelFromClasspath(AssetManager am, String path) {
 
 		// String fnm = MODEL_DIR + modelNm + ".obj";
 		try {
 			System.out.println("Loading model from classpath " + modelNm + " ...");
-			BufferedReader br = new BufferedReader(new InputStreamReader(am.open(path, AssetManager.ACCESS_STREAMING), "ISO-8859-1"));
-			readModel(br, am);
+			InputStream is = am.open(path, AssetManager.ACCESS_STREAMING);
+			loadModelImpl(am, is, null);
+			is.close();
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 			System.exit(1);
 		}
+	} // end of loadModel()
+
+	private void loadModelImpl(AssetManager am, InputStream is, File currentDir) {
+		// String fnm = MODEL_DIR + modelNm + ".obj";
+		BufferedReader br = new BufferedReader(new InputStreamReader(is));
+		readModel(br, am, currentDir);
 		centerScale();
 		if (true)
 			reportOnModel();
-	} // end of loadModel()
+	}
 
-	private void readModel(BufferedReader br, AssetManager am)
+	private void readModel(BufferedReader br, AssetManager am, File currentDir)
 	// parse the OBJ file line-by-line
 	{
 		boolean isLoaded = true; // hope things will go okay
@@ -227,8 +249,9 @@ public class WavefrontLoader {
 						numFaces++;
 					} else if (line.startsWith("mtllib ")) // load material
 					{
-						// materials = new Materials(new File(modelFile.getParent(), line.substring(7)).getAbsolutePath());
-						materials = new Materials(am, line.substring(7));
+						// materials = new Materials(new File(modelFile.getParent(),
+						// line.substring(7)).getAbsolutePath());
+						materials = new Materials(am, line.substring(7), currentDir);
 					} else if (line.startsWith("usemtl ")) // use material
 						faceMats.addUse(numFaces, line.substring(7));
 					else if (line.charAt(0) == 'g') { // group name
@@ -294,8 +317,8 @@ public class WavefrontLoader {
 
 	private boolean addTexCoord(String line, boolean isFirstTC)
 	/*
-	 * Add the texture coordinate from the line "vt u v w" to the texCoords ArrayList. There may only be two tex coords on the line, which
-	 * is determined by looking at the first tex coord line.
+	 * Add the texture coordinate from the line "vt u v w" to the texCoords ArrayList. There may only be two tex coords
+	 * on the line, which is determined by looking at the first tex coord line.
 	 */
 	{
 		if (isFirstTC) {
@@ -323,8 +346,8 @@ public class WavefrontLoader {
 
 	private Tuple3 readTCTuple(String line)
 	/*
-	 * The line starts with a "vt" OBJ word and two or three floats (x, y, z) for the tex coords separated by spaces. If there are only two
-	 * coords, then the z-value is assigned a dummy value, DUMMY_Z_TC.
+	 * The line starts with a "vt" OBJ word and two or three floats (x, y, z) for the tex coords separated by spaces. If
+	 * there are only two coords, then the z-value is assigned a dummy value, DUMMY_Z_TC.
 	 */
 	{
 		StringTokenizer tokens = new StringTokenizer(line, " ");
@@ -337,7 +360,9 @@ public class WavefrontLoader {
 			float z = DUMMY_Z_TC;
 			if (hasTCs3D)
 				z = Float.parseFloat(tokens.nextToken());
-
+			if (flipTexCoords) {
+				y = 1 - y;
+			}
 			return new Tuple3(x, y, z);
 		} catch (NumberFormatException e) {
 			System.out.println(e.getMessage());
@@ -359,7 +384,8 @@ public class WavefrontLoader {
 
 	private void centerScale()
 	/*
-	 * Position the model so it's center is at the origin, and scale it so its longest dimension is no bigger than maxSize.
+	 * Position the model so it's center is at the origin, and scale it so its longest dimension is no bigger than
+	 * maxSize.
 	 */
 	{
 		// get the model's center point
@@ -387,7 +413,7 @@ public class WavefrontLoader {
 		}
 	} // end of centerScale()
 
-	public ObjectV3 createGLES20Object(AssetManager am, int drawType, int drawSize) throws IOException
+	public ObjectV3 createGLES20Object(File currentDir, AssetManager am, int drawType, int drawSize) throws IOException
 	/*
 	 * render the model to a display list, so it can be drawn quicker later
 	 */
@@ -412,7 +438,21 @@ public class WavefrontLoader {
 		normalsBuffer.position(0);
 		for (Tuple3 texCor : texCoords) {
 			textCoordsBuffer.put(texCor.getX());
-			textCoordsBuffer.put(1 - texCor.getY());
+			textCoordsBuffer.put(texCor.getY());
+		}
+
+		FloatBuffer textureArraysBuffer = createNativeByteBuffer(3 * 2 * faces.facesTexIdxs.size() * 4).asFloatBuffer();
+		try {
+			for (int[] text : faces.facesTexIdxs) {
+				textureArraysBuffer.put(textCoordsBuffer.get(text[0] * 2));
+				textureArraysBuffer.put(textCoordsBuffer.get(text[0] * 2 + 1));
+				textureArraysBuffer.put(textCoordsBuffer.get(text[1] * 2));
+				textureArraysBuffer.put(textCoordsBuffer.get(text[1] * 2 + 1));
+				textureArraysBuffer.put(textCoordsBuffer.get(text[2] * 2));
+				textureArraysBuffer.put(textCoordsBuffer.get(text[2] * 2 + 1));
+			}
+		} catch (Exception ex) {
+			Log.e("WavefrontLoader", "Failure to load texture coordinates");
 		}
 
 		ShortBuffer indexBuffer = createNativeByteBuffer(3 * faces.facesVertIdxs.size() * 2).asShortBuffer();
@@ -423,6 +463,23 @@ public class WavefrontLoader {
 			indexBuffer.put((short) face[2]);
 		}
 
+		FloatBuffer vertexArrayBuffer = null;
+		if (DRAW_ARRAYS) {
+			vertexArrayBuffer = createNativeByteBuffer(3 * 3 * faces.facesVertIdxs.size() * 4).asFloatBuffer();
+			vertexArrayBuffer.position(0);
+			for (int[] face : faces.facesVertIdxs) {
+				vertexArrayBuffer.put(vertexBuffer.get(face[0] * 3));
+				vertexArrayBuffer.put(vertexBuffer.get(face[0] * 3 + 1));
+				vertexArrayBuffer.put(vertexBuffer.get(face[0] * 3 + 2));
+				vertexArrayBuffer.put(vertexBuffer.get(face[1] * 3));
+				vertexArrayBuffer.put(vertexBuffer.get(face[1] * 3 + 1));
+				vertexArrayBuffer.put(vertexBuffer.get(face[1] * 3 + 2));
+				vertexArrayBuffer.put(vertexBuffer.get(face[2] * 3));
+				vertexArrayBuffer.put(vertexBuffer.get(face[2] * 3 + 1));
+				vertexArrayBuffer.put(vertexBuffer.get(face[2] * 3 + 2));
+			}
+		}
+
 		if (materials != null) {
 			materials.readMaterials();
 		}
@@ -431,15 +488,23 @@ public class WavefrontLoader {
 		InputStream textureIs = null;
 		if (materials != null) {
 			// FileInputStream is = new FileInputStream(fileName);
-			Log.v("materials", "Loading texture from '" + materials.materials.get(0).getTexture() + "'...");
-			textureIs = am.open(materials.materials.get(0).getTexture());
+			if (currentDir != null) {
+				File file = new File(currentDir, materials.materials.get(0).getTexture());
+				Log.v("materials", "Loading texture '" + file + "'...");
+				textureIs = new FileInputStream(file);
+			} else {
+				Log.v("materials", "Loading texture '" + materials.materials.get(0).getTexture() + "'...");
+				textureIs = am.open(materials.materials.get(0).getTexture());
+			}
 		}
 
-		// TODO: removed because i im refactoring the ObjectV3.. return new ObjectV3(vertexBuffer, indexBuffer, normalsBuffer,
+		// TODO: removed because i im refactoring the ObjectV3.. return new ObjectV3(vertexBuffer, indexBuffer,
+		// normalsBuffer,
 		// textCoordsBuffer, GLES20.GL_TRIANGLES, 3,
 		// materials != null ? materials.materials.get(0).getTexture() : null);
 
-		return new ObjectV3(vertexBuffer, indexBuffer, normalsBuffer, textCoordsBuffer, drawType, drawSize, textureIs);
+		return new ObjectV3(DRAW_ARRAYS ? vertexArrayBuffer : vertexBuffer, DRAW_ARRAYS ? null : indexBuffer,
+				normalsBuffer, textureArraysBuffer, drawType, drawSize, textureIs);
 
 		// if (materials != null) {
 		// // materials.readMaterials();
@@ -515,8 +580,8 @@ public class WavefrontLoader {
 
 	public String currentSizeToString() {
 		if (boundingBox != null) {
-			return "x[" + boundingBox.sizes[0] * scale[0] + "],y[" + boundingBox.sizes[1] * scale[0] + "],z[" + boundingBox.sizes[2]
-					* scale[0] + "]";
+			return "x[" + boundingBox.sizes[0] * scale[0] + "],y[" + boundingBox.sizes[1] * scale[0] + "],z["
+					+ boundingBox.sizes[2] * scale[0] + "]";
 		}
 		return null;
 	}
@@ -677,10 +742,12 @@ class Materials {
 	// private File file;
 	private String mfnm;
 
+	private File currentDir;
 	private AssetManager am;
 
-	public Materials(AssetManager am, String mtlFnm) {
+	public Materials(AssetManager am, String mtlFnm, File currentDir) {
 		this.am = am;
+		this.currentDir = currentDir;
 		materials = new ArrayList<Material>();
 
 		this.mfnm = mtlFnm;
@@ -689,8 +756,17 @@ class Materials {
 
 	public void readMaterials() {
 		try {
-			System.out.println("Loading material from " + mfnm);
-			BufferedReader br = new BufferedReader(new InputStreamReader(am.open(mfnm)));
+			InputStream is;
+			if (currentDir != null) {
+				File file = new File(currentDir, mfnm);
+				System.out.println("Loading material from " + file);
+				is = new FileInputStream(file);
+			} else {
+				System.out.println("Loading material from " + mfnm);
+				is = am.open(mfnm);
+			}
+			InputStreamReader isr = new InputStreamReader(is);
+			BufferedReader br = new BufferedReader(isr);
 			readMaterials(br);
 			br.close();
 		} catch (IOException e) {
@@ -788,8 +864,8 @@ class Materials {
 
 	private boolean renderWithMaterial(String faceMat, GLES20 gl)
 	/*
-	 * Render using the texture or colours associated with the material, faceMat. But only change things if faceMat is different from the
-	 * current rendering material, whose name is stored in renderMatName.
+	 * Render using the texture or colours associated with the material, faceMat. But only change things if faceMat is
+	 * different from the current rendering material, whose name is stored in renderMatName.
 	 * 
 	 * Return true/false if the texture coords need flipping, and store the current value in a global
 	 */
@@ -991,7 +1067,7 @@ class Faces {
 	 * indicies for vertices, tex coords, and normals used by each face
 	 */
 	ArrayList<int[]> facesVertIdxs;
-	private ArrayList<int[]> facesTexIdxs;
+	ArrayList<int[]> facesTexIdxs;
 	private ArrayList<int[]> facesNormIdxs;
 
 	// references to the model's vertices, normals, and tex coords
@@ -1044,12 +1120,12 @@ class Faces {
 				vt[i] = (numSeps > 1) ? Integer.parseInt(st2.nextToken()) : 0;
 				vn[i] = (numSeps > 2) ? Integer.parseInt(st2.nextToken()) : 0;
 				// add 0's if the vt or vn index values are missing;
-				// 0 is a good choice since real indicies start at 1
-				
-				if (WavefrontLoader.INDEXES_START_AT_1){
-					v[i] = v[i]-1;
-					vt[i] = vt[i]-1;
-					vn[i] = vn[i]-1;
+				// 0 is a good choice since real indices start at 1
+
+				if (WavefrontLoader.INDEXES_START_AT_1) {
+					v[i] = v[i] - 1;
+					vt[i] = vt[i] - 1;
+					vn[i] = vn[i] - 1;
 				}
 			}
 			// store the indicies for this face
@@ -1084,10 +1160,11 @@ class Faces {
 
 	public void renderFace(int i, boolean flipTexCoords, GLES20 gl)
 	/*
-	 * Render the ith face by getting the vertex, normal, and tex coord indicies for face i. Use those indicies to access the actual vertex,
-	 * normal, and tex coord data, and render the face.
+	 * Render the ith face by getting the vertex, normal, and tex coord indicies for face i. Use those indicies to
+	 * access the actual vertex, normal, and tex coord data, and render the face.
 	 * 
-	 * Each face uses 3 array of indicies; one for the vertex indicies, one for the normal indicies, and one for the tex coord indicies.
+	 * Each face uses 3 array of indicies; one for the vertex indicies, one for the normal indicies, and one for the tex
+	 * coord indicies.
 	 * 
 	 * If the model doesn't use normals or tex coords then the indicies arrays will contain 0's.
 	 * 
@@ -1105,9 +1182,11 @@ class Faces {
 		// polytype = GLES20.GL_TRIANGLES;
 		// else if (vertIdxs.length == 4)
 		// // polytype = GLES20.GL_QUADS;
-		// throw new UnsupportedOperationException("Not supporting drawing GL_QUADS. Refactor your object to use 3 vertex faces");
+		// throw new UnsupportedOperationException("Not supporting drawing GL_QUADS. Refactor your object to use 3
+		// vertex faces");
 		// else
-		// throw new UnsupportedOperationException("Not supporting drawing GL_QUADS. Refactor your object to use 3 vertex faces");
+		// throw new UnsupportedOperationException("Not supporting drawing GL_QUADS. Refactor your object to use 3
+		// vertex faces");
 		// // polytype = GLES20.GL_TRIANGLES;
 		//
 		// // gl.glBegin(polytype);
@@ -1145,7 +1224,8 @@ class Faces {
 		// // // 3D tex coords
 		// // gl.glTexCoord3f(texCoord.getX(), yTC, texCoord.getZ());
 		// // /*
-		// // * System.out.print("Tex index: " + (texIdxs[f]) + ": "); System.out.println("Tex coord: " + df.format(texCoord.getX()) +
+		// // * System.out.print("Tex index: " + (texIdxs[f]) + ": "); System.out.println("Tex coord: " +
+		// df.format(texCoord.getX()) +
 		// // * ", " + df.format( yTC ) + ", " + df.format( texCoord.getZ() ));
 		// // */
 		// // }
@@ -1154,7 +1234,8 @@ class Faces {
 		// // gl.glVertex3f(vert.getX(), vert.getY(), vert.getZ());
 		//
 		// /*
-		// * System.out.print("Vert index: " + (vertIdxs[f]) + ": "); System.out.println("Coord: " + df.format(vert.getX()) + ", " +
+		// * System.out.print("Vert index: " + (vertIdxs[f]) + ": "); System.out.println("Coord: " +
+		// df.format(vert.getX()) + ", " +
 		// * df.format( vert.getY() ) + ", " + df.format( vert.getZ() ));
 		// */
 		// // }
@@ -1224,4 +1305,3 @@ class FaceMaterials {
 	} // end of showUsedMaterials()
 
 } // end of FaceMaterials class
-

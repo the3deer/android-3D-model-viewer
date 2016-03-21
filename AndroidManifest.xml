@@ -29,28 +29,31 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--
         <activity
-            android:name="org.andresoviedo.dddmodel.MenuActivity"
+            android:name="org.andresoviedo.app.model3D.view.MenuActivity"
             android:label="@string/title_activity_menu"
-            android:parentActivityName="android.app.ListActivity" >
+            android:parentActivityName="android.app.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="android.app.ListActivity" />
-        </activity>
-        -->
+        </activity>
+        <activity
+            android:name="org.andresoviedo.app.util.view.TextActivity"
+            android:label="@string/title_activity_text"
+            android:parentActivityName="android.app.MainActivity" >
+        </activity>
         <!--
-        <activity android:name="com.ipaulpro.afilechooser.FileChooserActivity" >
+             <activity android:name="com.ipaulpro.afilechooser.FileChooserActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.GET_CONTENT" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.OPENABLE" />
-
-                <data android:mimeType="*/*" />
+                <category android:name="android.intent.category.OPENABLE" >
+                    <data android:mimeType="*/*" />
+                </category>
             </intent-filter>
-        </activity>
+        </activity>
         -->
+
         <activity
             android:name="org.andresoviedo.app.model3D.view.ModelActivity"
             android:label="@string/title_activity_model"

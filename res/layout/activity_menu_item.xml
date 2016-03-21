@@ -3,9 +3,12 @@
     android:id="@+id/activity_menu_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#00ff00"
+    android:background="#000000"
     android:gravity="center_horizontal"
+    android:paddingBottom="4dp"
+    android:paddingTop="4dp"
     android:text="list item"
-    android:textSize="26sp" >
+    android:textColor="#ffffff"
+    android:textSize="64sp" >
 
 </TextView>

@@ -23,29 +23,6 @@ import android.util.Log;
  */
 public class ObjectV3 implements Object3D {
 
-	//@formatter:off
-	protected static final String vertexShaderCode =
-	// This matrix member variable provides a hook to manipulate
-	// the coordinates of the objects that use this vertex shader
-			"uniform mat4 u_MVPMatrix;" + 
-			"attribute vec4 a_Position;" + 
-			"void main() {" +
-				// The matrix must be included as a modifier of gl_Position.
-				// Note that the uMVPMatrix factor *must be first* in order
-				// for the matrix multiplication product to be correct.
-				"  gl_Position = u_MVPMatrix * a_Position;" +
-			"}";
-	// @formatter:on
-
-	// @formatter:off
-	protected static final String fragmentShaderCode = 
-			"precision mediump float;"+ 
-			"uniform vec4 a_Color;" + 
-			"void main() {"	+ 
-			"  gl_FragColor = a_Color;" +
-			"}";
-	// @formatter:on
-
 	// @formatter:off
 	protected static final String fragmentShaderCode_lighted = 
 			"precision mediump float;"+
@@ -242,10 +219,12 @@ public class ObjectV3 implements Object3D {
 	public ObjectV3(float[] objCoords, short[] drawOrder, float[] vNormals, float[] textCoord, int drawType,
 			int drawSize, InputStream open) {
 		this(createNativeByteBuffer(4 * objCoords.length).asFloatBuffer().put(objCoords).asReadOnlyBuffer(),
-				createNativeByteBuffer(2 * drawOrder.length).asShortBuffer().put(drawOrder).asReadOnlyBuffer(),
+				drawOrder == null ? null
+						: createNativeByteBuffer(2 * drawOrder.length).asShortBuffer().put(drawOrder)
+								.asReadOnlyBuffer(),
 				createNativeByteBuffer(4 * vNormals.length).asFloatBuffer().put(vNormals).asReadOnlyBuffer(),
 				textCoord == null ? null
-						: createNativeByteBuffer(4 * objCoords.length).asFloatBuffer().put(textCoord)
+						: createNativeByteBuffer(4 * textCoord.length).asFloatBuffer().put(textCoord)
 								.asReadOnlyBuffer(),
 				drawType, drawSize, open);
 	}
@@ -262,15 +241,20 @@ public class ObjectV3 implements Object3D {
 		// { 0, 1, 2, 0, 2, 3, 3, 4, 5, 5, 4, 0 }
 
 		this.vertexBuffer = objCoords;
-		vertexBuffer.position(0);
+		this.vertexBuffer.position(0);
 
 		this.drawListBuffer = drawOrder;
-		drawListBuffer.position(0);
+		if (drawListBuffer != null) {
+			this.drawListBuffer.position(0);
+		}
 
 		this.normalsBuffer = normalsBuffer;
-		normalsBuffer.position(0);
+		this.normalsBuffer.position(0);
 
 		this.textureCoordBuffer = textureCoords;
+		if (this.textureCoordBuffer != null) {
+			this.textureCoordBuffer.position(0);
+		}
 
 		this.drawMode = drawMode;
 		this.drawSize = drawSize;
@@ -306,6 +290,8 @@ public class ObjectV3 implements Object3D {
 		}
 
 		GLES20.glLinkProgram(mProgram); // create OpenGL program executables
+
+		// debug();
 	}
 
 	public static int loadTexture(final InputStream is) {
@@ -320,7 +306,10 @@ public class ObjectV3 implements Object3D {
 			Log.i("texture", "Handler: " + textureHandle[0]);
 
 			final BitmapFactory.Options options = new BitmapFactory.Options();
-			options.inScaled = false; // No pre-scaling
+			// By default, Android applies pre-scaling to bitmaps depending on the resolution of your device and which
+			// resource folder you placed the image in. We don’t want Android to scale our bitmap at all, so to be sure,
+			// we set inScaled to false.
+			options.inScaled = false;
 
 			// Read in the resource
 			final Bitmap bitmap = BitmapFactory.decodeStream(is, null, options);
@@ -332,16 +321,21 @@ public class ObjectV3 implements Object3D {
 			GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
 			GLUtil.checkGlError("glBindTexture");
 
-			// Set filtering
-			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-
 			// Load the bitmap into the bound texture.
 			GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
 			GLUtil.checkGlError("texImage2D");
 
 			// Recycle the bitmap, since its data has been loaded into OpenGL.
 			bitmap.recycle();
+
+			// Set filtering
+			// This tells OpenGL what type of filtering to apply when drawing the texture smaller than the original size
+			// in pixels.
+			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+			// This tells OpenGL what type of filtering to apply when magnifying the texture beyond its original size in
+			// pixels.
+			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+
 		}
 
 		if (textureHandle[0] == 0) {
@@ -429,63 +423,6 @@ public class ObjectV3 implements Object3D {
 	 * 
 	 * @param mvpMatrix
 	 *            - The Model View Project matrix in which to draw this shape.
-	 */
-	private void draw_ok(float[] mvpMatrix, float[] mvMatrix) {
-		// Add program to OpenGL environment
-		GLES20.glUseProgram(mProgram);
-
-		// get handle to vertex shader's vPosition member
-		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "a_Position");
-
-		// Enable a handle to the triangle vertices
-		GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-		// Prepare the triangle coordinate data
-		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
-				vertexBuffer);
-
-		// get handle to fragment shader's vColor member
-		mColorHandle = GLES20.glGetUniformLocation(mProgram, "a_Color");
-
-		// Set color for drawing the triangle
-		GLES20.glUniform4fv(mColorHandle, 1, color, 0);
-
-		// get handle to shape's transformation matrix
-		mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
-		GLUtil.checkGlError("glGetUniformLocation");
-
-		// Apply the projection and view transformation
-		GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
-		GLUtil.checkGlError("glUniformMatrix4fv");
-
-		//
-		if (drawListBuffer.limit() % drawSize != 0) {
-			throw new RuntimeException(drawListBuffer.limit() + "<>" + drawSize);
-		}
-
-		//
-		if (drawSize != -1 && drawListBuffer.capacity() % drawSize != 0) {
-			throw new RuntimeException(drawListBuffer.capacity() + "<>" + drawSize);
-		}
-
-		// Draw the square
-		if (drawSize == -1) {
-			GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-		} else {
-			for (int i = 0; i < drawListBuffer.capacity(); i += drawSize) {
-				drawListBuffer.position(i);
-				GLES20.glDrawElements(drawMode, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-			}
-		}
-		// Disable vertex array
-		GLES20.glDisableVertexAttribArray(mPositionHandle);
-	}
-
-	/**
-	 * Encapsulates the OpenGL ES instructions for drawing this shape.
-	 * 
-	 * @param mvpMatrix
-	 *            - The Model View Project matrix in which to draw this shape.
 	 * @param mvMatrix
 	 *            TODO
 	 * @param drawMode
@@ -523,7 +460,6 @@ public class ObjectV3 implements Object3D {
 			GLUtil.checkGlError("glEnableVertexAttribArray");
 
 			// Prepare the triangle coordinate data
-			textureCoordBuffer.position(0);
 			GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, textureCoordBuffer);
 			GLUtil.checkGlError("glVertexAttribPointer");
 		}
@@ -574,21 +510,25 @@ public class ObjectV3 implements Object3D {
 		GLUtil.checkGlError("glUniformMatrix4fv");
 
 		//
-		int capacity = drawListBuffer.capacity();
-		if (drawSize != -1 && capacity % drawSize != 0) {
-			throw new RuntimeException(capacity + "<>" + drawSize);
-		}
-
-		// Draw the model
-		if (drawSize == -1) {
-			// GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-			// GLES20.glDrawArrays(drawMode, 0, vertexBuffer.limit());
-			GLES20.glDrawElements(drawType, drawSize != -1 ? drawSize : capacity, GLES20.GL_UNSIGNED_SHORT,
-					drawListBuffer);
+		if (drawListBuffer == null) {
+			GLES20.glDrawArrays(drawMode, 0, vertexBuffer.capacity() / COORDS_PER_VERTEX);
 		} else {
-			for (int i = 0; i < capacity; i += drawSize) {
-				drawListBuffer.position(i);
-				GLES20.glDrawElements(drawType, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+			int capacity = drawListBuffer.capacity();
+			if (drawSize != -1 && capacity % drawSize != 0) {
+				throw new RuntimeException(capacity + "<>" + drawSize);
+			}
+
+			// Draw the model
+			if (drawSize == -1) {
+				// GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+				// GLES20.glDrawArrays(drawMode, 0, vertexBuffer.limit());
+				GLES20.glDrawElements(drawType, drawSize != -1 ? drawSize : capacity, GLES20.GL_UNSIGNED_SHORT,
+						drawListBuffer);
+			} else {
+				for (int i = 0; i < capacity; i += drawSize) {
+					drawListBuffer.position(i);
+					GLES20.glDrawElements(drawType, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+				}
 			}
 		}
 
@@ -604,6 +544,63 @@ public class ObjectV3 implements Object3D {
 			// GLES20.glDisable(GLES20.GL_TEXTURE_2D);
 
 		}
+	}
+
+	/**
+	 * Encapsulates the OpenGL ES instructions for drawing this shape.
+	 * 
+	 * @param mvpMatrix
+	 *            - The Model View Project matrix in which to draw this shape.
+	 */
+	private void draw_ok(float[] mvpMatrix, float[] mvMatrix) {
+		// Add program to OpenGL environment
+		GLES20.glUseProgram(mProgram);
+
+		// get handle to vertex shader's vPosition member
+		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "a_Position");
+
+		// Enable a handle to the triangle vertices
+		GLES20.glEnableVertexAttribArray(mPositionHandle);
+
+		// Prepare the triangle coordinate data
+		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
+				vertexBuffer);
+
+		// get handle to fragment shader's vColor member
+		mColorHandle = GLES20.glGetUniformLocation(mProgram, "a_Color");
+
+		// Set color for drawing the triangle
+		GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+
+		// get handle to shape's transformation matrix
+		mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
+		GLUtil.checkGlError("glGetUniformLocation");
+
+		// Apply the projection and view transformation
+		GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
+		GLUtil.checkGlError("glUniformMatrix4fv");
+
+		//
+		if (drawListBuffer.limit() % drawSize != 0) {
+			throw new RuntimeException(drawListBuffer.limit() + "<>" + drawSize);
+		}
+
+		//
+		if (drawSize != -1 && drawListBuffer.capacity() % drawSize != 0) {
+			throw new RuntimeException(drawListBuffer.capacity() + "<>" + drawSize);
+		}
+
+		// Draw the square
+		if (drawSize == -1) {
+			GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+		} else {
+			for (int i = 0; i < drawListBuffer.capacity(); i += drawSize) {
+				drawListBuffer.position(i);
+				GLES20.glDrawElements(drawMode, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+			}
+		}
+		// Disable vertex array
+		GLES20.glDisableVertexAttribArray(mPositionHandle);
 	}
 
 	/**
@@ -680,32 +677,6 @@ public class ObjectV3 implements Object3D {
 		// Disable vertex array
 		GLES20.glDisableVertexAttribArray(normalHandle);
 
-		// if (textureId != null){
-		// if (materials != null) {
-		// materials.readMaterials();
-		// }
-		// modelDispList = gl.glGenLists(1);
-		// gl.glNewList(modelDispList, GL.GL_COMPILE);
-		//
-		// // gl.glPushMatrix();
-		// // render the model face-by-face
-		// String faceMat;
-		// for (int i = 0; i < faces.getNumFaces(); i++) {
-		// faceMat = faceMats.findMaterial(i); // get material used by face i
-		// if (faceMat != null)
-		// flipTexCoords = materials.renderWithMaterial(faceMat, gl); // render
-		// // using
-		// // that
-		// // material
-		// faces.renderFace(i, flipTexCoords, gl); // draw face i
-		// }
-		// if (materials != null)
-		// materials.switchOffTex(gl);
-		// // gl.glPopMatrix();
-		//
-		// gl.glEndList();
-		// return modelDispList;
-		// }
 	}
 
 	/*
@@ -788,80 +759,18 @@ public class ObjectV3 implements Object3D {
 		this.rotation = rotation;
 	}
 
-	// public static ObjectV3 createSphere(float radius, int stacks, int slices) {
-	// int vertexCount = (stacks + 1) * (slices + 1);
-	// FloatBuffer vertexBuffer = ByteBuffer.allocateDirect(vertexCount *
-	// GLHelpers.BYTES_PER_VERTEX).order(ByteOrder.nativeOrder())
-	// .asFloatBuffer();
-	// FloatBuffer normalBuffer = ByteBuffer.allocateDirect(vertexCount *
-	// GLHelpers.BYTES_PER_NORMAL).order(ByteOrder.nativeOrder())
-	// .asFloatBuffer();
-	// FloatBuffer textureCoordBuffer = ByteBuffer.allocateDirect(vertexCount * GLHelpers.BYTES_PER_TEXTURE_COORD)
-	// .order(ByteOrder.nativeOrder()).asFloatBuffer();
-	// ShortBuffer indexBuffer = ByteBuffer.allocateDirect(vertexCount * GLHelpers.BYTES_PER_TRIANGLE_INDEX)
-	// .order(ByteOrder.nativeOrder()).asShortBuffer();
-	//
-	// for (int stackNumber = 0; stackNumber <= stacks; ++stackNumber) {
-	// for (int sliceNumber = 0; sliceNumber <= slices; ++sliceNumber) {
-	// float theta = (float) (stackNumber * Math.PI / stacks);
-	// float phi = (float) (sliceNumber * 2 * Math.PI / slices);
-	// float sinTheta = FloatMath.sin(theta);
-	// float sinPhi = FloatMath.sin(phi);
-	// float cosTheta = FloatMath.cos(theta);
-	// float cosPhi = FloatMath.cos(phi);
-	//
-	// float nx = cosPhi * sinTheta;
-	// float ny = cosTheta;
-	// float nz = sinPhi * sinTheta;
-	//
-	// float x = radius * nx;
-	// float y = radius * ny;
-	// float z = radius * nz;
-	//
-	// float u = 1.f - ((float) sliceNumber / (float) slices);
-	// float v = (float) stackNumber / (float) stacks;
-	//
-	// normalBuffer.put(nx);
-	// normalBuffer.put(ny);
-	// normalBuffer.put(nz);
-	//
-	// vertexBuffer.put(x);
-	// vertexBuffer.put(y);
-	// vertexBuffer.put(z);
-	//
-	// textureCoordBuffer.put(u);
-	// textureCoordBuffer.put(v);
+	// private void debug() {
+	// if (vertexBuffer != null) {
+	// for (int i = 0; i < vertexBuffer.capacity(); i = i + 3) {
+	// Log.d("ObjectV3", "v(" + i / COORDS_PER_VERTEX + "):(" + vertexBuffer.get(i) + ","
+	// + vertexBuffer.get(i + 1) + "," + vertexBuffer.get(i + 2) + ")");
 	// }
 	// }
-	//
-	// for (int stackNumber = 0; stackNumber < stacks; ++stackNumber) {
-	// for (int sliceNumber = 0; sliceNumber < slices; ++sliceNumber) {
-	// int second = (sliceNumber * (stacks + 1)) + stackNumber;
-	// int first = second + stacks + 1;
-	//
-	// // int first = (stackNumber * slices) + (sliceNumber % slices);
-	// // int second = ((stackNumber + 1) * slices) + (sliceNumber % slices);
-	//
-	// indexBuffer.put((short) first);
-	// indexBuffer.put((short) second);
-	// indexBuffer.put((short) (first + 1));
-	//
-	// indexBuffer.put((short) second);
-	// indexBuffer.put((short) (second + 1));
-	// indexBuffer.put((short) (first + 1));
+	// if (textureCoordBuffer != null) {
+	// for (int i = 0; i < textureCoordBuffer.capacity(); i = i + 2) {
+	// Log.d("ObjectV3",
+	// "t(" + i / 2 + "):(" + textureCoordBuffer.get(i) + "," + textureCoordBuffer.get(i + 1) + ")");
 	// }
 	// }
-	//
-	// vertexBuffer.rewind();
-	// normalBuffer.rewind();
-	// indexBuffer.rewind();
-	// textureCoordBuffer.rewind();
-	//
-	// ObjectV3 sphere = new
-	// ObjectV3().setVertexBuffer(vertexBuffer).setNormalBuffer(normalBuffer).setIndexBuffer(indexBuffer)
-	// .setTexture(R.drawable.earth).setTextureCoordBuffer(textureCoordBuffer).setDiffuseLighting(-3f, 2.3f, 2f);
-	// return sphere;
-	//
 	// }
-
 }

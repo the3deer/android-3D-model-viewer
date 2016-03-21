@@ -1,5 +1,5 @@
 # Exported from Wings 3D 1.0.1
-mtllib models/ship.mtl
+mtllib ship.mtl
 o cube1
 #48 vertices, 92 faces
 v -0.46604296 -4.6098739e-2 6.1004010e-2

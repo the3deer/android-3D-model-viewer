@@ -1,6 +1,6 @@
 # Wavefront OBJ exported by MilkShape 3D
 
-mtllib models/penguin.mtl
+mtllib penguin.mtl
 
 v 0.004520 0.000000 -0.363459
 v 0.179520 0.000000 -0.315091

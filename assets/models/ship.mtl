@@ -3,5 +3,5 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
-map_Kd models/ship.bmp
+map_Kd ship.bmp
 Ni 1.00

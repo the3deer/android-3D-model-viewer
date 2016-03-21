@@ -8,4 +8,4 @@ Kd 0.909804 0.690196 0.905882
 Ks 0.933333 0.933333 0.933333
 Ns 445.312500
 illum 2
-map_Kd models/penguin.bmp
+map_Kd penguin.bmp
