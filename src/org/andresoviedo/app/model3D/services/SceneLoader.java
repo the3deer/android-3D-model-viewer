@@ -66,8 +66,7 @@ public class SceneLoader {
 
 		try {
 			wavefrontLoader.loadModelFromFileSystem(main.getContext().getAssets(), file);
-			wavefrontModel = wavefrontLoader.createGLES20Object(file.getParentFile(), null, GLES20.GL_TRIANGLES,
-					3);
+			wavefrontModel = wavefrontLoader.createGLES20Object(file.getParentFile(), null, GLES20.GL_TRIANGLES, 3);
 			wavefrontModel.setPosition(new float[] { 0f, 0.0f, 0.0f });
 			wavefrontModel.setColor(new float[] { 0.9f, 0.0f, 0.0f, 0.5f });
 		} catch (Exception ex) {

@@ -129,6 +129,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 			Matrix.multiplyMM(result, 0, mvpMatrix, 0, result, 0);
 			obj3D.draw(result, modelViewMatrix);
 			obj3D.drawBoundingBox(result, modelViewMatrix);
+			// TODO: enable this only when user wants it
+			// obj3D.drawVectorNormals(result, modelViewMatrix);
 		}
 	}
 

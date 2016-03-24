@@ -28,4 +28,15 @@ public interface Object3D {
 
 	void setRotation(float[] rotation);
 
+	/**
+	 * Draw the normals for each face the object has. Thas it a line that come out from the center of each feace having
+	 * length of 1
+	 * 
+	 * @param mvpMatrix
+	 *            model view projection matrix
+	 * @param modelViewMatrix
+	 *            model view matrix
+	 */
+	void drawVectorNormals(float[] mvpMatrix, float[] modelViewMatrix);
+
 }

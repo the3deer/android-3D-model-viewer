@@ -185,4 +185,10 @@ public class ObjectV1 implements Object3D {
 	public void setRotation(float[] rotation) {
 		this.rotation = rotation;
 	}
+
+	@Override
+	public void drawVectorNormals(float[] result, float[] modelViewMatrix) {
+		// TODO Auto-generated method stub
+		
+	}
 }

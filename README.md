@@ -5,15 +5,22 @@ This is a demo of OpenGL ES 2.0.
 
 It is basically an android application with a 3D renderer (OpenGL ES 2.0) that can load 3D models.
 
-The purpose of this application was to learn android and the OpenGL language
+The purpose of this application is to learn how to code in OpenGL language
 
 
-News (21/03/2016)
+News (24/03/2016)
 =================
 
-* I have just fixed the wavefront loader to load textures.
-* I implemented a menu 
-* Many more improvements coming soon...
+* Fixed shader to show correctly colors
+* Implemented loader so now we can show any obj having quads :)
+* Implemented showing the face normals
+
+
+Whats next
+==========
+
+* Implement a menu so the user can choose the model (.obj) and the texture file
+* Implement a menu so the user can toogle lights, texture & draw mode (wireframe or solid)
 
 
 Features
@@ -39,8 +46,9 @@ Try it
 
   1. Compile project from your android IDE
   2. Connect your android device and run application 
-  3. You should see a 3D arrow and some triangles, squares and a teacup in the middle. Also a square with texture.
-  4. Pinch and rotate to see the 3D scene from another perspective. 
+  3. You should see a menu. From there you can load the demo scenario (3D arrow and some object in the middle).
+  4. If you want, you can load your own model
+  4. Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective. 
 
 
 Screenshot

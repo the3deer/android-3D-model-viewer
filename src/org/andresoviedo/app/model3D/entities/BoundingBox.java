@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.opengl.GLES20;
 
@@ -17,8 +19,11 @@ public class BoundingBox {
 
 	// number of coordinates per vertex in this array
 	protected static final int COORDS_PER_VERTEX = 3;
+	protected static final int COORDS_PER_COLOR = 4;
 
 	public FloatBuffer vertices;
+	public FloatBuffer vertexArray;
+	public FloatBuffer colors;
 	public ShortBuffer drawOrder;
 
 	public float xMin;
@@ -41,22 +46,30 @@ public class BoundingBox {
 	public BoundingBox(FloatBuffer vertexBuffer) {
 		// initialize vertex byte buffer for shape coordinates
 		ByteBuffer bb = ByteBuffer.allocateDirect(
-		// (number of coordinate values * 4 bytes per float)
+				// (number of coordinate values * 4 bytes per float)
 				8 * COORDS_PER_VERTEX * 4);
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());
-
 		vertices = bb.asFloatBuffer();
 
 		ByteBuffer bb2 = ByteBuffer.allocateDirect(
-		// (number of coordinate values * 2 bytes per short)
+				// (number of coordinate values * 2 bytes per short)
 				(6 * 4) * 2);
 		// use the device hardware's native byte order
 		bb2.order(ByteOrder.nativeOrder());
-
 		drawOrder = bb2.asShortBuffer();
-
 		drawOrder.position(0);
+
+		// vertex colors
+		ByteBuffer bb3 = ByteBuffer.allocateDirect(24 * COORDS_PER_COLOR * 4);
+		// use the device hardware's native byte order
+		bb3.order(ByteOrder.nativeOrder());
+		colors = bb3.asFloatBuffer();
+
+		colors.position(0);
+		for (int i = 0; i < colors.capacity() / 4; i++) {
+			colors.put(1.0f).put(0.0f).put(1.0f).put(1.0f);
+		}
 
 		// back-face
 		drawOrder.put((short) 0);
@@ -101,12 +114,26 @@ public class BoundingBox {
 		return drawOrder;
 	}
 
-	public int getDrawType() {
+	public FloatBuffer getColors() {
+		return colors;
+	}
+
+	public int getDrawMode() {
 		return GLES20.GL_LINE_LOOP;
 	}
 
 	public int getDrawSize() {
 		return 4;
+	}
+
+	public List<int[]> getDrawModeList() {
+		List<int[]> ret = new ArrayList<int[]>();
+		int vertexPos = 0;
+		for (int i = 0; i < drawOrder.capacity() / 4; i++) {
+			ret.add(new int[] { GLES20.GL_LINE_LOOP, vertexPos, 4 });
+			vertexPos += 4;
+		}
+		return ret;
 	}
 
 	BoundingBox(FloatBuffer vertexBuffer, float xMin, float xMax, float yMin, float yMax, float zMin, float zMax) {
@@ -184,7 +211,8 @@ public class BoundingBox {
 			float vertexx = vertexBuffer.get();
 			float vertexy = vertexBuffer.get();
 			float vertexz = vertexBuffer.get();
-			radiusTemp = Math.sqrt(Math.pow(vertexx - center[0], 2) + Math.pow(vertexy - center[1], 2) + Math.pow(vertexz - center[2], 2));
+			radiusTemp = Math.sqrt(Math.pow(vertexx - center[0], 2) + Math.pow(vertexy - center[1], 2)
+					+ Math.pow(vertexz - center[2], 2));
 			if (radiusTemp > radius) {
 				radius = radiusTemp;
 			}
@@ -194,6 +222,23 @@ public class BoundingBox {
 
 	public FloatBuffer getVertices() {
 		return vertices;
+	}
+
+	public FloatBuffer getVertexArray() {
+		// initialize vertex byte buffer for shape coordinates
+		ByteBuffer bb = ByteBuffer.allocateDirect(
+				// (number of coordinate values * 4 bytes per float)
+				drawOrder.capacity() * COORDS_PER_VERTEX * 4);
+		// use the device hardware's native byte order
+		bb.order(ByteOrder.nativeOrder());
+		FloatBuffer ret = bb.asFloatBuffer();
+		ret.position(0);
+		for (int i = 0; i < drawOrder.capacity(); i++) {
+			ret.put(vertices.get(drawOrder.get(i) * 3)); // x
+			ret.put(vertices.get(drawOrder.get(i) * 3 + 1)); // y
+			ret.put(vertices.get(drawOrder.get(i) * 3 + 2)); // z
+		}
+		return ret;
 	}
 
 	public String sizeToString() {
@@ -206,7 +251,8 @@ public class BoundingBox {
 
 	public String limitsToString() {
 		StringBuffer ret = new StringBuffer();
-		ret.append("xMin[" + xMin + "], xMax[" + xMax + "], yMin[" + yMin + "], yMax[" + yMax + "], zMin[" + zMin + "], zMax[" + zMax + "]");
+		ret.append("xMin[" + xMin + "], xMax[" + xMax + "], yMin[" + yMin + "], yMax[" + yMax + "], zMin[" + zMin
+				+ "], zMax[" + zMax + "]");
 		return ret.toString();
 	}
 
@@ -242,7 +288,7 @@ public class BoundingBox {
 	private static ByteBuffer createNativeByteBuffer(int length) {
 		// initialize vertex byte buffer for shape coordinates
 		ByteBuffer bb = ByteBuffer.allocateDirect(
-		// (number of coordinate values * 2 bytes per short)
+				// (number of coordinate values * 2 bytes per short)
 				length);
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());

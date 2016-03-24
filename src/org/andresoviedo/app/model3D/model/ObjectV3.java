@@ -82,8 +82,6 @@ public class ObjectV3 implements Object3D {
 			"varying vec4 v_Color;"+         // This will be passed into the fragment shader.
 			"varying vec3 v_Normal;"+         // This will be passed into the fragment shader.
 			
-	//								"attribute int a_useTextures;"+
-	//								"varying int v_useTextures;"+
 			"attribute vec2 a_TexCoordinate;"+ // Per-vertex texture coordinate information we will pass in.
 			"varying vec2 v_TexCoordinate;"+   // This will be passed into the fragment shader.
 			
@@ -154,22 +152,6 @@ public class ObjectV3 implements Object3D {
 			"}";
 	// @formatter:on
 
-//	// @formatter:off
-//			protected static final String fragmentShaderCode_stippled = 
-//					"precision mediump float;"+ 
-//					"uniform vec4 vColor;" + 
-//					"attribute vec4 vPosition;" + 
-//					"vec4 noir = vec4(0.0,0.0,0.0,1.0);"+
-//					"void main() {"	+ 
-//					// cos(1000.0*abs(vPosition.x + vPosition.y + vPosition.z)) + 0.5 > 0.0
-//					"  if (cos(1000.0*abs(vPosition.x + vPosition.y + vPosition.z)) + 0.5 > 0.0) {"+
-//				    "    gl_FragColor = vColor;"+
-//				    "  } else {"+
-//				    "    gl_FragColor = vColor;"+
-//				    "  }"+
-//					"}";
-//			// @formatter:on
-
 	// number of coordinates per vertex in this array
 	protected static final int COORDS_PER_VERTEX = 3;
 
@@ -183,7 +165,7 @@ public class ObjectV3 implements Object3D {
 	protected final FloatBuffer textureCoordBuffer;
 
 	protected float lightPos[] = { 0.0f, 1, 0f, 0.0f };
-	protected float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
+	protected float color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 	protected float[] position = new float[] { 0f, 0f, 0f };
 	protected float[] rotation = new float[] { 0f, 0f, 0f };
 
@@ -197,8 +179,9 @@ public class ObjectV3 implements Object3D {
 	// Lazy objects
 	protected final int drawMode;
 	protected final int drawSize;
-	protected BoundingBox boundingBox;
 
+	// Bounding box
+	protected BoundingBox boundingBox;
 	protected Object3D boundingBoxObject;
 
 	private final int vertexShaderHandle;
@@ -413,8 +396,8 @@ public class ObjectV3 implements Object3D {
 	 * @see org.andresoviedo.app.model3D.model.Object3D#draw(float[], float[], int, int)
 	 */
 	@Override
-	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawType, int drawSize) {
-		this.draw_with_textures(mvpMatrix, mvMatrix, drawType != -1 ? drawType : this.drawMode,
+	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawMode, int drawSize) {
+		this.draw_with_textures(mvpMatrix, mvMatrix, drawMode != -1 ? drawMode : this.drawMode,
 				drawSize != -1 ? drawSize : this.drawSize);
 	}
 
@@ -499,6 +482,8 @@ public class ObjectV3 implements Object3D {
 		GLES20.glUniform3fv(lightPositionHandle, 1, lightPos, 0);
 
 		// Enable a handle to the triangle vertices
+		normalHandle = GLES20.glGetAttribLocation(mProgram, "a_Normal");
+		GLUtil.checkGlError("glGetAttribLocation");
 		GLES20.glEnableVertexAttribArray(normalHandle);
 		normalsBuffer.position(0);
 		GLES20.glVertexAttribPointer(normalHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, normalsBuffer);
@@ -517,19 +502,9 @@ public class ObjectV3 implements Object3D {
 			if (drawSize != -1 && capacity % drawSize != 0) {
 				throw new RuntimeException(capacity + "<>" + drawSize);
 			}
-
-			// Draw the model
-			if (drawSize == -1) {
-				// GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-				// GLES20.glDrawArrays(drawMode, 0, vertexBuffer.limit());
-				GLES20.glDrawElements(drawType, drawSize != -1 ? drawSize : capacity, GLES20.GL_UNSIGNED_SHORT,
-						drawListBuffer);
-			} else {
-				for (int i = 0; i < capacity; i += drawSize) {
-					drawListBuffer.position(i);
-					GLES20.glDrawElements(drawType, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-				}
-			}
+			drawListBuffer.position(0);
+			GLES20.glDrawElements(drawType, drawSize != -1 ? drawSize : capacity, GLES20.GL_UNSIGNED_SHORT,
+					drawListBuffer);
 		}
 
 		// Disable vertex array
@@ -546,139 +521,6 @@ public class ObjectV3 implements Object3D {
 		}
 	}
 
-	/**
-	 * Encapsulates the OpenGL ES instructions for drawing this shape.
-	 * 
-	 * @param mvpMatrix
-	 *            - The Model View Project matrix in which to draw this shape.
-	 */
-	private void draw_ok(float[] mvpMatrix, float[] mvMatrix) {
-		// Add program to OpenGL environment
-		GLES20.glUseProgram(mProgram);
-
-		// get handle to vertex shader's vPosition member
-		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "a_Position");
-
-		// Enable a handle to the triangle vertices
-		GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-		// Prepare the triangle coordinate data
-		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
-				vertexBuffer);
-
-		// get handle to fragment shader's vColor member
-		mColorHandle = GLES20.glGetUniformLocation(mProgram, "a_Color");
-
-		// Set color for drawing the triangle
-		GLES20.glUniform4fv(mColorHandle, 1, color, 0);
-
-		// get handle to shape's transformation matrix
-		mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
-		GLUtil.checkGlError("glGetUniformLocation");
-
-		// Apply the projection and view transformation
-		GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
-		GLUtil.checkGlError("glUniformMatrix4fv");
-
-		//
-		if (drawListBuffer.limit() % drawSize != 0) {
-			throw new RuntimeException(drawListBuffer.limit() + "<>" + drawSize);
-		}
-
-		//
-		if (drawSize != -1 && drawListBuffer.capacity() % drawSize != 0) {
-			throw new RuntimeException(drawListBuffer.capacity() + "<>" + drawSize);
-		}
-
-		// Draw the square
-		if (drawSize == -1) {
-			GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-		} else {
-			for (int i = 0; i < drawListBuffer.capacity(); i += drawSize) {
-				drawListBuffer.position(i);
-				GLES20.glDrawElements(drawMode, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-			}
-		}
-		// Disable vertex array
-		GLES20.glDisableVertexAttribArray(mPositionHandle);
-	}
-
-	/**
-	 * Encapsulates the OpenGL ES instructions for drawing this shape.
-	 * 
-	 * @param mvpMatrix
-	 *            - The Model View Project matrix in which to draw this shape.
-	 * @param mvMatrix
-	 *            TODO
-	 */
-	private void drawOkWithLighting_OK(float[] mvpMatrix, float[] mvMatrix) {
-		// Add program to OpenGL environment
-		GLES20.glUseProgram(mProgram);
-
-		// get handle to vertex shader's vPosition member
-		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "a_Position");
-
-		// Enable a handle to the triangle vertices
-		GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-		// Prepare the triangle coordinate data
-		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
-				vertexBuffer);
-
-		// get handle to fragment shader's vColor member
-		mColorHandle = GLES20.glGetUniformLocation(mProgram, "a_Color");
-
-		// Set color for drawing the triangle
-		GLES20.glUniform4fv(mColorHandle, 1, color, 0);
-
-		// get handle to shape's transformation matrix
-		mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
-		GLUtil.checkGlError("glGetUniformLocation");
-
-		// Apply the projection and view transformation
-		GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
-		GLUtil.checkGlError("glUniformMatrix4fv");
-
-		// -- testing start
-
-		lightPositionHandle = GLES20.glGetUniformLocation(mProgram, "u_LightPos");
-		GLUtil.checkGlError("glGetUniformLocation");
-		GLES20.glUniform3fv(lightPositionHandle, 1, lightPos, 0);
-
-		// Enable a handle to the triangle vertices
-		GLES20.glEnableVertexAttribArray(normalHandle);
-		GLES20.glVertexAttribPointer(normalHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride,
-				normalsBuffer);
-
-		// get handle to shape's transformation matrix
-		mMVMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
-		GLUtil.checkGlError("glGetUniformLocation");
-		GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mvMatrix, 0);
-		GLUtil.checkGlError("glUniformMatrix4fv");
-
-		//
-		if (drawSize != -1 && drawListBuffer.capacity() % drawSize != 0) {
-			throw new RuntimeException(drawListBuffer.capacity() + "<>" + drawSize);
-		}
-
-		// Draw the square
-		if (drawSize == -1) {
-			GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-		} else {
-			for (int i = 0; i < drawListBuffer.capacity(); i += drawSize) {
-				drawListBuffer.position(i);
-				GLES20.glDrawElements(drawMode, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-			}
-		}
-
-		// Disable vertex array
-		GLES20.glDisableVertexAttribArray(mPositionHandle);
-
-		// Disable vertex array
-		GLES20.glDisableVertexAttribArray(normalHandle);
-
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -689,12 +531,13 @@ public class ObjectV3 implements Object3D {
 		if (boundingBox == null) {
 			// init bounding box
 			boundingBox = new BoundingBox(vertexBuffer.asReadOnlyBuffer());
-			boundingBoxObject = new ObjectV3(boundingBox.getVertices(), boundingBox.getDrawOrder(),
-					boundingBox.getNormals(), null, boundingBox.getDrawType(), boundingBox.getDrawSize(), null);
+			boundingBoxObject = new ObjectV5(boundingBox.getVertices(), null, boundingBox.getColors(),
+					boundingBox.getDrawOrder(), boundingBox.getNormals(), null, boundingBox.getDrawMode(),
+					boundingBox.getDrawSize(), null);
 			boundingBoxObject.setPosition(getPosition());
 			boundingBoxObject.setColor(getColor());
 		}
-		boundingBoxObject.draw(mvpMatrix, mvMatrix, boundingBox.getDrawType(), -1);
+		boundingBoxObject.draw(mvpMatrix, mvMatrix);
 
 	}
 
@@ -757,6 +600,12 @@ public class ObjectV3 implements Object3D {
 	@Override
 	public void setRotation(float[] rotation) {
 		this.rotation = rotation;
+	}
+
+	@Override
+	public void drawVectorNormals(float[] result, float[] modelViewMatrix) {
+		// TODO Auto-generated method stub
+
 	}
 
 	// private void debug() {

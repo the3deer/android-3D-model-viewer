@@ -38,30 +38,34 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.andresoviedo.app.model3D.entities.BoundingBox;
+import org.andresoviedo.app.model3D.model.Object3D;
 import org.andresoviedo.app.model3D.model.ObjectV3;
+import org.andresoviedo.app.model3D.model.ObjectV5;
 
 import android.content.res.AssetManager;
 import android.opengl.GLES20;
 import android.util.Log;
 
 public class WavefrontLoader {
-	public String MODEL_DIR = "models/";
+
 	private static final float DUMMY_Z_TC = -5.0f;
 	static final boolean INDEXES_START_AT_1 = true;
 	static final boolean DRAW_ARRAYS = true;
-	private boolean flipTexCoords = false;
+	private boolean flipTexCoords = true;
 	private boolean hasTCs3D = false;
+	private static float[] DEFAULT_COLOR = { 1.0f, 1.0f, 0, 1.0f };
 
 	// collection of vertices, normals and texture coords for the model
 	private ArrayList<Tuple3> verts;
@@ -148,7 +152,7 @@ public class WavefrontLoader {
 
 	public WavefrontLoader(String nm) {
 		modelNm = nm;
-		maxSize = 1.0F;
+		maxSize = 10.0F;
 
 		verts = new ArrayList<Tuple3>();
 		normals = new ArrayList<Tuple3>();
@@ -260,6 +264,8 @@ public class WavefrontLoader {
 						// not implemented
 					} else if (line.charAt(0) == '#') // comment line
 						continue;
+					else if (line.charAt(0) == 'o') // object group
+						continue;
 					else
 						System.out.println("Ignoring line " + lineNum + " : " + line);
 				}
@@ -360,9 +366,6 @@ public class WavefrontLoader {
 			float z = DUMMY_Z_TC;
 			if (hasTCs3D)
 				z = Float.parseFloat(tokens.nextToken());
-			if (flipTexCoords) {
-				y = 1 - y;
-			}
 			return new Tuple3(x, y, z);
 		} catch (NumberFormatException e) {
 			System.out.println(e.getMessage());
@@ -413,7 +416,7 @@ public class WavefrontLoader {
 		}
 	} // end of centerScale()
 
-	public ObjectV3 createGLES20Object(File currentDir, AssetManager am, int drawType, int drawSize) throws IOException
+	public Object3D createGLES20Object(File currentDir, AssetManager am, int drawMode, int drawSize) throws IOException
 	/*
 	 * render the model to a display list, so it can be drawn quicker later
 	 */
@@ -426,6 +429,30 @@ public class WavefrontLoader {
 			vertexBuffer.put(vert.getZ());
 		}
 
+		FloatBuffer vertexArrayBuffer = null;
+		if (DRAW_ARRAYS) {
+			vertexArrayBuffer = createNativeByteBuffer(3 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
+			vertexArrayBuffer.position(0);
+			for (int[] face : faces.facesVertIdxs) {
+				for (int i = 0; i < face.length; i++) {
+					vertexArrayBuffer.put(vertexBuffer.get(face[i] * 3));
+					vertexArrayBuffer.put(vertexBuffer.get(face[i] * 3 + 1));
+					vertexArrayBuffer.put(vertexBuffer.get(face[i] * 3 + 2));
+				}
+			}
+		}
+
+		List<int[]> drawModeList = new ArrayList<int[]>();
+		int currentVertexPos = 0;
+		for (int[] face : faces.facesVertIdxs) {
+			if (face.length == 3) {
+				drawModeList.add(new int[] { GLES20.GL_TRIANGLES, currentVertexPos, face.length });
+			} else {
+				drawModeList.add(new int[] { GLES20.GL_TRIANGLE_FAN, currentVertexPos, face.length });
+			}
+			currentVertexPos += face.length;
+		}
+
 		FloatBuffer normalsBuffer = createNativeByteBuffer(3 * normals.size() * 4).asFloatBuffer();
 		normalsBuffer.position(0);
 		for (Tuple3 norm : normals) {
@@ -434,67 +461,83 @@ public class WavefrontLoader {
 			normalsBuffer.put(norm.getZ());
 		}
 
-		FloatBuffer textCoordsBuffer = createNativeByteBuffer(2 * texCoords.size() * 4).asFloatBuffer();
-		normalsBuffer.position(0);
-		for (Tuple3 texCor : texCoords) {
-			textCoordsBuffer.put(texCor.getX());
-			textCoordsBuffer.put(texCor.getY());
+		FloatBuffer normalsArray = createNativeByteBuffer(3 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
+		normalsArray.position(0);
+		for (int[] normal : faces.facesNormIdxs) {
+			for (int i = 0; i < normal.length; i++) {
+				normalsArray.put(normalsBuffer.get(normal[i] * 3));
+				normalsArray.put(normalsBuffer.get(normal[i] * 3 + 1));
+				normalsArray.put(normalsBuffer.get(normal[i] * 3 + 2));
+			}
 		}
 
-		FloatBuffer textureArraysBuffer = createNativeByteBuffer(3 * 2 * faces.facesTexIdxs.size() * 4).asFloatBuffer();
+		FloatBuffer textCoordsBuffer = createNativeByteBuffer(2 * texCoords.size() * 4).asFloatBuffer();
+		textCoordsBuffer.position(0);
+		for (Tuple3 texCor : texCoords) {
+			textCoordsBuffer.put(texCor.getX());
+			textCoordsBuffer.put(flipTexCoords ? 1 - texCor.getY() : texCor.getY());
+		}
+
+		FloatBuffer textureArraysBuffer = createNativeByteBuffer(2 * faces.getVerticesReferencesCount() * 4)
+				.asFloatBuffer();
 		try {
 			for (int[] text : faces.facesTexIdxs) {
-				textureArraysBuffer.put(textCoordsBuffer.get(text[0] * 2));
-				textureArraysBuffer.put(textCoordsBuffer.get(text[0] * 2 + 1));
-				textureArraysBuffer.put(textCoordsBuffer.get(text[1] * 2));
-				textureArraysBuffer.put(textCoordsBuffer.get(text[1] * 2 + 1));
-				textureArraysBuffer.put(textCoordsBuffer.get(text[2] * 2));
-				textureArraysBuffer.put(textCoordsBuffer.get(text[2] * 2 + 1));
+				for (int i = 0; i < text.length; i++) {
+					textureArraysBuffer.put(textCoordsBuffer.get(text[i] * 2));
+					textureArraysBuffer.put(textCoordsBuffer.get(text[i] * 2 + 1));
+				}
 			}
 		} catch (Exception ex) {
 			Log.e("WavefrontLoader", "Failure to load texture coordinates");
 		}
 
-		ShortBuffer indexBuffer = createNativeByteBuffer(3 * faces.facesVertIdxs.size() * 2).asShortBuffer();
-		indexBuffer.position(0);
-		for (int[] face : faces.facesVertIdxs) {
-			indexBuffer.put((short) face[0]);
-			indexBuffer.put((short) face[1]);
-			indexBuffer.put((short) face[2]);
-		}
-
-		FloatBuffer vertexArrayBuffer = null;
-		if (DRAW_ARRAYS) {
-			vertexArrayBuffer = createNativeByteBuffer(3 * 3 * faces.facesVertIdxs.size() * 4).asFloatBuffer();
-			vertexArrayBuffer.position(0);
-			for (int[] face : faces.facesVertIdxs) {
-				vertexArrayBuffer.put(vertexBuffer.get(face[0] * 3));
-				vertexArrayBuffer.put(vertexBuffer.get(face[0] * 3 + 1));
-				vertexArrayBuffer.put(vertexBuffer.get(face[0] * 3 + 2));
-				vertexArrayBuffer.put(vertexBuffer.get(face[1] * 3));
-				vertexArrayBuffer.put(vertexBuffer.get(face[1] * 3 + 1));
-				vertexArrayBuffer.put(vertexBuffer.get(face[1] * 3 + 2));
-				vertexArrayBuffer.put(vertexBuffer.get(face[2] * 3));
-				vertexArrayBuffer.put(vertexBuffer.get(face[2] * 3 + 1));
-				vertexArrayBuffer.put(vertexBuffer.get(face[2] * 3 + 2));
-			}
-		}
-
 		if (materials != null) {
 			materials.readMaterials();
 		}
+
+		FloatBuffer colorArrayBuffer = null;
+		if (!faceMats.isEmpty()) {
+			colorArrayBuffer = createNativeByteBuffer(4 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
+			colorArrayBuffer.position(0);
+			float[] currentColor = DEFAULT_COLOR;
+			for (int i = 0; i < faces.facesVertIdxs.size(); i++) {
+				if (faceMats.findMaterial(i) != null) {
+					Material mat = materials.getMaterial(faceMats.findMaterial(i));
+					if (mat != null) {
+						currentColor = mat.getKdColor();
+					}
+				}
+				int[] face = faces.facesVertIdxs.get(i);
+				for (int j = 0; j < face.length; j++) {
+					colorArrayBuffer.put(currentColor);
+				}
+			}
+		}
+
 		// materials = null;
 
-		InputStream textureIs = null;
-		if (materials != null) {
+		List<InputStream> textureIs = null;
+		if (materials != null && !materials.materials.isEmpty()) {
+			textureIs = new ArrayList<InputStream>();
 			// FileInputStream is = new FileInputStream(fileName);
-			if (currentDir != null) {
-				File file = new File(currentDir, materials.materials.get(0).getTexture());
-				Log.v("materials", "Loading texture '" + file + "'...");
-				textureIs = new FileInputStream(file);
+			String texture = null;
+			for (Material mat : materials.materials.values()) {
+				if (mat.getTexture() != null) {
+					texture = mat.getTexture();
+					break;
+				}
+			}
+			if (texture != null) {
+				if (currentDir != null) {
+					File file = new File(currentDir, texture);
+					Log.v("materials", "Loading texture '" + file + "'...");
+					textureIs.add(new FileInputStream(file));
+				} else {
+					Log.v("materials", "Loading texture '" + texture + "'...");
+					textureIs.add(am.open(texture));
+				}
 			} else {
-				Log.v("materials", "Loading texture '" + materials.materials.get(0).getTexture() + "'...");
-				textureIs = am.open(materials.materials.get(0).getTexture());
+				Log.i("Loader", "Found material(s) but no texture");
 			}
 		}
 
@@ -503,8 +546,16 @@ public class WavefrontLoader {
 		// textCoordsBuffer, GLES20.GL_TRIANGLES, 3,
 		// materials != null ? materials.materials.get(0).getTexture() : null);
 
-		return new ObjectV3(DRAW_ARRAYS ? vertexArrayBuffer : vertexBuffer, DRAW_ARRAYS ? null : indexBuffer,
-				normalsBuffer, textureArraysBuffer, drawType, drawSize, textureIs);
+		if (colorArrayBuffer != null) {
+
+			return new ObjectV5(DRAW_ARRAYS ? vertexArrayBuffer : vertexBuffer, drawModeList, colorArrayBuffer,
+					DRAW_ARRAYS ? null : null, normalsArray, textureArraysBuffer, drawMode, drawSize,
+					textureIs != null ? textureIs : null);
+		} else {
+			return new ObjectV3(DRAW_ARRAYS ? vertexArrayBuffer : vertexBuffer, DRAW_ARRAYS ? null : null,
+					normalsBuffer, textureArraysBuffer, drawMode, drawSize,
+					textureIs != null ? textureIs.get(0) : null);
+		}
 
 		// if (materials != null) {
 		// // materials.readMaterials();
@@ -537,12 +588,13 @@ public class WavefrontLoader {
 		System.out.println("No. of normal coords: " + normals.size());
 		System.out.println("No. of tex coords: " + texCoords.size());
 		System.out.println("No. of faces: " + faces.getNumFaces());
+		System.out.println("No. of points: " + faces.facesVertIdxs.size());
 
 		modelDims.reportDimensions();
 		// dimensions of model (before centering and scaling)
 
-		// if (materials != null)
-		// materials.showMaterials(); // list defined materials
+		if (materials != null)
+			materials.showMaterials(); // list defined materials
 		faceMats.showUsedMaterials(); // show what materials have been used by
 		// faces
 	} // end of reportOnModel()
@@ -727,9 +779,8 @@ class ModelDimensions {
 } // end of ModelDimensions class
 
 class Materials {
-	private static final String MODEL_DIR = "models/";
 
-	public ArrayList<Material> materials;
+	public Map<String, Material> materials;
 	// stores the Material objects built from the MTL file data
 
 	// for storing the material currently being used for rendering
@@ -748,7 +799,9 @@ class Materials {
 	public Materials(AssetManager am, String mtlFnm, File currentDir) {
 		this.am = am;
 		this.currentDir = currentDir;
-		materials = new ArrayList<Material>();
+		// TODO: this map is now linked because we want to get only the first texture
+		// when multiple textures are supported, change this to be a simple HashMap
+		materials = new LinkedHashMap<String, Material>();
 
 		this.mfnm = mtlFnm;
 		// file = new File(mtlFnm);
@@ -793,14 +846,17 @@ class Materials {
 
 				if (line.startsWith("newmtl ")) { // new material
 					if (currMaterial != null) // save previous material
-						materials.add(currMaterial);
+						materials.put(currMaterial.getName(), currMaterial);
 
 					// start collecting info for new material
-					currMaterial = new Material(line.substring(7));
+					String name = line.substring(7);
+					Log.d("Loader", "New material found: " + name);
+					currMaterial = new Material(name);
 				} else if (line.startsWith("map_Kd ")) { // texture filename
 					// String fileName = new File(file.getParent(), line.substring(7)).getAbsolutePath();
-					String fileName = line.substring(7);
-					currMaterial.setTexture(fileName);
+					String textureFilename = line.substring(7);
+					Log.d("Loader", "New texture found: " + textureFilename);
+					currMaterial.setTexture(textureFilename);
 				} else if (line.startsWith("Ka ")) // ambient colour
 					currMaterial.setKa(readTuple3(line));
 				else if (line.startsWith("Kd ")) // diffuse colour
@@ -813,6 +869,9 @@ class Materials {
 				} else if (line.charAt(0) == 'd') { // alpha
 					float val = Float.valueOf(line.substring(2)).floatValue();
 					currMaterial.setD(val);
+				} else if (line.startsWith("Tr ")) { // Transparency (inverted)
+					float val = Float.valueOf(line.substring(3)).floatValue();
+					currMaterial.setD(1 - val);
 				} else if (line.startsWith("illum ")) { // illumination model
 					// not implemented
 				} else if (line.charAt(0) == '#') // comment line
@@ -821,7 +880,7 @@ class Materials {
 					System.out.println("Ignoring MTL line: " + line);
 
 			}
-			materials.add(currMaterial);
+			materials.put(currMaterial.getName(), currMaterial);
 		} catch (IOException e) {
 			Log.e("materials", e.getMessage(), e);
 		}
@@ -860,80 +919,9 @@ class Materials {
 		}
 	} // end of showMaterials()
 
-	// ----------------- using a material at render time -----------------
-
-	private boolean renderWithMaterial(String faceMat, GLES20 gl)
-	/*
-	 * Render using the texture or colours associated with the material, faceMat. But only change things if faceMat is
-	 * different from the current rendering material, whose name is stored in renderMatName.
-	 * 
-	 * Return true/false if the texture coords need flipping, and store the current value in a global
-	 */
-	{
-		if (!faceMat.equals(renderMatName)) { // is faceMat is a new material?
-			renderMatName = faceMat;
-			switchOffTex(gl); // switch off any previous texturing
-
-			// set up new rendering material
-			String tex = getTexture(renderMatName);
-			if (tex != null) { // use the material's texture
-				// System.out.println("Using texture with " + renderMatName);
-				switchOnTex(tex, gl);
-
-				// flipTexCoords = tex.getMustFlipVertically();
-				// if (flipTexCoords)
-				// System.out.println("Must flip tcs for " + renderMatName);
-			} else
-				// use the material's colours
-				setMaterialColors(renderMatName, gl);
-		}
-		return flipTexCoords;
-	} // end of renderWithMaterial()
-
-	public void switchOffTex(GLES20 gl)
-	// switch texturing off and put the lights on;
-	// also called from Model3D.drawToList()
-	{
-		if (true)
-			throw new RuntimeException("what the fuck1");
-		if (usingTexture) {
-			GLES20.glDisable(GLES20.GL_TEXTURE_2D);
-			usingTexture = false;
-		}
-	} // end of resetMaterials()
-
-	private void switchOnTex(String tex, GLES20 gl)
-	// switch the lights off, and texturing on
-	{
-		if (true)
-			throw new RuntimeException("what the fuck1");
-		GLES20.glEnable(GLES20.GL_TEXTURE_2D);
-		usingTexture = true;
-		// tex.bind();
-	} // end of resetMaterials()
-
-	private String getTexture(String matName)
-	// return the texture associated with the material name
-	{
-		Material m;
-		for (int i = 0; i < materials.size(); i++) {
-			m = (Material) materials.get(i);
-			if (m.hasName(matName))
-				return m.getTexture();
-		}
-		return null;
-	} // end of getTexture()
-
-	private void setMaterialColors(String matName, GLES20 gl)
-	// start rendering using the colours specifies by the named material
-	{
-		Material m;
-		for (int i = 0; i < materials.size(); i++) {
-			m = (Material) materials.get(i);
-			if (m.hasName(matName))
-				m.setMaterialColors(gl);
-		}
-	} // end of setMaterialColors()
+	Material getMaterial(String name) {
+		return materials.get(name);
+	}
 
 } // end of Materials class
 
@@ -942,7 +930,8 @@ class Material {
 
 	// colour info
 	private Tuple3 ka, kd, ks; // ambient, diffuse, specular colours
-	private float ns, d; // shininess and alpha
+	private float ns; // shininess
+	private float d; // alpha
 
 	// texture info
 	private String texFnm;
@@ -1015,6 +1004,13 @@ class Material {
 		return kd;
 	}
 
+	public float[] getKdColor() {
+		if (kd == null) {
+			return null;
+		}
+		return new float[] { kd.getX(), kd.getY(), kd.getZ(), getD() };
+	}
+
 	public void setKs(Tuple3 t) {
 		ks = t;
 	}
@@ -1058,6 +1054,10 @@ class Material {
 		return texture;
 	}
 
+	String getName() {
+		return name;
+	}
+
 } // end of Material class
 
 class Faces {
@@ -1068,17 +1068,21 @@ class Faces {
 	 */
 	ArrayList<int[]> facesVertIdxs;
 	ArrayList<int[]> facesTexIdxs;
-	private ArrayList<int[]> facesNormIdxs;
+	ArrayList<int[]> facesNormIdxs;
 
 	// references to the model's vertices, normals, and tex coords
 	private ArrayList<Tuple3> verts;
 	private ArrayList<Tuple3> normals;
 	private ArrayList<Tuple3> texCoords;
 
+	// Total number of vertices references. That is, each face references 3 or more vectors. This is the sum for all
+	// faces
+	private int verticesReferencesCount;
+
 	// for reporting
 	// private DecimalFormat df = new DecimalFormat("0.##"); // 2 dp
 
-	public Faces(ArrayList<Tuple3> vs, ArrayList<Tuple3> ns, ArrayList<Tuple3> ts) {
+	Faces(ArrayList<Tuple3> vs, ArrayList<Tuple3> ns, ArrayList<Tuple3> ts) {
 		verts = vs;
 		normals = ns;
 		texCoords = ts;
@@ -1088,20 +1092,15 @@ class Faces {
 		facesNormIdxs = new ArrayList<int[]>();
 	} // end of Faces()
 
-	public boolean addFace(String line)
-	/*
+	/**
 	 * get this face's indicies from line "f v/vt/vn ..." with vt or vn index values perhaps being absent.
 	 */
-	{
+	public boolean addFace(String line) {
 		try {
 			line = line.substring(2); // skip the "f "
 			StringTokenizer st = new StringTokenizer(line, " ");
 			int numTokens = st.countTokens(); // number of v/vt/vn tokens
 			// create arrays to hold the v, vt, vn indicies
-
-			if (numTokens > 3) {
-				Log.w("faces", "More than 3 faces '" + line + "'");
-			}
 
 			int v[] = new int[numTokens];
 			int vt[] = new int[numTokens];
@@ -1132,13 +1131,16 @@ class Faces {
 			facesVertIdxs.add(v);
 			facesTexIdxs.add(vt);
 			facesNormIdxs.add(vn);
+
+			verticesReferencesCount += numTokens;
+
 		} catch (NumberFormatException e) {
 			System.out.println("Incorrect face index");
 			System.out.println(e.getMessage());
 			return false;
 		}
 		return true;
-	} // end of addFace()
+	}
 
 	private String addFaceVals(String faceStr)
 	/*
@@ -1158,100 +1160,19 @@ class Faces {
 		return sb.toString();
 	} // end of addFaceVals()
 
-	public void renderFace(int i, boolean flipTexCoords, GLES20 gl)
-	/*
-	 * Render the ith face by getting the vertex, normal, and tex coord indicies for face i. Use those indicies to
-	 * access the actual vertex, normal, and tex coord data, and render the face.
-	 * 
-	 * Each face uses 3 array of indicies; one for the vertex indicies, one for the normal indicies, and one for the tex
-	 * coord indicies.
-	 * 
-	 * If the model doesn't use normals or tex coords then the indicies arrays will contain 0's.
-	 * 
-	 * If the tex coords need flipping then the t-values are changed.
-	 */
-	{
-		// if (i >= facesVertIdxs.size()) // i out of bounds?
-		// return;
-		//
-		// int[] vertIdxs = (int[]) (facesVertIdxs.get(i));
-		// // get the vertex indicies for face i
-		//
-		// int polytype;
-		// if (vertIdxs.length == 3)
-		// polytype = GLES20.GL_TRIANGLES;
-		// else if (vertIdxs.length == 4)
-		// // polytype = GLES20.GL_QUADS;
-		// throw new UnsupportedOperationException("Not supporting drawing GL_QUADS. Refactor your object to use 3
-		// vertex faces");
-		// else
-		// throw new UnsupportedOperationException("Not supporting drawing GL_QUADS. Refactor your object to use 3
-		// vertex faces");
-		// // polytype = GLES20.GL_TRIANGLES;
-		//
-		// // gl.glBegin(polytype);
-		//
-		// // get the normal and tex coords indicies for face i
-		// int[] normIdxs = (int[]) (facesNormIdxs.get(i));
-		// int[] texIdxs = (int[]) (facesTexIdxs.get(i));
-		//
-		// /*
-		// * render the normals, tex coords, and vertices for face i by accessing them using their indicies
-		// */
-		// Tuple3 vert, norm, texCoord;
-		// float yTC;
-		//
-		// vert = (Tuple3) verts.get(vertIdxs[f] - 1); // render the vertices
-		// // gl.glVertex3f(vert.getX(), vert.getY(), vert.getZ());
-		//
-		// GLES20.glDrawElements(GLES20.GL_TRIANGLES, 3, GLES20.GL_UNSIGNED_SHORT);
-		//
-		// // for (int f = 0; f < vertIdxs.length; f++) {
-		// // if (normIdxs[f] != 0) { // if there are normals, render them
-		// // norm = (Tuple3) normals.get(normIdxs[f] - 1);
-		// // gl.glNormal3f(norm.getX(), norm.getY(), norm.getZ());
-		// // }
-		// //
-		// // if (texIdxs[f] != 0) { // if there are tex coords, render them
-		// // texCoord = (Tuple3) texCoords.get(texIdxs[f] - 1);
-		// // yTC = texCoord.getY();
-		// // if (flipTexCoords) // flip the y-value (the texture's t-value)
-		// // yTC = 1.0f - yTC;
-		// //
-		// // if (texCoord.getZ() == DUMMY_Z_TC) // using 2D tex coords
-		// // gl.glTexCoord2f(texCoord.getX(), yTC);
-		// // else
-		// // // 3D tex coords
-		// // gl.glTexCoord3f(texCoord.getX(), yTC, texCoord.getZ());
-		// // /*
-		// // * System.out.print("Tex index: " + (texIdxs[f]) + ": "); System.out.println("Tex coord: " +
-		// df.format(texCoord.getX()) +
-		// // * ", " + df.format( yTC ) + ", " + df.format( texCoord.getZ() ));
-		// // */
-		// // }
-		//
-		// // vert = (Tuple3) verts.get(vertIdxs[f] - 1); // render the vertices
-		// // gl.glVertex3f(vert.getX(), vert.getY(), vert.getZ());
-		//
-		// /*
-		// * System.out.print("Vert index: " + (vertIdxs[f]) + ": "); System.out.println("Coord: " +
-		// df.format(vert.getX()) + ", " +
-		// * df.format( vert.getY() ) + ", " + df.format( vert.getZ() ));
-		// */
-		// // }
-		//
-		// // gl.glEnd();
-	} // end of renderFace()
-
 	public int getNumFaces() {
 		return facesVertIdxs.size();
+	}
+
+	public int getVerticesReferencesCount() {
+		return verticesReferencesCount;
 	}
 
 } // end of Faces class
 
 class FaceMaterials {
-	private HashMap<Integer, String> faceMats;
 	// the face index (integer) where a material is first used
+	private HashMap<Integer, String> faceMats;
 
 	// for reporting
 	private HashMap<String, Integer> matCount;
@@ -1286,7 +1207,7 @@ class FaceMaterials {
 	 * List all the materials used by faces, and the number of faces that have used them.
 	 */
 	{
-		System.out.println("No. of materials used: " + matCount.size());
+		System.out.println("No. of materials used: " + faceMats.size());
 
 		// build an iterator of material names
 		Set<String> keys = matCount.keySet();
@@ -1303,5 +1224,9 @@ class FaceMaterials {
 			System.out.println();
 		}
 	} // end of showUsedMaterials()
+
+	public boolean isEmpty() {
+		return faceMats.isEmpty();
+	}
 
 } // end of FaceMaterials class

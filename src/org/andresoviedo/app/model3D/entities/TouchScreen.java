@@ -3,7 +3,6 @@ package org.andresoviedo.app.model3D.entities;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.util.FloatMath;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
