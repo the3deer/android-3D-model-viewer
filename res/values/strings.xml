@@ -5,8 +5,20 @@
     <string name="app_version">Version 0.1</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <!-- menu -->
     <string name="title_activity_menu">Menu</string>
     <string name="title_activity_text">Text</string>
+    <string name="item">item</string>
+    <!-- demo menu -->
+    <string name="title_activity_demo">Models</string>
+    <string name="image">image</string>
+    <!-- load model dialog -->
+    <string name="model_name">Model name</string>
+    <string name="texture">Texture</string>
+    <string name="invert_texture_coordinates">Invert texture coordinates</string>
+    <string name="cancel">Cancel</string>
+    <string name="load">Load</string>
+    <string name="load_model">Load Model</string>
 
     <string-array name="menu_items">
         <item>Load Model</item>

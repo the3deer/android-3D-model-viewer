@@ -1,12 +1,11 @@
 package org.andresoviedo.app.model3D.view;
 
-import java.io.File;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import org.andresoviedo.app.model3D.entities.Camera;
 import org.andresoviedo.app.model3D.model.Object3D;
+import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.services.ExampleSceneLoader;
 import org.andresoviedo.app.model3D.services.SceneLoader;
 
@@ -48,16 +47,16 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	public ModelRenderer(ModelSurfaceView modelSurfaceView) {
 		this.main = modelSurfaceView;
 		String paramUri = modelSurfaceView.getModelActivity().getParamUri();
-		if (paramUri != null) {
-			this.scene = new SceneLoader(modelSurfaceView, new File(paramUri));
-		} else {
+		Object3DData object = modelSurfaceView.getModelActivity().getParamObject3D();
+		if (paramUri == null && object == null) {
 			this.scene = new ExampleSceneLoader(modelSurfaceView);
+		} else {
+			this.scene = new SceneLoader(modelSurfaceView);
 		}
 	}
 
 	@Override
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-
 		// Set the background frame color
 		GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 

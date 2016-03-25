@@ -154,9 +154,6 @@ public class ObjectV5 implements Object3D {
 	// number of coordinates per vertex in this array
 	protected static final int COORDS_PER_VERTEX = 3;
 
-	protected final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per
-	// vertex
-
 	protected final int mProgram;
 	protected final FloatBuffer vertexBuffer;
 	/**

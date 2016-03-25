@@ -38,20 +38,30 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f0b0005;
-        public static final int activity_menu_item=0x7f0b0000;
-        public static final int dummy_button=0x7f0b0004;
-        public static final int fullscreen_content=0x7f0b0002;
-        public static final int fullscreen_content_controls=0x7f0b0003;
-        public static final int text_activity_text=0x7f0b0001;
+        public static final int action_settings=0x7f0b000c;
+        public static final int activity_menu_item=0x7f0b0002;
+        public static final int browse_texture_button=0x7f0b0009;
+        public static final int demo_item_icon=0x7f0b0000;
+        public static final int demo_item_title=0x7f0b0001;
+        public static final int dialog_load_model_invert_textures=0x7f0b000a;
+        public static final int dialog_load_model_load=0x7f0b000b;
+        public static final int dialog_load_model_name=0x7f0b0007;
+        public static final int dialog_load_model_texture=0x7f0b0008;
+        public static final int dummy_button=0x7f0b0006;
+        public static final int fullscreen_content=0x7f0b0004;
+        public static final int fullscreen_content_controls=0x7f0b0005;
+        public static final int text_activity_text=0x7f0b0003;
     }
     public static final class layout {
-        public static final int activity_main=0x7f030000;
-        public static final int activity_menu=0x7f030001;
-        public static final int activity_menu_item=0x7f030002;
-        public static final int activity_model=0x7f030003;
-        public static final int activity_text=0x7f030004;
-        public static final int activity_view_model=0x7f030005;
+        public static final int activity_demo=0x7f030000;
+        public static final int activity_demo_item=0x7f030001;
+        public static final int activity_main=0x7f030002;
+        public static final int activity_menu=0x7f030003;
+        public static final int activity_menu_item=0x7f030004;
+        public static final int activity_model=0x7f030005;
+        public static final int activity_text=0x7f030006;
+        public static final int activity_view_model=0x7f030007;
+        public static final int dialog_load_model=0x7f030008;
     }
     public static final class menu {
         public static final int main=0x7f0a0000;
@@ -62,19 +72,34 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int ic_launcher=0x7f040000;
     }
     public static final class string {
-        public static final int about_text=0x7f07000c;
+        public static final int about_text=0x7f070015;
         public static final int action_settings=0x7f070002;
-        public static final int app_logo_desc=0x7f070006;
+        public static final int app_logo_desc=0x7f07000f;
         public static final int app_name=0x7f070000;
         public static final int app_version=0x7f070001;
-        public static final int dummy_button=0x7f070008;
-        public static final int dummy_content=0x7f070009;
+        public static final int cancel=0x7f07000c;
+        public static final int dummy_button=0x7f070011;
+        public static final int dummy_content=0x7f070012;
         public static final int hello_world=0x7f070003;
-        public static final int help_text=0x7f07000b;
+        public static final int help_text=0x7f070014;
+        public static final int image=0x7f070008;
+        public static final int invert_texture_coordinates=0x7f07000b;
+        public static final int item=0x7f070006;
+        public static final int load=0x7f07000d;
+        public static final int load_model=0x7f07000e;
+        /**  load model dialog 
+         */
+        public static final int model_name=0x7f070009;
+        public static final int texture=0x7f07000a;
+        /**  demo menu 
+         */
+        public static final int title_activity_demo=0x7f070007;
+        /**  menu 
+         */
         public static final int title_activity_menu=0x7f070004;
-        public static final int title_activity_model=0x7f07000a;
+        public static final int title_activity_model=0x7f070013;
         public static final int title_activity_text=0x7f070005;
-        public static final int title_activity_view_model=0x7f070007;
+        public static final int title_activity_view_model=0x7f070010;
     }
     public static final class style {
         /** 

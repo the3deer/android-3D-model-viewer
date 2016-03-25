@@ -1,16 +1,21 @@
 package org.andresoviedo.app.model3D.services;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.andresoviedo.app.model3D.model.Object3D;
+import org.andresoviedo.app.model3D.model.Object3DBuilder;
+import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.model.ObjectV1;
 import org.andresoviedo.app.model3D.model.ObjectV2;
 import org.andresoviedo.app.model3D.model.ObjectV3;
 import org.andresoviedo.app.model3D.model.ObjectV4;
 import org.andresoviedo.app.model3D.view.ModelSurfaceView;
+import org.apache.commons.io.IOUtils;
 
 import android.opengl.GLES20;
 import android.util.Log;
@@ -32,7 +37,7 @@ public class ExampleSceneLoader extends SceneLoader {
 	private ObjectV2 square1;
 	private ObjectV2 square2;
 	private Object3D square3;
-	private WavefrontLoader wavefrontLoader;
+	private WavefrontLoader wfl;
 	private Object3D wavefrontModel;
 
 	/**
@@ -41,7 +46,7 @@ public class ExampleSceneLoader extends SceneLoader {
 	private List<Object3D> objects = new ArrayList<Object3D>();
 
 	public ExampleSceneLoader(ModelSurfaceView main) {
-		super(main, null);
+		super(main);
 		this.main = main;
 	}
 
@@ -101,12 +106,13 @@ public class ExampleSceneLoader extends SceneLoader {
 				-0.5f, 0.5f, 0.25f, /*  */
 				0.5f, 0.5f, 0.25f }, 
 				// @formatter:on
-				new short[] { 0, 1, 2, 0, 2, 3, 0, 4, 3, 5, 4, 3 }, new float[] { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }, null,
-				GLES20.GL_TRIANGLE_STRIP, -1, null);
+				new short[] { 0, 1, 2, 0, 2, 3, 0, 4, 3, 5, 4, 3 },
+				new float[] { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }, null, GLES20.GL_TRIANGLE_STRIP,
+				-1, null);
 
 		square3.setColor(new float[] { 0f, 0.76953125f, 0.22265625f, 0.5f });
 
-		wavefrontLoader = new WavefrontLoader("wavefront_loader");
+		wfl = new WavefrontLoader("wavefront_loader");
 
 		square1.setPosition(new float[] { -1.5f, -1.5f, -1.5f });
 		square2.setPosition(new float[] { 1.5f, 1.5f, 1.5f });
@@ -116,9 +122,21 @@ public class ExampleSceneLoader extends SceneLoader {
 		square3.setPosition(new float[] { 0f, 0.0f, -1.0f });
 
 		try {
-			wavefrontLoader.loadModelFromClasspath(main.getContext().getAssets(), "models/teapot.obj");
-			wavefrontModel = wavefrontLoader.createGLES20Object(null, main.getContext().getAssets(),
+			InputStream assetIs = main.getContext().getAssets().open("models/teapot.obj");
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			IOUtils.copy(assetIs, bos);
+			assetIs.close();
+
+			ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+			wfl.loadModel(bis);
+			bis.close();
+
+			Object3DData data3D = new Object3DData(wfl.getVerts(), wfl.getNormals(), wfl.getTexCoords(), wfl.getFaces(),
+					wfl.getFaceMats(), wfl.getMaterials());
+
+			wavefrontModel = Object3DBuilder.createGLES20Object(data3D, null, "models/", main.getContext().getAssets(),
 					GLES20.GL_TRIANGLES, 3);
+
 			wavefrontModel.setPosition(new float[] { 0f, 0.0f, 0.0f });
 			wavefrontModel.setColor(new float[] { 0.9f, 0.0f, 0.0f, 0.5f });
 		} catch (Exception ex) {
@@ -130,57 +148,57 @@ public class ExampleSceneLoader extends SceneLoader {
 		objects.add(triangle2);
 		objects.add(square1);
 		objects.add(square2);
-//		objects.add(wavefrontModel);
-		
+		// objects.add(wavefrontModel);
+
 		// X, Y, Z
 				final float[] cubePositionData =
 				{
-						// In OpenGL counter-clockwise winding is default. This means that when we look at a triangle, 
-						// if the points are counter-clockwise we are looking at the "front". If not we are looking at
-						// the back. OpenGL has an optimization where all back-facing triangles are culled, since they
-						// usually represent the backside of an object and aren't visible anyways.
-						
-						// Front face
+				// In OpenGL counter-clockwise winding is default. This means that when we look at a triangle,
+				// if the points are counter-clockwise we are looking at the "front". If not we are looking at
+				// the back. OpenGL has an optimization where all back-facing triangles are culled, since they
+				// usually represent the backside of an object and aren't visible anyways.
+
+				// Front face
 						-1.0f, 1.0f, 1.0f,				
 						-1.0f, -1.0f, 1.0f,
 						1.0f, 1.0f, 1.0f, 
 						-1.0f, -1.0f, 1.0f, 				
 						1.0f, -1.0f, 1.0f,
 						1.0f, 1.0f, 1.0f,
-						
-						// Right face
+
+				// Right face
 						1.0f, 1.0f, 1.0f,				
 						1.0f, -1.0f, 1.0f,
 						1.0f, 1.0f, -1.0f,
 						1.0f, -1.0f, 1.0f,				
 						1.0f, -1.0f, -1.0f,
 						1.0f, 1.0f, -1.0f,
-						
-						// Back face
+
+				// Back face
 						1.0f, 1.0f, -1.0f,				
 						1.0f, -1.0f, -1.0f,
-						-1.0f, 1.0f, -1.0f,
+				-1.0f, 1.0f, -1.0f,
 						1.0f, -1.0f, -1.0f,				
 						-1.0f, -1.0f, -1.0f,
 						-1.0f, 1.0f, -1.0f,
-						
-						// Left face
+
+				// Left face
 						-1.0f, 1.0f, -1.0f,				
 						-1.0f, -1.0f, -1.0f,
 						-1.0f, 1.0f, 1.0f, 
 						-1.0f, -1.0f, -1.0f,				
 						-1.0f, -1.0f, 1.0f, 
-						-1.0f, 1.0f, 1.0f, 
-						
-						// Top face
+				-1.0f, 1.0f, 1.0f,
+
+				// Top face
 						-1.0f, 1.0f, -1.0f,				
 						-1.0f, 1.0f, 1.0f, 
 						1.0f, 1.0f, -1.0f, 
 						-1.0f, 1.0f, 1.0f, 				
 						1.0f, 1.0f, 1.0f, 
 						1.0f, 1.0f, -1.0f,
-						
-						// Bottom face
+
+				// Bottom face
 						1.0f, -1.0f, -1.0f,				
 						1.0f, -1.0f, 1.0f, 
 						-1.0f, -1.0f, -1.0f,
@@ -188,51 +206,51 @@ public class ExampleSceneLoader extends SceneLoader {
 						-1.0f, -1.0f, 1.0f,
 						-1.0f, -1.0f, -1.0f,
 				};	
-				
-				// R, G, B, A
+
+		// R, G, B, A
 				final float[] cubeColorData =
 				{				
-						// Front face (red)
+				// Front face (red)
 						1.0f, 0.0f, 0.0f, 1.0f,				
 						1.0f, 0.0f, 0.0f, 1.0f,
 						1.0f, 0.0f, 0.0f, 1.0f,
 						1.0f, 0.0f, 0.0f, 1.0f,				
 						1.0f, 0.0f, 0.0f, 1.0f,
 						1.0f, 0.0f, 0.0f, 1.0f,
-						
-						// Right face (green)
+
+				// Right face (green)
 						0.0f, 1.0f, 0.0f, 1.0f,				
 						0.0f, 1.0f, 0.0f, 1.0f,
 						0.0f, 1.0f, 0.0f, 1.0f,
 						0.0f, 1.0f, 0.0f, 1.0f,				
 						0.0f, 1.0f, 0.0f, 1.0f,
 						0.0f, 1.0f, 0.0f, 1.0f,
-						
-						// Back face (blue)
+
+				// Back face (blue)
 						0.0f, 0.0f, 1.0f, 1.0f,				
 						0.0f, 0.0f, 1.0f, 1.0f,
 						0.0f, 0.0f, 1.0f, 1.0f,
 						0.0f, 0.0f, 1.0f, 1.0f,				
 						0.0f, 0.0f, 1.0f, 1.0f,
 						0.0f, 0.0f, 1.0f, 1.0f,
-						
-						// Left face (yellow)
+
+				// Left face (yellow)
 						1.0f, 1.0f, 0.0f, 1.0f,				
 						1.0f, 1.0f, 0.0f, 1.0f,
 						1.0f, 1.0f, 0.0f, 1.0f,
 						1.0f, 1.0f, 0.0f, 1.0f,				
 						1.0f, 1.0f, 0.0f, 1.0f,
 						1.0f, 1.0f, 0.0f, 1.0f,
-						
-						// Top face (cyan)
+
+				// Top face (cyan)
 						0.0f, 1.0f, 1.0f, 1.0f,				
 						0.0f, 1.0f, 1.0f, 1.0f,
 						0.0f, 1.0f, 1.0f, 1.0f,
 						0.0f, 1.0f, 1.0f, 1.0f,				
 						0.0f, 1.0f, 1.0f, 1.0f,
 						0.0f, 1.0f, 1.0f, 1.0f,
-						
-						// Bottom face (magenta)
+
+				// Bottom face (magenta)
 						1.0f, 0.0f, 1.0f, 1.0f,				
 						1.0f, 0.0f, 1.0f, 1.0f,
 						1.0f, 0.0f, 1.0f, 1.0f,
@@ -240,54 +258,54 @@ public class ExampleSceneLoader extends SceneLoader {
 						1.0f, 0.0f, 1.0f, 1.0f,
 						1.0f, 0.0f, 1.0f, 1.0f
 				};
-				
-				// X, Y, Z
-				// The normal is used in light calculations and is a vector which points
-				// orthogonal to the plane of the surface. For a cube model, the normals
-				// should be orthogonal to the points of each face.
+
+		// X, Y, Z
+		// The normal is used in light calculations and is a vector which points
+		// orthogonal to the plane of the surface. For a cube model, the normals
+		// should be orthogonal to the points of each face.
 				final float[] cubeNormalData =
 				{												
-						// Front face
+				// Front face
 						0.0f, 0.0f, 1.0f,				
 						0.0f, 0.0f, 1.0f,
 						0.0f, 0.0f, 1.0f,
 						0.0f, 0.0f, 1.0f,				
 						0.0f, 0.0f, 1.0f,
 						0.0f, 0.0f, 1.0f,
-						
-						// Right face 
+
+				// Right face
 						1.0f, 0.0f, 0.0f,				
 						1.0f, 0.0f, 0.0f,
 						1.0f, 0.0f, 0.0f,
 						1.0f, 0.0f, 0.0f,				
 						1.0f, 0.0f, 0.0f,
 						1.0f, 0.0f, 0.0f,
-						
-						// Back face 
+
+				// Back face
 						0.0f, 0.0f, -1.0f,				
 						0.0f, 0.0f, -1.0f,
 						0.0f, 0.0f, -1.0f,
 						0.0f, 0.0f, -1.0f,				
 						0.0f, 0.0f, -1.0f,
 						0.0f, 0.0f, -1.0f,
-						
-						// Left face 
+
+				// Left face
 						-1.0f, 0.0f, 0.0f,				
 						-1.0f, 0.0f, 0.0f,
 						-1.0f, 0.0f, 0.0f,
 						-1.0f, 0.0f, 0.0f,				
 						-1.0f, 0.0f, 0.0f,
 						-1.0f, 0.0f, 0.0f,
-						
-						// Top face 
+
+				// Top face
 						0.0f, 1.0f, 0.0f,			
 						0.0f, 1.0f, 0.0f,
 						0.0f, 1.0f, 0.0f,
 						0.0f, 1.0f, 0.0f,				
 						0.0f, 1.0f, 0.0f,
 						0.0f, 1.0f, 0.0f,
-						
-						// Bottom face 
+
+				// Bottom face
 						0.0f, -1.0f, 0.0f,			
 						0.0f, -1.0f, 0.0f,
 						0.0f, -1.0f, 0.0f,
@@ -295,55 +313,55 @@ public class ExampleSceneLoader extends SceneLoader {
 						0.0f, -1.0f, 0.0f,
 						0.0f, -1.0f, 0.0f
 				};
-				
-				// S, T (or X, Y)
-				// Texture coordinate data.
-				// Because images have a Y axis pointing downward (values increase as you move down the image) while
-				// OpenGL has a Y axis pointing upward, we adjust for that here by flipping the Y axis.
-				// What's more is that the texture coordinates are the same for every face.
+
+		// S, T (or X, Y)
+		// Texture coordinate data.
+		// Because images have a Y axis pointing downward (values increase as you move down the image) while
+		// OpenGL has a Y axis pointing upward, we adjust for that here by flipping the Y axis.
+		// What's more is that the texture coordinates are the same for every face.
 				final float[] cubeTextureCoordinateData =
 				{												
-						// Front face
+				// Front face
 						0.0f, 0.0f, 				
 						0.0f, 1.0f,
 						1.0f, 0.0f,
 						0.0f, 1.0f,
 						1.0f, 1.0f,
 						1.0f, 0.0f,				
-						
-						// Right face 
+
+				// Right face
 						0.0f, 0.0f, 				
 						0.0f, 1.0f,
 						1.0f, 0.0f,
 						0.0f, 1.0f,
 						1.0f, 1.0f,
 						1.0f, 0.0f,	
-						
-						// Back face 
+
+				// Back face
 						0.0f, 0.0f, 				
 						0.0f, 1.0f,
 						1.0f, 0.0f,
 						0.0f, 1.0f,
 						1.0f, 1.0f,
 						1.0f, 0.0f,	
-						
-						// Left face 
+
+				// Left face
 						0.0f, 0.0f, 				
 						0.0f, 1.0f,
 						1.0f, 0.0f,
 						0.0f, 1.0f,
 						1.0f, 1.0f,
 						1.0f, 0.0f,	
-						
-						// Top face 
+
+				// Top face
 						0.0f, 0.0f, 				
 						0.0f, 1.0f,
 						1.0f, 0.0f,
 						0.0f, 1.0f,
 						1.0f, 1.0f,
 						1.0f, 0.0f,	
-						
-						// Bottom face 
+
+				// Bottom face
 						0.0f, 0.0f, 				
 						0.0f, 1.0f,
 						1.0f, 0.0f,
@@ -351,18 +369,18 @@ public class ExampleSceneLoader extends SceneLoader {
 						1.0f, 1.0f,
 						1.0f, 0.0f
 				};
-				
-				
-				try {
-					InputStream open = main.getContext().getAssets().open("models/cube.bmp");
-					List<InputStream> openl = new ArrayList<InputStream>();
-					openl.add(open);
-					ObjectV4 obj4 = new ObjectV4(cubePositionData, cubeColorData, null, cubeNormalData, cubeTextureCoordinateData, GLES20.GL_TRIANGLES, 3, openl);
-					objects.add(obj4);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+
+		try {
+			InputStream open = main.getContext().getAssets().open("models/cube.bmp");
+			List<InputStream> openl = new ArrayList<InputStream>();
+			openl.add(open);
+			ObjectV4 obj4 = new ObjectV4(cubePositionData, cubeColorData, null, cubeNormalData,
+					cubeTextureCoordinateData, GLES20.GL_TRIANGLES, 3, openl);
+			objects.add(obj4);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public List<Object3D> getObjects() {

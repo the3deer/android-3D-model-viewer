@@ -32,15 +32,17 @@
         <activity
             android:name="org.andresoviedo.app.model3D.view.MenuActivity"
             android:label="@string/title_activity_menu"
-            android:parentActivityName="android.app.MainActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="android.app.ListActivity" />
+            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
+        </activity>
+        <activity
+            android:name="org.andresoviedo.app.model3D.view.DemoActivity"
+            android:label="@string/title_activity_menu"
+            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
         </activity>
         <activity
             android:name="org.andresoviedo.app.util.view.TextActivity"
             android:label="@string/title_activity_text"
-            android:parentActivityName="android.app.MainActivity" >
+            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
         </activity>
         <!--
              <activity android:name="com.ipaulpro.afilechooser.FileChooserActivity" >

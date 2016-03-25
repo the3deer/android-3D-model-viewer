@@ -47,7 +47,7 @@ public class MenuActivity extends ListActivity {
 			switch (action) {
 			case DEMO: {
 				// Start Model activity.
-				Intent intent = new Intent(MenuActivity.this.getApplicationContext(), ModelActivity.class);
+				Intent intent = new Intent(MenuActivity.this.getApplicationContext(), DemoActivity.class);
 				MenuActivity.this.startActivity(intent);
 			}
 				break;

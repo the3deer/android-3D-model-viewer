@@ -1,5 +1,6 @@
 package org.andresoviedo.app.model3D.view;
 
+import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.util.Utils;
 
 import android.annotation.TargetApi;
@@ -22,6 +23,8 @@ public class ModelActivity extends Activity {
 	 */
 	private String paramUri;
 
+	private Object3DData paramObject3D;
+
 	private GLSurfaceView mGLView;
 
 	@Override
@@ -32,6 +35,7 @@ public class ModelActivity extends Activity {
 		Bundle b = getIntent().getExtras();
 		if (b != null) {
 			this.paramUri = b.getString("uri");
+			this.paramObject3D = (Object3DData) b.getSerializable("obj");
 		}
 
 		// Create a GLSurfaceView instance and set it
@@ -84,5 +88,9 @@ public class ModelActivity extends Activity {
 
 	public String getParamUri() {
 		return paramUri;
+	}
+
+	public Object3DData getParamObject3D() {
+		return paramObject3D;
 	}
 }
