@@ -177,7 +177,7 @@ public class TouchController {
 				hitTriangle = hit(hit1, hit2, mRenderer.getScene().getSquare1().getPosition());
 			} else if (pointerCount == 1) {
 				touchStatus = TOUCH_STATUS_MOVING_WORLD;
-				Log.i("Camera", "Moving World '" + dx1 + "','" + dy1 + "'...");
+				// Log.i("Touch", "Moving World '" + dx1 + "','" + dy1 + "'...");
 				mRenderer.getCamera().translateCamera(dx1 * 10 / mRenderer.getWidth(),
 						dy1 * 10 / mRenderer.getHeight());
 			} else if (pointerCount == 2) {
@@ -290,8 +290,8 @@ public class TouchController {
 
 		int[] viewport = { 0, 0, mRenderer.getWidth(), mRenderer.getHeight() };
 
-		GLU.gluUnProject(rx, ry, rz, mRenderer.getModelViewMatrix(), 0, mRenderer.getModelProjectionMatrix(), 0, viewport, 0,
-				xyzw, 0);
+		GLU.gluUnProject(rx, ry, rz, mRenderer.getModelViewMatrix(), 0, mRenderer.getModelProjectionMatrix(), 0,
+				viewport, 0, xyzw, 0);
 
 		xyzw[0] /= xyzw[3];
 		xyzw[1] /= xyzw[3];

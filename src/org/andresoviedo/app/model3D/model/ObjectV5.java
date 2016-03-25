@@ -529,19 +529,19 @@ public class ObjectV5 implements Object3D {
 		//
 		if (drawListBuffer == null) {
 			if (drawModeList != null) {
-				Log.d("ObjectV5", "Drawing heterogeneous shape using arrays...");
+				// Log.d("ObjectV5", "Drawing heterogeneous shape using arrays...");
 				for (int[] polygon : drawModeList) {
 					GLES20.glDrawArrays(polygon[0], polygon[1], polygon[2]);
 				}
 			} else {
 				// assume we are drawing normal triangles
-				Log.d("ObjectV5", "Drawing homogeneous shape using arrays...");
+				// Log.d("ObjectV5", "Drawing homogeneous shape using arrays...");
 				GLES20.glDrawArrays(drawMode, 0, vertexBuffer.capacity() / COORDS_PER_VERTEX);
 			}
 		} else {
 			int capacity = drawListBuffer.capacity();
 			if (drawModeList != null) {
-				Log.d("ObjectV5", "Drawing heterogeneous polygon...");
+				// Log.d("ObjectV5", "Drawing heterogeneous polygon...");
 				for (int[] drawPart : drawModeList) {
 					int drawModePolygon = drawPart[0];
 					int vertexPos = drawPart[1];
@@ -550,7 +550,7 @@ public class ObjectV5 implements Object3D {
 					GLES20.glDrawElements(drawModePolygon, drawSizePolygon, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 				}
 			} else {
-				Log.d("ObjectV5", "Drawing homogeneous polygon...");
+				// Log.d("ObjectV5", "Drawing homogeneous polygon...");
 				if (drawSize != -1 && capacity % drawSize != 0) {
 					throw new RuntimeException(capacity + "<>" + drawSize);
 				}

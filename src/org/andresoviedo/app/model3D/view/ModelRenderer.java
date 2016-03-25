@@ -5,8 +5,6 @@ import javax.microedition.khronos.opengles.GL10;
 
 import org.andresoviedo.app.model3D.entities.Camera;
 import org.andresoviedo.app.model3D.model.Object3D;
-import org.andresoviedo.app.model3D.model.Object3DData;
-import org.andresoviedo.app.model3D.services.ExampleSceneLoader;
 import org.andresoviedo.app.model3D.services.SceneLoader;
 
 import android.opengl.GLES20;
@@ -46,13 +44,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	 */
 	public ModelRenderer(ModelSurfaceView modelSurfaceView) {
 		this.main = modelSurfaceView;
-		String paramUri = modelSurfaceView.getModelActivity().getParamUri();
-		Object3DData object = modelSurfaceView.getModelActivity().getParamObject3D();
-		if (paramUri == null && object == null) {
-			this.scene = new ExampleSceneLoader(modelSurfaceView);
-		} else {
-			this.scene = new SceneLoader(modelSurfaceView);
-		}
+		this.scene = main.getModelActivity().getScene();
 	}
 
 	@Override
@@ -72,7 +64,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 		// Lets create our 3D world components
 		camera = new Camera();
-		scene.init();
+
+		// Init our GL objects
+		scene.refresh();
 	}
 
 	@Override
@@ -99,6 +93,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onDrawFrame(GL10 unused) {
+		// generate GL objects in this thread
+		scene.refresh();
 
 		// Draw background color
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);

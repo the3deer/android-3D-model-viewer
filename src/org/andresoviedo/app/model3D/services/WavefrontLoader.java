@@ -498,7 +498,6 @@ public class WavefrontLoader {
 				br.close();
 			} catch (IOException e) {
 				Log.e("materials", e.getMessage(), e);
-				throw new RuntimeException(e);
 			}
 
 		} // end of Materials()

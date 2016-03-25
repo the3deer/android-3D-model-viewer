@@ -1,6 +1,7 @@
 package org.andresoviedo.app.model3D.view;
 
-import org.andresoviedo.app.model3D.model.Object3DData;
+import org.andresoviedo.app.model3D.services.ExampleSceneLoader;
+import org.andresoviedo.app.model3D.services.SceneLoader;
 import org.andresoviedo.app.util.Utils;
 
 import android.annotation.TargetApi;
@@ -9,6 +10,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.MenuItem;
 
 /**
@@ -18,14 +20,16 @@ import android.view.MenuItem;
  */
 public class ModelActivity extends Activity {
 
+	private String paramAssetDir;
+	private String paramAssetFilename;
 	/**
 	 * The file to load. Passed as input parameter
 	 */
-	private String paramUri;
+	private String paramFilename;
 
-	private Object3DData paramObject3D;
+	private GLSurfaceView gLView;
 
-	private GLSurfaceView mGLView;
+	private SceneLoader sceneLoader;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -34,14 +38,24 @@ public class ModelActivity extends Activity {
 		// Try to get input parameters
 		Bundle b = getIntent().getExtras();
 		if (b != null) {
-			this.paramUri = b.getString("uri");
-			this.paramObject3D = (Object3DData) b.getSerializable("obj");
+			this.paramAssetDir = b.getString("assetDir");
+			this.paramAssetFilename = b.getString("assetFilename");
+			this.paramFilename = b.getString("uri");
+		}
+		Log.i("Renderer", "Params: assetDir '" + paramAssetDir + "', assetFilename '" + paramAssetFilename + "', uri '"
+				+ paramFilename + "'");
+
+		// Create our 3D sceneario
+		if (paramFilename == null && paramAssetFilename == null) {
+			sceneLoader = new ExampleSceneLoader(this);
+		} else {
+			sceneLoader = new SceneLoader(this);
 		}
 
 		// Create a GLSurfaceView instance and set it
 		// as the ContentView for this Activity.
-		mGLView = new ModelSurfaceView(this);
-		setContentView(mGLView);
+		gLView = new ModelSurfaceView(this);
+		setContentView(gLView);
 
 		// Show the Up button in the action bar.
 		setupActionBar();
@@ -86,11 +100,24 @@ public class ModelActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	public String getParamUri() {
-		return paramUri;
+	public String getParamAssetDir() {
+		return paramAssetDir;
 	}
 
-	public Object3DData getParamObject3D() {
-		return paramObject3D;
+	public String getParamAssetFilename() {
+		return paramAssetFilename;
 	}
+
+	public String getParamFilename() {
+		return paramFilename;
+	}
+
+	public SceneLoader getScene() {
+		return sceneLoader;
+	}
+
+	public GLSurfaceView getgLView() {
+		return gLView;
+	}
+
 }

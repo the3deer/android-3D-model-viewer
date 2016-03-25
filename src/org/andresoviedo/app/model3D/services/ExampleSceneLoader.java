@@ -1,7 +1,5 @@
 package org.andresoviedo.app.model3D.services;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -14,9 +12,9 @@ import org.andresoviedo.app.model3D.model.ObjectV1;
 import org.andresoviedo.app.model3D.model.ObjectV2;
 import org.andresoviedo.app.model3D.model.ObjectV3;
 import org.andresoviedo.app.model3D.model.ObjectV4;
-import org.andresoviedo.app.model3D.view.ModelSurfaceView;
-import org.apache.commons.io.IOUtils;
+import org.andresoviedo.app.model3D.view.ModelActivity;
 
+import android.app.Activity;
 import android.opengl.GLES20;
 import android.util.Log;
 
@@ -28,7 +26,7 @@ import android.util.Log;
  */
 public class ExampleSceneLoader extends SceneLoader {
 
-	private final ModelSurfaceView main;
+	private final Activity main;
 
 	private ObjectV1 axis;
 	private ObjectV1 triangle1;
@@ -37,20 +35,22 @@ public class ExampleSceneLoader extends SceneLoader {
 	private ObjectV2 square1;
 	private ObjectV2 square2;
 	private Object3D square3;
+
 	private WavefrontLoader wfl;
-	private Object3D wavefrontModel;
+	private Object3DData objData;
+	private Object3D objGL;
 
 	/**
 	 * Set of 3D objects this scene has
 	 */
 	private List<Object3D> objects = new ArrayList<Object3D>();
 
-	public ExampleSceneLoader(ModelSurfaceView main) {
-		super(main);
-		this.main = main;
+	public ExampleSceneLoader(ModelActivity modelActivity) {
+		super(modelActivity);
+		this.main = modelActivity;
 	}
 
-	public void init() {
+	private void init() {
 		axis = new ObjectV1(new float[] { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // right
 				0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // left
 				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // up
@@ -122,23 +122,32 @@ public class ExampleSceneLoader extends SceneLoader {
 		square3.setPosition(new float[] { 0f, 0.0f, -1.0f });
 
 		try {
-			InputStream assetIs = main.getContext().getAssets().open("models/teapot.obj");
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			IOUtils.copy(assetIs, bos);
-			assetIs.close();
-
-			ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+			InputStream bis = main.getAssets().open("models/teapot.obj");
 			wfl.loadModel(bis);
 			bis.close();
 
 			Object3DData data3D = new Object3DData(wfl.getVerts(), wfl.getNormals(), wfl.getTexCoords(), wfl.getFaces(),
 					wfl.getFaceMats(), wfl.getMaterials());
+			data3D.setId("teapot.obj");
+			data3D.setAssetsDir("models/");
+			data3D = Object3DBuilder.generateArrays(main.getAssets(), data3D);
+			objData = data3D;
+		} catch (Exception ex) {
+			Log.e("renderer", ex.getMessage(), ex);
+		}
+	}
 
-			wavefrontModel = Object3DBuilder.createGLES20Object(data3D, null, "models/", main.getContext().getAssets(),
-					GLES20.GL_TRIANGLES, 3);
+	public void refresh() {
+		if (objGL != null) {
+			return;
+		}
 
-			wavefrontModel.setPosition(new float[] { 0f, 0.0f, 0.0f });
-			wavefrontModel.setColor(new float[] { 0.9f, 0.0f, 0.0f, 0.5f });
+		init();
+
+		try {
+			objGL = Object3DBuilder.createGLES20Object(objData, GLES20.GL_TRIANGLES, 3);
+			objGL.setPosition(new float[] { 0f, 0.0f, 0.0f });
+			objGL.setColor(new float[] { 0.9f, 0.0f, 0.0f, 0.5f });
 		} catch (Exception ex) {
 			Log.e("renderer", ex.getMessage(), ex);
 		}
@@ -151,8 +160,7 @@ public class ExampleSceneLoader extends SceneLoader {
 		// objects.add(wavefrontModel);
 
 		// X, Y, Z
-				final float[] cubePositionData =
-				{
+		final float[] cubePositionData = {
 				// In OpenGL counter-clockwise winding is default. This means that when we look at a triangle,
 				// if the points are counter-clockwise we are looking at the "front". If not we are looking at
 				// the back. OpenGL has an optimization where all back-facing triangles are culled, since they
@@ -371,7 +379,7 @@ public class ExampleSceneLoader extends SceneLoader {
 				};
 
 		try {
-			InputStream open = main.getContext().getAssets().open("models/cube.bmp");
+			InputStream open = main.getAssets().open("models/cube.bmp");
 			List<InputStream> openl = new ArrayList<InputStream>();
 			openl.add(open);
 			ObjectV4 obj4 = new ObjectV4(cubePositionData, cubeColorData, null, cubeNormalData,

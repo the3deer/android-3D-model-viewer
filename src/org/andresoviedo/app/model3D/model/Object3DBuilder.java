@@ -22,18 +22,14 @@ import android.util.Log;
 
 public final class Object3DBuilder {
 
-	private static final boolean DRAW_ARRAYS = true;
-	private static boolean flipTexCoords = true;
+	/**
+	 * Default vertices colors
+	 */
 	private static float[] DEFAULT_COLOR = { 1.0f, 1.0f, 0, 1.0f };
 
-	public static Object3D createGLES20Object(Object3DData obj, File currentDir, String assetsDir, AssetManager am,
-			int drawMode, int drawSize) throws IOException
-	/*
-	 * render the model to a display list, so it can be drawn quicker later
-	 */
-	{
+	public static Object3DData generateArrays(AssetManager assets, Object3DData obj) throws IOException {
 		ArrayList<Tuple3> verts = obj.getVerts();
-		ArrayList<Tuple3> normals = obj.getNormals();
+		ArrayList<Tuple3> vertexNormals = obj.getNormals();
 		ArrayList<Tuple3> texCoords = obj.getTexCoords();
 		Faces faces = obj.getFaces(); // model faces
 		FaceMaterials faceMats = obj.getFaceMats();
@@ -48,7 +44,7 @@ public final class Object3DBuilder {
 		}
 
 		FloatBuffer vertexArrayBuffer = null;
-		if (DRAW_ARRAYS) {
+		if (obj.isDrawUsingArrays()) {
 			vertexArrayBuffer = createNativeByteBuffer(3 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
 			vertexArrayBuffer.position(0);
 			for (int[] face : faces.facesVertIdxs) {
@@ -71,38 +67,39 @@ public final class Object3DBuilder {
 			currentVertexPos += face.length;
 		}
 
-		FloatBuffer normalsBuffer = createNativeByteBuffer(3 * normals.size() * 4).asFloatBuffer();
-		normalsBuffer.position(0);
-		for (Tuple3 norm : normals) {
-			normalsBuffer.put(norm.getX());
-			normalsBuffer.put(norm.getY());
-			normalsBuffer.put(norm.getZ());
+		FloatBuffer vertexNormalsBuffer = createNativeByteBuffer(3 * vertexNormals.size() * 4).asFloatBuffer();
+		vertexNormalsBuffer.position(0);
+		for (Tuple3 norm : vertexNormals) {
+			vertexNormalsBuffer.put(norm.getX());
+			vertexNormalsBuffer.put(norm.getY());
+			vertexNormalsBuffer.put(norm.getZ());
 		}
 
-		FloatBuffer normalsArray = createNativeByteBuffer(3 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
-		normalsArray.position(0);
+		FloatBuffer vertexNormalsArrayBuffer = createNativeByteBuffer(3 * faces.getVerticesReferencesCount() * 4)
+				.asFloatBuffer();
+		vertexNormalsArrayBuffer.position(0);
 		for (int[] normal : faces.facesNormIdxs) {
 			for (int i = 0; i < normal.length; i++) {
-				normalsArray.put(normalsBuffer.get(normal[i] * 3));
-				normalsArray.put(normalsBuffer.get(normal[i] * 3 + 1));
-				normalsArray.put(normalsBuffer.get(normal[i] * 3 + 2));
+				vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3));
+				vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3 + 1));
+				vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3 + 2));
 			}
 		}
 
-		FloatBuffer textCoordsBuffer = createNativeByteBuffer(2 * texCoords.size() * 4).asFloatBuffer();
-		textCoordsBuffer.position(0);
+		FloatBuffer textureCoordsBuffer = createNativeByteBuffer(2 * texCoords.size() * 4).asFloatBuffer();
+		textureCoordsBuffer.position(0);
 		for (Tuple3 texCor : texCoords) {
-			textCoordsBuffer.put(texCor.getX());
-			textCoordsBuffer.put(flipTexCoords ? 1 - texCor.getY() : texCor.getY());
+			textureCoordsBuffer.put(texCor.getX());
+			textureCoordsBuffer.put(obj.isFlipTextCoords() ? 1 - texCor.getY() : texCor.getY());
 		}
 
-		FloatBuffer textureArraysBuffer = createNativeByteBuffer(2 * faces.getVerticesReferencesCount() * 4)
+		FloatBuffer textureCoordsArraysBuffer = createNativeByteBuffer(2 * faces.getVerticesReferencesCount() * 4)
 				.asFloatBuffer();
 		try {
 			for (int[] text : faces.facesTexIdxs) {
 				for (int i = 0; i < text.length; i++) {
-					textureArraysBuffer.put(textCoordsBuffer.get(text[i] * 2));
-					textureArraysBuffer.put(textCoordsBuffer.get(text[i] * 2 + 1));
+					textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2));
+					textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2 + 1));
 				}
 			}
 		} catch (Exception ex) {
@@ -110,7 +107,7 @@ public final class Object3DBuilder {
 		}
 
 		if (materials != null) {
-			materials.readMaterials(currentDir, assetsDir, am);
+			materials.readMaterials(obj.getCurrentDir(), obj.getAssetsDir(), assets);
 		}
 
 		FloatBuffer colorArrayBuffer = null;
@@ -134,9 +131,9 @@ public final class Object3DBuilder {
 
 		// materials = null;
 
-		List<InputStream> textureIs = null;
+		List<InputStream> textureStreams = null;
 		if (materials != null && !materials.materials.isEmpty()) {
-			textureIs = new ArrayList<InputStream>();
+			textureStreams = new ArrayList<InputStream>();
 			// FileInputStream is = new FileInputStream(fileName);
 			String texture = null;
 			for (Material mat : materials.materials.values()) {
@@ -146,60 +143,33 @@ public final class Object3DBuilder {
 				}
 			}
 			if (texture != null) {
-				if (currentDir != null) {
-					File file = new File(currentDir, texture);
+				if (obj.getCurrentDir() != null) {
+					File file = new File(obj.getCurrentDir(), texture);
 					Log.v("materials", "Loading texture '" + file + "'...");
-					textureIs.add(new FileInputStream(file));
+					textureStreams.add(new FileInputStream(file));
 				} else {
-					Log.v("materials", "Loading texture '" + assetsDir + texture + "'...");
-					textureIs.add(am.open(assetsDir + texture));
+					Log.v("materials", "Loading texture '" + obj.getAssetsDir() + texture + "'...");
+					textureStreams.add(assets.open(obj.getAssetsDir() + texture));
 				}
 			} else {
 				Log.i("Loader", "Found material(s) but no texture");
 			}
 		}
 
-		// TODO: removed because i im refactoring the ObjectV3.. return new ObjectV3(vertexBuffer, indexBuffer,
-		// normalsBuffer,
-		// textCoordsBuffer, GLES20.GL_TRIANGLES, 3,
-		// materials != null ? materials.materials.get(0).getTexture() : null);
+		obj.setVertexBuffer(vertexBuffer);
+		obj.setVertexNormalsBuffer(vertexNormalsBuffer);
+		obj.setTextureCoordsBuffer(textureCoordsBuffer);
 
-		if (colorArrayBuffer != null) {
+		obj.setVertexArrayBuffer(vertexArrayBuffer);
+		obj.setVertexNormalsArrayBuffer(vertexNormalsArrayBuffer);
+		obj.setTextureCoordsArrayBuffer(textureCoordsArraysBuffer);
 
-			return new ObjectV5(DRAW_ARRAYS ? vertexArrayBuffer : vertexBuffer, drawModeList, colorArrayBuffer,
-					DRAW_ARRAYS ? null : null, normalsArray, textureArraysBuffer, drawMode, drawSize,
-					textureIs != null ? textureIs : null);
-		} else {
-			return new ObjectV3(DRAW_ARRAYS ? vertexArrayBuffer : vertexBuffer, DRAW_ARRAYS ? null : null,
-					normalsBuffer, textureArraysBuffer, drawMode, drawSize,
-					textureIs != null ? textureIs.get(0) : null);
-		}
+		obj.setDrawModeList(drawModeList);
+		obj.setVertexColorsArrayBuffer(colorArrayBuffer);
+		obj.setTextureStreams(textureStreams);
 
-		// if (materials != null) {
-		// // materials.readMaterials();
-		// }
-		// modelDispList = gl.glGenLists(1);
-		// gl.glNewList(modelDispList, GLES20.GL_COMPILE);
-		//
-		// // gl.glPushMatrix();
-		// // render the model face-by-face
-		// String faceMat;
-		// for (int i = 0; i < faces.getNumFaces(); i++) {
-		// faceMat = faceMats.findMaterial(i); // get material used by face i
-		// if (faceMat != null)
-		// flipTexCoords = materials.renderWithMaterial(faceMat, gl); // render
-		// // using
-		// // that
-		// // material
-		// faces.renderFace(i, flipTexCoords, gl); // draw face i
-		// }
-		// if (materials != null)
-		// materials.switchOffTex(gl);
-		// // gl.glPopMatrix();
-		//
-		// gl.glEndList();
-		// return modelDispList;
-	}// end of drawToList()
+		return obj;
+	}
 
 	private static ByteBuffer createNativeByteBuffer(int length) {
 		// initialize vertex byte buffer for shape coordinates
@@ -210,4 +180,18 @@ public final class Object3DBuilder {
 		bb.order(ByteOrder.nativeOrder());
 		return bb;
 	}
+
+	public static Object3D createGLES20Object(Object3DData obj, int drawMode, int drawSize) throws IOException {
+
+		if (obj.getVertexColorsArrayBuffer() != null) {
+			return new ObjectV5(obj.getVertexArrayBuffer(), obj.getDrawModeList(), obj.getVertexColorsArrayBuffer(),
+					null, obj.getVertexNormalsArrayBuffer(), obj.getTextureCoordsArrayBuffer(), drawMode, drawSize,
+					obj.getTextureStreams());
+		} else {
+			return new ObjectV3(obj.getVertexArrayBuffer(), null, obj.getVertexNormalsArrayBuffer(),
+					obj.getTextureCoordsArrayBuffer(), drawMode, drawSize,
+					obj.getTextureStreams() != null ? obj.getTextureStreams().get(0) : null);
+		}
+	}
+
 }

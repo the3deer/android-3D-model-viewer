@@ -11,6 +11,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -21,7 +22,7 @@ public class MenuActivity extends ListActivity {
 	private static final int REQUEST_CODE_OPEN_FILE = 1000;
 
 	private static enum Action {
-		LOAD_MODEL, DEMO, SETTINGS, HELP, ABOUT, EXIT, UNKNOWN
+		LOAD_MODEL, DEMO, SETTINGS, HELP, ABOUT, EXIT, UNKNOWN, EXAMPLE
 	};
 
 	@Override
@@ -45,6 +46,11 @@ public class MenuActivity extends ListActivity {
 		}
 		try {
 			switch (action) {
+			case EXAMPLE: {// Start Model activity.
+				Intent intent = new Intent(MenuActivity.this.getApplicationContext(), ModelActivity.class);
+				MenuActivity.this.startActivity(intent);
+				break;
+			}
 			case DEMO: {
 				// Start Model activity.
 				Intent intent = new Intent(MenuActivity.this.getApplicationContext(), DemoActivity.class);
@@ -103,18 +109,21 @@ public class MenuActivity extends ListActivity {
 				// The URI of the selected file
 				final Uri uri = data.getData();
 				if (uri != null && uri.getPath() != null) {
-					Toast.makeText(getApplicationContext(), "Loading '" + uri.getPath() + "'", Toast.LENGTH_SHORT)
-							.show();
-					Intent intent = new Intent(getApplicationContext(), ModelActivity.class);
-					Bundle b = new Bundle();
-					b.putString("uri", uri.getPath());
-					intent.putExtras(b);
-					startActivity(intent);
+					launchModelRendererActivity(uri.getPath());
 				}
 			} else {
 				Toast.makeText(getApplicationContext(), "Result when loading file was '" + resultCode + "'",
-						Toast.LENGTH_LONG).show();
+						Toast.LENGTH_SHORT).show();
 			}
 		}
+	}
+
+	private void launchModelRendererActivity(String filename) {
+		Log.i("Menu", "Launching renderer for '" + filename + "'");
+		Intent intent = new Intent(getApplicationContext(), ModelActivity.class);
+		Bundle b = new Bundle();
+		b.putString("uri", filename);
+		intent.putExtras(b);
+		startActivity(intent);
 	}
 }
