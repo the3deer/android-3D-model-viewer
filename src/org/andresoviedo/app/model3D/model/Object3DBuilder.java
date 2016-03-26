@@ -10,6 +10,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andresoviedo.app.model3D.services.WavefrontLoader;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.FaceMaterials;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Faces;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Material;
@@ -26,6 +27,57 @@ public final class Object3DBuilder {
 	 * Default vertices colors
 	 */
 	private static float[] DEFAULT_COLOR = { 1.0f, 1.0f, 0, 1.0f };
+
+	public static Object3D build(float[] verts, int drawMode) {
+		return new ObjectV1(createNativeByteBuffer(verts.length * 4).asFloatBuffer().put(verts), drawMode);
+	}
+
+	public static Object3D build(float[] verts, short[] drawOrder, int drawMode) {
+		return new ObjectV2(createNativeByteBuffer(verts.length * 4).asFloatBuffer().put(verts),
+				createNativeByteBuffer(verts.length * 2).asShortBuffer().put(drawOrder), drawMode);
+	}
+
+	public static Object3D build(float[] verts, float[] textCoord, int drawType, int drawSize, InputStream texture) {
+		return new ObjectV3(createNativeByteBuffer(4 * verts.length).asFloatBuffer().put(verts).asReadOnlyBuffer(),
+				createNativeByteBuffer(4 * textCoord.length).asFloatBuffer().put(textCoord).asReadOnlyBuffer(),
+				drawType, drawSize, texture);
+	}
+
+	public static Object3D build(float[] verts, float[] vertColors, float[] textCoord, int drawType, int drawSize,
+			InputStream texture) {
+		return new ObjectV4(createNativeByteBuffer(4 * verts.length).asFloatBuffer().put(verts).asReadOnlyBuffer(),
+				createNativeByteBuffer(4 * vertColors.length).asFloatBuffer().put(vertColors).asReadOnlyBuffer(),
+				createNativeByteBuffer(4 * textCoord.length).asFloatBuffer().put(textCoord).asReadOnlyBuffer(),
+				drawType, drawSize, texture);
+	}
+
+	public static Object3D build(AssetManager assets, String assetDir, String modelId) {
+		try {
+			InputStream is = assets.open(assetDir + modelId);
+			WavefrontLoader wfl = new WavefrontLoader(modelId);
+			wfl.loadModel(is);
+			is.close();
+
+			Object3DData data3D = new Object3DData(wfl.getVerts(), wfl.getNormals(), wfl.getTexCoords(), wfl.getFaces(),
+					wfl.getFaceMats(), wfl.getMaterials());
+			data3D.setId(modelId);
+			data3D.setAssetsDir(assetDir);
+			data3D = Object3DBuilder.generateArrays(assets, data3D);
+			return build(data3D, GLES20.GL_TRIANGLES, 3);
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	public static Object3D build(Object3DData obj, int drawMode, int drawSize) throws IOException {
+		if (obj.getVertexColorsArrayBuffer() != null) {
+			return new ObjectV5(obj.getVertexArrayBuffer(), obj.getDrawModeList(), obj.getVertexColorsArrayBuffer(),
+					null, obj.getTextureCoordsArrayBuffer(), drawMode, drawSize, obj.getTextureStream0());
+		} else {
+			return new ObjectV3(obj.getVertexArrayBuffer(), obj.getTextureCoordsArrayBuffer(), drawMode, drawSize,
+					obj.getTextureStream0());
+		}
+	}
 
 	public static Object3DData generateArrays(AssetManager assets, Object3DData obj) throws IOException {
 		ArrayList<Tuple3> verts = obj.getVerts();
@@ -110,22 +162,19 @@ public final class Object3DBuilder {
 			materials.readMaterials(obj.getCurrentDir(), obj.getAssetsDir(), assets);
 		}
 
-		FloatBuffer colorArrayBuffer = null;
-		if (!faceMats.isEmpty()) {
-			colorArrayBuffer = createNativeByteBuffer(4 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
-			colorArrayBuffer.position(0);
-			float[] currentColor = DEFAULT_COLOR;
-			for (int i = 0; i < faces.facesVertIdxs.size(); i++) {
-				if (faceMats.findMaterial(i) != null) {
-					Material mat = materials.getMaterial(faceMats.findMaterial(i));
-					if (mat != null) {
-						currentColor = mat.getKdColor();
-					}
+		FloatBuffer colorArrayBuffer = createNativeByteBuffer(4 * faces.getVerticesReferencesCount() * 4)
+				.asFloatBuffer();
+		float[] currentColor = DEFAULT_COLOR;
+		for (int i = 0; i < faces.facesVertIdxs.size(); i++) {
+			if (!faceMats.isEmpty() && faceMats.findMaterial(i) != null) {
+				Material mat = materials.getMaterial(faceMats.findMaterial(i));
+				if (mat != null) {
+					currentColor = mat.getKdColor();
 				}
-				int[] face = faces.facesVertIdxs.get(i);
-				for (int j = 0; j < face.length; j++) {
-					colorArrayBuffer.put(currentColor);
-				}
+			}
+			int[] face = faces.facesVertIdxs.get(i);
+			for (int j = 0; j < face.length; j++) {
+				colorArrayBuffer.put(currentColor);
 			}
 		}
 
@@ -179,19 +228,6 @@ public final class Object3DBuilder {
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());
 		return bb;
-	}
-
-	public static Object3D createGLES20Object(Object3DData obj, int drawMode, int drawSize) throws IOException {
-
-		if (obj.getVertexColorsArrayBuffer() != null) {
-			return new ObjectV5(obj.getVertexArrayBuffer(), obj.getDrawModeList(), obj.getVertexColorsArrayBuffer(),
-					null, obj.getVertexNormalsArrayBuffer(), obj.getTextureCoordsArrayBuffer(), drawMode, drawSize,
-					obj.getTextureStreams());
-		} else {
-			return new ObjectV3(obj.getVertexArrayBuffer(), null, obj.getVertexNormalsArrayBuffer(),
-					obj.getTextureCoordsArrayBuffer(), drawMode, drawSize,
-					obj.getTextureStreams() != null ? obj.getTextureStreams().get(0) : null);
-		}
 	}
 
 }

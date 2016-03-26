@@ -44,7 +44,7 @@ public class SceneLoader {
 	/**
 	 * The 3D axis
 	 */
-	private ObjectV1 axis;
+	private Object3D axis;
 	/**
 	 * 3D object data
 	 */
@@ -114,7 +114,7 @@ public class SceneLoader {
 
 		// Draw the axis
 		if (drawAxis) {
-			axis = new ObjectV1(new float[] { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // right
+			axis = Object3DBuilder.build(new float[] { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // right
 					0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // left
 					0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // up
 					0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, // down
@@ -135,14 +135,7 @@ public class SceneLoader {
 		}
 
 		try {
-			if (modelFile != null) {
-				// Object3DData2 obj2 = Object3DBuilder.generateArrays(null, obj3DData);
-				obj3D = Object3DBuilder.createGLES20Object(obj3DData, GLES20.GL_TRIANGLES, 3);
-			} else {
-				// Object3DData2 obj2 = Object3DBuilder.generateArrays(parent.getModelActivity().getAssets(),
-				// obj3DData);
-				obj3D = Object3DBuilder.createGLES20Object(obj3DData, GLES20.GL_TRIANGLES, 3);
-			}
+			obj3D = Object3DBuilder.build(obj3DData, GLES20.GL_TRIANGLES, 3);
 			objects.add(obj3D);
 		} catch (IOException ex) {
 			Toast.makeText(parent.getApplicationContext(), "There was a problem creating 3D object", Toast.LENGTH_LONG)

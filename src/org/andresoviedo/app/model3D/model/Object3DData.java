@@ -3,6 +3,7 @@ package org.andresoviedo.app.model3D.model;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,16 +34,21 @@ public class Object3DData {
 	private boolean drawUsingArrays = true;
 	private boolean flipTextCoords = true;
 
+	// Model data for the simplest object
+	private float[] color;
+	private int drawMode;
+
 	// Model data
-	private final ArrayList<Tuple3> verts;
-	private final ArrayList<Tuple3> normals;
-	private final ArrayList<Tuple3> texCoords;
-	private final Faces faces;
-	private final FaceMaterials faceMats;
-	private final Materials materials;
+	private ArrayList<Tuple3> verts;
+	private ArrayList<Tuple3> normals;
+	private ArrayList<Tuple3> texCoords;
+	private Faces faces;
+	private FaceMaterials faceMats;
+	private Materials materials;
 
 	// Processed data
 	private FloatBuffer vertexBuffer = null;
+	private ShortBuffer drawBuffer = null;
 	private FloatBuffer vertexNormalsBuffer = null;
 	private FloatBuffer textureCoordsBuffer = null;
 	private FloatBuffer vertexArrayBuffer = null;
@@ -69,6 +75,30 @@ public class Object3DData {
 
 	public String getId() {
 		return id;
+	}
+
+	public float[] getColor() {
+		return color;
+	}
+
+	public void setColor(float[] color) {
+		this.color = color;
+	}
+
+	public int getDrawMode() {
+		return drawMode;
+	}
+
+	public void setDrawMode(int drawMode) {
+		this.drawMode = drawMode;
+	}
+
+	public ShortBuffer getDrawBuffer() {
+		return drawBuffer;
+	}
+
+	public void setDrawBuffer(ShortBuffer drawBuffer) {
+		this.drawBuffer = drawBuffer;
 	}
 
 	public File getCurrentDir() {
@@ -191,6 +221,13 @@ public class Object3DData {
 
 	public void setVertexColorsArrayBuffer(FloatBuffer vertexColorsArrayBuffer) {
 		this.vertexColorsArrayBuffer = vertexColorsArrayBuffer;
+	}
+
+	public InputStream getTextureStream0() {
+		if (textureStreams == null) {
+			return null;
+		}
+		return textureStreams.get(0);
 	}
 
 	public List<InputStream> getTextureStreams() {

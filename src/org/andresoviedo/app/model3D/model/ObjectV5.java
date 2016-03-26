@@ -25,198 +25,83 @@ import android.util.Log;
  */
 public class ObjectV5 implements Object3D {
 
+	// number of coordinates per vertex in this array
+	private static final int COORDS_PER_VERTEX = 3;
+	private static final int VERTEX_STRIDE = COORDS_PER_VERTEX * 4; // 4 bytes per
+
 	// @formatter:off
-	protected static final String vertexShaderCode_textured =
-			// This matrix member variable provides a hook to manipulate
-			// the coordinates of the objects that use this vertex shader
-			"uniform mat4 u_MVPMatrix;" + 
-			"uniform mat4 u_MVMatrix;"+       // A constant representing the combined model/view matrix.
-			
-			"attribute vec4 a_Position;"+    // Per-vertex position information we will pass in.
-			"attribute vec3 a_Normal;"+      // Per-vertex normal information we will pass in.
-			"attribute vec4 a_Color;"+       // Per-vertex color information we will pass in.
-			
-			"varying vec3 v_Position;"+       // This will be passed into the fragment shader.
-			"varying vec4 v_Color;"+         // This will be passed into the fragment shader.
-			"varying vec3 v_Normal;"+         // This will be passed into the fragment shader.
-			
+	protected final String vertexShaderCode =
+			"uniform mat4 uMVPMatrix;" + 
+			"attribute vec4 vPosition;"+
+			"attribute vec4 a_Color;"+
+			"varying vec4 vColor;"+
 			"attribute vec2 a_TexCoordinate;"+ // Per-vertex texture coordinate information we will pass in.
 			"varying vec2 v_TexCoordinate;"+   // This will be passed into the fragment shader.
-			
 			"void main() {" +
-			    // Transform the vertex into eye space.
-				"  v_Position = vec3(u_MVMatrix * a_Position);" + 
-			
-				// Pass through the color.
-				"  v_Color = a_Color;"+
-				
-				// Transform the normal's orientation into eye space.
-				"  v_Normal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));"+
-				
-	//									"  v_useTextures = a_useTextures;"+
+				"  vColor = a_Color;"+
 				"  v_TexCoordinate = a_TexCoordinate;"+
-	//									"  v_TexCoordinate = a_TexCoordinate.st * vec2(1.0, -1.0);"+
-				
-				// gl_Position is a special variable used to store the final position.
-			    // Multiply the vertex by the matrix to get the final point in normalized screen coordinates.
-			    "  gl_Position = u_MVPMatrix * a_Position;"+
-				
+			    "  gl_Position = uMVPMatrix * vPosition;"+
 			"}";
 	// @formatter:on
 
 	// @formatter:off
-	protected static final String fragmentShaderCode_textured = 
+	protected final String vertexShaderCode_no_texture =
+			"uniform mat4 uMVPMatrix;" + 
+			"attribute vec4 vPosition;"+
+			"attribute vec4 a_Color;"+
+			"varying vec4 vColor;"+
+			"void main() {" +
+				"  vColor = a_Color;"+
+			    "  gl_Position = uMVPMatrix * vPosition;"+
+			"}";
+	// @formatter:on
+
+	// @formatter:off
+	protected final String fragmentShaderCode = 
 			"precision mediump float;"+
-	
-			//The position of the light in eye space.
-			"uniform vec3 u_LightPos;"+
-			
-			// Interpolated position for this fragment.
-			"varying vec3 v_Position;"+
-			
-  			// This is the color from the vertex shader interpolated across the
-			"varying vec4 v_Color;"+
-            
-			// triangle per fragment.
-			// Interpolated normal for this fragment.
-			"varying vec3 v_Normal;"+         
-			
-			"uniform sampler2D u_Texture;"+    // The input texture.
-			"varying vec2 v_TexCoordinate;"+ // Interpolated texture coordinate per fragment.
-			
+			"varying vec4 vColor;"+
+			"uniform sampler2D u_Texture;"+
+			"varying vec2 v_TexCoordinate;"+
 			"void main() {"	+ 
-			// Will be used for attenuation.
-		    "  float distance = length(u_LightPos - v_Position);"+
-			  
-			// Get a lighting direction vector from the light to the vertex.
-			"  vec3 lightVector = normalize(u_LightPos - v_Position);"+
-			 
-			// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
-			// pointing in the same direction then it will get max illumination.
-			"  float diffuse = max(dot(v_Normal, lightVector), 0.1);"+
-			
-			//  Add attenuation.
-//					"  diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));"+
-			"  diffuse = diffuse * (1.0 / (1.0 + (0.10 * distance)));"+
-//                    "  diffuse = 1.0;"+
-			
-			//  Add ambient lighting
-			"  diffuse = diffuse + 0.3;"+
-						
-			//  Multiply the color by the diffuse illumination level to get final output color.
-//					"  gl_FragColor = v_Color * diffuse;"+
-//					"  gl_FragColor = (v_Color * diffuse * texture2D(u_Texture, v_TexCoordinate));"+
-			"  gl_FragColor = v_Color * diffuse * texture2D(u_Texture, v_TexCoordinate);"+
+			"  gl_FragColor = vColor * texture2D(u_Texture, v_TexCoordinate);"+
 			"}";
 	// @formatter:on
 
 	// @formatter:off
-		protected static final String fragmentShaderCode_lighted = 
-				"precision mediump float;"+
-		
-				//The position of the light in eye space.
-				"uniform vec3 u_LightPos;"+
-				
-				// Interpolated position for this fragment.
-				"varying vec3 v_Position;"+
-				
-	  			// This is the color from the vertex shader interpolated across the
-				"varying vec4 v_Color;"+
-	            
-				// triangle per fragment.
-				// Interpolated normal for this fragment.
-				"varying vec3 v_Normal;"+         
-				
-				"void main() {"	+ 
-				// Will be used for attenuation.
-			    "  float distance = length(u_LightPos - v_Position);"+
-				  
-				// Get a lighting direction vector from the light to the vertex.
-				"  vec3 lightVector = normalize(u_LightPos - v_Position);"+
-				 
-				// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
-				// pointing in the same direction then it will get max illumination.
-				"  float diffuse = max(dot(v_Normal, lightVector), 0.1);"+
-				
-				//  Add attenuation.
-//							"  diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));"+
-				"  diffuse = diffuse * (1.0 / (1.0 + (0.10 * distance)));"+
-//		                    "  diffuse = 1.0;"+
-				
-				//  Add ambient lighting
-				"  diffuse = diffuse + 0.3;"+
-							
-				//  Multiply the color by the diffuse illumination level to get final output color.
-				"  gl_FragColor = v_Color * diffuse;"+
-				"}";
-		// @formatter:on
+	protected final String fragmentShaderCode_no_texture = 
+			"precision mediump float;"+
+			"varying vec4 vColor;"+
+			"void main() {"	+ 
+			"  gl_FragColor = vColor;"+
+			"}";
+	// @formatter:on
 
-	// number of coordinates per vertex in this array
-	protected static final int COORDS_PER_VERTEX = 3;
-
-	protected final int mProgram;
+	// Model data
 	protected final FloatBuffer vertexBuffer;
-	/**
-	 * This list will contain the vector index and the count of how many
-	 */
-	protected final List<int[]> drawModeList;
-	protected final ShortBuffer drawListBuffer;
-	protected final FloatBuffer normalsBuffer;
-	protected final FloatBuffer textureCoordBuffer;
 	protected final FloatBuffer vertexColors;
+	protected final FloatBuffer textureCoordBuffer;
+	protected final int drawMode;
+	protected final int drawSize;
+	protected float color[] = { 0.0f, 1.0f, 1.0f, 1.0f };
+	protected final ShortBuffer drawListBuffer;
+	protected final List<int[]> drawModeList;
 
-	protected float lightPos[] = { -1.0f, 1, 0f, 0.0f };
-	protected float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
+	// Transformation data
 	protected float[] position = new float[] { 0f, 0f, 0f };
 	protected float[] rotation = new float[] { 0f, 0f, 0f };
 
+	// OpenGL data
+	protected final int mProgram;
 	protected int mMVPMatrixHandle;
 	protected int mMVMatrixHandle;
 	protected int mPositionHandle;
 	protected int mColorHandle;
-	protected int normalHandle;
-	protected int lightPositionHandle;
-
-	// Lazy objects
-	protected final int drawMode;
-	protected final int drawSize;
+	private final Integer textureId;
 
 	// Bounding box
 	protected BoundingBox boundingBox;
 	protected Object3D boundingBoxObject;
 	protected Object3D faceNormalsObject;
-
-	private final int vertexShaderHandle;
-	private final int fragmentShaderHandle;
-
-	private final int[] textureId;
-
-	private static ByteBuffer createNativeByteBuffer(int length) {
-		// initialize vertex byte buffer for shape coordinates
-		ByteBuffer bb = ByteBuffer.allocateDirect(
-				// (number of coordinate values * n bytes per type)
-				length);
-		// use the device hardware's native byte order
-		bb.order(ByteOrder.nativeOrder());
-		return bb;
-	}
-
-	public ObjectV5(float[] objCoords, List<int[]> drawSizeList, float[] vertexColors, short[] drawOrder,
-			float[] vNormals, float[] textCoord, int drawType, int drawSize, List<InputStream> open) {
-		this(createNativeByteBuffer(4 * objCoords.length).asFloatBuffer().put(objCoords).asReadOnlyBuffer(),
-				drawSizeList,
-				vertexColors == null ? null
-						: createNativeByteBuffer(4 * vertexColors.length).asFloatBuffer().put(vertexColors)
-								.asReadOnlyBuffer(),
-				drawOrder == null ? null
-						: createNativeByteBuffer(2 * drawOrder.length).asShortBuffer().put(drawOrder)
-								.asReadOnlyBuffer(),
-				createNativeByteBuffer(4 * vNormals.length).asFloatBuffer().put(vNormals).asReadOnlyBuffer(),
-				textCoord == null ? null
-						: createNativeByteBuffer(4 * textCoord.length).asFloatBuffer().put(textCoord)
-								.asReadOnlyBuffer(),
-				drawType, drawSize, open);
-	}
 
 	/**
 	 * Sets up the drawing object data for use in an OpenGL ES context.
@@ -227,65 +112,31 @@ public class ObjectV5 implements Object3D {
 	 *            TODO
 	 * @param vertices
 	 */
-	public ObjectV5(FloatBuffer objCoords, List<int[]> drawModeList, FloatBuffer vertexColors, ShortBuffer drawOrder,
-			FloatBuffer normalsBuffer, FloatBuffer textureCoords, int drawMode, int drawSize,
-			List<InputStream> textureIs) {
-		// { 0, 1, 2, 0, 2, 3, 3, 4, 5, 5, 4, 0 }
-
-		this.vertexBuffer = objCoords;
-		this.vertexBuffer.position(0);
-
+	public ObjectV5(FloatBuffer vertices, List<int[]> drawModeList, FloatBuffer vertexColors,
+			ShortBuffer drawListBuffer, FloatBuffer textureCoords, int drawMode, int drawSize, InputStream textureIs) {
+		this.vertexBuffer = vertices;
+		this.drawListBuffer = drawListBuffer;
 		this.drawModeList = drawModeList;
-
-		this.drawListBuffer = drawOrder;
-		if (drawListBuffer != null) {
-			this.drawListBuffer.position(0);
-		}
-
-		this.normalsBuffer = normalsBuffer;
-		this.normalsBuffer.position(0);
-
 		this.textureCoordBuffer = textureCoords;
-		if (this.textureCoordBuffer != null) {
-			this.textureCoordBuffer.position(0);
-		}
-
 		this.vertexColors = vertexColors;
-		vertexColors.position(0);
-
 		this.drawMode = drawMode;
 		this.drawSize = drawSize;
 
 		// prepare shaders and OpenGL program
-		vertexShaderHandle = GLUtil.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode_textured);
-
-		Log.i("fa", "Using textures [" + textureIs + "]");
-		fragmentShaderHandle = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER,
-				textureIs != null ? fragmentShaderCode_textured : fragmentShaderCode_lighted);
-
-		mProgram = GLES20.glCreateProgram(); // create empty OpenGL Program
-
-		GLES20.glAttachShader(mProgram, vertexShaderHandle); // add the vertex shader
-
-		// GLES20.glBindAttribLocation(mProgram, 0, "a_Position");
-		// GLES20.glBindAttribLocation(mProgram, 1, "u_MVPMatrix");
-
-		// to program
-		GLES20.glAttachShader(mProgram, fragmentShaderHandle); // add the fragment
-																// shader to program
-
+		int vertexShader = 0;
+		int fragmentShader = 0;
 		if (textureIs != null) {
-			Log.i("globject", "Binding texture...");
-
-			// GLES20.glBindAttribLocation(mProgram, 0, "a_Color");
-			// GLES20.glBindAttribLocation(mProgram, 1, "u_Texture");
-			// GLES20.glBindAttribLocation(mProgram, 2, "a_TexCoordinate");
-			textureId = loadTexture(textureIs);
-
+			vertexShader = GLUtil.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
+			fragmentShader = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
 		} else {
-			textureId = null;
+			vertexShader = GLUtil.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode_no_texture);
+			fragmentShader = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode_no_texture);
 		}
 
+		mProgram = GLES20.glCreateProgram(); // create empty OpenGL Program
+		GLES20.glAttachShader(mProgram, vertexShader); // add the vertex shader to program
+		GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
+		textureId = loadTexture(textureIs);
 		GLES20.glLinkProgram(mProgram); // create OpenGL program executables
 
 		// Get the link status.
@@ -298,76 +149,53 @@ public class ObjectV5 implements Object3D {
 			GLES20.glDeleteProgram(mProgram);
 			// mProgram = 0;
 		}
-
-		// debug();
 	}
 
-	public static int[] loadTexture(final List<InputStream> is) {
+	public static Integer loadTexture(final InputStream is) {
+		if (is == null) {
+			return null;
+		}
 		Log.v("loadTexture", "Loading texture '" + is + "' from stream...");
 
-		final int[] textureHandle = new int[is.size()];
+		final int[] textureHandle = new int[1];
 
-		GLES20.glGenTextures(textureHandle.length, textureHandle, 0);
+		GLES20.glGenTextures(1, textureHandle, 0);
 		GLUtil.checkGlError("glGenTextures");
 
-		for (int i = 0; i < textureHandle.length; i++) {
-			if (textureHandle[i] != 0) {
-				Log.i("texture", "Handler: " + textureHandle[0]);
+		if (textureHandle[0] != 0) {
+			Log.i("texture", "Handler: " + textureHandle[0]);
 
-				final BitmapFactory.Options options = new BitmapFactory.Options();
-				// By default, Android applies pre-scaling to bitmaps depending on the resolution of your device and
-				// which
-				// resource folder you placed the image in. We don’t want Android to scale our bitmap at all, so to be
-				// sure,
-				// we set inScaled to false.
-				options.inScaled = false;
+			final BitmapFactory.Options options = new BitmapFactory.Options();
+			// By default, Android applies pre-scaling to bitmaps depending on the resolution of your device and which
+			// resource folder you placed the image in. We don’t want Android to scale our bitmap at all, so to be sure,
+			// we set inScaled to false.
+			options.inScaled = false;
 
-				// Read in the resource
-				final Bitmap bitmap = BitmapFactory.decodeStream(is.get(i), null, options);
-				if (bitmap == null) {
-					throw new RuntimeException("couldnt load bitmap");
-				}
-
-				// Bind to the texture in OpenGL
-				GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
-				GLUtil.checkGlError("glBindTexture");
-
-				// Load the bitmap into the bound texture.
-				GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-				GLUtil.checkGlError("texImage2D");
-
-				// Recycle the bitmap, since its data has been loaded into OpenGL.
-				bitmap.recycle();
-
-				// Set filtering
-				// This tells OpenGL what type of filtering to apply when drawing the texture smaller than the original
-				// size
-				// in pixels.
-				GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-				// This tells OpenGL what type of filtering to apply when magnifying the texture beyond its original
-				// size in
-				// pixels.
-				GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-
+			// Read in the resource
+			final Bitmap bitmap = BitmapFactory.decodeStream(is, null, options);
+			if (bitmap == null) {
+				throw new RuntimeException("couldnt load bitmap");
 			}
 
-			if (textureHandle[i] == 0) {
-				throw new RuntimeException("Error loading texture.");
-			}
+			// Bind to the texture in OpenGL
+			GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
+			GLUtil.checkGlError("glBindTexture");
+			GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+			GLUtil.checkGlError("texImage2D");
+			bitmap.recycle();
+			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+
 		}
 
-		return textureHandle;
-	}
-
-	public static void checkGlError(String glOperation) {
-		int error;
-		while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-			Log.e("objModel", glOperation + ": glError " + error);
-			throw new RuntimeException(glOperation + ": glError " + error);
+		if (textureHandle[0] == 0) {
+			throw new RuntimeException("Error loading texture.");
 		}
+
+		return textureHandle[0];
 	}
 
-	public int[] getTextureId() {
+	public int getTextureId() {
 		return textureId;
 	}
 
@@ -381,54 +209,45 @@ public class ObjectV5 implements Object3D {
 		return position;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#setPosition(float[])
-	 */
-	@Override
 	public void setPosition(float[] position) {
 		this.position = position;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#getColor()
-	 */
-	@Override
 	public float[] getColor() {
 		return color;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#setColor(float[])
-	 */
-	@Override
 	public void setColor(float[] color) {
 		this.color = color;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#draw(float[], float[])
-	 */
 	@Override
 	public void draw(float[] mvpMatrix, float[] mvMatrix) {
-		this.draw(mvpMatrix, mvMatrix, drawMode, drawSize);
+		try {
+			this.draw(mvpMatrix, mvMatrix, drawMode, drawSize);
+		} catch (Exception ex) {
+			Log.e("Object51", ex.getMessage(), ex);
+		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#draw(float[], float[], int, int)
-	 */
 	@Override
 	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawMode, int drawSize) {
 		this.draw_with_textures(mvpMatrix, mvMatrix, drawMode, drawSize);
+	}
+
+	@Override
+	public void drawBoundingBox(float[] mvpMatrix, float[] mvMatrix) {
+		if (boundingBox == null) {
+			// init bounding box
+			boundingBox = new BoundingBox(vertexBuffer.asReadOnlyBuffer());
+			boundingBoxObject = new ObjectV5(boundingBox.getVertices(), boundingBox.getDrawModeList(),
+					boundingBox.getColors(), boundingBox.getDrawOrder(), null, boundingBox.getDrawMode(),
+					boundingBox.getDrawSize(), null);
+			boundingBoxObject.setPosition(getPosition());
+			boundingBoxObject.setColor(getColor());
+		}
+		boundingBoxObject.draw(mvpMatrix, mvMatrix);
+
 	}
 
 	/**
@@ -443,7 +262,7 @@ public class ObjectV5 implements Object3D {
 	 * @param drawSize
 	 *            The number of vertices of the polygon to draw
 	 */
-	public void draw_with_textures(float[] mvpMatrix, float[] mvMatrix, int drawMode, int drawSize) {
+	public void draw_with_textures(float[] mvpMatrix, float[] mvMatrix, int drawType, int drawSize) {
 		// Add program to OpenGL environment
 		GLES20.glUseProgram(mProgram);
 
@@ -458,7 +277,7 @@ public class ObjectV5 implements Object3D {
 			checkGlError("glActiveTexture");
 
 			// Bind to the texture in OpenGL
-			GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0]);
+			GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
 			checkGlError("glBindTexture");
 
 			// Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
@@ -473,21 +292,18 @@ public class ObjectV5 implements Object3D {
 			GLUtil.checkGlError("glEnableVertexAttribArray");
 
 			// Prepare the triangle coordinate data
+			textureCoordBuffer.position(0);
 			GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, textureCoordBuffer);
 			GLUtil.checkGlError("glVertexAttribPointer");
 		}
 
 		// get handle to vertex shader's vPosition member
-		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "a_Position");
+		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
 		checkGlError("glGetAttribLocation");
 
 		// Enable a handle to the triangle vertices
 		GLES20.glEnableVertexAttribArray(mPositionHandle);
 		checkGlError("glEnableVertexAttribArray");
-
-		// Prepare the triangle coordinate data
-		vertexBuffer.position(0);
-		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, vertexBuffer);
 
 		// get handle to fragment shader's vColor member
 		mColorHandle = GLES20.glGetAttribLocation(mProgram, "a_Color");
@@ -496,37 +312,23 @@ public class ObjectV5 implements Object3D {
 		// Pass in the color information
 		GLES20.glEnableVertexAttribArray(mColorHandle);
 		checkGlError("glEnableVertexAttribArray");
+
+		vertexColors.position(0);
 		GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, vertexColors);
 		GLUtil.checkGlError("glVertexAttribPointer");
 
 		// get handle to shape's transformation matrix
-		mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
+		mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
 		GLUtil.checkGlError("glGetUniformLocation");
 
 		// Apply the projection and view transformation
 		GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 		GLUtil.checkGlError("glUniformMatrix4fv");
 
-		// -- testing start
+		vertexBuffer.position(0);
+		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, VERTEX_STRIDE,
+				vertexBuffer);
 
-		lightPositionHandle = GLES20.glGetUniformLocation(mProgram, "u_LightPos");
-		GLUtil.checkGlError("glGetUniformLocation");
-		GLES20.glUniform3fv(lightPositionHandle, 1, lightPos, 0);
-
-		// Enable a handle to the triangle vertices
-		normalHandle = GLES20.glGetAttribLocation(mProgram, "a_Normal");
-		GLUtil.checkGlError("glGetAttribLocation");
-		GLES20.glEnableVertexAttribArray(normalHandle);
-		normalsBuffer.position(0);
-		GLES20.glVertexAttribPointer(normalHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, normalsBuffer);
-
-		// get handle to shape's transformation matrix
-		mMVMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
-		GLUtil.checkGlError("glGetUniformLocation");
-		GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mvMatrix, 0);
-		GLUtil.checkGlError("glUniformMatrix4fv");
-
-		//
 		if (drawListBuffer == null) {
 			if (drawModeList != null) {
 				// Log.d("ObjectV5", "Drawing heterogeneous shape using arrays...");
@@ -541,7 +343,6 @@ public class ObjectV5 implements Object3D {
 		} else {
 			int capacity = drawListBuffer.capacity();
 			if (drawModeList != null) {
-				// Log.d("ObjectV5", "Drawing heterogeneous polygon...");
 				for (int[] drawPart : drawModeList) {
 					int drawModePolygon = drawPart[0];
 					int vertexPos = drawPart[1];
@@ -550,7 +351,6 @@ public class ObjectV5 implements Object3D {
 					GLES20.glDrawElements(drawModePolygon, drawSizePolygon, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 				}
 			} else {
-				// Log.d("ObjectV5", "Drawing homogeneous polygon...");
 				if (drawSize != -1 && capacity % drawSize != 0) {
 					throw new RuntimeException(capacity + "<>" + drawSize);
 				}
@@ -565,103 +365,34 @@ public class ObjectV5 implements Object3D {
 		GLES20.glDisableVertexAttribArray(mPositionHandle);
 
 		// Disable vertex array
-		GLES20.glDisableVertexAttribArray(normalHandle);
-
-		if (vertexColors != null) {
-			GLES20.glDisableVertexAttribArray(mColorHandle);
-		}
+		GLES20.glDisableVertexAttribArray(mColorHandle);
 
 		if (textureId != null) {
 			GLES20.glDisableVertexAttribArray(mTextureCoordinateHandle);
-			// GLES20.glDisable(GLES20.GL_TEXTURE0);
-			// GLES20.glDisable(GLES20.GL_TEXTURE_2D);
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#drawBoundingBox(float[], float[])
-	 */
-	@Override
-	public void drawBoundingBox(float[] mvpMatrix, float[] mvMatrix) {
-		if (boundingBox == null) {
-			// init bounding box
-			boundingBox = new BoundingBox(vertexBuffer.asReadOnlyBuffer());
-
-			// this object uses homogeneous polygon
-			// boundingBoxObject = new ObjectV5(boundingBox.getVertices(), null, boundingBox.getColors(),
-			// boundingBox.getDrawOrder(), boundingBox.getNormals(), null, boundingBox.getDrawMode(),
-			// boundingBox.getDrawSize(), null);
-
-			// this object uses heterogeneous polygon (although all are line loops of size 4)
-			boundingBoxObject = new ObjectV5(boundingBox.getVertices(), boundingBox.getDrawModeList(),
-					boundingBox.getColors(), boundingBox.getDrawOrder(), boundingBox.getNormals(), null,
-					boundingBox.getDrawMode(), boundingBox.getDrawSize(), null);
-			boundingBoxObject.setPosition(getPosition());
-			boundingBoxObject.setColor(getColor());
-		}
-		boundingBoxObject.draw(mvpMatrix, mvMatrix);
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#translateX(float)
-	 */
-	@Override
 	public void translateX(float f) {
 		position[0] += f;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#translateY(float)
-	 */
-	@Override
 	public void translateY(float f) {
 		position[1] += f;
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#getRotation()
-	 */
-	@Override
 	public float[] getRotation() {
 		return rotation;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#setRotationZ(float)
-	 */
-	@Override
 	public void setRotationZ(float rz) {
 		rotation[2] = rz;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#getRotationZ()
-	 */
-	@Override
 	public float getRotationZ() {
 		return rotation[2];
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#setRotation(float[])
-	 */
-	@Override
 	public void setRotation(float[] rotation) {
 		this.rotation = rotation;
 	}
@@ -701,24 +432,27 @@ public class ObjectV5 implements Object3D {
 			Log.d("ObjectV4", "fNormal[" + i + "]:(" + normal + ")");
 		}
 
-		faceNormalsObject = new ObjectV3(normalsLines, null, normalsNormals, null, GLES20.GL_LINES, 2, null);
+		faceNormalsObject = new ObjectV1(normalsLines, GLES20.GL_LINES);
 		faceNormalsObject.setPosition(getPosition());
 		faceNormalsObject.setColor(getColor() != null ? getColor() : new float[] { 1.0f, 0, 0, 1.0f });
 		faceNormalsObject.draw(mvpMatrix, mvMatrix);
 	}
 
-	// private void debug() {
-	// if (vertexBuffer != null) {
-	// for (int i = 0; i < vertexBuffer.capacity(); i = i + 3) {
-	// Log.d("ObjectV3", "v(" + i / COORDS_PER_VERTEX + "):(" + vertexBuffer.get(i) + ","
-	// + vertexBuffer.get(i + 1) + "," + vertexBuffer.get(i + 2) + ")");
-	// }
-	// }
-	// if (textureCoordBuffer != null) {
-	// for (int i = 0; i < textureCoordBuffer.capacity(); i = i + 2) {
-	// Log.d("ObjectV3",
-	// "t(" + i / 2 + "):(" + textureCoordBuffer.get(i) + "," + textureCoordBuffer.get(i + 1) + ")");
-	// }
-	// }
-	// }
+	public static void checkGlError(String glOperation) {
+		int error;
+		while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+			Log.e("objModel", glOperation + ": glError " + error);
+			throw new RuntimeException(glOperation + ": glError " + error);
+		}
+	}
+
+	private static ByteBuffer createNativeByteBuffer(int length) {
+		// initialize vertex byte buffer for shape coordinates
+		ByteBuffer bb = ByteBuffer.allocateDirect(
+				// (number of coordinate values * 2 bytes per short)
+				length);
+		// use the device hardware's native byte order
+		bb.order(ByteOrder.nativeOrder());
+		return bb;
+	}
 }
