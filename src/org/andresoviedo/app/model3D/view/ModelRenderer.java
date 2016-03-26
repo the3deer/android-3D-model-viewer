@@ -161,19 +161,20 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 					Object3D object = wireframes.get(objData);
 					if (object == null || changed) {
 						object = Object3DBuilder.buildWireframe(objData);
-						if (object != null)
-							wireframes.put(objData, object);
+						wireframes.put(objData, object);
 					}
-					if (object != null)
-						object.draw(result, modelViewMatrix);
+					object.draw(result, modelViewMatrix);
 				}
-				
-				Object3D object = objects.get(objData);
-				if (object == null || changed) {
-					object = Object3DBuilder.build(objData);
-					objects.put(objData, object);
+
+				// TODO: put this when no drawWireframe. 
+				if (true) {
+					Object3D object = objects.get(objData);
+					if (object == null || changed) {
+						object = Object3DBuilder.build(objData);
+						objects.put(objData, object);
+					}
+					object.draw(result, modelViewMatrix);
 				}
-				object.draw(result, modelViewMatrix);
 
 				// Draw bounding box
 				if (drawBoundingBox) {

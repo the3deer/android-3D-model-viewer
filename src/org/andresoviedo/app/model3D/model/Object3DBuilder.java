@@ -360,47 +360,14 @@ public final class Object3DBuilder {
 	}
 
 	public static Object3D build(float[] verts, int drawMode) {
-		return new ObjectV1(createNativeByteBuffer(verts.length * 4).asFloatBuffer().put(verts), drawMode);
-	}
-
-	public static Object3D build(float[] verts, short[] drawOrder, int drawMode) {
-		return new ObjectV2(createNativeByteBuffer(verts.length * 4).asFloatBuffer().put(verts),
-				createNativeByteBuffer(verts.length * 2).asShortBuffer().put(drawOrder), drawMode);
-	}
-
-	public static Object3D build(float[] verts, float[] textCoord, int drawType, int drawSize, InputStream texture) {
-		return new ObjectV3(createNativeByteBuffer(4 * verts.length).asFloatBuffer().put(verts).asReadOnlyBuffer(),
-				createNativeByteBuffer(4 * textCoord.length).asFloatBuffer().put(textCoord).asReadOnlyBuffer(),
-				drawType, drawSize, texture);
-	}
-
-	public static Object3D build(float[] verts, float[] vertColors, float[] textCoord, int drawType, int drawSize,
-			InputStream texture) {
-		return new ObjectV4(createNativeByteBuffer(4 * verts.length).asFloatBuffer().put(verts).asReadOnlyBuffer(),
-				createNativeByteBuffer(4 * vertColors.length).asFloatBuffer().put(vertColors).asReadOnlyBuffer(),
-				createNativeByteBuffer(4 * textCoord.length).asFloatBuffer().put(textCoord).asReadOnlyBuffer(),
-				drawType, drawSize, texture);
+		return new Object3DImpl(createNativeByteBuffer(verts.length * 4).asFloatBuffer().put(verts), drawMode);
 	}
 
 	public static Object3D build(Object3DData obj) throws IOException {
-		switch (obj.getVersion()) {
-		case 1:
-			return new ObjectV1(obj.getVertexArrayBuffer(), obj.getDrawMode()).setColor(obj.getColor());
-		case 2:
-			return new ObjectV2(obj.getVertexBuffer(), obj.getDrawBuffer(), obj.getDrawMode()).setColor(obj.getColor());
-		case 3:
-			return new ObjectV3(obj.getVertexArrayBuffer(), obj.getTextureCoordsArrayBuffer(), obj.getDrawMode(),
-					obj.getDrawSize(), obj.getTextureStream0()).setColor(obj.getColor());
-		case 4:
-			return new ObjectV4(obj.getVertexArrayBuffer(), obj.getVertexColorsArrayBuffer(),
-					obj.getTextureCoordsArrayBuffer(), obj.getDrawMode(), obj.getDrawSize(), obj.getTextureStream0());
-		case 5:
-			return new ObjectV5(obj.getVertexArrayBuffer(), obj.getDrawModeList(), obj.getVertexColorsArrayBuffer(),
-					obj.getDrawBuffer(), obj.getTextureCoordsArrayBuffer(), obj.getDrawMode(), obj.getDrawSize(),
-					obj.getTextureStream0());
-		default:
-			return null;
-		}
+		return new Object3DImpl(obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer() : obj.getVertexBuffer(),
+				obj.getVertexColorsArrayBuffer(), obj.getDrawMode(), obj.getTextureCoordsArrayBuffer(),
+				obj.getTextureStream0()).setDrawOrder(obj.getDrawOrder()).setDrawModeList(obj.getDrawModeList())
+						.setDrawSize(obj.getDrawSize()).setColor(obj.getColor());
 	}
 
 	public static Object3D build(AssetManager assets, String assetDir, String modelId) {
@@ -595,7 +562,7 @@ public final class Object3DBuilder {
 		}
 
 		FloatBuffer normalsLines;
-		ShortBuffer drawBuffer = obj.getDrawBuffer();
+		ShortBuffer drawBuffer = obj.getDrawOrder();
 		if (drawBuffer != null) {
 			Log.v("Builder", "Generating face normals for '" + obj.getId() + "' using indices...");
 			int size = /* 2 points */ 2 * 3 * /* 3 points per face */ (drawBuffer.capacity() / 3)
@@ -644,19 +611,8 @@ public final class Object3DBuilder {
 	}
 
 	public static Object3D buildWireframe(Object3DData obj) {
-		Object3D ret = null;
-		switch (obj.getVersion()) {
-		case 1:
-			ret = new ObjectV1(obj.getVertexArrayBuffer(), GLES20.GL_LINE_LOOP).setDrawSize(3)
-					.setColor(obj.getColorInverted());
-			break;
-		case 2:
-			ret = new ObjectV2(obj.getVertexBuffer(), obj.getDrawBuffer(), GLES20.GL_LINE_LOOP).setDrawSize(3)
-					.setColor(obj.getColorInverted());
-			break;
-		default:
-		}
-		return ret;
+		return new Object3DImpl(obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer() : obj.getVertexBuffer(),
+				GLES20.GL_LINE_LOOP).setDrawOrder(obj.getDrawOrder()).setDrawSize(3).setColor(obj.getColorInverted());
 	}
 
 	private static ByteBuffer createNativeByteBuffer(int length) {
@@ -864,7 +820,6 @@ class BoundingBox {
 		// use the device hardware's native byte order
 		bb2.order(ByteOrder.nativeOrder());
 		drawOrder = bb2.asShortBuffer();
-		drawOrder.position(0);
 
 		// vertex colors
 		ByteBuffer bb3 = ByteBuffer.allocateDirect(24 * COORDS_PER_COLOR * 4);
@@ -872,7 +827,6 @@ class BoundingBox {
 		bb3.order(ByteOrder.nativeOrder());
 		colors = bb3.asFloatBuffer();
 
-		colors.position(0);
 		for (int i = 0; i < colors.capacity() / 4; i++) {
 			if (color != null && color.length == 4) {
 				colors.put(color);

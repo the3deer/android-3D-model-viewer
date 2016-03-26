@@ -53,14 +53,13 @@ public class Object3DData {
 
 	// Processed data
 	private FloatBuffer vertexBuffer = null;
-	private FloatBuffer vertexColors = null;
-	private FloatBuffer vertexColorsArrayBuffer = null;
 	private FloatBuffer vertexNormalsBuffer = null;
 	private FloatBuffer textureCoordsBuffer = null;
 	private ShortBuffer drawOrderBuffer = null;
 
 	// Processed arrays
 	private FloatBuffer vertexArrayBuffer = null;
+	private FloatBuffer vertexColorsArrayBuffer = null;
 	private FloatBuffer vertexNormalsArrayBuffer = null;
 	private FloatBuffer textureCoordsArrayBuffer = null;
 	private List<int[]> drawModeList = null;
@@ -150,15 +149,6 @@ public class Object3DData {
 		return this;
 	}
 
-	public FloatBuffer getVertexColors() {
-		return vertexColors;
-	}
-
-	public Object3DData setVertexColors(FloatBuffer vertexColors) {
-		this.vertexColors = vertexColors;
-		return this;
-	}
-
 	public int getDrawMode() {
 		return drawMode;
 	}
@@ -212,7 +202,7 @@ public class Object3DData {
 		this.rotation = rotation;
 	}
 
-	public ShortBuffer getDrawBuffer() {
+	public ShortBuffer getDrawOrder() {
 		return drawOrderBuffer;
 	}
 
