@@ -14,7 +14,9 @@ public class ObjectV1 implements Object3D {
 
 	// number of coordinates per vertex in this array
 	private static final int COORDS_PER_VERTEX = 3;
-	private static final int VERTEX_STRIDE = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
+	private static final int VERTEX_STRIDE = COORDS_PER_VERTEX * 4; // 4 bytes per
+
+	private static float[] DEFAULT_COLOR = { 1.0f, 0.0f, 0, 1.0f };
 
 	// @formatter:off
 	private final String vertexShaderCode =
@@ -37,6 +39,7 @@ public class ObjectV1 implements Object3D {
 	// Model data
 	private final FloatBuffer vertexBuffer;
 	private final int drawMode;
+	private int drawSize = -1; // by default draw all
 	private float color[] = { 1.0f, 0.0f, 0.0f, 1.0f }; // default color is red
 
 	// Transformation data
@@ -61,6 +64,11 @@ public class ObjectV1 implements Object3D {
 		GLES20.glAttachShader(mProgram, vertexShader); // add the vertex shader to program
 		GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
 		GLES20.glLinkProgram(mProgram); // create OpenGL program executables
+	}
+
+	public ObjectV1 setDrawSize(int drawSize) {
+		this.drawSize = drawSize;
+		return this;
 	}
 
 	public float[] getPosition() {
@@ -114,6 +122,7 @@ public class ObjectV1 implements Object3D {
 		GLUtil.checkGlError("glGetUniformLocation");
 
 		// Set color for drawing the triangle
+		float[] color = getColor() != null ? getColor() : DEFAULT_COLOR;
 		GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 		GLUtil.checkGlError("glUniform4fv");
 
@@ -129,7 +138,13 @@ public class ObjectV1 implements Object3D {
 		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, VERTEX_STRIDE,
 				vertexBuffer);
 
-		GLES20.glDrawArrays(drawMode, 0, vertexBuffer.capacity() / COORDS_PER_VERTEX);
+		if (drawSize == -1) {
+			GLES20.glDrawArrays(drawMode, 0, vertexBuffer.capacity() / COORDS_PER_VERTEX);
+		} else {
+			for (int i = 0; i < vertexBuffer.capacity() / COORDS_PER_VERTEX; i += drawSize) {
+				GLES20.glDrawArrays(drawMode, i, drawSize);
+			}
+		}
 
 		// Disable vertex array
 		GLES20.glDisableVertexAttribArray(mPositionHandle);

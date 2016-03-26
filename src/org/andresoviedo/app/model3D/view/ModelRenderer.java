@@ -33,12 +33,16 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	private Camera camera;
 	// Whether to draw the axis
 	private boolean drawAxis = true;
+	// Whether to draw objects as wireframe
+	private boolean drawWireframe = true;
 	// Whether to draw a cube bounding the model
 	private boolean drawBoundingBox = true;
 	// Whether to draw the face normals
 	private boolean drawNormals = true;
 	// The 3D axis
 	private Object3D axis;
+	// The corresponding scene opengl object wireframes
+	private Map<Object3DData, Object3D> wireframes = new HashMap<Object3DData, Object3D>();
 	// The corresponding scene opengl objects
 	private Map<Object3DData, Object3D> objects = new HashMap<Object3DData, Object3D>();
 	// The corresponding opengl bounding boxes
@@ -140,12 +144,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 		for (Object3DData objData : scene.getObjects()) {
 			try {
 				boolean changed = objData.isChanged();
-				Object3D object = objects.get(objData);
-				if (object == null || changed) {
-					object = Object3DBuilder.build(objData);
-					objects.put(objData, object);
-				}
 
+				// calculate mvp matrix
 				Matrix.setIdentityM(rotationMatrix, 0);
 				if (objData.getRotationZ() != 0) {
 					Matrix.setRotateM(rotationMatrix, 0, objData.getRotationZ(), 0, 0, 1.0f);
@@ -156,6 +156,23 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				Matrix.multiplyMM(result, 0, translationMatrix, 0, rotationMatrix, 0);
 				Matrix.multiplyMM(result, 0, mvpMatrix, 0, result, 0);
 
+				// draw objects
+				if (drawWireframe) {
+					Object3D object = wireframes.get(objData);
+					if (object == null || changed) {
+						object = Object3DBuilder.buildWireframe(objData);
+						if (object != null)
+							wireframes.put(objData, object);
+					}
+					if (object != null)
+						object.draw(result, modelViewMatrix);
+				}
+				
+				Object3D object = objects.get(objData);
+				if (object == null || changed) {
+					object = Object3DBuilder.build(objData);
+					objects.put(objData, object);
+				}
 				object.draw(result, modelViewMatrix);
 
 				// Draw bounding box

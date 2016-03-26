@@ -41,6 +41,7 @@ public class ObjectV2 implements Object3D {
 	private final FloatBuffer vertexBuffer;
 	private final ShortBuffer drawListBuffer;
 	private final int drawMode;
+	private int drawSize = -1; // by default draw all
 	private float color[] = { 0.0f, 1.0f, 0, 1.0f }; // default color is blue
 
 	// Transformation data
@@ -66,6 +67,11 @@ public class ObjectV2 implements Object3D {
 		GLES20.glAttachShader(mProgram, vertexShader); // add the vertex shader to program
 		GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
 		GLES20.glLinkProgram(mProgram); // create OpenGL program executables
+	}
+
+	public ObjectV2 setDrawSize(int drawSize) {
+		this.drawSize = drawSize;
+		return this;
 	}
 
 	public float[] getPosition() {
@@ -134,8 +140,15 @@ public class ObjectV2 implements Object3D {
 		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, VERTEX_STRIDE,
 				vertexBuffer);
 
-		drawListBuffer.position(0);
-		GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+		if (drawSize == -1) {
+			drawListBuffer.position(0);
+			GLES20.glDrawElements(drawMode, drawListBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+		} else {
+			for (int i = 0; i < drawListBuffer.capacity(); i += drawSize) {
+				drawListBuffer.position(i);
+				GLES20.glDrawElements(drawMode, drawSize, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+			}
+		}
 
 		// Disable vertex array
 		GLES20.glDisableVertexAttribArray(mPositionHandle);

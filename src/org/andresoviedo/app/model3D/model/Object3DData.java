@@ -138,6 +138,13 @@ public class Object3DData {
 		return color;
 	}
 
+	public float[] getColorInverted() {
+		if (getColor() == null || getColor().length != 4) {
+			return null;
+		}
+		return new float[] { 1 - getColor()[0], 1 - getColor()[1], 1 - getColor()[2], 1 };
+	}
+
 	public Object3DData setColor(float[] color) {
 		this.color = color;
 		return this;

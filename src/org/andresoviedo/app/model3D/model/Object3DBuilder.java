@@ -7,10 +7,10 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andresoviedo.app.model3D.entities.BoundingBox;
 import org.andresoviedo.app.model3D.services.WavefrontLoader;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.FaceMaterials;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Faces;
@@ -34,17 +34,47 @@ public final class Object3DBuilder {
 		public void onLoadComplete(Object3DData data);
 	}
 
+	private static final int COORDS_PER_VERTEX = 3;
 	/**
 	 * Default vertices colors
 	 */
 	private static float[] DEFAULT_COLOR = { 1.0f, 1.0f, 0, 1.0f };
 
-	final static float[] squarePositionData = new float[] { -0.5f, 0.5f, 0.0f, // top left
-			-0.5f, -0.5f, 0.0f, // bottom left
-			0.5f, -0.5f, 0.0f, // bottom right
-			0.5f, 0.5f, 0.0f };// upper right
+	final static float[] squarePositionData = new float[] {
+			// @formatter:off
+			-0.5f, 0.5f, 0.5f, // top left front
+			-0.5f, -0.5f, 0.5f, // bottom left front
+			0.5f, -0.5f, 0.5f, // bottom right front
+			0.5f, 0.5f, 0.5f, // upper right front
+			-0.5f, 0.5f, -0.5f, // top left back
+			-0.5f, -0.5f, -0.5f, // bottom left back
+			0.5f, -0.5f, -0.5f, // bottom right back
+			0.5f, 0.5f, -0.5f // upper right back
+			// @formatter:on
+	};
 
-	final static short[] squareDrawOrderData = new short[] { 0, 1, 2, 0, 2, 3 };
+	final static short[] squareDrawOrderData = new short[] {
+			// @formatter:off
+			// front
+			0, 1, 2, 
+			0, 2, 3,
+			// back
+			7, 6, 5,
+			4, 7, 5,
+			// up
+			4, 0, 3,
+			7, 4, 3,
+			// bottom
+			1, 5, 6,
+			2, 1, 6,
+			// left
+			4, 5, 1,
+			0, 4, 1,
+			// right
+			3, 2, 6,
+			7, 3, 6
+			// @formatter:on
+	};
 
 	final static float[] cubePositionData = {
 			//@formatter:off
@@ -252,6 +282,8 @@ public final class Object3DBuilder {
 		};
 		//@formatter:on
 
+	final static short[] cubeDrawOrder = new short[] {};
+
 	public static Object3DData buildCubeV1() {
 		return new Object3DData(createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer()
 				.put(cubePositionData).asReadOnlyBuffer()).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1");
@@ -262,7 +294,7 @@ public final class Object3DBuilder {
 				createNativeByteBuffer(squarePositionData.length * 4).asFloatBuffer().put(squarePositionData)
 						.asReadOnlyBuffer(),
 				createNativeByteBuffer(squareDrawOrderData.length * 2).asShortBuffer().put(squareDrawOrderData)
-						.asReadOnlyBuffer()).setDrawMode(GLES20.GL_TRIANGLES).setId("square1");
+						.asReadOnlyBuffer()).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV2");
 	}
 
 	public static Object3DData buildCubeV3(byte[] textureData) {
@@ -557,34 +589,74 @@ public final class Object3DBuilder {
 
 		FloatBuffer vertexBuffer = obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer()
 				: obj.getVertexBuffer();
-		if (vertexBuffer == null
-				|| vertexBuffer.capacity() % (/* COORDS_PER_VERTEX */3 * /* VERTEX_PER_FACE */ 3) != 0) {
-			// something in the data is wrong
-			Log.v("Builder", "Generating face normals for '" + obj.getId()
-					+ "' I found that vertices are not multiple of 9 (3*3): " + vertexBuffer.capacity());
+		if (vertexBuffer == null) {
+			Log.v("Builder", "Generating face normals for '" + obj.getId() + "' I found that there is no vertex data");
 			return null;
 		}
 
-		Log.v("Builder", "Generating face normals for '" + obj.getId() + "'...");
-		FloatBuffer normalsLines = createNativeByteBuffer(2 * vertexBuffer.capacity() * 4).asFloatBuffer();
-		vertexBuffer.position(0);
-		for (int i = 0; i < vertexBuffer.capacity() / /* COORDS_PER_VERTEX */ 3 / /* VERTEX_PER_FACE */3; i++) {
-			float[][] normalLine = Math3DUtils.calculateFaceNormal(
-					new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() },
-					new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() },
-					new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() });
-			normalsLines.put(normalLine[0]).put(normalLine[1]);
+		FloatBuffer normalsLines;
+		ShortBuffer drawBuffer = obj.getDrawBuffer();
+		if (drawBuffer != null) {
+			Log.v("Builder", "Generating face normals for '" + obj.getId() + "' using indices...");
+			int size = /* 2 points */ 2 * 3 * /* 3 points per face */ (drawBuffer.capacity() / 3)
+					* /* bytes per float */4;
+			normalsLines = createNativeByteBuffer(size).asFloatBuffer();
+			drawBuffer.position(0);
+			for (int i = 0; i < drawBuffer.capacity(); i += 3) {
+				int v1 = drawBuffer.get() * COORDS_PER_VERTEX;
+				int v2 = drawBuffer.get() * COORDS_PER_VERTEX;
+				int v3 = drawBuffer.get() * COORDS_PER_VERTEX;
+				float[][] normalLine = Math3DUtils.calculateFaceNormal(
+						new float[] { vertexBuffer.get(v1), vertexBuffer.get(v1 + 1), vertexBuffer.get(v1 + 2) },
+						new float[] { vertexBuffer.get(v2), vertexBuffer.get(v2 + 1), vertexBuffer.get(v2 + 2) },
+						new float[] { vertexBuffer.get(v3), vertexBuffer.get(v3 + 1), vertexBuffer.get(v3 + 2) });
+				normalsLines.put(normalLine[0]).put(normalLine[1]);
+			}
+		} else {
+			if (vertexBuffer.capacity() % (/* COORDS_PER_VERTEX */3 * /* VERTEX_PER_FACE */ 3) != 0) {
+				// something in the data is wrong
+				Log.v("Builder", "Generating face normals for '" + obj.getId()
+						+ "' I found that vertices are not multiple of 9 (3*3): " + vertexBuffer.capacity());
+				return null;
+			}
 
-			// debug
-			@SuppressWarnings("unused")
-			String normal = new StringBuilder().append(normalLine[0][0]).append(",").append(normalLine[0][1])
-					.append(",").append(normalLine[0][2]).append("-").append(normalLine[1][0]).append(",")
-					.append(normalLine[1][1]).append(",").append(normalLine[1][2]).toString();
-			// Log.v("Builder", "fNormal[" + i + "]:(" + normal + ")");
+			Log.v("Builder", "Generating face normals for '" + obj.getId() + "'...");
+			normalsLines = createNativeByteBuffer(6 * vertexBuffer.capacity() / 9 * 4).asFloatBuffer();
+			vertexBuffer.position(0);
+			for (int i = 0; i < vertexBuffer.capacity() / /* COORDS_PER_VERTEX */ 3 / /* VERTEX_PER_FACE */3; i++) {
+				float[][] normalLine = Math3DUtils.calculateFaceNormal(
+						new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() },
+						new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() },
+						new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() });
+				normalsLines.put(normalLine[0]).put(normalLine[1]);
+
+				// debug
+				@SuppressWarnings("unused")
+				String normal = new StringBuilder().append(normalLine[0][0]).append(",").append(normalLine[0][1])
+						.append(",").append(normalLine[0][2]).append("-").append(normalLine[1][0]).append(",")
+						.append(normalLine[1][1]).append(",").append(normalLine[1][2]).toString();
+				// Log.v("Builder", "fNormal[" + i + "]:(" + normal + ")");
+			}
 		}
 
 		return new Object3DData(normalsLines).setDrawMode(GLES20.GL_LINES).setColor(obj.getColor())
 				.setPosition(obj.getPosition()).setVersion(1);
+	}
+
+	public static Object3D buildWireframe(Object3DData obj) {
+		Object3D ret = null;
+		switch (obj.getVersion()) {
+		case 1:
+			ret = new ObjectV1(obj.getVertexArrayBuffer(), GLES20.GL_LINE_LOOP).setDrawSize(3)
+					.setColor(obj.getColorInverted());
+			break;
+		case 2:
+			ret = new ObjectV2(obj.getVertexBuffer(), obj.getDrawBuffer(), GLES20.GL_LINE_LOOP).setDrawSize(3)
+					.setColor(obj.getColorInverted());
+			break;
+		default:
+		}
+		return ret;
 	}
 
 	private static ByteBuffer createNativeByteBuffer(int length) {
@@ -744,6 +816,293 @@ class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 		if (dialog.isShowing()) {
 			dialog.dismiss();
 		}
+	}
+}
+
+class BoundingBox {
+
+	// number of coordinates per vertex in this array
+	protected static final int COORDS_PER_VERTEX = 3;
+	protected static final int COORDS_PER_COLOR = 4;
+
+	public FloatBuffer vertices;
+	public FloatBuffer vertexArray;
+	public FloatBuffer colors;
+	public ShortBuffer drawOrder;
+
+	public float xMin;
+	public float xMax;
+	public float yMin;
+	public float yMax;
+	public float zMin;
+	public float zMax;
+
+	public float[] center;
+	public float[] sizes;
+	public float radius;
+
+	/**
+	 * Build a bounding box for the specified 3D object vertex buffer.
+	 * 
+	 * @param vertexBuffer
+	 *            the 3D object vertex buffer
+	 * @param color
+	 *            the color of the bounding box
+	 */
+	public BoundingBox(FloatBuffer vertexBuffer, float[] color) {
+		// initialize vertex byte buffer for shape coordinates
+		ByteBuffer bb = ByteBuffer.allocateDirect(
+				// (number of coordinate values * 4 bytes per float)
+				8 * COORDS_PER_VERTEX * 4);
+		// use the device hardware's native byte order
+		bb.order(ByteOrder.nativeOrder());
+		vertices = bb.asFloatBuffer();
+
+		ByteBuffer bb2 = ByteBuffer.allocateDirect(
+				// (number of coordinate values * 2 bytes per short)
+				(6 * 4) * 2);
+		// use the device hardware's native byte order
+		bb2.order(ByteOrder.nativeOrder());
+		drawOrder = bb2.asShortBuffer();
+		drawOrder.position(0);
+
+		// vertex colors
+		ByteBuffer bb3 = ByteBuffer.allocateDirect(24 * COORDS_PER_COLOR * 4);
+		// use the device hardware's native byte order
+		bb3.order(ByteOrder.nativeOrder());
+		colors = bb3.asFloatBuffer();
+
+		colors.position(0);
+		for (int i = 0; i < colors.capacity() / 4; i++) {
+			if (color != null && color.length == 4) {
+				colors.put(color);
+			} else {
+				colors.put(1.0f).put(0.0f).put(1.0f).put(1.0f);
+			}
+		}
+
+		// back-face
+		drawOrder.put((short) 0);
+		drawOrder.put((short) 1);
+		drawOrder.put((short) 2);
+		drawOrder.put((short) 3);
+
+		// front-face
+		drawOrder.put((short) 4);
+		drawOrder.put((short) 5);
+		drawOrder.put((short) 6);
+		drawOrder.put((short) 7);
+
+		// left-face
+		drawOrder.put((short) 4);
+		drawOrder.put((short) 5);
+		drawOrder.put((short) 1);
+		drawOrder.put((short) 0);
+
+		// right-face
+		drawOrder.put((short) 3);
+		drawOrder.put((short) 2);
+		drawOrder.put((short) 6);
+		drawOrder.put((short) 7);
+
+		// top-face
+		drawOrder.put((short) 1);
+		drawOrder.put((short) 2);
+		drawOrder.put((short) 6);
+		drawOrder.put((short) 5);
+
+		// bottom-face
+		drawOrder.put((short) 0);
+		drawOrder.put((short) 3);
+		drawOrder.put((short) 7);
+		drawOrder.put((short) 4);
+
+		recalculate(vertexBuffer);
+	}
+
+	public ShortBuffer getDrawOrder() {
+		return drawOrder;
+	}
+
+	public FloatBuffer getColors() {
+		return colors;
+	}
+
+	public int getDrawMode() {
+		return GLES20.GL_LINE_LOOP;
+	}
+
+	public int getDrawSize() {
+		return 4;
+	}
+
+	public List<int[]> getDrawModeList() {
+		List<int[]> ret = new ArrayList<int[]>();
+		int vertexPos = 0;
+		for (int i = 0; i < drawOrder.capacity() / 4; i++) {
+			ret.add(new int[] { GLES20.GL_LINE_LOOP, vertexPos, 4 });
+			vertexPos += 4;
+		}
+		return ret;
+	}
+
+	BoundingBox(FloatBuffer vertexBuffer, float xMin, float xMax, float yMin, float yMax, float zMin, float zMax) {
+		this.xMin = xMin;
+		this.xMax = xMax;
+		this.yMin = yMin;
+		this.yMax = yMax;
+		this.zMin = zMin;
+		this.zMax = zMax;
+		calculateVertex();
+		calculateOther(vertexBuffer);
+	}
+
+	public void recalculate(FloatBuffer vertexBuffer) {
+
+		calculateMins(vertexBuffer);
+		calculateVertex();
+		calculateOther(vertexBuffer);
+	}
+
+	/**
+	 * This works only when COORDS_PER_VERTEX = 3
+	 * 
+	 * @param vertexBuffer
+	 */
+	private void calculateMins(FloatBuffer vertexBuffer) {
+		vertexBuffer.position(0);
+		while (vertexBuffer.hasRemaining()) {
+			float vertexx = vertexBuffer.get();
+			float vertexy = vertexBuffer.get();
+			float vertexz = vertexBuffer.get();
+			if (vertexx < xMin) {
+				xMin = vertexx;
+			} else if (vertexx > xMax) {
+				xMax = vertexx;
+			}
+			if (vertexy < yMin) {
+				yMin = vertexy;
+			} else if (vertexy > yMax) {
+				yMax = vertexy;
+			}
+			if (vertexz < zMin) {
+				zMin = vertexz;
+			} else if (vertexz > zMax) {
+				zMax = vertexz;
+			}
+		}
+	}
+
+	private void calculateVertex() {
+		vertices.position(0);
+		//@formatter:off
+		vertices.put(xMin).put(yMin).put(zMin);  // down-left (far)
+		vertices.put(xMin).put(yMax).put(zMin);  // up-left (far)
+		vertices.put(xMax).put(yMax).put(zMin);  // up-right (far)
+		vertices.put(xMax).put(yMin).put(zMin);  // down-right  (far)
+		vertices.put(xMin).put(yMin).put(zMax);  // down-left (near)
+		vertices.put(xMin).put(yMax).put(zMax);  // up-left (near)
+		vertices.put(xMax).put(yMax).put(zMax);  // up-right (near)
+		vertices.put(xMax).put(yMin).put(zMax);  // down-right (near)
+		//@formatter:on
+	}
+
+	private void calculateOther(FloatBuffer vertexBuffer) {
+		center = new float[] { (xMax + xMin) / 2, (yMax + yMin) / 2, (zMax + zMin) / 2 };
+		sizes = new float[] { xMax - xMin, yMax - yMin, zMax - zMin };
+
+		vertexBuffer.position(0);
+
+		// calculated bounding sphere
+		double radius = 0;
+		double radiusTemp;
+		vertexBuffer.position(0);
+		while (vertexBuffer.hasRemaining()) {
+			float vertexx = vertexBuffer.get();
+			float vertexy = vertexBuffer.get();
+			float vertexz = vertexBuffer.get();
+			radiusTemp = Math.sqrt(Math.pow(vertexx - center[0], 2) + Math.pow(vertexy - center[1], 2)
+					+ Math.pow(vertexz - center[2], 2));
+			if (radiusTemp > radius) {
+				radius = radiusTemp;
+			}
+		}
+		this.radius = (float) radius;
+	}
+
+	public FloatBuffer getVertices() {
+		return vertices;
+	}
+
+	public FloatBuffer getVertexArray() {
+		// initialize vertex byte buffer for shape coordinates
+		ByteBuffer bb = ByteBuffer.allocateDirect(
+				// (number of coordinate values * 4 bytes per float)
+				drawOrder.capacity() * COORDS_PER_VERTEX * 4);
+		// use the device hardware's native byte order
+		bb.order(ByteOrder.nativeOrder());
+		FloatBuffer ret = bb.asFloatBuffer();
+		ret.position(0);
+		for (int i = 0; i < drawOrder.capacity(); i++) {
+			ret.put(vertices.get(drawOrder.get(i) * 3)); // x
+			ret.put(vertices.get(drawOrder.get(i) * 3 + 1)); // y
+			ret.put(vertices.get(drawOrder.get(i) * 3 + 2)); // z
+		}
+		return ret;
+	}
+
+	public String sizeToString() {
+		return "x[" + sizes[0] + "],y[" + sizes[1] + "],z[" + sizes[2] + "]";
+	}
+
+	public String centerToString() {
+		return "x[" + center[0] + "],y[" + center[1] + "],z[" + center[2] + "]";
+	}
+
+	public String limitsToString() {
+		StringBuffer ret = new StringBuffer();
+		ret.append("xMin[" + xMin + "], xMax[" + xMax + "], yMin[" + yMin + "], yMax[" + yMax + "], zMin[" + zMin
+				+ "], zMax[" + zMax + "]");
+		return ret.toString();
+	}
+
+	public float[] getCenter() {
+		return center;
+	}
+
+	public void setCenter(float[] center) {
+		this.center = center;
+	}
+
+	public float getRadius() {
+		return radius;
+	}
+
+	public void setRadius(float radius) {
+		this.radius = radius;
+	}
+
+	public FloatBuffer getNormals() {
+		return createEmptyNormalsFloatBuffer(getVertices().capacity());
+	}
+
+	private static FloatBuffer createEmptyNormalsFloatBuffer(int size) {
+		FloatBuffer buffer = createNativeByteBuffer(size * 3 * 4).asFloatBuffer();
+		buffer.position(0);
+		for (int i = 0; i < size; i++) {
+			buffer.put(0.0f).put(1.0f).put(0.0f);
+		}
+		return buffer;
+	}
+
+	private static ByteBuffer createNativeByteBuffer(int length) {
+		// initialize vertex byte buffer for shape coordinates
+		ByteBuffer bb = ByteBuffer.allocateDirect(
+				// (number of coordinate values * 2 bytes per short)
+				length);
+		// use the device hardware's native byte order
+		bb.order(ByteOrder.nativeOrder());
+		return bb;
 	}
 
 }

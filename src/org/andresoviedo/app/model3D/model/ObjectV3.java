@@ -3,7 +3,6 @@ package org.andresoviedo.app.model3D.model;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
 
-import org.andresoviedo.app.model3D.entities.BoundingBox;
 import org.andresoviedo.app.model3D.util.GLUtil;
 
 import android.graphics.Bitmap;

@@ -7,7 +7,6 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.List;
 
-import org.andresoviedo.app.model3D.entities.BoundingBox;
 import org.andresoviedo.app.model3D.util.GLUtil;
 
 import android.graphics.Bitmap;

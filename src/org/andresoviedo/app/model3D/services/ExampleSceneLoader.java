@@ -45,12 +45,12 @@ public class ExampleSceneLoader extends SceneLoader {
 			protected Void doInBackground(Void... params) {
 				try {
 					Object3DData obj1 = Object3DBuilder.buildCubeV1();
-					obj1.setColor(new float[] { 1f, 0f, 0f, 0.0f });
+					obj1.setColor(new float[] { 1f, 0f, 0f, 0.5f });
 					obj1.setPosition(new float[] { -1.5f, 1.5f, 1.5f });
 					addObject(obj1);
 
 					Object3DData obj2 = Object3DBuilder.buildSquareV2();
-					obj2.setColor(new float[] { 0f, 1f, 0, 1.0f });
+					obj2.setColor(new float[] { 0f, 1f, 0, 0.5f });
 					obj2.setPosition(new float[] { 1.5f, 1.5f, 1.5f });
 					addObject(obj2);
 
