@@ -173,8 +173,9 @@ public class TouchController {
 		if (touchDelay > 1) {
 			// INFO: Procesar gesto
 			if (pointerCount == 1 && currentPress1 > 4.0f) {
-				hitSquare = hit(hit1, hit2, mRenderer.getScene().getSquare1().getPosition());
-				hitTriangle = hit(hit1, hit2, mRenderer.getScene().getSquare1().getPosition());
+				// TODO: enable this
+				// hitSquare = hit(hit1, hit2, mRenderer.getScene().getSquare1().getPosition());
+				// hitTriangle = hit(hit1, hit2, mRenderer.getScene().getSquare1().getPosition());
 			} else if (pointerCount == 1) {
 				touchStatus = TOUCH_STATUS_MOVING_WORLD;
 				// Log.i("Touch", "Moving World '" + dx1 + "','" + dy1 + "'...");

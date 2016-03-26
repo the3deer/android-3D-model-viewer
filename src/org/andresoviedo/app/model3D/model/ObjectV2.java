@@ -15,7 +15,9 @@ public class ObjectV2 implements Object3D {
 
 	// number of coordinates per vertex in this array
 	private static final int COORDS_PER_VERTEX = 3;
-	private static final int VERTEX_STRIDE = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
+	private static final int VERTEX_STRIDE = COORDS_PER_VERTEX * 4; // 4 bytes per
+
+	private static float[] DEFAULT_COLOR = { 0.0f, 1.0f, 0, 1.0f };
 
 	// @formatter:off
 	private final String vertexShaderCode =
@@ -78,8 +80,9 @@ public class ObjectV2 implements Object3D {
 		return color;
 	}
 
-	public void setColor(float[] color) {
+	public Object3D setColor(float[] color) {
 		this.color = color;
+		return this;
 	}
 
 	@Override
@@ -88,14 +91,8 @@ public class ObjectV2 implements Object3D {
 	}
 
 	@Override
-	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawType, int drawSize) {
+	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawMode, int drawSize) {
 		this.draw(mvpMatrix);
-
-	}
-
-	@Override
-	public void drawBoundingBox(float[] mvpMatrix, float[] mvMatrix) {
-		// TODO: implement this
 	}
 
 	/**
@@ -121,6 +118,7 @@ public class ObjectV2 implements Object3D {
 		GLUtil.checkGlError("glGetUniformLocation");
 
 		// Set color for drawing the triangle
+		float[] color = getColor() != null ? getColor() : DEFAULT_COLOR;
 		GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 		GLUtil.checkGlError("glUniform4fv");
 
@@ -166,12 +164,6 @@ public class ObjectV2 implements Object3D {
 
 	public void setRotation(float[] rotation) {
 		this.rotation = rotation;
-	}
-
-	@Override
-	public void drawVectorNormals(float[] result, float[] modelViewMatrix) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public static void checkGlError(String glOperation) {

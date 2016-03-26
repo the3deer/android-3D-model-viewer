@@ -1,5 +1,6 @@
 package org.andresoviedo.app.model3D.model;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
@@ -20,6 +21,8 @@ import org.andresoviedo.app.model3D.services.WavefrontLoader.Tuple3;
  */
 public class Object3DData {
 
+	// opengl version to use to draw this object
+	private int version = 5;
 	/**
 	 * The directory where the files reside so we can load referenced files in the model like material and textures
 	 * files
@@ -35,8 +38,10 @@ public class Object3DData {
 	private boolean flipTextCoords = true;
 
 	// Model data for the simplest object
+
 	private float[] color;
 	private int drawMode;
+	private int drawSize;
 
 	// Model data
 	private ArrayList<Tuple3> verts;
@@ -48,15 +53,53 @@ public class Object3DData {
 
 	// Processed data
 	private FloatBuffer vertexBuffer = null;
-	private ShortBuffer drawBuffer = null;
+	private FloatBuffer vertexColors = null;
+	private FloatBuffer vertexColorsArrayBuffer = null;
 	private FloatBuffer vertexNormalsBuffer = null;
 	private FloatBuffer textureCoordsBuffer = null;
+	private ShortBuffer drawOrderBuffer = null;
+
+	// Processed arrays
 	private FloatBuffer vertexArrayBuffer = null;
 	private FloatBuffer vertexNormalsArrayBuffer = null;
 	private FloatBuffer textureCoordsArrayBuffer = null;
 	private List<int[]> drawModeList = null;
-	private FloatBuffer vertexColorsArrayBuffer = null;
+	private byte[] _texData = null;
 	private List<InputStream> textureStreams = null;
+
+	// Transformation data
+	protected float[] position = new float[] { 0f, 0f, 0f };
+	protected float[] rotation = new float[] { 0f, 0f, 0f };
+
+	// whether the object has changed
+	private boolean changed;
+
+	public Object3DData(FloatBuffer vertexArrayBuffer) {
+		this.vertexArrayBuffer = vertexArrayBuffer;
+		this.version = 1;
+	}
+
+	public Object3DData(FloatBuffer vertexBuffer, ShortBuffer drawOrder) {
+		this.vertexBuffer = vertexBuffer;
+		this.drawOrderBuffer = drawOrder;
+		this.version = 2;
+	}
+
+	public Object3DData(FloatBuffer vertexArrayBuffer, FloatBuffer textureCoordsArrayBuffer, byte[] texData) {
+		this.vertexArrayBuffer = vertexArrayBuffer;
+		this.textureCoordsArrayBuffer = textureCoordsArrayBuffer;
+		this._texData = texData;
+		this.version = 3;
+	}
+
+	public Object3DData(FloatBuffer vertexArrayBuffer, FloatBuffer vertexColorsArrayBuffer,
+			FloatBuffer textureCoordsArrayBuffer, byte[] texData) {
+		this.vertexArrayBuffer = vertexArrayBuffer;
+		this.vertexColorsArrayBuffer = vertexColorsArrayBuffer;
+		this.textureCoordsArrayBuffer = textureCoordsArrayBuffer;
+		this._texData = texData;
+		this.version = 4;
+	}
 
 	public Object3DData(ArrayList<Tuple3> verts, ArrayList<Tuple3> normals, ArrayList<Tuple3> texCoords, Faces faces,
 			FaceMaterials faceMats, Materials materials) {
@@ -69,8 +112,22 @@ public class Object3DData {
 		this.materials = materials;
 	}
 
-	public void setId(String id) {
+	public int getVersion() {
+		return version;
+	}
+
+	public Object3DData setVersion(int version) {
+		this.version = version;
+		return this;
+	}
+
+	public boolean isChanged() {
+		return changed;
+	}
+
+	public Object3DData setId(String id) {
 		this.id = id;
+		return this;
 	}
 
 	public String getId() {
@@ -81,24 +138,80 @@ public class Object3DData {
 		return color;
 	}
 
-	public void setColor(float[] color) {
+	public Object3DData setColor(float[] color) {
 		this.color = color;
+		return this;
+	}
+
+	public FloatBuffer getVertexColors() {
+		return vertexColors;
+	}
+
+	public Object3DData setVertexColors(FloatBuffer vertexColors) {
+		this.vertexColors = vertexColors;
+		return this;
 	}
 
 	public int getDrawMode() {
 		return drawMode;
 	}
 
-	public void setDrawMode(int drawMode) {
+	public Object3DData setDrawMode(int drawMode) {
 		this.drawMode = drawMode;
+		return this;
+	}
+
+	public int getDrawSize() {
+		return drawSize;
+	}
+
+	public Object3DData setDrawSize(int drawSize) {
+		this.drawSize = drawSize;
+		return this;
+	}
+
+	// -----------
+
+	public Object3DData setPosition(float[] position) {
+		this.position = position;
+		return this;
+	}
+
+	public float[] getPosition() {
+		return position;
+	}
+
+	public float getPositionX() {
+		return position != null ? position[0] : 0;
+	}
+
+	public float getPositionY() {
+		return position != null ? position[1] : 0;
+	}
+
+	public float getPositionZ() {
+		return position != null ? position[2] : 0;
+	}
+
+	public float[] getRotation() {
+		return rotation;
+	}
+
+	public float getRotationZ() {
+		return rotation != null ? rotation[2] : 0;
+	}
+
+	public void setRotation(float[] rotation) {
+		this.rotation = rotation;
 	}
 
 	public ShortBuffer getDrawBuffer() {
-		return drawBuffer;
+		return drawOrderBuffer;
 	}
 
-	public void setDrawBuffer(ShortBuffer drawBuffer) {
-		this.drawBuffer = drawBuffer;
+	public Object3DData setDrawOrder(ShortBuffer drawBuffer) {
+		this.drawOrderBuffer = drawBuffer;
+		return this;
 	}
 
 	public File getCurrentDir() {
@@ -211,19 +324,24 @@ public class Object3DData {
 		return drawModeList;
 	}
 
-	public void setDrawModeList(List<int[]> drawModeList) {
+	public Object3DData setDrawModeList(List<int[]> drawModeList) {
 		this.drawModeList = drawModeList;
+		return this;
 	}
 
 	public FloatBuffer getVertexColorsArrayBuffer() {
 		return vertexColorsArrayBuffer;
 	}
 
-	public void setVertexColorsArrayBuffer(FloatBuffer vertexColorsArrayBuffer) {
+	public Object3DData setVertexColorsArrayBuffer(FloatBuffer vertexColorsArrayBuffer) {
 		this.vertexColorsArrayBuffer = vertexColorsArrayBuffer;
+		return this;
 	}
 
 	public InputStream getTextureStream0() {
+		if (_texData != null) {
+			return new ByteArrayInputStream(_texData);
+		}
 		if (textureStreams == null) {
 			return null;
 		}

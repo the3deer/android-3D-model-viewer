@@ -42,8 +42,10 @@ public class BoundingBox {
 	 * 
 	 * @param vertexBuffer
 	 *            the 3D object vertex buffer
+	 * @param color
+	 *            the color of the bounding box
 	 */
-	public BoundingBox(FloatBuffer vertexBuffer) {
+	public BoundingBox(FloatBuffer vertexBuffer, float[] color) {
 		// initialize vertex byte buffer for shape coordinates
 		ByteBuffer bb = ByteBuffer.allocateDirect(
 				// (number of coordinate values * 4 bytes per float)
@@ -68,7 +70,11 @@ public class BoundingBox {
 
 		colors.position(0);
 		for (int i = 0; i < colors.capacity() / 4; i++) {
-			colors.put(1.0f).put(0.0f).put(1.0f).put(1.0f);
+			if (color != null && color.length == 4) {
+				colors.put(color);
+			} else {
+				colors.put(1.0f).put(0.0f).put(1.0f).put(1.0f);
+			}
 		}
 
 		// back-face

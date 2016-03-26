@@ -1,15 +1,12 @@
 package org.andresoviedo.app.model3D.model;
 
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.List;
 
 import org.andresoviedo.app.model3D.entities.BoundingBox;
 import org.andresoviedo.app.model3D.util.GLUtil;
-import org.andresoviedo.app.util.math.Math3DUtils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -217,8 +214,9 @@ public class ObjectV5 implements Object3D {
 		return color;
 	}
 
-	public void setColor(float[] color) {
+	public Object3D setColor(float[] color) {
 		this.color = color;
+		return this;
 	}
 
 	@Override
@@ -233,21 +231,6 @@ public class ObjectV5 implements Object3D {
 	@Override
 	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawMode, int drawSize) {
 		this.draw_with_textures(mvpMatrix, mvMatrix, drawMode, drawSize);
-	}
-
-	@Override
-	public void drawBoundingBox(float[] mvpMatrix, float[] mvMatrix) {
-		if (boundingBox == null) {
-			// init bounding box
-			boundingBox = new BoundingBox(vertexBuffer.asReadOnlyBuffer());
-			boundingBoxObject = new ObjectV5(boundingBox.getVertices(), boundingBox.getDrawModeList(),
-					boundingBox.getColors(), boundingBox.getDrawOrder(), null, boundingBox.getDrawMode(),
-					boundingBox.getDrawSize(), null);
-			boundingBoxObject.setPosition(getPosition());
-			boundingBoxObject.setColor(getColor());
-		}
-		boundingBoxObject.draw(mvpMatrix, mvMatrix);
-
 	}
 
 	/**
@@ -397,62 +380,11 @@ public class ObjectV5 implements Object3D {
 		this.rotation = rotation;
 	}
 
-	@Override
-	public void drawVectorNormals(float[] mvpMatrix, float[] mvMatrix) {
-		// TODO: This only works for triangles. Make it useful for any kind of polygon
-		if (drawSize != 3) {
-			return;
-		}
-		// If the object has already been generated, just draw it
-		if (faceNormalsObject != null) {
-			faceNormalsObject.draw(mvpMatrix, mvMatrix);
-			return;
-		}
-		Log.d("ObjectV4", "Generating face normals...");
-		// Generate a new object that contains the all the line normals for this object
-		FloatBuffer normalsLines = createNativeByteBuffer(2 * vertexBuffer.capacity() * 4).asFloatBuffer();
-		// Normals for the lines
-		FloatBuffer normalsNormals = createNativeByteBuffer(2 * vertexBuffer.capacity() * 4).asFloatBuffer();
-		normalsLines.position(0);
-		normalsNormals.position(0);
-		vertexBuffer.position(0);
-		for (int i = 0; i < vertexBuffer.capacity() / COORDS_PER_VERTEX / drawSize; i++) {
-			float[][] normalLine = Math3DUtils.calculateFaceNormal(
-					new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() },
-					new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() },
-					new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() });
-			normalsLines.put(normalLine[0]).put(normalLine[1]);
-			normalsNormals.put(new float[] { 0, 1.0f, 0 });
-			normalsNormals.put(new float[] { 0, 1.0f, 0 });
-
-			// debug
-			String normal = new StringBuilder().append(normalLine[0][0]).append(",").append(normalLine[0][1])
-					.append(",").append(normalLine[0][2]).append("-").append(normalLine[1][0]).append(",")
-					.append(normalLine[1][1]).append(",").append(normalLine[1][2]).toString();
-			Log.d("ObjectV4", "fNormal[" + i + "]:(" + normal + ")");
-		}
-
-		faceNormalsObject = new ObjectV1(normalsLines, GLES20.GL_LINES);
-		faceNormalsObject.setPosition(getPosition());
-		faceNormalsObject.setColor(getColor() != null ? getColor() : new float[] { 1.0f, 0, 0, 1.0f });
-		faceNormalsObject.draw(mvpMatrix, mvMatrix);
-	}
-
 	public static void checkGlError(String glOperation) {
 		int error;
 		while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
 			Log.e("objModel", glOperation + ": glError " + error);
 			throw new RuntimeException(glOperation + ": glError " + error);
 		}
-	}
-
-	private static ByteBuffer createNativeByteBuffer(int length) {
-		// initialize vertex byte buffer for shape coordinates
-		ByteBuffer bb = ByteBuffer.allocateDirect(
-				// (number of coordinate values * 2 bytes per short)
-				length);
-		// use the device hardware's native byte order
-		bb.order(ByteOrder.nativeOrder());
-		return bb;
 	}
 }

@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.andresoviedo.app.model3D.entities.BoundingBox;
 import org.andresoviedo.app.model3D.util.GLUtil;
-import org.andresoviedo.app.util.math.Math3DUtils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -401,14 +400,9 @@ public class ObjectV6 implements Object3D {
 		return color;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#setColor(float[])
-	 */
-	@Override
-	public void setColor(float[] color) {
+	public Object3D setColor(float[] color) {
 		this.color = color;
+		return this;
 	}
 
 	/*
@@ -581,33 +575,6 @@ public class ObjectV6 implements Object3D {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.andresoviedo.app.model3D.model.Object3D#drawBoundingBox(float[], float[])
-	 */
-	@Override
-	public void drawBoundingBox(float[] mvpMatrix, float[] mvMatrix) {
-		if (boundingBox == null) {
-			// init bounding box
-			boundingBox = new BoundingBox(vertexBuffer.asReadOnlyBuffer());
-
-			// this object uses homogeneous polygon
-			// boundingBoxObject = new ObjectV5(boundingBox.getVertices(), null, boundingBox.getColors(),
-			// boundingBox.getDrawOrder(), boundingBox.getNormals(), null, boundingBox.getDrawMode(),
-			// boundingBox.getDrawSize(), null);
-
-			// this object uses heterogeneous polygon (although all are line loops of size 4)
-			boundingBoxObject = new ObjectV6(boundingBox.getVertices(), boundingBox.getDrawModeList(),
-					boundingBox.getColors(), boundingBox.getDrawOrder(), boundingBox.getNormals(), null,
-					boundingBox.getDrawMode(), boundingBox.getDrawSize(), null);
-			boundingBoxObject.setPosition(getPosition());
-			boundingBoxObject.setColor(getColor());
-		}
-		boundingBoxObject.draw(mvpMatrix, mvMatrix);
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see org.andresoviedo.app.model3D.model.Object3D#translateX(float)
 	 */
 	@Override
@@ -666,59 +633,4 @@ public class ObjectV6 implements Object3D {
 		this.rotation = rotation;
 	}
 
-	@Override
-	public void drawVectorNormals(float[] mvpMatrix, float[] mvMatrix) {
-		// TODO: This only works for triangles. Make it useful for any kind of polygon
-		if (drawSize != 3) {
-			return;
-		}
-		// If the object has already been generated, just draw it
-		if (faceNormalsObject != null) {
-			faceNormalsObject.draw(mvpMatrix, mvMatrix);
-			return;
-		}
-		Log.d("ObjectV4", "Generating face normals...");
-		// Generate a new object that contains the all the line normals for this object
-		FloatBuffer normalsLines = createNativeByteBuffer(2 * vertexBuffer.capacity() * 4).asFloatBuffer();
-		// Normals for the lines
-		FloatBuffer normalsNormals = createNativeByteBuffer(2 * vertexBuffer.capacity() * 4).asFloatBuffer();
-		normalsLines.position(0);
-		normalsNormals.position(0);
-		vertexBuffer.position(0);
-		for (int i = 0; i < vertexBuffer.capacity() / COORDS_PER_VERTEX / drawSize; i++) {
-			float[][] normalLine = Math3DUtils.calculateFaceNormal(
-					new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() },
-					new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() },
-					new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() });
-			normalsLines.put(normalLine[0]).put(normalLine[1]);
-			normalsNormals.put(new float[] { 0, 1.0f, 0 });
-			normalsNormals.put(new float[] { 0, 1.0f, 0 });
-
-			// debug
-			String normal = new StringBuilder().append(normalLine[0][0]).append(",").append(normalLine[0][1])
-					.append(",").append(normalLine[0][2]).append("-").append(normalLine[1][0]).append(",")
-					.append(normalLine[1][1]).append(",").append(normalLine[1][2]).toString();
-			Log.d("ObjectV4", "fNormal[" + i + "]:(" + normal + ")");
-		}
-
-		faceNormalsObject = new ObjectV1(normalsLines, GLES20.GL_LINES);
-		faceNormalsObject.setPosition(getPosition());
-		faceNormalsObject.setColor(getColor() != null ? getColor() : new float[] { 1.0f, 0, 0, 1.0f });
-		faceNormalsObject.draw(mvpMatrix, mvMatrix);
-	}
-
-	// private void debug() {
-	// if (vertexBuffer != null) {
-	// for (int i = 0; i < vertexBuffer.capacity(); i = i + 3) {
-	// Log.d("ObjectV3", "v(" + i / COORDS_PER_VERTEX + "):(" + vertexBuffer.get(i) + ","
-	// + vertexBuffer.get(i + 1) + "," + vertexBuffer.get(i + 2) + ")");
-	// }
-	// }
-	// if (textureCoordBuffer != null) {
-	// for (int i = 0; i < textureCoordBuffer.capacity(); i = i + 2) {
-	// Log.d("ObjectV3",
-	// "t(" + i / 2 + "):(" + textureCoordBuffer.get(i) + "," + textureCoordBuffer.get(i + 1) + ")");
-	// }
-	// }
-	// }
 }

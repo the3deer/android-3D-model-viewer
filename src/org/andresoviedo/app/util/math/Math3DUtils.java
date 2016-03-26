@@ -1,7 +1,6 @@
 package org.andresoviedo.app.util.math;
 
 import android.opengl.Matrix;
-import android.util.Log;
 
 /**
  * Utility class to calculate 3D stuff
@@ -37,11 +36,12 @@ public class Math3DUtils {
 		float[] faceCenter = new float[] { (v0[0] + v1[0] + v2[0]) / 3, (v0[1] + v1[1] + v2[1]) / 3,
 				(v0[2] + v1[2] + v2[2]) / 3 };
 		float[] vn2 = new float[] { faceCenter[0] + vn[0], faceCenter[1] + vn[1], faceCenter[2] + vn[2] };
-		Log.d("ObjectV4",
-				"fNormal(" + v0[0] + "," + v0[1] + "," + v0[2] + "#" + v1[0] + "," + v1[1] + "," + v1[2] + "#" + v2[0]
-						+ "," + v2[1] + "," + v2[2] + ")#normal(" + vn[0] + "," + vn[1] + "," + vn[2] + ") center("
-						+ faceCenter[0] + "," + faceCenter[1] + "," + faceCenter[2] + ") to(" + vn2[0] + "," + vn2[1]
-						+ "," + vn2[2] + ")");
+		@SuppressWarnings("unused")
+		String msg = "fNormal(" + v0[0] + "," + v0[1] + "," + v0[2] + "#" + v1[0] + "," + v1[1] + "," + v1[2] + "#"
+				+ v2[0] + "," + v2[1] + "," + v2[2] + ")#normal(" + vn[0] + "," + vn[1] + "," + vn[2] + ") center("
+				+ faceCenter[0] + "," + faceCenter[1] + "," + faceCenter[2] + ") to(" + vn2[0] + "," + vn2[1] + ","
+				+ vn2[2] + ")";
+		// Log.d("ObjectV4", msg);
 		return new float[][] { faceCenter, vn2 };
 	}
 

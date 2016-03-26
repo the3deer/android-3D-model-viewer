@@ -75,8 +75,9 @@ public class ObjectV1 implements Object3D {
 		return color;
 	}
 
-	public void setColor(float[] color) {
+	public Object3D setColor(float[] color) {
 		this.color = color;
+		return this;
 	}
 
 	@Override
@@ -88,11 +89,6 @@ public class ObjectV1 implements Object3D {
 	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawType, int drawSize) {
 		this.draw(mvpMatrix);
 
-	}
-
-	@Override
-	public void drawBoundingBox(float[] mvpMatrix, float[] mvMatrix) {
-		// TODO: implement this
 	}
 
 	/**
@@ -162,12 +158,6 @@ public class ObjectV1 implements Object3D {
 
 	public void setRotation(float[] rotation) {
 		this.rotation = rotation;
-	}
-
-	@Override
-	public void drawVectorNormals(float[] result, float[] modelViewMatrix) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public static void checkGlError(String glOperation) {

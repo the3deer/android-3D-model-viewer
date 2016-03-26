@@ -24,6 +24,8 @@ public class ObjectV3 implements Object3D {
 	private static final int COORDS_PER_VERTEX = 3;
 	private static final int VERTEX_STRIDE = COORDS_PER_VERTEX * 4; // 4 bytes per
 
+	private static float[] DEFAULT_COLOR = { 0.0f, 1.0f, 0, 1.0f };
+
 	// @formatter:off
 	private final String vertexShaderCode =
 		"uniform mat4 uMVPMatrix;" + 
@@ -160,8 +162,9 @@ public class ObjectV3 implements Object3D {
 		return color;
 	}
 
-	public void setColor(float[] color) {
+	public Object3D setColor(float[] color) {
 		this.color = color;
+		return this;
 	}
 
 	@Override
@@ -172,21 +175,6 @@ public class ObjectV3 implements Object3D {
 	@Override
 	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawMode, int drawSize) {
 		this.draw_with_textures(mvpMatrix, mvMatrix, drawMode, drawSize);
-	}
-
-	@Override
-	public void drawBoundingBox(float[] mvpMatrix, float[] mvMatrix) {
-		if (boundingBox == null) {
-			// init bounding box
-			boundingBox = new BoundingBox(vertexBuffer.asReadOnlyBuffer());
-			boundingBoxObject = new ObjectV5(boundingBox.getVertices(), boundingBox.getDrawModeList(),
-					boundingBox.getColors(), boundingBox.getDrawOrder(), null, boundingBox.getDrawMode(),
-					boundingBox.getDrawSize(), null);
-			boundingBoxObject.setPosition(getPosition());
-			boundingBoxObject.setColor(getColor());
-		}
-		boundingBoxObject.draw(mvpMatrix, mvMatrix);
-
 	}
 
 	/**
@@ -249,6 +237,7 @@ public class ObjectV3 implements Object3D {
 		GLUtil.checkGlError("glGetUniformLocation");
 
 		// Set color for drawing the triangle
+		float[] color = getColor() != null ? getColor() : DEFAULT_COLOR;
 		GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 		GLUtil.checkGlError("glUniform4fv");
 
@@ -298,12 +287,6 @@ public class ObjectV3 implements Object3D {
 
 	public void setRotation(float[] rotation) {
 		this.rotation = rotation;
-	}
-
-	@Override
-	public void drawVectorNormals(float[] result, float[] modelViewMatrix) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public static void checkGlError(String glOperation) {

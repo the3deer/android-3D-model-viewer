@@ -1,16 +1,23 @@
 package org.andresoviedo.app.model3D.view;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import org.andresoviedo.app.model3D.entities.Camera;
 import org.andresoviedo.app.model3D.model.Object3D;
+import org.andresoviedo.app.model3D.model.Object3DBuilder;
+import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.services.SceneLoader;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
+import android.widget.Toast;
 
 public class ModelRenderer implements GLSurfaceView.Renderer {
 
@@ -18,23 +25,32 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 	// 3D window (parent component)
 	private ModelSurfaceView main;
-
-	// Camera for our 3D world
+	// width of the screen
+	private int width;
+	// height of the screen
+	private int height;
+	// Out point of view handler
 	private Camera camera;
-
-	// 3D world
-	private SceneLoader scene;
+	// Whether to draw the axis
+	private boolean drawAxis = true;
+	// Whether to draw a cube bounding the model
+	private boolean drawBoundingBox = true;
+	// Whether to draw the face normals
+	private boolean drawNormals = true;
+	// The 3D axis
+	private Object3D axis;
+	// The corresponding scene opengl objects
+	private Map<Object3DData, Object3D> objects = new HashMap<Object3DData, Object3D>();
+	// The corresponding opengl bounding boxes
+	private Map<Object3DData, Object3D> boundingBoxes = new HashMap<Object3DData, Object3D>();
+	// The corresponding opengl bounding boxes
+	private Map<Object3DData, Object3D> normals = new HashMap<Object3DData, Object3D>();
 
 	// 3D matrices to project our 3D world
 	private final float[] modelProjectionMatrix = new float[16];
 	private final float[] modelViewMatrix = new float[16];
 	// mvpMatrix is an abbreviation for "Model View Projection Matrix"
 	private final float[] mvpMatrix = new float[16];
-
-	// width of the screen
-	private int width;
-	// height of the screen
-	private int height;
 
 	/**
 	 * Construct a new renderer for the specified surface view
@@ -44,7 +60,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	 */
 	public ModelRenderer(ModelSurfaceView modelSurfaceView) {
 		this.main = modelSurfaceView;
-		this.scene = main.getModelActivity().getScene();
 	}
 
 	@Override
@@ -64,9 +79,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 		// Lets create our 3D world components
 		camera = new Camera();
-
-		// Init our GL objects
-		scene.refresh();
 	}
 
 	@Override
@@ -93,8 +105,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onDrawFrame(GL10 unused) {
-		// generate GL objects in this thread
-		scene.refresh();
 
 		// Draw background color
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
@@ -108,29 +118,78 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 			camera.setChanged(false);
 		}
 
+		// Draw Axis
+		if (drawAxis) {
+			if (axis == null) {
+				axis = Object3DBuilder.buildAxis();
+				axis.setColor(new float[] { 1.0f, 0, 0, 1.0f });
+			}
+			axis.draw(mvpMatrix, modelViewMatrix);
+		}
+
 		// Draw scene object
 		float[] result = new float[16];
 		float[] rotationMatrix = new float[16];
 		float[] translationMatrix = new float[16];
-		for (Object3D obj3D : scene.getObjects()) {
-			Matrix.setIdentityM(rotationMatrix, 0);
-			if (obj3D.getRotationZ() != 0) {
-				Matrix.setRotateM(rotationMatrix, 0, obj3D.getRotationZ(), 0, 0, 1.0f);
-			}
-			Matrix.setIdentityM(translationMatrix, 0);
-			Matrix.translateM(translationMatrix, 0, obj3D.getPosition()[0], obj3D.getPosition()[1],
-					obj3D.getPosition()[2]);
-			Matrix.multiplyMM(result, 0, translationMatrix, 0, rotationMatrix, 0);
-			Matrix.multiplyMM(result, 0, mvpMatrix, 0, result, 0);
-			obj3D.draw(result, modelViewMatrix);
-			obj3D.drawBoundingBox(result, modelViewMatrix);
-			// TODO: enable this only when user wants it
-			// obj3D.drawVectorNormals(result, modelViewMatrix);
+		SceneLoader scene = main.getModelActivity().getScene();
+		if (scene == null) {
+			// scene not ready
+			return;
 		}
-	}
 
-	public SceneLoader getScene() {
-		return scene;
+		for (Object3DData objData : scene.getObjects()) {
+			try {
+				boolean changed = objData.isChanged();
+				Object3D object = objects.get(objData);
+				if (object == null || changed) {
+					object = Object3DBuilder.build(objData);
+					objects.put(objData, object);
+				}
+
+				Matrix.setIdentityM(rotationMatrix, 0);
+				if (objData.getRotationZ() != 0) {
+					Matrix.setRotateM(rotationMatrix, 0, objData.getRotationZ(), 0, 0, 1.0f);
+				}
+				Matrix.setIdentityM(translationMatrix, 0);
+				Matrix.translateM(translationMatrix, 0, objData.getPositionX(), objData.getPositionY(),
+						objData.getPositionZ());
+				Matrix.multiplyMM(result, 0, translationMatrix, 0, rotationMatrix, 0);
+				Matrix.multiplyMM(result, 0, mvpMatrix, 0, result, 0);
+
+				object.draw(result, modelViewMatrix);
+
+				// Draw bounding box
+				if (drawBoundingBox) {
+					Object3D boundingBox = boundingBoxes.get(objData);
+					if (boundingBox == null || changed) {
+						boundingBox = Object3DBuilder.build(Object3DBuilder.buildBoundingBox(objData));
+						boundingBoxes.put(objData, boundingBox);
+					}
+					boundingBox.draw(result, modelViewMatrix);
+				}
+
+				// Draw bounding box
+				if (drawNormals) {
+					Object3D normal = normals.get(objData);
+					if (normal == null || changed) {
+						Object3DData normalData = Object3DBuilder.buildFaceNormals(objData);
+						if (normalData != null) {
+							// it can be null if object isnt made of triangles
+							normal = Object3DBuilder.build(normalData);
+							normals.put(objData, normal);
+						}
+					}
+					if (normal != null) {
+						normal.draw(result, modelViewMatrix);
+					}
+				}
+				// TODO: enable this only when user wants it
+				// obj3D.drawVectorNormals(result, modelViewMatrix);
+			} catch (IOException ex) {
+				Toast.makeText(main.getModelActivity().getApplicationContext(),
+						"There was a problem creating 3D object", Toast.LENGTH_LONG).show();
+			}
+		}
 	}
 
 	public int getWidth() {

@@ -1,5 +1,7 @@
 package org.andresoviedo.app.model3D.view;
 
+import java.io.File;
+
 import org.andresoviedo.app.model3D.services.ExampleSceneLoader;
 import org.andresoviedo.app.model3D.services.SceneLoader;
 import org.andresoviedo.app.util.Utils;
@@ -45,17 +47,18 @@ public class ModelActivity extends Activity {
 		Log.i("Renderer", "Params: assetDir '" + paramAssetDir + "', assetFilename '" + paramAssetFilename + "', uri '"
 				+ paramFilename + "'");
 
+		// Create a GLSurfaceView instance and set it
+		// as the ContentView for this Activity.
+		gLView = new ModelSurfaceView(this);
+		setContentView(gLView);
+
 		// Create our 3D sceneario
 		if (paramFilename == null && paramAssetFilename == null) {
 			sceneLoader = new ExampleSceneLoader(this);
 		} else {
 			sceneLoader = new SceneLoader(this);
 		}
-
-		// Create a GLSurfaceView instance and set it
-		// as the ContentView for this Activity.
-		gLView = new ModelSurfaceView(this);
-		setContentView(gLView);
+		sceneLoader.init();
 
 		// Show the Up button in the action bar.
 		setupActionBar();
@@ -98,6 +101,10 @@ public class ModelActivity extends Activity {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	public File getParamFile() {
+		return getParamFilename() != null ? new File(getParamFilename()) : null;
 	}
 
 	public String getParamAssetDir() {
