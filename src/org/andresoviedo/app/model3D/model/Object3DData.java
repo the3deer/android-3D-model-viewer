@@ -13,6 +13,8 @@ import org.andresoviedo.app.model3D.services.WavefrontLoader.Faces;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Materials;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Tuple3;
 
+import android.util.Log;
+
 /**
  * This is the basic 3D data necessary to build the 3D object
  * 
@@ -351,6 +353,73 @@ public class Object3DData {
 
 	public void setTextureStreams(List<InputStream> textureStreams) {
 		this.textureStreams = textureStreams;
+	}
+
+	public Object3DData centerAndScale(float maxSize) {
+		float leftPt = Float.MAX_VALUE, rightPt = Float.MIN_VALUE; // on x-axis
+		float topPt = Float.MIN_VALUE, bottomPt = Float.MAX_VALUE; // on y-axis
+		float farPt = Float.MAX_VALUE, nearPt = Float.MIN_VALUE; // on z-axis
+
+		FloatBuffer vertexBuffer = getVertexArrayBuffer() != null ? getVertexArrayBuffer() : getVertexBuffer();
+		if (vertexBuffer == null) {
+			Log.v("Object3DData", "Scaling for '" + getId() + "' I found that there is no vertex data");
+			return this;
+		}
+
+		Log.i("Object3DData", "Calculating dimensions for '" + getId() + "...");
+		for (int i = 0; i < vertexBuffer.capacity(); i += 3) {
+			if (vertexBuffer.get(i) > rightPt)
+				rightPt = vertexBuffer.get(i);
+			else if (vertexBuffer.get(i) < leftPt)
+				leftPt = vertexBuffer.get(i);
+			if (vertexBuffer.get(i + 1) > topPt)
+				topPt = vertexBuffer.get(i + 1);
+			else if (vertexBuffer.get(i + 1) < bottomPt)
+				bottomPt = vertexBuffer.get(i + 1);
+			if (vertexBuffer.get(i + 2) > nearPt)
+				nearPt = vertexBuffer.get(i + 2);
+			else if (vertexBuffer.get(i + 2) < farPt)
+				farPt = vertexBuffer.get(i + 2);
+		} // end
+
+		// calculate center of 3D object
+		float xc = (rightPt + leftPt) / 2.0f;
+		float yc = (topPt + bottomPt) / 2.0f;
+		float zc = (nearPt + farPt) / 2.0f;
+
+		// calculate largest dimension
+		float height = topPt - bottomPt;
+		float depth = nearPt - farPt;
+		float largest = rightPt - leftPt;
+		if (height > largest)
+			largest = height;
+		if (depth > largest)
+			largest = depth;
+
+		// scale object
+
+		// calculate a scale factor
+		float scaleFactor = 1.0f;
+		// System.out.println("Largest dimension: " + largest);
+		if (largest != 0.0f)
+			scaleFactor = (maxSize / largest);
+		Log.i("Object3DData",
+				"Centering & scaling '" + getId() + "' to '" + xc + "," + yc + "," + zc + "' '" + scaleFactor + "'");
+
+		// modify the model's vertices
+		for (int i = 0; i < vertexBuffer.capacity(); i += 3) {
+			float x = vertexBuffer.get(i);
+			float y = vertexBuffer.get(i + 1);
+			float z = vertexBuffer.get(i + 2);
+			x = (x - xc) * scaleFactor;
+			y = (y - yc) * scaleFactor;
+			z = (z - zc) * scaleFactor;
+			vertexBuffer.put(i, x);
+			vertexBuffer.put(i + 1, y);
+			vertexBuffer.put(i + 2, z);
+		}
+
+		return this;
 	}
 
 }

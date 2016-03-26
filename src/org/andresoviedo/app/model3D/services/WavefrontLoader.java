@@ -35,7 +35,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -326,7 +325,7 @@ public class WavefrontLoader {
 		// faces
 	} // end of reportOnModel()
 
-	public static class Tuple3 implements Serializable {
+	public static class Tuple3 {
 		private float x, y, z;
 
 		public Tuple3(float xc, float yc, float zc) {
@@ -365,7 +364,7 @@ public class WavefrontLoader {
 
 	} // end of Tuple3 class
 
-	public static class ModelDimensions implements Serializable {
+	public static class ModelDimensions {
 		// edge coordinates
 		private float leftPt, rightPt; // on x-axis
 		private float topPt, bottomPt; // on y-axis
@@ -464,7 +463,7 @@ public class WavefrontLoader {
 
 	} // end of ModelDimensions class
 
-	public static class Materials implements Serializable {
+	public static class Materials {
 
 		public Map<String, Material> materials;
 		// stores the Material objects built from the MTL file data
@@ -598,7 +597,7 @@ public class WavefrontLoader {
 
 	} // end of Materials class
 
-	public static class Material implements Serializable {
+	public static class Material {
 		private String name;
 
 		// colour info
@@ -733,7 +732,7 @@ public class WavefrontLoader {
 
 	} // end of Material class
 
-	public static class Faces implements Serializable {
+	public static class Faces {
 		private static final float DUMMY_Z_TC = -5.0f;
 
 		/*
@@ -843,7 +842,7 @@ public class WavefrontLoader {
 
 	} // end of Faces class
 
-	public static class FaceMaterials implements Serializable {
+	public static class FaceMaterials {
 		// the face index (integer) where a material is first used
 		private HashMap<Integer, String> faceMats;
 

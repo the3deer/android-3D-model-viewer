@@ -285,35 +285,33 @@ public final class Object3DBuilder {
 	final static short[] cubeDrawOrder = new short[] {};
 
 	public static Object3DData buildCubeV1() {
-		return new Object3DData(createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer()
-				.put(cubePositionData).asReadOnlyBuffer()).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1");
+		return new Object3DData(
+				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData))
+						.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1").centerAndScale(1.0f);
 	}
 
 	public static Object3DData buildSquareV2() {
 		return new Object3DData(
-				createNativeByteBuffer(squarePositionData.length * 4).asFloatBuffer().put(squarePositionData)
-						.asReadOnlyBuffer(),
+				createNativeByteBuffer(squarePositionData.length * 4).asFloatBuffer().put(squarePositionData),
 				createNativeByteBuffer(squareDrawOrderData.length * 2).asShortBuffer().put(squareDrawOrderData)
-						.asReadOnlyBuffer()).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV2");
+						.asReadOnlyBuffer()).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV2").centerAndScale(1.0f);
 	}
 
 	public static Object3DData buildCubeV3(byte[] textureData) {
 		return new Object3DData(
-				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData)
-						.asReadOnlyBuffer(),
+				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData),
 				createNativeByteBuffer(cubeTextureCoordinateData.length * 4).asFloatBuffer()
 						.put(cubeTextureCoordinateData).asReadOnlyBuffer(),
-				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV3");
+				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV3").centerAndScale(1.0f);
 	}
 
 	public static Object3DData buildCubeV4(byte[] textureData) {
 		return new Object3DData(
-				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData)
-						.asReadOnlyBuffer(),
+				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData),
 				createNativeByteBuffer(cubeColorData.length * 4).asFloatBuffer().put(cubeColorData).asReadOnlyBuffer(),
 				createNativeByteBuffer(cubeTextureCoordinateData.length * 4).asFloatBuffer()
 						.put(cubeTextureCoordinateData).asReadOnlyBuffer(),
-				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV4");
+				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV4").centerAndScale(1.0f);
 	}
 
 	public static Object3DData loadV5(AssetManager assets, String assetDir, String assetFilename) {
