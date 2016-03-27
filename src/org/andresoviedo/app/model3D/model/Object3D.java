@@ -2,6 +2,8 @@ package org.andresoviedo.app.model3D.model;
 
 public interface Object3D {
 
+	Object3D setId(String id);
+
 	float[] getPosition();
 
 	void setPosition(float[] position);
@@ -25,5 +27,7 @@ public interface Object3D {
 	float getRotationZ();
 
 	void setRotation(float[] rotation);
+
+	int getDrawSize();
 
 }

@@ -154,6 +154,7 @@ public class ObjectV6 implements Object3D {
 
 	protected final int mProgram;
 	protected final FloatBuffer vertexBuffer;
+	private String id;
 	/**
 	 * This list will contain the vector index and the count of how many
 	 */
@@ -357,12 +358,22 @@ public class ObjectV6 implements Object3D {
 		return textureHandle;
 	}
 
+	@Override
+	public ObjectV6 setId(String id) {
+		this.id = id;
+		return this;
+	}
+
 	public static void checkGlError(String glOperation) {
 		int error;
 		while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
 			Log.e("objModel", glOperation + ": glError " + error);
 			throw new RuntimeException(glOperation + ": glError " + error);
 		}
+	}
+
+	public int getDrawSize() {
+		return this.drawSize;
 	}
 
 	public int[] getTextureId() {

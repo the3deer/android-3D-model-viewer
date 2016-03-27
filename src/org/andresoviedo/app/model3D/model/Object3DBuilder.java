@@ -40,6 +40,27 @@ public final class Object3DBuilder {
 	 */
 	private static float[] DEFAULT_COLOR = { 1.0f, 1.0f, 0, 1.0f };
 
+	final static float[] axisVertexLinesData = new float[] {
+		//@formatter:off
+		0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // right
+		0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // left
+		0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // up
+		0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, // down
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // z+
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, // z-
+
+		0.95f, 0.05f, 0, 1, 0, 0, 0.95f, -0.05f, 0, 1, 0f, 0f, // Arrow X (>)
+		-0.95f, 0.05f, 0, -1, 0, 0, -0.95f, -0.05f, 0, -1, 0f, 0f, // Arrow X (<)
+		-0.05f, 0.95f, 0, 0, 1, 0, 0.05f, 0.95f, 0, 0, 1f, 0f, // Arrox Y (^)
+		-0.05f, 0, 0.95f, 0, 0, 1, 0.05f, 0, 0.95f, 0, 0, 1, // Arrox z (v)
+
+		1.05F, 0.05F, 0, 1.10F, -0.05F, 0, 1.05F, -0.05F, 0, 1.10F, 0.05F, 0, // Letter X
+		-0.05F, 1.05F, 0, 0.05F, 1.10F, 0, -0.05F, 1.10F, 0, 0.0F, 1.075F, 0, // Letter Y
+		-0.05F, 0.05F, 1.05F, 0.05F, 0.05F, 1.05F, 0.05F, 0.05F, 1.05F, -0.05F, -0.05F, 1.05F, -0.05F, -0.05F,
+		1.05F, 0.05F, -0.05F, 1.05F // letter z
+		//@formatter:on
+	};
+
 	final static float[] squarePositionData = new float[] {
 			// @formatter:off
 			-0.5f, 0.5f, 0.5f, // top left front
@@ -124,7 +145,7 @@ public final class Object3DBuilder {
 			-1.0f, -1.0f, -1.0f,
 			1.0f, -1.0f, 1.0f, 				
 			-1.0f, -1.0f, 1.0f,
-			-1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f, -1.0f
 			};	
 
 		final static float[] cubeColorData = {		
@@ -284,6 +305,12 @@ public final class Object3DBuilder {
 
 	final static short[] cubeDrawOrder = new short[] {};
 
+	public static Object3DData buildAxis() {
+		return new Object3DData(
+				createNativeByteBuffer(axisVertexLinesData.length * 4).asFloatBuffer().put(axisVertexLinesData))
+						.setDrawMode(GLES20.GL_LINES);
+	}
+
 	public static Object3DData buildCubeV1() {
 		return new Object3DData(
 				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData))
@@ -338,34 +365,11 @@ public final class Object3DBuilder {
 		}
 	}
 
-	public static Object3D buildAxis() {
-		return build(new float[] { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // right
-				0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // left
-				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // up
-				0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, // down
-				0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // z+
-				0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, // z-
-
-				0.95f, 0.05f, 0, 1, 0, 0, 0.95f, -0.05f, 0, 1, 0f, 0f, // Arrow X (>)
-				-0.95f, 0.05f, 0, -1, 0, 0, -0.95f, -0.05f, 0, -1, 0f, 0f, // Arrow X (<)
-				-0.05f, 0.95f, 0, 0, 1, 0, 0.05f, 0.95f, 0, 0, 1f, 0f, // Arrox Y (^)
-				-0.05f, 0, 0.95f, 0, 0, 1, 0.05f, 0, 0.95f, 0, 0, 1, // Arrox z (v)
-
-				1.05F, 0.05F, 0, 1.10F, -0.05F, 0, 1.05F, -0.05F, 0, 1.10F, 0.05F, 0, // Letter X
-				-0.05F, 1.05F, 0, 0.05F, 1.10F, 0, -0.05F, 1.10F, 0, 0.0F, 1.075F, 0, // Letter Y
-				-0.05F, 0.05F, 1.05F, 0.05F, 0.05F, 1.05F, 0.05F, 0.05F, 1.05F, -0.05F, -0.05F, 1.05F, -0.05F, -0.05F,
-				1.05F, 0.05F, -0.05F, 1.05F }, GLES20.GL_LINES);
-	}
-
-	public static Object3D build(float[] verts, int drawMode) {
-		return new Object3DImpl(createNativeByteBuffer(verts.length * 4).asFloatBuffer().put(verts), drawMode);
-	}
-
 	public static Object3D build(Object3DData obj) throws IOException {
 		return new Object3DImpl(obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer() : obj.getVertexBuffer(),
 				obj.getVertexColorsArrayBuffer(), obj.getDrawMode(), obj.getTextureCoordsArrayBuffer(),
-				obj.getTextureStream0()).setDrawOrder(obj.getDrawOrder()).setDrawModeList(obj.getDrawModeList())
-						.setDrawSize(obj.getDrawSize()).setColor(obj.getColor());
+				obj.getTextureStream0()).setId(obj.getId()).setDrawOrder(obj.getDrawOrder())
+						.setDrawModeList(obj.getDrawModeList()).setDrawSize(obj.getDrawSize()).setColor(obj.getColor());
 	}
 
 	public static Object3D build(AssetManager assets, String assetDir, String modelId) {
@@ -606,11 +610,6 @@ public final class Object3DBuilder {
 
 		return new Object3DData(normalsLines).setDrawMode(GLES20.GL_LINES).setColor(obj.getColor())
 				.setPosition(obj.getPosition()).setVersion(1);
-	}
-
-	public static Object3D buildWireframe(Object3DData obj) {
-		return new Object3DImpl(obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer() : obj.getVertexBuffer(),
-				GLES20.GL_LINE_LOOP).setDrawOrder(obj.getDrawOrder()).setDrawSize(3).setColor(obj.getColorInverted());
 	}
 
 	private static ByteBuffer createNativeByteBuffer(int length) {

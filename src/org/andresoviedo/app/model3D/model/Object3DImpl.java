@@ -113,6 +113,7 @@ public class Object3DImpl implements Object3D {
 	// @formatter:on
 
 	// Model data
+	private String id;
 	private final FloatBuffer vertexBuffer;
 	private ShortBuffer drawOrderBuffer;
 	private final int drawMode;
@@ -184,9 +185,19 @@ public class Object3DImpl implements Object3D {
 		}
 	}
 
+	@Override
+	public Object3DImpl setId(String id) {
+		this.id = id;
+		return this;
+	}
+
 	public Object3DImpl setDrawSize(int drawSize) {
 		this.drawSize = drawSize;
 		return this;
+	}
+
+	public int getDrawSize() {
+		return this.drawSize;
 	}
 
 	public Object3DImpl setDrawOrder(ShortBuffer drawOrder) {
@@ -279,9 +290,8 @@ public class Object3DImpl implements Object3D {
 	}
 
 	@Override
-	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawType, int drawSize) {
-		this.draw(mvpMatrix);
-
+	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawMode, int drawSize) {
+		this.drawImpl(mvpMatrix, drawMode, drawSize);
 	}
 
 	/**
@@ -291,6 +301,10 @@ public class Object3DImpl implements Object3D {
 	 *            - The Model View Project matrix in which to draw this shape.
 	 */
 	public void draw(float[] mvpMatrix) {
+		this.drawImpl(mvpMatrix, drawMode, getDrawSize());
+	}
+
+	private void drawImpl(float[] mvpMatrix, int drawMode, int drawSize) {
 		// Add program to OpenGL environment
 		GLES20.glUseProgram(mProgram);
 
@@ -370,17 +384,36 @@ public class Object3DImpl implements Object3D {
 
 		if (drawModeList != null) {
 			if (drawOrderBuffer == null) {
-				// Log.d("ObjectV5", "Drawing heterogeneous shape using arrays...");
 				for (int[] polygon : drawModeList) {
-					GLES20.glDrawArrays(polygon[0], polygon[1], polygon[2]);
+					int drawModePolygon = polygon[0];
+					int vertexPos = polygon[1];
+					int drawSizePolygon = polygon[2];
+					if (drawMode == GLES20.GL_LINE_LOOP && polygon[2] > 3) {
+						// is this wireframe?
+						Log.v("Object3DImpl", "Drawing wireframe for '" + id + "' (" + drawSizePolygon + ")...");
+						for (int i = 0; i < polygon[2] - 2; i++) {
+							Log.v("Object3DImpl", "Drawing wireframe triangle '" + i + "' for '" + id + "'...");
+							GLES20.glDrawArrays(drawMode, polygon[1] + i, 3);
+						}
+					} else {
+						GLES20.glDrawArrays(drawMode, polygon[1], polygon[2]);
+					}
 				}
 			} else {
-				for (int[] drawPart : drawModeList) {
-					int drawModePolygon = drawPart[0];
-					int vertexPos = drawPart[1];
-					int drawSizePolygon = drawPart[2];
+				for (int[] polygon : drawModeList) {
+					int drawModePolygon = polygon[0];
+					int vertexPos = polygon[1];
+					int drawSizePolygon = polygon[2];
 					drawOrderBuffer.position(vertexPos);
-					GLES20.glDrawElements(drawModePolygon, drawSizePolygon, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
+					if (drawMode == GLES20.GL_LINE_LOOP && drawSizePolygon > 3) {
+						// is this wireframe?
+						for (int i = 0; i < drawSizePolygon - 3; i++) {
+							drawOrderBuffer.position(vertexPos + i);
+							GLES20.glDrawElements(drawMode, 3, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
+						}
+					} else {
+						GLES20.glDrawElements(drawMode, drawSizePolygon, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
+					}
 				}
 			}
 		} else {

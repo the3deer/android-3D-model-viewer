@@ -31,18 +31,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	private int height;
 	// Out point of view handler
 	private Camera camera;
-	// Whether to draw the axis
-	private boolean drawAxis = true;
-	// Whether to draw objects as wireframe
-	private boolean drawWireframe = true;
-	// Whether to draw a cube bounding the model
-	private boolean drawBoundingBox = true;
-	// Whether to draw the face normals
-	private boolean drawNormals = true;
-	// The 3D axis
-	private Object3D axis;
-	// The corresponding scene opengl object wireframes
-	private Map<Object3DData, Object3D> wireframes = new HashMap<Object3DData, Object3D>();
+
 	// The corresponding scene opengl objects
 	private Map<Object3DData, Object3D> objects = new HashMap<Object3DData, Object3D>();
 	// The corresponding opengl bounding boxes
@@ -69,10 +58,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
 		// Set the background frame color
-		GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		GLES20.glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
 		// Use culling to remove back faces.
-		GLES20.glEnable(GLES20.GL_CULL_FACE);
+		// Don't remove back faces so we can see them
+		// GLES20.glEnable(GLES20.GL_CULL_FACE);
 
 		// Enable depth testing for hidden-surface elimination.
 		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -122,15 +112,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 			camera.setChanged(false);
 		}
 
-		// Draw Axis
-		if (drawAxis) {
-			if (axis == null) {
-				axis = Object3DBuilder.buildAxis();
-				axis.setColor(new float[] { 1.0f, 0, 0, 1.0f });
-			}
-			axis.draw(mvpMatrix, modelViewMatrix);
-		}
-
 		// Draw scene object
 		float[] result = new float[16];
 		float[] rotationMatrix = new float[16];
@@ -156,28 +137,22 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				Matrix.multiplyMM(result, 0, translationMatrix, 0, rotationMatrix, 0);
 				Matrix.multiplyMM(result, 0, mvpMatrix, 0, result, 0);
 
-				// draw objects
-				if (drawWireframe) {
-					Object3D object = wireframes.get(objData);
-					if (object == null || changed) {
-						object = Object3DBuilder.buildWireframe(objData);
-						wireframes.put(objData, object);
-					}
-					object.draw(result, modelViewMatrix);
+				Object3D object = objects.get(objData);
+				if (object == null || changed) {
+					object = Object3DBuilder.build(objData);
+					objects.put(objData, object);
 				}
-
-				// TODO: put this when no drawWireframe. 
-				if (true) {
-					Object3D object = objects.get(objData);
-					if (object == null || changed) {
-						object = Object3DBuilder.build(objData);
-						objects.put(objData, object);
-					}
+				if (scene.isDrawWireframe() && objData.getDrawMode() != GLES20.GL_POINTS
+						&& objData.getDrawMode() != GLES20.GL_LINES && objData.getDrawMode() != GLES20.GL_LINE_STRIP
+						&& objData.getDrawMode() != GLES20.GL_LINE_LOOP) {
+					// Only draw wireframes for objects having faces (triangles)
+					object.draw(result, modelViewMatrix, GLES20.GL_LINE_LOOP, 3);
+				} else {
 					object.draw(result, modelViewMatrix);
 				}
 
 				// Draw bounding box
-				if (drawBoundingBox) {
+				if (scene.isDrawBoundingBox()) {
 					Object3D boundingBox = boundingBoxes.get(objData);
 					if (boundingBox == null || changed) {
 						boundingBox = Object3DBuilder.build(Object3DBuilder.buildBoundingBox(objData));
@@ -187,7 +162,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				}
 
 				// Draw bounding box
-				if (drawNormals) {
+				if (scene.isDrawNormals()) {
 					Object3D normal = normals.get(objData);
 					if (normal == null || changed) {
 						Object3DData normalData = Object3DBuilder.buildFaceNormals(objData);

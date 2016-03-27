@@ -4,15 +4,30 @@
     <string name="app_name">3D Model</string>
     <string name="app_version">Version 0.1</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
-    <!-- menu -->
+    <!-- Activities -->
     <string name="title_activity_menu">Menu</string>
+    <string name="title_activity_demo">Demo</string>
     <string name="title_activity_text">Text</string>
+    <string name="title_activity_model">Model</string>
+    <!-- Demo menu -->
     <string name="item">item</string>
-    <!-- demo menu -->
-    <string name="title_activity_demo">Models</string>
+
+    <string-array name="menu_items">
+        <item>Load Model</item>
+        <item>Demo</item>
+        <item>Example</item>
+        <item>Settings</item>
+        <item>Help</item>
+        <item>About</item>
+        <item>Exit</item>
+    </string-array>
+
     <string name="image">image</string>
-    <!-- load model dialog -->
+    <!-- Help -->
+    <string name="help_text">\nYour android device must have either internal or external storage. Thats where the bundled 3D models (.obj) are to be stored\n\nIf you want to load your own models, just download them to your android device in some folder\n\nTo load the model just click on "Load" and select the file you want to open\n\nOnce the model is loaded, you can pinch to zoom, rotate model with your finger and rotate the screen with 2 fingers\n\nIf you need more help feel free to ask me at andresoviedo@gmail.com</string>
+    <!-- About -->
+    <string name="about_text">This application allows you to load 3D object models (currently only wavefront .obj format is supported).\n\nThe purpose of this application is to learn how to code in android and how the OpenGL language works.\n\nThe code for this application is open source. The complete source code can be found at https://github.com/andresoviedo/android-3DModel\n\nAny comments or suggestions are welcome. Feel free to contact me at andresoviedo@gmail.com\n\nFor more info about me visit www.andresoviedo.org</string>
+    <!-- Load settings -->
     <string name="model_name">Model name</string>
     <string name="texture">Texture</string>
     <string name="invert_texture_coordinates">Invert texture coordinates</string>
@@ -20,21 +35,13 @@
     <string name="load">Load</string>
     <string name="load_model">Load Model</string>
 
-    <string-array name="menu_items">
-        <item>Load Model</item>
-        <item>Demo</item>
-        <item>Settings</item>
-        <item>Help</item>
-        <item>About</item>
-        <item>Exit</item>
-    </string-array>
+    <!-- GL Settings -->
+    <string name="toggle_wireframe">Toggle wireframe</string>
+    <string name="toggle_textures">Toggle textures</string>
+    <string name="toggle_lights">Toggle lights</string>
+    <string name="toggle_boundingbox">Toggle bounding box</string>
 
+    <!-- To review -->
     <string name="app_logo_desc">Teapot animated logo</string>
-    <string name="title_activity_view_model">ViewModelActivity</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="title_activity_model">ModelActivity</string>
-    <string name="help_text">\nYour android device must have either internal or external storage. Thats where the bundled 3D models (.obj) are to be stored\n\nIf you want to load your own models, just download them to your android device in some folder\n\nTo load the model just click on "Load" and select the file you want to open\n\nOnce the model is loaded, you can pinch to zoom, rotate model with your finger and rotate the screen with 2 fingers\n\nIf you need more help feel free to ask me at andresoviedo@gmail.com</string>
-    <string name="about_text">This application allows you to load 3D object models (currently only wavefront .obj format is supported).\n\nThe purpose of this application is to learn how to code in android and how the OpenGL language works.\n\nThe code for this application is open source. The complete source code can be found at https://github.com/andresoviedo/android-3DModel\n\nAny comments or suggestions are welcome. Feel free to contact me at andresoviedo@gmail.com\n\nFor more info about me visit www.andresoviedo.org</string>
 
 </resources>

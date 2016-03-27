@@ -33,8 +33,7 @@ public class Math3DUtils {
 		float[] vn = new float[] { n[0] / modul, n[1] / modul, n[2] / modul };
 
 		// calculate center of the face
-		float[] faceCenter = new float[] { (v0[0] + v1[0] + v2[0]) / 3, (v0[1] + v1[1] + v2[1]) / 3,
-				(v0[2] + v1[2] + v2[2]) / 3 };
+		float[] faceCenter = calculateFaceCenter(v0, v1, v2);
 		float[] vn2 = new float[] { faceCenter[0] + vn[0], faceCenter[1] + vn[1], faceCenter[2] + vn[2] };
 		@SuppressWarnings("unused")
 		String msg = "fNormal(" + v0[0] + "," + v0[1] + "," + v0[2] + "#" + v1[0] + "," + v1[1] + "," + v1[2] + "#"
@@ -43,6 +42,10 @@ public class Math3DUtils {
 				+ vn2[2] + ")";
 		// Log.d("ObjectV4", msg);
 		return new float[][] { faceCenter, vn2 };
+	}
+
+	public static float[] calculateFaceCenter(float[] v0, float[] v1, float[] v2) {
+		return new float[] { (v0[0] + v1[0] + v2[0]) / 3, (v0[1] + v1[1] + v2[1]) / 3, (v0[2] + v1[2] + v2[2]) / 3 };
 	}
 
 }

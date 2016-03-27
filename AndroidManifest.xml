@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="16"
+        android:minSdkVersion="19"
         android:targetSdkVersion="19" />
 
     <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
@@ -44,26 +44,12 @@
             android:label="@string/title_activity_text"
             android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
         </activity>
-        <!--
-             <activity android:name="com.ipaulpro.afilechooser.FileChooserActivity" >
-            <intent-filter>
-                <action android:name="android.intent.action.GET_CONTENT" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.OPENABLE" >
-                    <data android:mimeType="*/*" />
-                </category>
-            </intent-filter>
-        </activity>
-        -->
-
         <activity
             android:name="org.andresoviedo.app.model3D.view.ModelActivity"
             android:label="@string/title_activity_model"
-            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="org.andresoviedo.dddmodel.MainActivity" />
+            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
+
+            <!-- android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" -->
         </activity>
     </application>
 

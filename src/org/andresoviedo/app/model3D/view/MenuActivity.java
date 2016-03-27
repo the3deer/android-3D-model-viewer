@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -31,6 +32,13 @@ public class MenuActivity extends ListActivity {
 		setContentView(R.layout.activity_menu);
 		setListAdapter(new ArrayAdapter<String>(this, R.layout.activity_menu_item,
 				getResources().getStringArray(R.array.menu_items)));
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.menu, menu);
+		return true;
 	}
 
 	@Override

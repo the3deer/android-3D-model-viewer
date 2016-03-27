@@ -12,7 +12,9 @@ import org.andresoviedo.app.model3D.view.ModelActivity;
 import org.apache.commons.io.IOUtils;
 
 import android.app.ProgressDialog;
+import android.opengl.GLES20;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -28,6 +30,7 @@ public class ExampleSceneLoader extends SceneLoader {
 	}
 
 	public void init() {
+		super.init();
 		new AsyncTask<Void, Void, Void>() {
 
 			ProgressDialog dialog = new ProgressDialog(parent);
@@ -44,16 +47,26 @@ public class ExampleSceneLoader extends SceneLoader {
 			@Override
 			protected Void doInBackground(Void... params) {
 				try {
-					Object3DData obj1 = Object3DBuilder.buildCubeV1();
-					obj1.setColor(new float[] { 1f, 0f, 0f, 0.5f });
-					obj1.setPosition(new float[] { -1.5f, 1.5f, 1.5f });
-					addObject(obj1);
+					// test cube made of arrays
+					Object3DData obj10 = Object3DBuilder.buildCubeV1();
+					obj10.setColor(new float[] { 1f, 0f, 0f, 0.5f });
+					obj10.setPosition(new float[] { -1.5f, 1.5f, 1.5f });
+					addObject(obj10);
 
-					Object3DData obj2 = Object3DBuilder.buildSquareV2();
-					obj2.setColor(new float[] { 0f, 1f, 0, 0.5f });
-					obj2.setPosition(new float[] { 1.5f, 1.5f, 1.5f });
-					addObject(obj2);
+					// test cube made of wires (I explode it to see the faces better)
+					Object3DData obj11 = Object3DBuilder.buildCubeV1();
+					obj11.setColor(new float[] { 1f, 1f, 0f, 0.5f });
+					obj11.setPosition(new float[] { 0f, 3f, 1.5f });
+					obj11.centerAndScaleAndExplode(1.0f, 1.5f);
+					addObject(obj11);
 
+					// test cube made of indices
+					Object3DData obj20 = Object3DBuilder.buildSquareV2();
+					obj20.setColor(new float[] { 0f, 1f, 0, 0.5f });
+					obj20.setPosition(new float[] { 1.5f, 1.5f, 1.5f });
+					addObject(obj20);
+
+					// test cube with texture
 					InputStream open = null;
 					try {
 						open = parent.getAssets().open("models/penguin.bmp");
@@ -76,6 +89,7 @@ public class ExampleSceneLoader extends SceneLoader {
 						}
 					}
 
+					// test cube with texture & colors
 					open = null;
 					try {
 						open = parent.getAssets().open("models/cube.bmp");
@@ -98,6 +112,7 @@ public class ExampleSceneLoader extends SceneLoader {
 						}
 					}
 
+					// test loading object
 					try {
 						// this has no color array
 						Object3DData obj51 = Object3DBuilder.loadV5(parent.getAssets(), "models/", "teapot.obj");
@@ -108,6 +123,7 @@ public class ExampleSceneLoader extends SceneLoader {
 						errors.add(ex);
 					}
 
+					// test loading object with materials
 					try {
 						// this has color array
 						Object3DData obj52 = Object3DBuilder.loadV5(parent.getAssets(), "models/", "cube.obj");
@@ -118,11 +134,14 @@ public class ExampleSceneLoader extends SceneLoader {
 						errors.add(ex);
 					}
 
+					// test loading object made of polygonal faces
 					try {
 						// this has heterogeneous faces
 						Object3DData obj53 = Object3DBuilder.loadV5(parent.getAssets(), "models/", "ToyPlane.obj");
-						obj53.setPosition(new float[] { 1f, 0f, 0f });
+						obj53.centerAndScale(2.0f);
+						obj53.setPosition(new float[] { 0f, 0f, 2f });
 						obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
+						obj53.setDrawMode(GLES20.GL_TRIANGLE_FAN);
 						addObject(obj53);
 					} catch (Exception ex) {
 						errors.add(ex);
@@ -142,6 +161,7 @@ public class ExampleSceneLoader extends SceneLoader {
 				if (!errors.isEmpty()) {
 					StringBuilder msg = new StringBuilder("There was a problem loading the data");
 					for (Exception error : errors) {
+						Log.e("Example", error.getMessage(), error);
 						msg.append("\n" + error.getMessage());
 					}
 					Toast.makeText(parent.getApplicationContext(), msg, Toast.LENGTH_LONG).show();
