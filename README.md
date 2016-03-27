@@ -5,15 +5,13 @@ This is a demo of OpenGL ES 2.0.
 
 It is basically an android application with a 3D renderer (OpenGL ES 2.0) that can load 3D models.
 
-The purpose of this application is to learn how to code in OpenGL language
+The purpose of this application is to learn and share how to draw using OpenGL language
 
 
-News (24/03/2016)
+News (27/03/2016)
 =================
 
-* Fixed shader to show correctly colors
-* Implemented loader so now we can show any obj having quads :)
-* Implemented showing the face normals
+* Released app on android market :)
 
 
 Whats next
@@ -27,7 +25,7 @@ Features
 ========
   - OpenGL ES 2.0 API
   - obj format supported (wavefront)
-  - display of normals (not yet!)
+  - display of normals
   - display of bounding box 
   - textures
   - colors
@@ -44,11 +42,10 @@ Features
 Try it
 ======
 
-  1. Compile project from your android IDE
-  2. Connect your android device and run application 
-  3. You should see a menu. From there you can load the demo scenario (3D arrow and some object in the middle).
-  4. If you want, you can load your own model
-  4. Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective. 
+  1. Compile project from your android IDE, connect your android device and run application
+  1. Or download the file android-3DModel.apk from your device and install it 
+  2. Open the application. You should see a menu. From there you can load some demos or load your own model
+  3. Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective. 
 
 
 Screenshot
@@ -58,6 +55,7 @@ Screenshot
 ![Screenshot2](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot2.png)
 ![Screenshot3](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot3.png)
 ![Screenshot4](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot4.png)
+![Screenshot4](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot5.png)
 
 
 Tests
