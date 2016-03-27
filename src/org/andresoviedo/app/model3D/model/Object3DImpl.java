@@ -400,20 +400,12 @@ public class Object3DImpl implements Object3D {
 					}
 				}
 			} else {
-				for (int[] polygon : drawModeList) {
-					int drawModePolygon = polygon[0];
-					int vertexPos = polygon[1];
-					int drawSizePolygon = polygon[2];
+				for (int[] drawPart : drawModeList) {
+					int drawModePolygon = drawPart[0];
+					int vertexPos = drawPart[1];
+					int drawSizePolygon = drawPart[2];
 					drawOrderBuffer.position(vertexPos);
-					if (drawMode == GLES20.GL_LINE_LOOP && drawSizePolygon > 3) {
-						// is this wireframe?
-						for (int i = 0; i < drawSizePolygon - 3; i++) {
-							drawOrderBuffer.position(vertexPos + i);
-							GLES20.glDrawElements(drawMode, 3, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
-						}
-					} else {
-						GLES20.glDrawElements(drawMode, drawSizePolygon, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
-					}
+					GLES20.glDrawElements(drawModePolygon, drawSizePolygon, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
 				}
 			}
 		} else {

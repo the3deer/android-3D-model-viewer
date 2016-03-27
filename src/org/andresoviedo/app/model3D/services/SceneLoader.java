@@ -66,6 +66,7 @@ public class SceneLoader {
 						@Override
 						public void onLoadComplete(Object3DData data) {
 							data.setDrawMode(defaultDrawMode);
+							data.centerAndScale(5.0f);
 							addObject(data);
 
 						}
@@ -108,6 +109,7 @@ public class SceneLoader {
 
 	public void toggleBoundingBox() {
 		this.drawBoundingBox = !drawBoundingBox;
+		requestRender();
 	}
 
 	public boolean isDrawBoundingBox() {

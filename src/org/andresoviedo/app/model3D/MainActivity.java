@@ -49,7 +49,8 @@ public class MainActivity extends Activity {
 		// init();
 
 		// Install example models & textures so the user can get started with app
-		installExamples();
+		// TODO: install? not yet!
+		// installExamples();
 
 		// Start Model activity.
 		MainActivity.this.startActivity(new Intent(MainActivity.this.getApplicationContext(), MenuActivity.class));

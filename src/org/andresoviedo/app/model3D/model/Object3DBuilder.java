@@ -535,7 +535,8 @@ public final class Object3DBuilder {
 
 	public static Object3DData buildBoundingBox(Object3DData obj) {
 		BoundingBox boundingBox = new BoundingBox(
-				obj.getVertexBuffer() != null ? obj.getVertexBuffer() : obj.getVertexArrayBuffer(), obj.getColor());
+				obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer() : obj.getVertexBuffer(),
+				obj.getColor());
 		return new Object3DData(boundingBox.getVertices()).setDrawModeList(boundingBox.getDrawModeList())
 				.setVertexColorsArrayBuffer(boundingBox.getColors()).setDrawOrder(boundingBox.getDrawOrder())
 				.setDrawMode(boundingBox.getDrawMode()).setDrawSize(boundingBox.getDrawSize())
@@ -783,12 +784,12 @@ class BoundingBox {
 	public FloatBuffer colors;
 	public ShortBuffer drawOrder;
 
-	public float xMin;
-	public float xMax;
-	public float yMin;
-	public float yMax;
-	public float zMin;
-	public float zMax;
+	public float xMin = Float.MAX_VALUE;
+	public float xMax = Float.MIN_VALUE;
+	public float yMin = Float.MAX_VALUE;
+	public float yMax = Float.MIN_VALUE;
+	public float zMin = Float.MAX_VALUE;
+	public float zMax = Float.MIN_VALUE;
 
 	public float[] center;
 	public float[] sizes;
@@ -889,10 +890,10 @@ class BoundingBox {
 
 	public List<int[]> getDrawModeList() {
 		List<int[]> ret = new ArrayList<int[]>();
-		int vertexPos = 0;
-		for (int i = 0; i < drawOrder.capacity() / 4; i++) {
-			ret.add(new int[] { GLES20.GL_LINE_LOOP, vertexPos, 4 });
-			vertexPos += 4;
+		int drawOrderPos = 0;
+		for (int i = 0; i < drawOrder.capacity(); i += 4) {
+			ret.add(new int[] { GLES20.GL_LINE_LOOP, drawOrderPos, 4 });
+			drawOrderPos += 4;
 		}
 		return ret;
 	}
@@ -928,17 +929,20 @@ class BoundingBox {
 			float vertexz = vertexBuffer.get();
 			if (vertexx < xMin) {
 				xMin = vertexx;
-			} else if (vertexx > xMax) {
+			}
+			if (vertexx > xMax) {
 				xMax = vertexx;
 			}
 			if (vertexy < yMin) {
 				yMin = vertexy;
-			} else if (vertexy > yMax) {
+			}
+			if (vertexy > yMax) {
 				yMax = vertexy;
 			}
 			if (vertexz < zMin) {
 				zMin = vertexz;
-			} else if (vertexz > zMax) {
+			}
+			if (vertexz > zMax) {
 				zMax = vertexz;
 			}
 		}

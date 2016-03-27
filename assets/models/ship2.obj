@@ -1,6 +1,6 @@
 # Blender v2.60 (sub 0) OBJ File: ''
 # www.blender.org
-mtllib ship.mtl
+mtllib ship2.mtl
 o Mesh_ship_hull
 v -33.506878 -23.263599 22.570295
 v -33.506878 -22.558100 22.570295

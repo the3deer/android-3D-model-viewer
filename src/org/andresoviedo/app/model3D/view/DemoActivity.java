@@ -35,8 +35,8 @@ public class DemoActivity extends ListActivity {
 	public static final String[] descriptions = new String[] { "It is an aggregate accessory fruit",
 			"It is the largest herbaceous flowering plant", "Citrus Fruit", "Mixed Fruits" };
 
-	public static final Integer[] images = { R.drawable.ic_launcher, R.drawable.ic_launcher, R.drawable.ic_launcher,
-			R.drawable.ic_launcher };
+	public static final Integer[] images = { R.drawable.ic_launcher2, R.drawable.ic_launcher2, R.drawable.ic_launcher2,
+			R.drawable.ic_launcher2 };
 
 	ListView listView;
 	List<RowItem> rowItems;
@@ -67,9 +67,24 @@ public class DemoActivity extends ListActivity {
 		setListAdapter(adapter);
 	}
 
+	private void loadDemo(final String selectedItem) {
+		Intent intent = new Intent(DemoActivity.this.getApplicationContext(), ModelActivity.class);
+		Bundle b = new Bundle();
+		b.putString("assetDir", "models/");
+		b.putString("assetFilename", selectedItem);
+		intent.putExtras(b);
+		DemoActivity.this.startActivity(intent);
+	}
+
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		final RowItem selectedItem = (RowItem) getListView().getItemAtPosition(position);
+		loadDemo(selectedItem.name);
+
+		// TODO: enable this when we have something to do with the dialog
+		if (true)
+			return;
+
 		try {
 			// custom dialog
 			final Dialog dialog = new Dialog(DemoActivity.this);
@@ -96,13 +111,9 @@ public class DemoActivity extends ListActivity {
 				@Override
 				public void onClick(View v) {
 					dialog.dismiss();
-					Intent intent = new Intent(DemoActivity.this.getApplicationContext(), ModelActivity.class);
-					Bundle b = new Bundle();
-					b.putString("assetDir", "models/");
-					b.putString("assetFilename", selectedItem.name);
-					intent.putExtras(b);
-					DemoActivity.this.startActivity(intent);
+					loadDemo(selectedItem.name);
 				}
+
 			});
 
 			dialog.show();
@@ -172,7 +183,7 @@ class CustomListViewAdapter extends ArrayAdapter<RowItem> {
 			Bitmap bitmap = BitmapFactory.decodeStream(context.getAssets().open(rowItem.image));
 			holder.imageView.setImageBitmap(bitmap);
 		} catch (Exception e) {
-			holder.imageView.setImageResource(R.drawable.ic_launcher);
+			holder.imageView.setImageResource(R.drawable.ic_launcher2);
 		}
 
 		return convertView;

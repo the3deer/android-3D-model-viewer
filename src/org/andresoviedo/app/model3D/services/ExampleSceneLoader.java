@@ -50,20 +50,20 @@ public class ExampleSceneLoader extends SceneLoader {
 					// test cube made of arrays
 					Object3DData obj10 = Object3DBuilder.buildCubeV1();
 					obj10.setColor(new float[] { 1f, 0f, 0f, 0.5f });
-					obj10.setPosition(new float[] { -1.5f, 1.5f, 1.5f });
+					obj10.setPosition(new float[] { -2f, 2f, 0f });
 					addObject(obj10);
 
 					// test cube made of wires (I explode it to see the faces better)
 					Object3DData obj11 = Object3DBuilder.buildCubeV1();
 					obj11.setColor(new float[] { 1f, 1f, 0f, 0.5f });
-					obj11.setPosition(new float[] { 0f, 3f, 1.5f });
+					obj11.setPosition(new float[] { 0f, 2f, 0f });
 					obj11.centerAndScaleAndExplode(1.0f, 1.5f);
 					addObject(obj11);
 
 					// test cube made of indices
 					Object3DData obj20 = Object3DBuilder.buildSquareV2();
 					obj20.setColor(new float[] { 0f, 1f, 0, 0.5f });
-					obj20.setPosition(new float[] { 1.5f, 1.5f, 1.5f });
+					obj20.setPosition(new float[] { 2f, 2f, 0f });
 					addObject(obj20);
 
 					// test cube with texture
@@ -76,7 +76,7 @@ public class ExampleSceneLoader extends SceneLoader {
 
 						Object3DData obj3 = Object3DBuilder.buildCubeV3(baos.toByteArray());
 						obj3.setColor(new float[] { 1f, 1f, 1f, 1f });
-						obj3.setPosition(new float[] { -1.5f, -1.5f, 1.5f });
+						obj3.setPosition(new float[] { -2f, -2f, 0f });
 						addObject(obj3);
 					} catch (Exception ex) {
 						errors.add(ex);
@@ -99,7 +99,7 @@ public class ExampleSceneLoader extends SceneLoader {
 
 						Object3DData obj4 = Object3DBuilder.buildCubeV4(baos.toByteArray());
 						obj4.setColor(new float[] { 1f, 1f, 1f, 1f });
-						obj4.setPosition(new float[] { 1.5f, -1.5f, 1.5f });
+						obj4.setPosition(new float[] { 0f, -2f, 0f });
 						addObject(obj4);
 					} catch (Exception ex) {
 						errors.add(ex);
@@ -116,7 +116,7 @@ public class ExampleSceneLoader extends SceneLoader {
 					try {
 						// this has no color array
 						Object3DData obj51 = Object3DBuilder.loadV5(parent.getAssets(), "models/", "teapot.obj");
-						obj51.setPosition(new float[] { -1.5f, 0f, 0f });
+						obj51.setPosition(new float[] { -2f, 0f, 0f });
 						obj51.setColor(new float[] { 1.0f, 1.0f, 0f, 1.0f });
 						addObject(obj51);
 					} catch (Exception ex) {
@@ -139,7 +139,7 @@ public class ExampleSceneLoader extends SceneLoader {
 						// this has heterogeneous faces
 						Object3DData obj53 = Object3DBuilder.loadV5(parent.getAssets(), "models/", "ToyPlane.obj");
 						obj53.centerAndScale(2.0f);
-						obj53.setPosition(new float[] { 0f, 0f, 2f });
+						obj53.setPosition(new float[] { 2f, 0f, 0f });
 						obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
 						obj53.setDrawMode(GLES20.GL_TRIANGLE_FAN);
 						addObject(obj53);

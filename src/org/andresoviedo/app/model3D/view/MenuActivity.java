@@ -23,7 +23,7 @@ public class MenuActivity extends ListActivity {
 	private static final int REQUEST_CODE_OPEN_FILE = 1000;
 
 	private static enum Action {
-		LOAD_MODEL, DEMO, SETTINGS, HELP, ABOUT, EXIT, UNKNOWN, EXAMPLE
+		LOAD_MODEL, MODELS, SETTINGS, HELP, ABOUT, EXIT, UNKNOWN, DEMO
 	};
 
 	@Override
@@ -34,12 +34,12 @@ public class MenuActivity extends ListActivity {
 				getResources().getStringArray(R.array.menu_items)));
 	}
 	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.menu, menu);
-		return true;
-	}
+	// @Override
+	// public boolean onCreateOptionsMenu(Menu menu) {
+	// // Inflate the menu; this adds items to the action bar if it is present.
+	// getMenuInflater().inflate(R.menu.menu, menu);
+	// return true;
+	// }
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
@@ -54,12 +54,12 @@ public class MenuActivity extends ListActivity {
 		}
 		try {
 			switch (action) {
-			case EXAMPLE: {// Start Model activity.
+			case DEMO: {// Start Model activity.
 				Intent intent = new Intent(MenuActivity.this.getApplicationContext(), ModelActivity.class);
 				MenuActivity.this.startActivity(intent);
 				break;
 			}
-			case DEMO: {
+			case MODELS: {
 				// Start Model activity.
 				Intent intent = new Intent(MenuActivity.this.getApplicationContext(), DemoActivity.class);
 				MenuActivity.this.startActivity(intent);
