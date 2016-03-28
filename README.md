@@ -8,7 +8,7 @@ It is basically an android application with a 3D renderer (OpenGL ES 2.0) that c
 The purpose of this application is to learn and share how to draw using OpenGL language
 
 
-News (27/03/2016)
+News (28/03/2016)
 =================
 
 * Released app on android market :)
@@ -17,12 +17,15 @@ News (27/03/2016)
 Whats next
 ==========
 
-* Implement a menu so the user can choose the model (.obj) and the texture file
-* Implement a menu so the user can toogle lights, texture & draw mode (wireframe or solid)
+* Light rendering
+* Toggle textures
+* Load different texture
+* Many more... 
 
 
 Features
 ========
+
   - OpenGL ES 2.0 API
   - obj format supported (wavefront)
   - display of normals
@@ -43,7 +46,7 @@ Try it
 ======
 
   1. Compile project from your android IDE, connect your android device and run application
-  1. Or download the file android-3DModel.apk from your device and install it 
+  1. Or download the file https://github.com/andresoviedo/android-3DModel/raw/master/android-3DModel.apk to your device and install it 
   2. Open the application. You should see a menu. From there you can load some demos or load your own model
   3. Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective. 
 
@@ -61,7 +64,9 @@ Screenshot
 Tests
 =====
 
-  - Tested on Nexus 7 3G (2012)
+  - Tested on Nexus 7 3G 2012 (android 4.4.2)
+  - Tested on BQ Aquaris 5 (android 4.2.1)
+  - Tested on Samsung GT-S5280 (android 4.1.2)
 
 
 Final Notes

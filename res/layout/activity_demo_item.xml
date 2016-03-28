@@ -4,8 +4,8 @@
     android:layout_height="fill_parent" >
     <ImageView
         android:id="@+id/demo_item_icon"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
         android:contentDescription="@string/image"
         android:paddingLeft="4dp"
         android:paddingRight="4dp" />

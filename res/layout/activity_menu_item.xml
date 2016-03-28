@@ -9,6 +9,6 @@
     android:paddingTop="4dp"
     android:text="@string/item"
     android:textColor="#ffffff"
-    android:textSize="64sp" >
+    android:textSize="32sp" >
 
 </TextView>

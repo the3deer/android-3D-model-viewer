@@ -13,7 +13,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -95,7 +94,11 @@ public class ModelActivity extends Activity {
 		return true;
 	}
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void setupOnSystemVisibilityChangeListener() {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+			return;
+		}
 		getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
 			@Override
 			public void onSystemUiVisibilityChange(int visibility) {
@@ -105,7 +108,9 @@ public class ModelActivity extends Activity {
 					// TODO: The system bars are visible. Make any desired
 					// adjustments to your UI, such as showing the action bar or
 					// other navigational controls.
-					hideSystemUIDelayed(3000);
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+						hideSystemUIDelayed(3000);
+					}
 				} else {
 					// TODO: The system bars are NOT visible. Make any desired
 					// adjustments to your UI, such as hiding the action bar or
@@ -119,7 +124,9 @@ public class ModelActivity extends Activity {
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
 		if (hasFocus) {
-			hideSystemUIDelayed(3000);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+				hideSystemUIDelayed(3000);
+			}
 		}
 	}
 
@@ -149,6 +156,9 @@ public class ModelActivity extends Activity {
 	}
 
 	private void hideSystemUIDelayed(long millis) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+			return;
+		}
 		handler.postDelayed(new Runnable() {
 			public void run() {
 				hideSystemUI();
@@ -156,8 +166,20 @@ public class ModelActivity extends Activity {
 		}, millis);
 	}
 
-	// This snippet hides the system bars.
 	private void hideSystemUI() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			hideSystemUIKitKat();
+		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+			hideSystemUIJellyBean();
+		}
+	}
+
+	// This snippet hides the system bars.
+	@TargetApi(Build.VERSION_CODES.KITKAT)
+	private void hideSystemUIKitKat() {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+			return;
+		}
 		// Set the IMMERSIVE flag.
 		// Set the content to appear under the system bars so that the content
 		// doesn't resize when the system bars hide and show.
@@ -168,9 +190,24 @@ public class ModelActivity extends Activity {
 				| View.SYSTEM_UI_FLAG_IMMERSIVE);
 	}
 
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+	private void hideSystemUIJellyBean() {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+			return;
+		}
+		final View decorView = getWindow().getDecorView();
+		decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LOW_PROFILE);
+	}
+
 	// This snippet shows the system bars. It does this by removing all the flags
 	// except for the ones that make the content appear under the system bars.
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	private void showSystemUI() {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+			return;
+		}
 		final View decorView = getWindow().getDecorView();
 		decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
 				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
