@@ -49,6 +49,8 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int dialog_load_model_name=0x7f0b0004;
         public static final int dialog_load_model_texture=0x7f0b0005;
         public static final int model_toggle_boundingbox=0x7f0b000b;
+        public static final int model_toggle_lights=0x7f0b000d;
+        public static final int model_toggle_textures=0x7f0b000c;
         public static final int model_toggle_wireframe=0x7f0b000a;
         public static final int text_activity_text=0x7f0b0003;
     }

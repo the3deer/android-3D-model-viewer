@@ -2,32 +2,13 @@ package org.andresoviedo.app.model3D.model;
 
 public interface Object3D {
 
-	Object3D setId(String id);
+	// number of coordinates per vertex in this array
+	final int COORDS_PER_VERTEX = 3;
+	final int VERTEX_STRIDE = COORDS_PER_VERTEX * 4; // 4 bytes per
 
-	float[] getPosition();
+	final float[] DEFAULT_COLOR = { 1.0f, 0.0f, 0, 1.0f };
 
-	void setPosition(float[] position);
+	void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPosInEyeSpace);
 
-	float[] getColor();
-
-	Object3D setColor(float[] color);
-
-	void draw(float[] mvpMatrix, float[] mvMatrix);
-
-	void draw(float[] mvpMatrix, float[] mvMatrix, int drawType, int drawSize);
-
-	void translateX(float f);
-
-	void translateY(float f);
-
-	float[] getRotation();
-
-	void setRotationZ(float rz);
-
-	float getRotationZ();
-
-	void setRotation(float[] rotation);
-
-	int getDrawSize();
-
+	void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawType, int drawSize, int textureId, float[] lightPosInEyeSpace);
 }

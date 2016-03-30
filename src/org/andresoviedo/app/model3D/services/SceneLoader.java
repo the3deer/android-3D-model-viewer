@@ -9,6 +9,8 @@ import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.view.ModelActivity;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
+import android.os.SystemClock;
 import android.widget.Toast;
 
 /**
@@ -44,9 +46,21 @@ public class SceneLoader {
 	 */
 	private boolean drawNormals = false;
 	/**
+	 * Whether to draw using textures
+	 */
+	private boolean drawTextures = true;
+	/**
+	 * Whether to draw using lights
+	 */
+	private boolean drawLighting = true;
+	/**
 	 * Default draw mode when loading models from files
 	 */
 	private int defaultDrawMode = GLES20.GL_TRIANGLE_FAN;
+	/**
+	 * Light position
+	 */
+	private float[] lightPos = new float[] { 0, 0, 3, 1 };
 
 	public SceneLoader(ModelActivity main) {
 		this.parent = main;
@@ -54,7 +68,7 @@ public class SceneLoader {
 
 	public void init() {
 		// Draw Axis
-		axis = Object3DBuilder.buildAxis();
+		axis = Object3DBuilder.buildAxis().setId("axis");
 		axis.setColor(new float[] { 1.0f, 0, 0, 1.0f });
 		addObject(axis);
 
@@ -79,6 +93,30 @@ public class SceneLoader {
 						}
 					});
 		}
+	}
+
+	public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize) {
+		float[] mLightPosInEyeSpace = new float[4];
+		// Do a complete rotation every 10 seconds.
+		long time = SystemClock.uptimeMillis() % 10000L;
+		float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
+
+		// calculate light matrix
+		float[] mMatrixLight = new float[16];
+		// Calculate position of the light. Rotate and then push into the distance.
+		Matrix.setIdentityM(mMatrixLight, 0);
+		// Matrix.translateM(mMatrixLight, 0, lightPos[0], lightPos[1], lightPos[2]);
+		Matrix.rotateM(mMatrixLight, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
+		// Matrix.translateM(mMatrixLight, 0, 0.0f, 0.0f, 2.0f);
+		float[] mLightPosInWorldSpace = new float[4];
+		Matrix.multiplyMV(mLightPosInWorldSpace, 0, mMatrixLight, 0, lightPos, 0);
+
+		Matrix.multiplyMV(mLightPosInEyeSpace, 0, vMatrix, 0, mLightPosInWorldSpace, 0);
+		float[] mvMatrixLight = new float[16];
+		Matrix.multiplyMM(mvMatrixLight, 0, vMatrix, 0, mMatrixLight, 0);
+		float[] mvpMatrixLight = new float[16];
+		Matrix.multiplyMM(mvpMatrixLight, 0, pMatrix, 0, mvMatrixLight, 0);
+
 	}
 
 	protected void addObject(Object3DData obj) {
@@ -118,6 +156,26 @@ public class SceneLoader {
 
 	public boolean isDrawNormals() {
 		return drawNormals;
+	}
+
+	public float[] getLightPos() {
+		return lightPos;
+	}
+
+	public void toggleTextures() {
+		this.drawTextures = !drawTextures;
+	}
+
+	public void toggleLighting() {
+		this.drawLighting = !drawLighting;
+	}
+
+	public boolean isDrawTextures() {
+		return drawTextures;
+	}
+
+	public boolean isDrawLighting() {
+		return drawLighting;
 	}
 
 }

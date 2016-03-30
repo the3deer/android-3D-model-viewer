@@ -60,6 +60,24 @@ public class ExampleSceneLoader extends SceneLoader {
 					obj11.centerAndScaleAndExplode(1.0f, 1.5f);
 					addObject(obj11);
 
+					// test cube made of wires (I explode it to see the faces better)
+					Object3DData obj12 = Object3DBuilder.buildCubeV1_with_normals();
+					obj12.setColor(new float[] { 1f, 0f, 0f, 1f });
+					obj12.setPosition(new float[] { 0f, 0f, -2f });
+					addObject(obj12);
+
+					// test loading object
+					try {
+						// this has no color array
+						Object3DData android = Object3DBuilder.loadV5(parent.getAssets(), "models/", "android.obj");
+						android.generateVertexColorsArrayBuffer();
+						android.setPosition(new float[] { 0f, 0f, 0f });
+						android.setColor(new float[] { 1.0f, 1.0f, 0f, 1.0f });
+						addObject(android);
+					} catch (Exception ex) {
+						errors.add(ex);
+					}
+
 					// test cube made of indices
 					Object3DData obj20 = Object3DBuilder.buildSquareV2();
 					obj20.setColor(new float[] { 0f, 1f, 0, 0.5f });
@@ -127,7 +145,7 @@ public class ExampleSceneLoader extends SceneLoader {
 					try {
 						// this has color array
 						Object3DData obj52 = Object3DBuilder.loadV5(parent.getAssets(), "models/", "cube.obj");
-						obj52.setPosition(new float[] { 0f, 0f, 0f });
+						obj52.setPosition(new float[] { 2f, -2f, 0f });
 						obj52.setColor(new float[] { 0.0f, 1.0f, 1f, 1.0f });
 						addObject(obj52);
 					} catch (Exception ex) {

@@ -1,5 +1,6 @@
 package org.andresoviedo.app.model3D.view;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,10 +13,12 @@ import org.andresoviedo.app.model3D.model.Object3D;
 import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.services.SceneLoader;
+import org.andresoviedo.app.model3D.util.GLUtil;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -32,12 +35,13 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	// Out point of view handler
 	private Camera camera;
 
-	// The corresponding scene opengl objects
-	private Map<Object3DData, Object3D> objects = new HashMap<Object3DData, Object3D>();
+	private Object3DBuilder drawer;
+	// The loaded textures
+	private Map<byte[], Integer> textures = new HashMap<byte[], Integer>();
+	// The corresponding opengl bounding boxes and drawer
+	private Map<Object3DData, Object3DData> boundingBoxes = new HashMap<Object3DData, Object3DData>();
 	// The corresponding opengl bounding boxes
-	private Map<Object3DData, Object3D> boundingBoxes = new HashMap<Object3DData, Object3D>();
-	// The corresponding opengl bounding boxes
-	private Map<Object3DData, Object3D> normals = new HashMap<Object3DData, Object3D>();
+	private Map<Object3DData, Object3DData> normals = new HashMap<Object3DData, Object3DData>();
 
 	// 3D matrices to project our 3D world
 	private final float[] modelProjectionMatrix = new float[16];
@@ -73,6 +77,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 		// Lets create our 3D world components
 		camera = new Camera();
+
+		// This component will draw the actual models using OpenGL
+		drawer = new Object3DBuilder();
 	}
 
 	@Override
@@ -112,68 +119,96 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 			camera.setChanged(false);
 		}
 
-		// Draw scene object
-		float[] result = new float[16];
-		float[] rotationMatrix = new float[16];
-		float[] translationMatrix = new float[16];
 		SceneLoader scene = main.getModelActivity().getScene();
 		if (scene == null) {
 			// scene not ready
 			return;
 		}
 
+		float[] lightPosInEyeSpace = null;
+		if (scene.isDrawLighting()) {
+			float[] lightPos = scene.getLightPos();
+			lightPosInEyeSpace = new float[4];
+
+			// Do a complete rotation every 10 seconds.
+			long time = SystemClock.uptimeMillis() % 10000L;
+			float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
+
+			Object3DData lightPoint = Object3DBuilder.buildPoint(lightPos);
+			lightPoint.setRotation(new float[] { 0, angleInDegrees, 0 });
+
+			// calculate light matrix
+			float[] mMatrixLight = new float[16];
+			// Calculate position of the light. Rotate and then push into the distance.
+			Matrix.setIdentityM(mMatrixLight, 0);
+			// Matrix.translateM(mMatrixLight, 0, lightPos[0], lightPos[1], lightPos[2]);
+			Matrix.rotateM(mMatrixLight, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
+			// Matrix.translateM(mMatrixLight, 0, 0.0f, 0.0f, 2.0f);
+			float[] mLightPosInWorldSpace = new float[4];
+			Matrix.multiplyMV(mLightPosInWorldSpace, 0, mMatrixLight, 0, lightPos, 0);
+
+			Matrix.multiplyMV(lightPosInEyeSpace, 0, modelViewMatrix, 0, mLightPosInWorldSpace, 0);
+			float[] mvMatrixLight = new float[16];
+			Matrix.multiplyMM(mvMatrixLight, 0, modelViewMatrix, 0, mMatrixLight, 0);
+			float[] mvpMatrixLight = new float[16];
+			Matrix.multiplyMM(mvpMatrixLight, 0, modelProjectionMatrix, 0, mvMatrixLight, 0);
+
+			drawer.getPointDrawer().draw(lightPoint, modelProjectionMatrix, modelViewMatrix, -1, lightPosInEyeSpace);
+			// // Draw a point to indicate the light.
+			// GLES20.glUseProgram(mPointProgramHandle);
+			// drawLight(mvpMatrixLight, lightPos);
+		}
+
 		for (Object3DData objData : scene.getObjects()) {
 			try {
 				boolean changed = objData.isChanged();
 
-				// calculate mvp matrix
-				Matrix.setIdentityM(rotationMatrix, 0);
-				if (objData.getRotationZ() != 0) {
-					Matrix.setRotateM(rotationMatrix, 0, objData.getRotationZ(), 0, 0, 1.0f);
-				}
-				Matrix.setIdentityM(translationMatrix, 0);
-				Matrix.translateM(translationMatrix, 0, objData.getPositionX(), objData.getPositionY(),
-						objData.getPositionZ());
-				Matrix.multiplyMM(result, 0, translationMatrix, 0, rotationMatrix, 0);
-				Matrix.multiplyMM(result, 0, mvpMatrix, 0, result, 0);
+				Object3D drawerObject = drawer.getDrawer(objData, scene.isDrawTextures(), scene.isDrawLighting());
 
-				Object3D object = objects.get(objData);
-				if (object == null || changed) {
-					object = Object3DBuilder.build(objData);
-					objects.put(objData, object);
+				Integer textureId = textures.get(objData.getTextureData());
+				if (textureId == null && objData.getTextureData() != null) {
+					ByteArrayInputStream textureIs = new ByteArrayInputStream(objData.getTextureData());
+					textureId = GLUtil.loadTexture(textureIs);
+					textureIs.close();
+					textures.put(objData.getTextureData(), textureId);
 				}
+
 				if (scene.isDrawWireframe() && objData.getDrawMode() != GLES20.GL_POINTS
 						&& objData.getDrawMode() != GLES20.GL_LINES && objData.getDrawMode() != GLES20.GL_LINE_STRIP
 						&& objData.getDrawMode() != GLES20.GL_LINE_LOOP) {
 					// Only draw wireframes for objects having faces (triangles)
-					object.draw(result, modelViewMatrix, GLES20.GL_LINE_LOOP, 3);
+					drawerObject.draw(objData, modelProjectionMatrix, modelViewMatrix, GLES20.GL_LINE_LOOP, 3,
+							textureId != null ? textureId : -1, lightPosInEyeSpace);
 				} else {
-					object.draw(result, modelViewMatrix);
+
+					drawerObject.draw(objData, modelProjectionMatrix, modelViewMatrix,
+							textureId != null ? textureId : -1, lightPosInEyeSpace);
 				}
 
 				// Draw bounding box
 				if (scene.isDrawBoundingBox()) {
-					Object3D boundingBox = boundingBoxes.get(objData);
-					if (boundingBox == null || changed) {
-						boundingBox = Object3DBuilder.build(Object3DBuilder.buildBoundingBox(objData));
-						boundingBoxes.put(objData, boundingBox);
+					Object3DData boundingBoxData = boundingBoxes.get(objData);
+					if (boundingBoxData == null || changed) {
+						boundingBoxData = Object3DBuilder.buildBoundingBox(objData);
+						boundingBoxes.put(objData, boundingBoxData);
 					}
-					boundingBox.draw(result, modelViewMatrix);
+					Object3D boundingBoxDrawer = drawer.getBoundingBoxDrawer();
+					boundingBoxDrawer.draw(boundingBoxData, modelProjectionMatrix, modelViewMatrix, -1, null);
 				}
 
 				// Draw bounding box
 				if (scene.isDrawNormals()) {
-					Object3D normal = normals.get(objData);
-					if (normal == null || changed) {
-						Object3DData normalData = Object3DBuilder.buildFaceNormals(objData);
+					Object3DData normalData = normals.get(objData);
+					if (normalData == null || changed) {
+						normalData = Object3DBuilder.buildFaceNormals(objData);
 						if (normalData != null) {
 							// it can be null if object isnt made of triangles
-							normal = Object3DBuilder.build(normalData);
-							normals.put(objData, normal);
+							normals.put(objData, normalData);
 						}
 					}
-					if (normal != null) {
-						normal.draw(result, modelViewMatrix);
+					if (normalData != null) {
+						Object3D normalsDrawer = drawer.getFaceNormalsDrawer();
+						normalsDrawer.draw(normalData, modelProjectionMatrix, modelViewMatrix, -1, null);
 					}
 				}
 				// TODO: enable this only when user wants it

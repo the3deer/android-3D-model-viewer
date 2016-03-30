@@ -1,386 +1,286 @@
 package org.andresoviedo.app.model3D.model;
 
-import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.List;
 
 import org.andresoviedo.app.model3D.util.GLUtil;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
-import android.opengl.GLUtils;
+import android.opengl.Matrix;
 import android.util.Log;
 
 /**
- * A 3D object in OpenGL ES 2.0 using {@link GLES20#glDrawArrays(int, int, int)}
+ * Abstract class that implements all calls to opengl to draw objects
+ * 
+ * Subclasses must provide vertex shader and specify whether the shaders supports specific features
+ * 
+ * @author andresoviedo
+ *
  */
-public class Object3DImpl implements Object3D {
+public abstract class Object3DImpl implements Object3D {
 
-	// number of coordinates per vertex in this array
-	private static final int COORDS_PER_VERTEX = 3;
-	private static final int VERTEX_STRIDE = COORDS_PER_VERTEX * 4; // 4 bytes per
-
-	private static float[] DEFAULT_COLOR = { 1.0f, 0.0f, 0, 1.0f };
-
-	// @formatter:off
-	private final String vertexShaderCode =
-		"uniform mat4 uMVPMatrix;" + 
-		"attribute vec4 vPosition;" + 
-		"void main() {" +
-			"  gl_Position = uMVPMatrix * vPosition;" + 
-		"}";
-	// @formatter:on
-
-	// @formatter:off
-	private final String fragmentShaderCode = 
-		"precision mediump float;"+ 
-		"uniform vec4 vColor;" + 
-		"void main() {"+ 
-		"  gl_FragColor = vColor;" + 
-		"}";
-	// @formatter:on
-
-	// @formatter:off
-	private final String vertexShaderCode_color =
-		"uniform mat4 uMVPMatrix;" + 
-		"attribute vec4 vPosition;" +
-		"attribute vec4 a_Color;"+
-		"varying vec4 vColor;"+
-		"void main() {" +
-			"  vColor = a_Color;"+
-			"  gl_Position = uMVPMatrix * vPosition;" + 
-		"}";
-	// @formatter:on
-
-	// @formatter:off
-	private final String fragmentShaderCode_color = 
-		"precision mediump float;"+ 
-		"varying vec4 vColor;"+
-		"void main() {"+ 
-		"  gl_FragColor = vColor;" + 
-		"}";
-	// @formatter:on
-
-	// @formatter:off
-	private final String vertexShaderCode_textured =
-		"uniform mat4 uMVPMatrix;" + 
-		"attribute vec4 vPosition;" + 
-		"attribute vec2 a_TexCoordinate;"+ // Per-vertex texture coordinate information we will pass in.
-		"varying vec2 v_TexCoordinate;"+   // This will be passed into the fragment shader.
-		"void main() {" +
-			"  v_TexCoordinate = a_TexCoordinate;"+
-			"  gl_Position = uMVPMatrix * vPosition;" + 
-		"}";
-	// @formatter:on
-
-	// @formatter:off
-	private final String fragmentShaderCode_textured = 
-		"precision mediump float;"+ 
-		"uniform vec4 vColor;"+
-		"uniform sampler2D u_Texture;"+ 
-		"varying vec2 v_TexCoordinate;"+ 
-		"void main() {"	+ 
-		"  gl_FragColor = vColor * texture2D(u_Texture, v_TexCoordinate);"+
-		"}";
-	// @formatter:on
-
-	// @formatter:off
-	protected final String vertexShaderCode_textured_color =
-		"uniform mat4 uMVPMatrix;" + 
-		"attribute vec4 vPosition;"+
-		"attribute vec4 a_Color;"+
-		"varying vec4 vColor;"+
-		"attribute vec2 a_TexCoordinate;"+
-		"varying vec2 v_TexCoordinate;"+
-		"void main() {" +
-			"  vColor = a_Color;"+
-			"  v_TexCoordinate = a_TexCoordinate;"+
-		    "  gl_Position = uMVPMatrix * vPosition;"+
-		"}";
-	// @formatter:on
-
-	// @formatter:off
-	protected final String fragmentShaderCode_textured_color = 
-		"precision mediump float;"+
-		"varying vec4 vColor;"+
-		"uniform sampler2D u_Texture;"+
-		"varying vec2 v_TexCoordinate;"+
-		"void main() {"	+ 
-		"  gl_FragColor = vColor * texture2D(u_Texture, v_TexCoordinate);"+
-		"}";
-	// @formatter:on
-
-	// Model data
-	private String id;
-	private final FloatBuffer vertexBuffer;
-	private ShortBuffer drawOrderBuffer;
-	private final int drawMode;
-	private int drawSize = -1; // by default draw all
-	private float color[] = { 1.0f, 0.0f, 0.0f, 1.0f }; // default color is red
-	private final FloatBuffer vertexColors;
-	private FloatBuffer textureCoordsBuffer;
-	private List<int[]> drawModeList;
-
-	// Transformation data
-	private float[] position = new float[] { 0f, 0f, 0f };
-	private float[] rotation = new float[] { 0f, 0f, 0f };
-
+	private final String id;
 	// OpenGL data
 	private final int mProgram;
-	private int mMVPMatrixHandle;
-	private int mPositionHandle;
-	private int mColorHandle;
-	private int mTextureCoordinateHandle;
-	private final Integer textureId;
 
-	public Object3DImpl(FloatBuffer vertices, int drawMode) {
-		this(vertices, null, drawMode, null, null);
-	}
-
-	public Object3DImpl(FloatBuffer vertices, FloatBuffer vertexColors, int drawMode, FloatBuffer textureCoordsBuffer,
-			InputStream textureIs) {
-		this.vertexBuffer = vertices;
-		this.vertexColors = vertexColors;
-		this.textureCoordsBuffer = textureCoordsBuffer;
-		this.drawMode = drawMode;
-
-		// prepare shaders and OpenGL program
-		int vertexShader;
-		int fragmentShader;
-		if (textureCoordsBuffer != null && textureIs != null) {
-			if (vertexColors != null) {
-				vertexShader = GLUtil.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode_textured_color);
-				fragmentShader = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode_textured_color);
-			} else {
-				vertexShader = GLUtil.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode_textured);
-				fragmentShader = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode_textured);
-			}
-		} else {
-			if (vertexColors != null) {
-				vertexShader = GLUtil.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode_color);
-				fragmentShader = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode_color);
-			} else {
-				vertexShader = GLUtil.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
-				fragmentShader = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
-			}
-		}
-
-		mProgram = GLES20.glCreateProgram(); // create empty OpenGL Program
-		GLES20.glAttachShader(mProgram, vertexShader); // add the vertex shader to program
-		GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
-		textureId = loadTexture(textureIs);
-		GLES20.glLinkProgram(mProgram); // create OpenGL program executables
-
-		// Get the link status.
-		final int[] linkStatus = new int[1];
-		GLES20.glGetProgramiv(mProgram, GLES20.GL_LINK_STATUS, linkStatus, 0);
-
-		// If the link failed, delete the program.
-		if (linkStatus[0] == 0) {
-			Log.e("ObjectV4", "Error compiling program: " + GLES20.glGetProgramInfoLog(mProgram));
-			GLES20.glDeleteProgram(mProgram);
-			// mProgram = 0;
-		}
-	}
-
-	@Override
-	public Object3DImpl setId(String id) {
+	public Object3DImpl(String id, String vertexShaderCode, String fragmentShaderCode, String... variables) {
 		this.id = id;
-		return this;
-	}
-
-	public Object3DImpl setDrawSize(int drawSize) {
-		this.drawSize = drawSize;
-		return this;
-	}
-
-	public int getDrawSize() {
-		return this.drawSize;
-	}
-
-	public Object3DImpl setDrawOrder(ShortBuffer drawOrder) {
-		this.drawOrderBuffer = drawOrder;
-		return this;
-	}
-
-	public List<int[]> getDrawModeList() {
-		return drawModeList;
-	}
-
-	public Object3DImpl setDrawModeList(List<int[]> drawModeList) {
-		this.drawModeList = drawModeList;
-		return this;
-	}
-
-	public Object3DImpl setTextureCoordsData(FloatBuffer textureCoordsBuffer) {
-		this.textureCoordsBuffer = textureCoordsBuffer;
-		return this;
-	}
-
-	public float[] getPosition() {
-		return position;
-	}
-
-	public void setPosition(float[] position) {
-		this.position = position;
-	}
-
-	public float[] getColor() {
-		return color;
-	}
-
-	public Object3D setColor(float[] color) {
-		this.color = color;
-		return this;
-	}
-
-	public static Integer loadTexture(final InputStream is) {
-		if (is == null) {
-			return null;
-		}
-		Log.v("loadTexture", "Loading texture '" + is + "' from stream...");
-
-		final int[] textureHandle = new int[1];
-
-		GLES20.glGenTextures(1, textureHandle, 0);
-		GLUtil.checkGlError("glGenTextures");
-
-		if (textureHandle[0] != 0) {
-			Log.i("texture", "Handler: " + textureHandle[0]);
-
-			final BitmapFactory.Options options = new BitmapFactory.Options();
-			// By default, Android applies pre-scaling to bitmaps depending on the resolution of your device and which
-			// resource folder you placed the image in. We don’t want Android to scale our bitmap at all, so to be sure,
-			// we set inScaled to false.
-			options.inScaled = false;
-
-			// Read in the resource
-			final Bitmap bitmap = BitmapFactory.decodeStream(is, null, options);
-			if (bitmap == null) {
-				throw new RuntimeException("couldnt load bitmap");
-			}
-
-			// Bind to the texture in OpenGL
-			GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
-			GLUtil.checkGlError("glBindTexture");
-			GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-			GLUtil.checkGlError("texImage2D");
-			bitmap.recycle();
-			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-
-		}
-
-		if (textureHandle[0] == 0) {
-			throw new RuntimeException("Error loading texture.");
-		}
-
-		return textureHandle[0];
-	}
-
-	public int getTextureId() {
-		return textureId;
+		// prepare shaders and OpenGL program
+		int vertexShader = GLUtil.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
+		int fragmentShader = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
+		mProgram = GLUtil.createAndLinkProgram(vertexShader, fragmentShader, variables);
 	}
 
 	@Override
-	public void draw(float[] mvpMatrix, float[] mvMatrix) {
-		this.draw(mvpMatrix);
+	public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPos) {
+		this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPos);
 	}
 
 	@Override
-	public void draw(float[] mvpMatrix, float[] mvMatrix, int drawMode, int drawSize) {
-		this.drawImpl(mvpMatrix, drawMode, drawSize);
-	}
+	public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
+			float[] lightPos) {
 
-	/**
-	 * Encapsulates the OpenGL ES instructions for drawing this shape.
-	 * 
-	 * @param mvpMatrix
-	 *            - The Model View Project matrix in which to draw this shape.
-	 */
-	public void draw(float[] mvpMatrix) {
-		this.drawImpl(mvpMatrix, drawMode, getDrawSize());
-	}
+		// Log.d("Object3DImpl", "Drawing '" + obj.getId() + "' using shader '" + id + "'...");
 
-	private void drawImpl(float[] mvpMatrix, int drawMode, int drawSize) {
 		// Add program to OpenGL environment
 		GLES20.glUseProgram(mProgram);
 
-		mTextureCoordinateHandle = -1;
-		if (textureId != null) {
+		float[] mMatrix = getMMatrix(obj);
+		float[] mvMatrix = getMvMatrix(mMatrix, vMatrix);
+		float[] mvpMatrix = getMvpMatrix(mvMatrix, pMatrix);
 
-			int mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, "u_Texture");
-			checkGlError("glGetUniformLocation");
+		setMvpMatrix(mvpMatrix);
 
-			// Set the active texture unit to texture unit 0.
-			GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-			checkGlError("glActiveTexture");
+		int mPositionHandle = setPosition(obj);
 
-			// Bind to the texture in OpenGL
-			GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-			checkGlError("glBindTexture");
-
-			// Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
-			GLES20.glUniform1i(mTextureUniformHandle, 0);
-			checkGlError("glUniform1i");
-
-			mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgram, "a_TexCoordinate");
-			GLUtil.checkGlError("glGetAttribLocation");
-
-			// Enable a handle to the triangle vertices
-			GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
-			GLUtil.checkGlError("glEnableVertexAttribArray");
-
-			// Prepare the triangle coordinate data
-			textureCoordsBuffer.position(0);
-			GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, textureCoordsBuffer);
-			GLUtil.checkGlError("glVertexAttribPointer");
-		}
-
-		// get handle to vertex shader's vPosition member
-		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
-		checkGlError("glGetAttribLocation");
-
-		// Enable a handle to the triangle vertices
-		GLES20.glEnableVertexAttribArray(mPositionHandle);
-		checkGlError("glEnableVertexAttribArray");
-
-		if (vertexColors != null) {
-			// get handle to fragment shader's vColor member
-			mColorHandle = GLES20.glGetAttribLocation(mProgram, "a_Color");
-			GLUtil.checkGlError("glGetAttribLocation");
-
-			// Pass in the color information
-			GLES20.glEnableVertexAttribArray(mColorHandle);
-			checkGlError("glEnableVertexAttribArray");
-
-			vertexColors.position(0);
-			GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, vertexColors);
-			GLUtil.checkGlError("glVertexAttribPointer");
+		int mColorHandle = -1;
+		if (supportsColors()) {
+			mColorHandle = setColors(obj);
 		} else {
-			// get handle to fragment shader's vColor member
-			mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
-			GLUtil.checkGlError("glGetUniformLocation");
-
-			// Set color for drawing the triangle
-			float[] color = getColor() != null ? getColor() : DEFAULT_COLOR;
-			GLES20.glUniform4fv(mColorHandle, 1, color, 0);
-			GLUtil.checkGlError("glUniform4fv");
+			setColor(obj);
 		}
+
+		int mTextureHandle = -1;
+		if (textureId != -1 && supportsTextures()) {
+			setTexture(obj, textureId);
+		}
+
+		int mNormalHandle = -1;
+		if (supportsNormals()) {
+			mNormalHandle = setNormals(obj);
+		}
+
+		if (supportsMvMatrix()) {
+			setMvMatrix(mvMatrix);
+		}
+
+		if (lightPos != null && supportsLighting()) {
+			// float[] lightPosInEyeSpace = new float[4];
+			// Matrix.multiplyMV(lightPosInEyeSpace, 0, vMatrix, 0, lightPos, 0);
+			// float[] mvMatrixLight = new float[16];
+			// // Matrix.multiplyMM(mvMatrixLight, 0, vMatrix, 0, mMatrixLight, 0);
+			// float[] mvpMatrixLight = new float[16];
+			// Matrix.multiplyMM(mvpMatrixLight, 0, pMatrix, 0, mvMatrixLight, 0);
+			setLightPos(lightPos);
+		}
+
+		drawShape(obj, drawMode, drawSize);
+
+		// Disable vertex array
+		GLES20.glDisableVertexAttribArray(mPositionHandle);
+
+		if (mColorHandle != -1) {
+			GLES20.glDisableVertexAttribArray(mColorHandle);
+		}
+
+		// Disable vertex array
+		if (mTextureHandle != -1) {
+			GLES20.glDisableVertexAttribArray(mTextureHandle);
+		}
+
+		if (mNormalHandle != -1) {
+			GLES20.glDisableVertexAttribArray(mNormalHandle);
+		}
+	}
+
+	protected float[] getMMatrix(Object3DData obj) {
+		// Apply transformations
+		float[] mMatrix = new float[16];
+		float[] rotationMatrix = new float[16];
+		float[] translationMatrix = new float[16];
+
+		// calculate object transformation
+		Matrix.setIdentityM(rotationMatrix, 0);
+		if (obj.getRotation() != null) {
+			Matrix.rotateM(rotationMatrix, 0, obj.getRotation()[0], 1f, 0f, 0f);
+			Matrix.rotateM(rotationMatrix, 0, obj.getRotation()[1], 0, 1f, 0f);
+			Matrix.rotateM(rotationMatrix, 0, obj.getRotationZ(), 0, 0, 1f);
+		}
+		Matrix.setIdentityM(translationMatrix, 0);
+		Matrix.translateM(translationMatrix, 0, obj.getPositionX(), obj.getPositionY(), obj.getPositionZ());
+		Matrix.multiplyMM(mMatrix, 0, translationMatrix, 0, rotationMatrix, 0);
+		return mMatrix;
+	}
+
+	protected float[] getMvMatrix(float[] mMatrix, float[] vMatrix) {
+		float[] mvMatrix = new float[16];
+		Matrix.multiplyMM(mvMatrix, 0, vMatrix, 0, mMatrix, 0);
+		return mvMatrix;
+	}
+
+	protected float[] getMvpMatrix(float[] mvMatrix, float[] pMatrix) {
+		float[] mvpMatrix = new float[16];
+		Matrix.multiplyMM(mvpMatrix, 0, pMatrix, 0, mvMatrix, 0);
+		return mvpMatrix;
+	}
+
+	protected void setMvpMatrix(float[] mvpMatrix) {
 
 		// get handle to shape's transformation matrix
-		mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+		int mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
 		GLUtil.checkGlError("glGetUniformLocation");
 
 		// Apply the projection and view transformation
 		GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 		GLUtil.checkGlError("glUniformMatrix4fv");
+	}
 
+	protected boolean supportsColors() {
+		return false;
+	}
+
+	protected void setColor(Object3DData obj) {
+
+		// get handle to fragment shader's vColor member
+		int mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+		GLUtil.checkGlError("glGetUniformLocation");
+
+		// Set color for drawing the triangle
+		float[] color = obj.getColor() != null ? obj.getColor() : DEFAULT_COLOR;
+		GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+		GLUtil.checkGlError("glUniform4fv");
+	}
+
+	protected int setColors(Object3DData obj) {
+
+		// get handle to fragment shader's vColor member
+		int mColorHandle = GLES20.glGetAttribLocation(mProgram, "a_Color");
+		GLUtil.checkGlError("glGetAttribLocation");
+
+		// Pass in the color information
+		GLES20.glEnableVertexAttribArray(mColorHandle);
+		GLUtil.checkGlError("glEnableVertexAttribArray");
+
+		obj.getVertexColorsArrayBuffer().position(0);
+		GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, obj.getVertexColorsArrayBuffer());
+		GLUtil.checkGlError("glVertexAttribPointer");
+
+		return mColorHandle;
+	}
+
+	protected int setPosition(Object3DData obj) {
+
+		// get handle to vertex shader's a_Position member
+		int mPositionHandle = GLES20.glGetAttribLocation(mProgram, "a_Position");
+		GLUtil.checkGlError("glGetAttribLocation");
+
+		// Enable a handle to the triangle vertices
+		GLES20.glEnableVertexAttribArray(mPositionHandle);
+		GLUtil.checkGlError("glEnableVertexAttribArray");
+
+		FloatBuffer vertexBuffer = obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer()
+				: obj.getVertexBuffer();
 		vertexBuffer.position(0);
 		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, VERTEX_STRIDE,
 				vertexBuffer);
+
+		return mPositionHandle;
+	}
+
+	protected boolean supportsNormals() {
+		return false;
+	}
+
+	protected int setNormals(Object3DData obj) {
+		int mNormalHandle = GLES20.glGetAttribLocation(mProgram, "a_Normal");
+		GLUtil.checkGlError("glGetAttribLocation");
+
+		GLES20.glEnableVertexAttribArray(mNormalHandle);
+		GLUtil.checkGlError("glEnableVertexAttribArray");
+
+		// Pass in the normal information
+		obj.getVertexNormalsArrayBuffer().position(0);
+		GLES20.glVertexAttribPointer(mNormalHandle, 3, GLES20.GL_FLOAT, false, 0, obj.getVertexNormalsArrayBuffer());
+
+		return mNormalHandle;
+	}
+
+	protected boolean supportsLighting() {
+		return false;
+	}
+
+	protected void setLightPos(float[] lightPosInEyeSpace) {
+		int mLightPosHandle = GLES20.glGetUniformLocation(mProgram, "u_LightPos");
+		// Pass in the light position in eye space.
+		GLES20.glUniform3f(mLightPosHandle, lightPosInEyeSpace[0], lightPosInEyeSpace[1], lightPosInEyeSpace[2]);
+	}
+
+	protected boolean supportsMvMatrix() {
+		return false;
+	}
+
+	protected void setMvMatrix(float[] mvMatrix) {
+		int mMVMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
+		GLUtil.checkGlError("glGetUniformLocation");
+
+		// Pass in the modelview matrix.
+		GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mvMatrix, 0);
+		GLUtil.checkGlError("glUniformMatrix4fv");
+	}
+
+	protected boolean supportsTextures() {
+		return false;
+	}
+
+	protected int setTexture(Object3DData obj, int textureId) {
+		int mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, "u_Texture");
+		GLUtil.checkGlError("glGetUniformLocation");
+
+		// Set the active texture unit to texture unit 0.
+		GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+		GLUtil.checkGlError("glActiveTexture");
+
+		// Bind to the texture in OpenGL
+		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+		GLUtil.checkGlError("glBindTexture");
+
+		// Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
+		GLES20.glUniform1i(mTextureUniformHandle, 0);
+		GLUtil.checkGlError("glUniform1i");
+
+		int mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgram, "a_TexCoordinate");
+		GLUtil.checkGlError("glGetAttribLocation");
+
+		// Enable a handle to the triangle vertices
+		GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+		GLUtil.checkGlError("glEnableVertexAttribArray");
+
+		// Prepare the triangle coordinate data
+		obj.getTextureCoordsArrayBuffer().position(0);
+		GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0,
+				obj.getTextureCoordsArrayBuffer());
+		GLUtil.checkGlError("glVertexAttribPointer");
+
+		return mTextureCoordinateHandle;
+	}
+
+	protected void drawShape(Object3DData obj, int drawMode, int drawSize) {
+		FloatBuffer vertexBuffer = obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer()
+				: obj.getVertexBuffer();
+		vertexBuffer.position(0);
+		List<int[]> drawModeList = obj.getDrawModeList();
+		ShortBuffer drawOrderBuffer = obj.getDrawOrder();
 
 		if (drawModeList != null) {
 			if (drawOrderBuffer == null) {
@@ -390,9 +290,11 @@ public class Object3DImpl implements Object3D {
 					int drawSizePolygon = polygon[2];
 					if (drawMode == GLES20.GL_LINE_LOOP && polygon[2] > 3) {
 						// is this wireframe?
-						Log.v("Object3DImpl", "Drawing wireframe for '" + id + "' (" + drawSizePolygon + ")...");
+						Log.v("Object3DImpl",
+								"Drawing wireframe for '" + obj.getId() + "' (" + drawSizePolygon + ")...");
 						for (int i = 0; i < polygon[2] - 2; i++) {
-							Log.v("Object3DImpl", "Drawing wireframe triangle '" + i + "' for '" + id + "'...");
+							Log.v("Object3DImpl",
+									"Drawing wireframe triangle '" + i + "' for '" + obj.getId() + "'...");
 							GLES20.glDrawArrays(drawMode, polygon[1] + i, 3);
 						}
 					} else {
@@ -430,50 +332,364 @@ public class Object3DImpl implements Object3D {
 				}
 			}
 		}
+	}
+}
 
-		// Disable vertex array
-		GLES20.glDisableVertexAttribArray(mPositionHandle);
+/**
+ * Draw a single point in space
+ * 
+ * @author andres
+ *
+ */
+class Object3DV0 extends Object3DImpl {
+	// @formatter:off
+    private static final String pointVertexShader =
+    	"uniform mat4 u_MVPMatrix;      \n"		
+      +	"attribute vec4 a_Position;     \n"		
+      + "void main()                    \n"
+      + "{                              \n"
+      + "   gl_Position = u_MVPMatrix  * a_Position;   \n"
+      + "   gl_PointSize = 20.0;         \n"
+      + "}                              \n";
+	 // @formatter:on
 
-		if (vertexColors != null) {
-			GLES20.glDisableVertexAttribArray(mColorHandle);
-		}
+	// @formatter:off
+    private static final String pointFragmentShader = 
+    	"precision mediump float;       \n"					          
+      + "void main()                    \n"
+      + "{                              \n"
+      + "   gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);             \n"
+      + "}                              \n";
+	// @formatter:on
 
-		// Disable vertex array
-		if (textureId != null) {
-			GLES20.glDisableVertexAttribArray(mTextureCoordinateHandle);
-		}
+	public Object3DV0() {
+		super("V0", pointVertexShader, pointFragmentShader, "a_Position");
+	}
+}
+
+/**
+ * Draw using single color
+ * 
+ * @author andresoviedo
+ *
+ */
+class Object3DV1 extends Object3DImpl {
+
+	// @formatter:off
+	private final static String vertexShaderCode =
+		"uniform mat4 u_MVPMatrix;" + 
+		"attribute vec4 a_Position;" + 
+		"void main() {" +
+			"  gl_Position = u_MVPMatrix * a_Position;" + 
+		"}";
+	// @formatter:on
+
+	// @formatter:off
+	private final static String fragmentShaderCode = 
+		"precision mediump float;"+ 
+		"uniform vec4 vColor;" + 
+		"void main() {"+ 
+		"  gl_FragColor = vColor;" + 
+		"}";
+	// @formatter:on
+
+	public Object3DV1() {
+		super("V1", vertexShaderCode, fragmentShaderCode, "a_Position");
 	}
 
-	public void translateX(float f) {
-		position[0] += f;
+	@Override
+	protected boolean supportsColors() {
+		return false;
+	}
+}
+
+/**
+ * Drawer using multiple colors
+ * 
+ * @author andresoviedo
+ *
+ */
+class Object3DV2 extends Object3DImpl {
+	// @formatter:off
+	private final static String vertexShaderCode =
+		"uniform mat4 u_MVPMatrix;" + 
+		"attribute vec4 a_Position;" +
+		"attribute vec4 a_Color;"+
+		"varying vec4 vColor;"+
+		"void main() {" +
+			"  vColor = a_Color;"+
+			"  gl_Position = u_MVPMatrix * a_Position;" + 
+		"}";
+	// @formatter:on
+
+	// @formatter:off
+	private final static String fragmentShaderCode = 
+		"precision mediump float;"+ 
+		"varying vec4 vColor;"+
+		"void main() {"+ 
+		"  gl_FragColor = vColor;" + 
+		"}";
+	// @formatter:on
+
+	public Object3DV2() {
+		super("V2", vertexShaderCode, fragmentShaderCode, "a_Position", "a_Color");
 	}
 
-	public void translateY(float f) {
-		position[1] += f;
+	@Override
+	protected boolean supportsColors() {
+		return true;
+	}
+}
 
+/**
+ * Drawer using single color & textures
+ * 
+ * @author andresoviedo
+ *
+ */
+class Object3DV3 extends Object3DImpl {
+	// @formatter:off
+	private final static String vertexShaderCode =
+		"uniform mat4 u_MVPMatrix;" + 
+		"attribute vec4 a_Position;" + 
+		"attribute vec2 a_TexCoordinate;"+ // Per-vertex texture coordinate information we will pass in.
+		"varying vec2 v_TexCoordinate;"+   // This will be passed into the fragment shader.
+		"void main() {" +
+			"  v_TexCoordinate = a_TexCoordinate;"+
+			"  gl_Position = u_MVPMatrix * a_Position;" + 
+		"}";
+	// @formatter:on
+
+	// @formatter:off
+	private final static String fragmentShaderCode = 
+		"precision mediump float;"+ 
+		"uniform vec4 vColor;"+
+		"uniform sampler2D u_Texture;"+ 
+		"varying vec2 v_TexCoordinate;"+ 
+		"void main() {"	+ 
+		"  gl_FragColor = vColor * texture2D(u_Texture, v_TexCoordinate);"+
+		"}";
+	// @formatter:on
+
+	public Object3DV3() {
+		super("V3", vertexShaderCode, fragmentShaderCode, "a_Position", "a_TexCoordinate");
 	}
 
-	public float[] getRotation() {
-		return rotation;
+	@Override
+	protected boolean supportsTextures() {
+		return true;
+	}
+}
+
+/**
+ * Drawer using textures & multiple colors
+ * 
+ * @author andresoviedo
+ *
+ */
+class Object3DV4 extends Object3DImpl {
+	// @formatter:off
+	protected final static String vertexShaderCode =
+		"uniform mat4 u_MVPMatrix;" + 
+		"attribute vec4 a_Position;"+
+		"attribute vec4 a_Color;"+
+		"varying vec4 vColor;"+
+		"attribute vec2 a_TexCoordinate;"+
+		"varying vec2 v_TexCoordinate;"+
+		"void main() {" +
+			"  vColor = a_Color;"+
+			"  v_TexCoordinate = a_TexCoordinate;"+
+		    "  gl_Position = u_MVPMatrix * a_Position;"+
+		"}";
+	// @formatter:on
+
+	// @formatter:off
+	protected final static String fragmentShaderCode = 
+		"precision mediump float;"+
+		"varying vec4 vColor;"+
+		"uniform sampler2D u_Texture;"+
+		"varying vec2 v_TexCoordinate;"+
+		"void main() {"	+ 
+		"  gl_FragColor = vColor * texture2D(u_Texture, v_TexCoordinate);"+
+		"}";
+	// @formatter:on
+
+	public Object3DV4() {
+		super("V4", vertexShaderCode, fragmentShaderCode, "a_Position", "a_Color", "a_TexCoordinate");
 	}
 
-	public void setRotationZ(float rz) {
-		rotation[2] = rz;
+	@Override
+	protected boolean supportsColors() {
+		return true;
 	}
 
-	public float getRotationZ() {
-		return rotation[2];
+	@Override
+	protected boolean supportsTextures() {
+		return true;
 	}
 
-	public void setRotation(float[] rotation) {
-		this.rotation = rotation;
+}
+
+/**
+ * Drawer using colors & lights
+ * 
+ * @author andresoviedo
+ *
+ */
+class Object3DV5 extends Object3DImpl {
+	// @formatter:off
+	private final static String vertexShaderCode =
+		"uniform mat4 u_MVPMatrix;\n" +
+		"attribute vec4 a_Position;\n" +
+		// light variables
+		"uniform mat4 u_MVMatrix;\n"+
+		"uniform vec3 u_LightPos;\n"+
+		"attribute vec4 a_Color;\n"+
+		"attribute vec3 a_Normal;\n"+
+		// calculated color
+		"varying vec4 v_Color;\n"+
+		"void main() {\n" +
+		// Transform the vertex into eye space.
+		  "   vec3 modelViewVertex = vec3(u_MVMatrix * a_Position);\n          "+
+		// Get a lighting direction vector from the light to the vertex.
+		   "   vec3 lightVector = normalize(u_LightPos - modelViewVertex);\n    "+
+		   // Transform the normal's orientation into eye space.
+		   "   vec3 modelViewNormal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));\n "+
+		// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
+		// pointing in the same direction then it will get max illumination.
+		  "   float diffuse = max(dot(modelViewNormal, lightVector), 0.1);\n   " 	+  		  													  
+		// Attenuate the light based on distance.
+		   "   float distance = length(u_LightPos - modelViewVertex);\n         "+
+		   "   diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));\n"+
+			//  Add ambient lighting
+			"  diffuse = diffuse + 0.3;"+
+		// Multiply the color by the illumination level. It will be interpolated across the triangle.
+		   "   v_Color = a_Color * diffuse;\n"+
+		   "   v_Color[3] = a_Color[3];"+ // correct alpha
+			"  gl_Position = u_MVPMatrix * a_Position;\n" + 
+		"}";
+	// @formatter:on
+
+	// @formatter:off
+	private final static String fragmentShaderCode = 
+		"precision mediump float;\n"+ 
+		"varying vec4 v_Color;\n" + 
+		"void main() {\n"+ 
+		"  gl_FragColor = v_Color;\n" + 
+		"}";
+	// @formatter:on
+
+	public Object3DV5() {
+		super("V5", vertexShaderCode, fragmentShaderCode, "a_Position", "a_Color", "a_Normal");
 	}
 
-	public static void checkGlError(String glOperation) {
-		int error;
-		while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-			Log.e("objModel", glOperation + ": glError " + error);
-			throw new RuntimeException(glOperation + ": glError " + error);
-		}
+	@Override
+	protected boolean supportsColors() {
+		return true;
 	}
+
+	@Override
+	protected boolean supportsNormals() {
+		return true;
+	}
+
+	@Override
+	protected boolean supportsLighting() {
+		return true;
+	}
+
+	@Override
+	protected boolean supportsMvMatrix() {
+		return true;
+	}
+
+}
+
+/**
+ * Drawer using colors, textures & lights
+ * 
+ * @author andres
+ *
+ */
+class Object3DV6 extends Object3DImpl {
+	// @formatter:off
+	private final static String vertexShaderCode =
+		"uniform mat4 u_MVPMatrix;\n" +
+		"attribute vec4 a_Position;\n" +
+	    // texture variables
+	    "attribute vec2 a_TexCoordinate;"+
+		"varying vec2 v_TexCoordinate;"+
+		// light variables
+		"uniform mat4 u_MVMatrix;\n"+
+		"uniform vec3 u_LightPos;\n"+
+		"attribute vec4 a_Color;\n"+
+		"attribute vec3 a_Normal;\n"+
+		// calculated color
+		"varying vec4 v_Color;\n"+
+		"void main() {\n" +
+		// texture
+		   "  v_TexCoordinate = a_TexCoordinate;"+
+		// Transform the vertex into eye space.
+		  "   vec3 modelViewVertex = vec3(u_MVMatrix * a_Position);\n          "+
+		// Get a lighting direction vector from the light to the vertex.
+		   "   vec3 lightVector = normalize(u_LightPos - modelViewVertex);\n    "+
+		   // Transform the normal's orientation into eye space.
+		   "   vec3 modelViewNormal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));\n "+
+		// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
+		// pointing in the same direction then it will get max illumination.
+		  "   float diffuse = max(dot(modelViewNormal, lightVector), 0.1);\n   " 	+  		  													  
+		// Attenuate the light based on distance.
+		   "   float distance = length(u_LightPos - modelViewVertex);\n         "+
+		   "   diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));\n"+
+			//  Add ambient lighting
+			"  diffuse = diffuse + 0.3;"+
+		// Multiply the color by the illumination level. It will be interpolated across the triangle.
+		   "   v_Color = a_Color * diffuse;\n"+
+		   "   v_Color[3] = a_Color[3];"+ // correct alpha
+			"  gl_Position = u_MVPMatrix * a_Position;\n" + 
+		"}";
+	// @formatter:on
+
+	// @formatter:off
+	private final static String fragmentShaderCode = 
+		"precision mediump float;\n"+ 
+		"varying vec4 v_Color;\n" + 
+		// textures
+		"uniform sampler2D u_Texture;"+
+		"varying vec2 v_TexCoordinate;"+
+		// 
+		"void main() {\n"+ 
+		"  gl_FragColor = v_Color * texture2D(u_Texture, v_TexCoordinate);"+
+		"}";
+	// @formatter:on
+
+	public Object3DV6() {
+		super("V6", vertexShaderCode, fragmentShaderCode, "a_Position", "a_Color", "a_TexCoordinate", "a_Normal");
+	}
+
+	@Override
+	protected boolean supportsColors() {
+		return true;
+	}
+
+	@Override
+	protected boolean supportsTextures() {
+		return true;
+	}
+
+	@Override
+	protected boolean supportsNormals() {
+		return true;
+	}
+
+	@Override
+	protected boolean supportsLighting() {
+		return true;
+	}
+
+	@Override
+	protected boolean supportsMvMatrix() {
+		return true;
+	}
+
 }

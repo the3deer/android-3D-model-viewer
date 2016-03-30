@@ -1,5 +1,6 @@
 package org.andresoviedo.app.model3D.model;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import org.andresoviedo.app.model3D.services.WavefrontLoader.Material;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Materials;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Tuple3;
 import org.andresoviedo.app.util.math.Math3DUtils;
+import org.apache.commons.io.IOUtils;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -305,6 +307,19 @@ public final class Object3DBuilder {
 
 	final static short[] cubeDrawOrder = new short[] {};
 
+	private Object3DV0 object3dv0;
+	private Object3DV1 object3dv1;
+	private Object3DV2 object3dv2;
+	private Object3DV3 object3dv3;
+	private Object3DV4 object3dv4;
+	private Object3DV5 object3dv5;
+	private Object3DV6 object3dv6;
+
+	public static Object3DData buildPoint(float[] point) {
+		return new Object3DData(createNativeByteBuffer(point.length * 4).asFloatBuffer().put(point))
+				.setDrawMode(GLES20.GL_POINTS);
+	}
+
 	public static Object3DData buildAxis() {
 		return new Object3DData(
 				createNativeByteBuffer(axisVertexLinesData.length * 4).asFloatBuffer().put(axisVertexLinesData))
@@ -315,6 +330,16 @@ public final class Object3DBuilder {
 		return new Object3DData(
 				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData))
 						.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1").centerAndScale(1.0f);
+	}
+
+	public static Object3DData buildCubeV1_with_normals() {
+		return new Object3DData(
+				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData))
+						.setVertexColorsArrayBuffer(
+								createNativeByteBuffer(cubeColorData.length * 4).asFloatBuffer().put(cubeColorData))
+						.setVertexNormalsArrayBuffer(
+								createNativeByteBuffer(cubeNormalData.length * 4).asFloatBuffer().put(cubeNormalData))
+						.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1_light").centerAndScale(1.0f);
 	}
 
 	public static Object3DData buildSquareV2() {
@@ -365,34 +390,44 @@ public final class Object3DBuilder {
 		}
 	}
 
-	public static Object3D build(Object3DData obj) throws IOException {
-		return new Object3DImpl(obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer() : obj.getVertexBuffer(),
-				obj.getVertexColorsArrayBuffer(), obj.getDrawMode(), obj.getTextureCoordsArrayBuffer(),
-				obj.getTextureStream0()).setId(obj.getId()).setDrawOrder(obj.getDrawOrder())
-						.setDrawModeList(obj.getDrawModeList()).setDrawSize(obj.getDrawSize()).setColor(obj.getColor());
-	}
+	public Object3D getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights) throws IOException {
 
-	public static Object3D build(AssetManager assets, String assetDir, String modelId) {
-		try {
-			InputStream is = assets.open(assetDir + modelId);
-			WavefrontLoader wfl = new WavefrontLoader(modelId);
-			wfl.loadModel(is);
-			is.close();
+		if (object3dv1 == null) {
+			object3dv1 = new Object3DV1();
+		}
+		if (object3dv2 == null) {
+			object3dv2 = new Object3DV2();
+		}
+		if (object3dv3 == null) {
+			object3dv3 = new Object3DV3();
+		}
+		if (object3dv4 == null) {
+			object3dv4 = new Object3DV4();
+		}
+		if (object3dv5 == null) {
+			object3dv5 = new Object3DV5();
+		}
+		if (object3dv6 == null) {
+			object3dv6 = new Object3DV6();
+		}
 
-			Object3DData data3D = new Object3DData(wfl.getVerts(), wfl.getNormals(), wfl.getTexCoords(), wfl.getFaces(),
-					wfl.getFaceMats(), wfl.getMaterials());
-			data3D.setId(modelId);
-			data3D.setAssetsDir(assetDir);
-			data3D = generateArrays(assets, data3D);
-			if (data3D.getVertexColorsArrayBuffer() != null) {
-				data3D.setVersion(5);
-			} else {
-				data3D.setDrawMode(GLES20.GL_TRIANGLES).setDrawSize(3);
-				data3D.setVersion(3);
-			}
-			return build(data3D);
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+		if (usingTextures && usingLights && obj.getVertexColorsArrayBuffer() != null && obj.getTextureData() != null
+				&& obj.getTextureCoordsArrayBuffer() != null && obj.getVertexNormalsArrayBuffer() != null
+				&& obj.getVertexNormalsArrayBuffer() != null) {
+			return object3dv6;
+		} else if (usingLights && obj.getVertexColorsArrayBuffer() != null
+				&& obj.getVertexNormalsArrayBuffer() != null) {
+			return object3dv5;
+		} else if (usingTextures && obj.getVertexColorsArrayBuffer() != null && obj.getTextureData() != null
+				&& obj.getTextureCoordsArrayBuffer() != null) {
+			return object3dv4;
+		} else if (usingTextures && obj.getVertexColorsArrayBuffer() == null && obj.getTextureData() != null
+				&& obj.getTextureCoordsArrayBuffer() != null) {
+			return object3dv3;
+		} else if (obj.getVertexColorsArrayBuffer() != null) {
+			return object3dv2;
+		} else {
+			return object3dv1;
 		}
 	}
 
@@ -493,9 +528,8 @@ public final class Object3DBuilder {
 
 		// materials = null;
 
-		List<InputStream> textureStreams = null;
+		byte[] textureData = null;
 		if (materials != null && !materials.materials.isEmpty()) {
-			textureStreams = new ArrayList<InputStream>();
 			// FileInputStream is = new FileInputStream(fileName);
 			String texture = null;
 			for (Material mat : materials.materials.values()) {
@@ -508,10 +542,20 @@ public final class Object3DBuilder {
 				if (obj.getCurrentDir() != null) {
 					File file = new File(obj.getCurrentDir(), texture);
 					Log.v("materials", "Loading texture '" + file + "'...");
-					textureStreams.add(new FileInputStream(file));
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					FileInputStream fis = new FileInputStream(file);
+					IOUtils.copy(fis, bos);
+					fis.close();
+					textureData = bos.toByteArray();
+					bos.close();
 				} else {
 					Log.v("materials", "Loading texture '" + obj.getAssetsDir() + texture + "'...");
-					textureStreams.add(assets.open(obj.getAssetsDir() + texture));
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					InputStream fis = assets.open(obj.getAssetsDir() + texture);
+					IOUtils.copy(fis, bos);
+					fis.close();
+					textureData = bos.toByteArray();
+					bos.close();
 				}
 			} else {
 				Log.i("Loader", "Found material(s) but no texture");
@@ -528,9 +572,24 @@ public final class Object3DBuilder {
 
 		obj.setDrawModeList(drawModeList);
 		obj.setVertexColorsArrayBuffer(colorArrayBuffer);
-		obj.setTextureStreams(textureStreams);
+		obj.setTextureData(textureData);
 
 		return obj;
+	}
+
+	public Object3D getBoundingBoxDrawer() {
+		return object3dv2;
+	}
+
+	public Object3D getFaceNormalsDrawer() {
+		return object3dv1;
+	}
+
+	public Object3D getPointDrawer() {
+		if (object3dv0 == null) {
+			object3dv0 = new Object3DV0();
+		}
+		return object3dv0;
 	}
 
 	public static Object3DData buildBoundingBox(Object3DData obj) {
@@ -540,7 +599,7 @@ public final class Object3DBuilder {
 		return new Object3DData(boundingBox.getVertices()).setDrawModeList(boundingBox.getDrawModeList())
 				.setVertexColorsArrayBuffer(boundingBox.getColors()).setDrawOrder(boundingBox.getDrawOrder())
 				.setDrawMode(boundingBox.getDrawMode()).setDrawSize(boundingBox.getDrawSize())
-				.setPosition(obj.getPosition()).setColor(obj.getColor()).setVersion(5);
+				.setPosition(obj.getPosition()).setColor(obj.getColor()).setId(obj.getId() + "_boundingBox");
 	}
 
 	/**

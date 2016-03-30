@@ -71,7 +71,7 @@ public class Object3DData {
 	private FloatBuffer vertexNormalsArrayBuffer = null;
 	private FloatBuffer textureCoordsArrayBuffer = null;
 	private List<int[]> drawModeList = null;
-	private byte[] _texData = null;
+	private byte[] textureData = null;
 	private List<InputStream> textureStreams = null;
 
 	// Transformation data
@@ -95,7 +95,7 @@ public class Object3DData {
 	public Object3DData(FloatBuffer vertexArrayBuffer, FloatBuffer textureCoordsArrayBuffer, byte[] texData) {
 		this.vertexArrayBuffer = vertexArrayBuffer;
 		this.textureCoordsArrayBuffer = textureCoordsArrayBuffer;
-		this._texData = texData;
+		this.textureData = texData;
 		this.version = 3;
 	}
 
@@ -104,7 +104,7 @@ public class Object3DData {
 		this.vertexArrayBuffer = vertexArrayBuffer;
 		this.vertexColorsArrayBuffer = vertexColorsArrayBuffer;
 		this.textureCoordsArrayBuffer = textureCoordsArrayBuffer;
-		this._texData = texData;
+		this.textureData = texData;
 		this.version = 4;
 	}
 
@@ -184,6 +184,14 @@ public class Object3DData {
 	}
 
 	// -----------
+
+	public byte[] getTextureData() {
+		return textureData;
+	}
+
+	public void setTextureData(byte[] textureData) {
+		this.textureData = textureData;
+	}
 
 	public Object3DData setPosition(float[] position) {
 		this.position = position;
@@ -321,8 +329,9 @@ public class Object3DData {
 		return vertexNormalsArrayBuffer;
 	}
 
-	public void setVertexNormalsArrayBuffer(FloatBuffer vertexNormalsArrayBuffer) {
+	public Object3DData setVertexNormalsArrayBuffer(FloatBuffer vertexNormalsArrayBuffer) {
 		this.vertexNormalsArrayBuffer = vertexNormalsArrayBuffer;
+		return this;
 	}
 
 	public FloatBuffer getTextureCoordsArrayBuffer() {
@@ -346,14 +355,23 @@ public class Object3DData {
 		return vertexColorsArrayBuffer;
 	}
 
+	public Object3DData generateVertexColorsArrayBuffer() {
+		FloatBuffer colorsArray = createNativeByteBuffer(4 * getVertexArrayBuffer().capacity() / 3 * 4).asFloatBuffer();
+		for (int i = 0; i < getVertexArrayBuffer().capacity() / 3; i++) {
+			colorsArray.put(1.0f).put(1.0f).put(1.0f).put(1.0f);
+		}
+		this.vertexColorsArrayBuffer = colorsArray;
+		return this;
+	}
+
 	public Object3DData setVertexColorsArrayBuffer(FloatBuffer vertexColorsArrayBuffer) {
 		this.vertexColorsArrayBuffer = vertexColorsArrayBuffer;
 		return this;
 	}
 
 	public InputStream getTextureStream0() {
-		if (_texData != null) {
-			return new ByteArrayInputStream(_texData);
+		if (textureData != null) {
+			return new ByteArrayInputStream(textureData);
 		}
 		if (textureStreams == null) {
 			return null;
