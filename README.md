@@ -82,7 +82,9 @@ Screenshot
 ![Screenshot2](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot2.png)
 ![Screenshot3](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot3.png)
 ![Screenshot4](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot4.png)
-![Screenshot4](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot5.png)
+![Screenshot5](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot5.png)
+![Screenshot6](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot6.png)
+![Screenshot7](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot7.png)
 
 
 Tests
