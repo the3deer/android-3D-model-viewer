@@ -8,12 +8,14 @@ It is basically an android application with a 3D renderer (OpenGL ES 2.0) that c
 The purpose of this application is to learn and share how to draw using OpenGL language
 
 
-News (30/03/2016)
+News (06/04/2016)
 =================
 
-* Released app on android market :) https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
-* Light rendering
+* Implemented selection of objects (click on Demo and touch the different objects)
+* Light rendering implemented
 * Toggle textures & lights
+* Released app on android market :) https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
+
 
 About
 =====
@@ -56,13 +58,15 @@ Features
   - display of normals
   - display of bounding box 
   - scaling, rotation
-  - object picking
+  - object selection
+  - touch support!
+    - tap to select object 
+    - drag to move camera
+    - rotate to rotate camera
+    - pinch & spread to zoom in/out the camera
+  - moving of objects (not yet!)
   - primitive collision detection (not yet!) 
   - animation of sprites (not yet!)
-  - touch support!
-    * rotation gesture to rotate
-    * pinch gesture to zoom
-  - moving of objects (not yet!)
 
 
 Try it
@@ -100,3 +104,19 @@ Final Notes
 
 You are free to use this program while you keep this file and the authoring comments in the code.
 Any comments and suggestions are welcome.
+
+
+ChangeLog
+=========
+
+(f) fixed, (i) improved, (n) new feature
+
+- 1.2.0 (06/04/2016)
+ - (n) Implemented selection of objects
+
+- 1.1.0 (30/03/2016)
+ - (n) Implemented lighting & toggle textures & lights
+ - (i) Refactoring of 3DObjectImpl
+
+- 1.0.0 (27/03/2016)
+ - (n) First release in Google Play Android Market

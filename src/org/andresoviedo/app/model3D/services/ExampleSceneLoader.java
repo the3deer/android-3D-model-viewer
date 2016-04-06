@@ -47,6 +47,11 @@ public class ExampleSceneLoader extends SceneLoader {
 			@Override
 			protected Void doInBackground(Void... params) {
 				try {
+					// 3D Axis
+					Object3DData axis = Object3DBuilder.buildAxis().setId("axis");
+					axis.setColor(new float[] { 1.0f, 0, 0, 1.0f });
+					addObject(axis);
+
 					// test cube made of arrays
 					Object3DData obj10 = Object3DBuilder.buildCubeV1();
 					obj10.setColor(new float[] { 1f, 0f, 0f, 0.5f });
@@ -58,6 +63,7 @@ public class ExampleSceneLoader extends SceneLoader {
 					obj11.setColor(new float[] { 1f, 1f, 0f, 0.5f });
 					obj11.setPosition(new float[] { 0f, 2f, 0f });
 					obj11.centerAndScaleAndExplode(1.0f, 1.5f);
+					obj11.setId(obj11.getId() + "_exploded");
 					addObject(obj11);
 
 					// test cube made of wires (I explode it to see the faces better)

@@ -1,11 +1,15 @@
 package org.andresoviedo.app.model3D.controller;
 
+import org.andresoviedo.app.model3D.model.Object3DData;
+import org.andresoviedo.app.model3D.services.SceneLoader;
 import org.andresoviedo.app.model3D.view.ModelRenderer;
+import org.andresoviedo.app.model3D.view.ModelSurfaceView;
+import org.andresoviedo.app.util.math.Math3DUtils;
 
 import android.graphics.PointF;
-import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
+import android.os.SystemClock;
 import android.util.FloatMath;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -20,7 +24,7 @@ public class TouchController {
 	private static final int TOUCH_STATUS_ROTATING_CAMERA = 4;
 	private static final int TOUCH_STATUS_MOVING_WORLD = 5;
 
-	private GLSurfaceView view;
+	private final ModelSurfaceView view;
 	private final ModelRenderer mRenderer;
 
 	int pointerCount = 0;
@@ -41,17 +45,14 @@ public class TouchController {
 	float rotation = 0;
 	int currentSquare = Integer.MIN_VALUE;
 
-	float[] hit1 = null;
-	float[] hit2 = null;
-	float[] hit3 = null;
-	float[] hit4 = null;
-	float hitSquare = -1;
-	float hitTriangle = -1;
 	boolean isOneFixedAndOneMoving = false;
 	boolean fingersAreClosing = false;
 	boolean isRotating = false;
 
 	boolean gestureChanged = false;
+	private boolean moving = false;
+	private boolean simpleTouch = false;
+	private long lastActionTime;
 	private int touchDelay = -2;
 	private int touchStatus = -1;
 
@@ -64,7 +65,7 @@ public class TouchController {
 	float[] rotationVector = new float[4];
 	private float previousRotationSquare;
 
-	public TouchController(GLSurfaceView view, ModelRenderer renderer) {
+	public TouchController(ModelSurfaceView view, ModelRenderer renderer) {
 		super();
 		this.view = view;
 		this.mRenderer = renderer;
@@ -77,18 +78,33 @@ public class TouchController {
 
 		switch (motionEvent.getActionMasked()) {
 		case MotionEvent.ACTION_UP:
-		case MotionEvent.ACTION_DOWN:
 		case MotionEvent.ACTION_CANCEL:
 		case MotionEvent.ACTION_POINTER_UP:
-		case MotionEvent.ACTION_POINTER_DOWN:
-		case MotionEvent.ACTION_OUTSIDE:
-		case MotionEvent.ACTION_HOVER_ENTER:
 		case MotionEvent.ACTION_HOVER_EXIT:
-			Log.d("Touch", "Gesture changed...");
+		case MotionEvent.ACTION_OUTSIDE:
+			// this to handle "1 simple touch"
+			if (lastActionTime > SystemClock.uptimeMillis() - 250) {
+				simpleTouch = true;
+			} else {
+				gestureChanged = true;
+				touchDelay = 0;
+				lastActionTime = SystemClock.uptimeMillis();
+				simpleTouch = false;
+			}
+			moving = false;
+			break;
+		case MotionEvent.ACTION_DOWN:
+		case MotionEvent.ACTION_POINTER_DOWN:
+		case MotionEvent.ACTION_HOVER_ENTER:
+			Log.d(TAG, "Gesture changed...");
 			gestureChanged = true;
 			touchDelay = 0;
+			lastActionTime = SystemClock.uptimeMillis();
+			simpleTouch = false;
 			break;
 		case MotionEvent.ACTION_MOVE:
+			moving = true;
+			simpleTouch = false;
 			touchDelay++;
 			break;
 		default:
@@ -108,9 +124,6 @@ public class TouchController {
 			}
 			dx1 = x1 - previousX1;
 			dy1 = y1 - previousY1;
-			hit1 = unproject(x1, y1, 0);
-			hit2 = unproject(x1, y1, 1);
-			// Log.d("Ray", "Ray2---> x:" + xyzw2[0] + " y:" + xyzw2[1] + " z:" + xyzw2[2] + " w(" + xyzw2[3] + ")");
 		} else if (pointerCount == 2) {
 			x1 = motionEvent.getX(0);
 			y1 = motionEvent.getY(0);
@@ -152,12 +165,6 @@ public class TouchController {
 			currentPress1 = motionEvent.getPressure(0);
 			currentPress2 = motionEvent.getPressure(1);
 			rotation = 0;
-			hit1 = unproject(x1, y1, 0);
-			hit2 = unproject(x1, y1, 1);
-			hit3 = unproject(x2, y2, 0);
-			hit4 = unproject(x2, y2, 1);
-			// wzSquare = hit(xyzw3, xyzw2, mRenderer.getmSquare().getPosition());
-			// wzTriangle = hit(xyzw1, xyzw2, mRenderer.getmTriangle().getPosition());
 			rotation = TouchScreen.getRotation360(motionEvent);
 			currentSquare = TouchScreen.getSquare(motionEvent);
 			if (currentSquare == 1 && previousRotationSquare == 4) {
@@ -173,12 +180,17 @@ public class TouchController {
 					&& rotationVector[2] != 0;
 		}
 
+		if (pointerCount == 1 && simpleTouch) {
+			// calculate the world coordinates where the user is clicking (near plane and far plane)
+			float[] hit1 = unproject(x1, y1, 0);
+			float[] hit2 = unproject(x1, y1, 1);
+			// check if the ray intersect any of our objects and select the nearer
+			selectObjectImpl(hit1, hit2);
+		}
+
 		if (touchDelay > 1) {
 			// INFO: Procesar gesto
 			if (pointerCount == 1 && currentPress1 > 4.0f) {
-				// TODO: enable this
-				// hitSquare = hit(hit1, hit2, mRenderer.getScene().getSquare1().getPosition());
-				// hitTriangle = hit(hit1, hit2, mRenderer.getScene().getSquare1().getPosition());
 			} else if (pointerCount == 1) {
 				touchStatus = TOUCH_STATUS_MOVING_WORLD;
 				// Log.i("Touch", "Moving World '" + dx1 + "','" + dy1 + "'...");
@@ -278,13 +290,48 @@ public class TouchController {
 
 		if (gestureChanged && touchDelay > 1) {
 			gestureChanged = false;
-			Log.i("Fin", "Fin");
+			Log.v(TAG, "Fin");
 		}
 
 		view.requestRender();
 
 		return true;
 
+	}
+
+	/**
+	 * Get the nearest object intersecting the specified ray and selects it
+	 * 
+	 * @param nearPoint
+	 *            the near point in world coordinates
+	 * @param farPoint
+	 *            the far point in world coordinates
+	 */
+	private void selectObjectImpl(float[] nearPoint, float[] farPoint) {
+		SceneLoader scene = view.getModelActivity().getScene();
+		if (scene == null) {
+			return;
+		}
+		Object3DData objectToSelect = null;
+		float objectToSelectDistance = Integer.MAX_VALUE;
+		for (Object3DData obj : scene.getObjects()) {
+			float distance = Math3DUtils.calculateDistanceOfIntersection(nearPoint, farPoint, obj.getPosition(), 1f);
+			if (distance != -1) {
+				Log.d(TAG, "Hit object " + obj.getId() + " at distance " + distance);
+				if (distance < objectToSelectDistance) {
+					objectToSelectDistance = distance;
+					objectToSelect = obj;
+				}
+			}
+		}
+		if (objectToSelect != null) {
+			Log.i(TAG, "Selected object " + objectToSelect.getId() + " at distance " + objectToSelectDistance);
+			if (scene.getSelectedObject() == objectToSelect) {
+				scene.setSelectedObject(null);
+			} else {
+				scene.setSelectedObject(objectToSelect);
+			}
+		}
 	}
 
 	public float[] unproject(float rx, float ry, float rz) {
@@ -302,33 +349,6 @@ public class TouchController {
 		xyzw[2] /= xyzw[3];
 		xyzw[3] = 1;
 		return xyzw;
-	}
-
-	public float hit(float[] xyzw, float[] xyzw2, float[] position) {
-		float zPrecition = 1000f;
-
-		float xDif = (xyzw2[0] - xyzw[0]) / zPrecition;
-		float yDif = (xyzw2[1] - xyzw[1]) / zPrecition;
-		float zDif = (xyzw2[2] - xyzw[2]) / zPrecition;
-
-		// @formatter:off
-		for (int i = 0; i < zPrecition; i++) {
-//			Log.d("Hit cube", "HIT");
-			double objWidth = 1;
-			double objHalfWidth = objWidth/2;
-			float xIncr = xDif * i;
-			if ((       xyzw[0] + xIncr) > position[0] - objHalfWidth
-					&& (xyzw[0] + xIncr) < position[0] + objHalfWidth
-					&& (xyzw[1] + (yDif * i)) > position[1] - objHalfWidth
-					&& (xyzw[1] + (yDif * i)) < position[1] + objHalfWidth
-					&& (xyzw[2] + (zDif * i)) > position[2] - objHalfWidth
-					&& (xyzw[2] + (zDif * i)) < position[2] + objHalfWidth) {
-				Log.w("Hit", "HIT: i["+i+"] wz["+(xyzw[2] + (zDif * i))+"]");
-				return xyzw[2] + (zDif * i);
-			}
-		}
-		// @formatter:on
-		return -1;
 	}
 }
 

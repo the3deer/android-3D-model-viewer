@@ -26,10 +26,6 @@ public class SceneLoader {
 	 */
 	protected final ModelActivity parent;
 	/**
-	 * The 3D axis
-	 */
-	private Object3DData axis;
-	/**
 	 * List of data objects containing info for building the opengl objects
 	 */
 	private List<Object3DData> objects = new ArrayList<Object3DData>();
@@ -61,16 +57,16 @@ public class SceneLoader {
 	 * Light position
 	 */
 	private float[] lightPos = new float[] { 0, 0, 3, 1 };
+	/**
+	 * Object selected by the user
+	 */
+	private Object3DData selectedObject = null;
 
 	public SceneLoader(ModelActivity main) {
 		this.parent = main;
 	}
 
 	public void init() {
-		// Draw Axis
-		axis = Object3DBuilder.buildAxis().setId("axis");
-		axis.setColor(new float[] { 1.0f, 0, 0, 1.0f });
-		addObject(axis);
 
 		// Load object
 		if (parent.getParamFile() != null || parent.getParamAssetDir() != null) {
@@ -176,6 +172,14 @@ public class SceneLoader {
 
 	public boolean isDrawLighting() {
 		return drawLighting;
+	}
+
+	public Object3DData getSelectedObject() {
+		return selectedObject;
+	}
+
+	public void setSelectedObject(Object3DData selectedObject) {
+		this.selectedObject = selectedObject;
 	}
 
 }

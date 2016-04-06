@@ -48,4 +48,49 @@ public class Math3DUtils {
 		return new float[] { (v0[0] + v1[0] + v2[0]) / 3, (v0[1] + v1[1] + v2[1]) / 3, (v0[2] + v1[2] + v2[2]) / 3 };
 	}
 
+	/**
+	 * Calculates the distance of the intersection between the specified ray and the target, or return -1 if the ray
+	 * doesn't intersect the target
+	 * 
+	 * @param rayPoint1
+	 *            where the ray starts
+	 * @param rayPoint2
+	 *            where the ray ends
+	 * @param target
+	 *            where is the object to intersect
+	 * @param precision
+	 *            the radius to test for intersection
+	 * @return the distance of intersection
+	 */
+	public static float calculateDistanceOfIntersection(float[] rayPoint1, float[] rayPoint2, float[] target,
+			float precision) {
+		float raySteps = 100f;
+		float objHalfWidth = precision / 2;
+
+		float length = Matrix.length(rayPoint2[0] - rayPoint1[0], rayPoint2[1] - rayPoint1[1],
+				rayPoint2[2] - rayPoint1[2]);
+		float lengthDiff = length / raySteps;
+
+		float xDif = (rayPoint2[0] - rayPoint1[0]) / raySteps;
+		float yDif = (rayPoint2[1] - rayPoint1[1]) / raySteps;
+		float zDif = (rayPoint2[2] - rayPoint1[2]) / raySteps;
+
+		for (int i = 0; i < raySteps; i++) {
+			// @formatter:off
+			if ((       rayPoint1[0] + (xDif * i)) > target[0] - objHalfWidth
+					&& (rayPoint1[0] + (xDif * i)) < target[0] + objHalfWidth
+					&& (rayPoint1[1] + (yDif * i)) > target[1] - objHalfWidth
+					&& (rayPoint1[1] + (yDif * i)) < target[1] + objHalfWidth
+					&& (rayPoint1[2] + (zDif * i)) > target[2] - objHalfWidth
+					&& (rayPoint1[2] + (zDif * i)) < target[2] + objHalfWidth) {
+				// @formatter:on
+				// Log.v(TouchController.TAG, "HIT: i[" + i + "] wz[" + (rayPoint1[2] + (zDif * i)) + "]");
+				// return new Object[] { i * lengthDiff, new float[] { rayPoint1[0] + (xDif * i),
+				// rayPoint1[1] + (yDif * i), rayPoint1[2] + (zDif * i) } };
+				return i * lengthDiff;
+			}
+		}
+		return -1;
+	}
+
 }
