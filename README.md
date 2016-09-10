@@ -82,13 +82,13 @@ Try it
 Screenshot
 ==========
 
-![Screenshot1](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot1.png)
-![Screenshot2](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot2.png)
-![Screenshot3](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot3.png)
-![Screenshot4](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot4.png)
-![Screenshot5](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot5.png)
-![Screenshot6](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot6.png)
-![Screenshot7](https://github.com/andresoviedo/android-3DModel/blob/master/screenshots/screenshot7.png)
+![Screenshot1](https://raw.github.com/andresoviedo/android-3D-model-viewer/master/screenshots/screenshot1.png)
+![Screenshot2](https://raw.github.com/andresoviedo/android-3D-model-viewer/master/screenshots/screenshot2.png)
+![Screenshot3](https://raw.github.com/andresoviedo/android-3D-model-viewer/master/screenshots/screenshot3.png)
+![Screenshot4](https://raw.github.com/andresoviedo/android-3D-model-viewer/master/screenshots/screenshot4.png)
+![Screenshot5](https://raw.github.com/andresoviedo/android-3D-model-viewer/master/screenshots/screenshot5.png)
+![Screenshot6](https://raw.github.com/andresoviedo/android-3D-model-viewer/master/screenshots/screenshot6.png)
+![Screenshot7](https://raw.github.com/andresoviedo/android-3D-model-viewer/master/screenshots/screenshot7.png)
 
 
 Tests
