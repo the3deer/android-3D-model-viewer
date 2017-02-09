@@ -3,6 +3,7 @@ package org.andresoviedo.app.model3D.view;
 import java.util.Locale;
 
 import org.andresoviedo.app.util.Utils;
+import org.andresoviedo.app.util.content.ContentUtils;
 import org.andresoviedo.app.util.view.TextActivity;
 import org.andresoviedo.dddmodel.R;
 
@@ -115,8 +116,15 @@ public class MenuActivity extends ListActivity {
 			if (resultCode == RESULT_OK) {
 				// The URI of the selected file
 				final Uri uri = data.getData();
-				if (uri != null && uri.getPath() != null) {
-					launchModelRendererActivity(uri.getPath());
+				Log.i("Menu", "Loading '" + uri.toString() + "'");
+				if (uri != null) {
+					final String path = ContentUtils.getPath(getApplicationContext(), uri);
+					if (path != null) {
+						launchModelRendererActivity(path);
+					} else {
+						Toast.makeText(getApplicationContext(), "Problem loading '" + uri.toString() + "'",
+								Toast.LENGTH_SHORT).show();
+					}
 				}
 			} else {
 				Toast.makeText(getApplicationContext(), "Result when loading file was '" + resultCode + "'",
