@@ -115,7 +115,7 @@ Build
     export ANDROID_HOME=/home/$USER/Android/Sdk
     ./gradlew assembleDebug
     adb install -r app/build/outputs/apk/app-debug.apk
-    adb shell am start -n org.andresoviedo.dddmodel2/org.andresoviedo.app.model3D.MainActivity
+    adb shell am start -n org.andresoviedo.dddmodel/org.andresoviedo.app.model3D.MainActivity
 
 
 Final Notes
