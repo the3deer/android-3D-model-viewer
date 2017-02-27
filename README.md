@@ -16,6 +16,8 @@ News (27/02/2017)
 
 * Fixed loading of external resources
 * Project moved to gradle
+* /¡\ The app in the market is not up-to-date: I lost the keystore to sign the updates :(
+* /¡\ Latest version: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
 
 
 Android Market
