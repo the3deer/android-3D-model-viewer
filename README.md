@@ -76,9 +76,9 @@ Features
 Try it
 ======
 
-  1. Install app from google play https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
-  1. Or download the apk to your device and install it https://github.com/andresoviedo/android-3DModel/raw/master/android-3DModel.apk
-  1. Or clone source, compile project from your android IDE, connect your android device and run application
+  1. Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
+  1. APK: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
+  1. Gradle: clone the repository, compile with gradle and install with adb
   2. Open the application. You should see a menu. From there you can load some demos or load your own model
   3. Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective.
 
@@ -107,24 +107,16 @@ Tests
 Build
 =====
 
+    export ANDROID_HOME=/home/$USER/Android/Sdk
     ./gradlew assembleDebug
-
-
-Install
-=======
-
     adb install -r app/build/outputs/apk/app-debug.apk
+    adb shell am start -n org.andresoviedo.dddmodel2/org.andresoviedo.app.model3D.MainActivity
 
 
-start
-=====
+Android Market
+==============
 
-    adb shell am start org.andresoviedo.app.model3D.MainActivity
-
-Release
-=======
-
-In order to sign the app:
+Sign the app:
 
     keytool -genkey -v -keystore android-3D-model-viewer.jks \
     -keyalg RSA -keysize 2048 -validity 10000 -alias android-3D-model-viewer
