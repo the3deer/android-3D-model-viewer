@@ -1,6 +1,9 @@
 Android 3D Model Viewer
 =======================
 
+![codeship badge](https://codeship.com/projects/52cf9560-deb2-0134-4203-2aaddef843aa/status?branch=master)
+
+
 This is a demo of OpenGL ES 2.0.
 
 It is basically an android application with a 3D renderer (OpenGL ES 2.0) that can load 3D models.
@@ -111,15 +114,6 @@ Build
     ./gradlew assembleDebug
     adb install -r app/build/outputs/apk/app-debug.apk
     adb shell am start -n org.andresoviedo.dddmodel2/org.andresoviedo.app.model3D.MainActivity
-
-
-Android Market
-==============
-
-Sign the app:
-
-    keytool -genkey -v -keystore android-3D-model-viewer.jks \
-    -keyalg RSA -keysize 2048 -validity 10000 -alias android-3D-model-viewer
 
 
 Final Notes
