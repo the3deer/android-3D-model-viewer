@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">3D Model Viewer</string>
+    <string name="app_version">Version 1.0</string>
+    <string name="action_settings">Settings</string>
+    <!-- Activities -->
+    <string name="title_activity_menu">Menu</string>
+    <string name="title_activity_demo">Demo</string>
+    <string name="title_activity_text">Text</string>
+    <string name="title_activity_model">Model</string>
+    <!-- Demo menu -->
+    <string name="item">item</string>
+
+    <string-array name="menu_items">
+        <item>Load Model</item>
+        <item>Models</item>
+        <item>Demo</item>
+        <!-- <item>Settings</item> -->
+        <item>Help</item>
+        <item>About</item>
+        <item>Exit</item>
+    </string-array>
+
+    <string name="image">image</string>
+    <!-- Help -->
+    <string name="help_text">* Load Model: Load models from your device storage (you can find a lot in Internet. Just download them to your device). Please load only wavefront object files (*.obj). If the model file (.obj) is referencing any materials file (*.mtl) be sure its in the same folder; same applies for texture files (*.jpg, *.bmp) being referenced in the material file.\n\n.* Models: Included with the app there is some models I downloaded from Internet (www.turbosquid.com), and serves as example of wavefront files that can be loaded with the app.\n\n* Demo: This is a demo of what can be done with the app. It basically loads several models to show usage of draw modes, colors, textures and loading of files. Serves basically to test the application when Im developing.\n\n* Help: This instructions page\n\n* About: Credits of this app.\n\n\nViewer: Once you load a model, you can pinch to zoom, rotate the camera with your finger and rotate the screen with 2 fingers\n\nIn the action bar you will also find 2 buttons: 1 for toggling the wireframe draw mode and 1 for toggling the bounding boxes.\n\nIf you need more help feel free to ask me at andresoviedo@gmail.com.</string>
+    <!-- About -->
+    <string name="about_text">This application allows you to load 3D object models (currently only wavefront .obj format is supported).\n\nThe purpose of this application is to learn and share how to draw in android using the OpenGL 2.0 language.\n\nThe code for this application is open source and can be found at https://github.com/andresoviedo/android-3DModel\n\nAs this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs; but I will try to continue improving the app.\n\nThe included models were taken for free from Internet (http://www.turbosquid.com).\n\nAny comments, suggestions or complainings are welcome. Feel free to contact me at andresoviedo@gmail.com.\n\nFor more info about me visit http://www.andresoviedo.org</string>
+    <!-- Load settings -->
+    <string name="model_name">Model name</string>
+    <string name="texture">Texture</string>
+    <string name="invert_texture_coordinates">Invert texture coordinates</string>
+    <string name="cancel">Cancel</string>
+    <string name="load">Load</string>
+    <string name="load_model">Load Model</string>
+
+    <!-- GL Settings -->
+    <string name="toggle_wireframe">Toggle wireframe</string>
+    <string name="toggle_textures">Toggle textures</string>
+    <string name="toggle_lights">Toggle lights</string>
+    <string name="toggle_boundingbox">Toggle bounding box</string>
+
+    <!-- To review -->
+    <string name="app_logo_desc">Teapot animated logo</string>
+
+</resources>

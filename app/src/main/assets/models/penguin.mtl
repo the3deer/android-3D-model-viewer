@@ -1,0 +1,11 @@
+#
+# penguin.mtl
+#
+
+newmtl Material01
+Ka 0.011765 0.752941 0.752941
+Kd 0.909804 0.690196 0.905882
+Ks 0.933333 0.933333 0.933333
+Ns 445.312500
+illum 2
+map_Kd penguin.bmp

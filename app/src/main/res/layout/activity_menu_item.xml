@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_menu_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#000000"
+    android:gravity="center_horizontal"
+    android:paddingBottom="4dp"
+    android:paddingTop="4dp"
+    android:text="@string/item"
+    android:textColor="#ffffff"
+    android:textSize="32sp" >
+
+</TextView>

@@ -1,0 +1,36 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/model_toggle_wireframe"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:orderInCategory="200"
+        android:showAsAction="ifRoom"
+        android:title="@string/toggle_wireframe"/>
+    <item
+        android:id="@+id/model_toggle_boundingbox"
+        android:icon="@android:drawable/ic_menu_crop"
+        android:orderInCategory="250"
+        android:showAsAction="ifRoom"
+        android:title="@string/toggle_boundingbox"/>
+    <item
+        android:id="@+id/model_toggle_textures"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:orderInCategory="300"
+        android:showAsAction="ifRoom"
+        android:title="@string/toggle_textures"/>
+    <item
+        android:id="@+id/model_toggle_lights"
+        android:icon="@android:drawable/ic_menu_compass"
+        android:orderInCategory="400"
+        android:showAsAction="ifRoom"
+        android:title="@string/toggle_lights"/>
+    <!--
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@android:drawable/ic_menu_preferences"
+        android:orderInCategory="500"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_settings"/>
+    -->
+
+</menu>
