@@ -111,8 +111,7 @@ public class WavefrontLoader {
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		readModel(br);
 		centerScale();
-		if (true)
-			reportOnModel();
+		reportOnModel();
 	}
 
 	private void readModel(BufferedReader br)
@@ -165,12 +164,12 @@ public class WavefrontLoader {
 				}
 			}
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			Log.e("WavefrontLoader",e.getMessage(),e);
 			System.exit(1);
 		}
 
 		if (!isLoaded) {
-			System.out.println("Error loading model");
+			Log.e("WavefrontLoader","Error loading model");
 			System.exit(1);
 		}
 	} // end of readModel()
@@ -310,11 +309,13 @@ public class WavefrontLoader {
 	} // end of centerScale()
 
 	private void reportOnModel() {
-		System.out.println("No. of vertices: " + verts.size());
-		System.out.println("No. of normal coords: " + normals.size());
-		System.out.println("No. of tex coords: " + texCoords.size());
-		System.out.println("No. of faces: " + faces.getNumFaces());
-		System.out.println("No. of points: " + faces.facesVertIdxs.size());
+		Log.i("WavefrontLoader","No. of vertices: " + verts.size());
+		Log.i("WavefrontLoader","No. of normal coords: " + normals.size());
+		Log.i("WavefrontLoader","No. of tex coords: " + texCoords.size());
+		Log.i("WavefrontLoader","No. of faces: " + faces.getNumFaces());
+		Log.i("WavefrontLoader","No. of face points: " + faces.facesVertIdxs.size());
+		Log.i("WavefrontLoader","No. of face normals: " + faces.facesNormIdxs.size());
+		Log.i("WavefrontLoader","No. of face textures : " + faces.facesTexIdxs.size());
 
 		modelDims.reportDimensions();
 		// dimensions of model (before centering and scaling)
@@ -582,7 +583,7 @@ public class WavefrontLoader {
 		public void showMaterials()
 		// list all the Material objects
 		{
-			System.out.println("No. of materials: " + materials.size());
+			Log.i("WavefrontLoader","No. of materials: " + materials.size());
 			Material m;
 			for (int i = 0; i < materials.size(); i++) {
 				m = (Material) materials.get(i);
@@ -735,11 +736,17 @@ public class WavefrontLoader {
 	public static class Faces {
 		private static final float DUMMY_Z_TC = -5.0f;
 
-		/*
-		 * indicies for vertices, tex coords, and normals used by each face
+		/**
+		 * indices for vertices, tex coords, and normals used by each face
 		 */
 		public ArrayList<int[]> facesVertIdxs;
+		/**
+		 * indices for vertices, tex coords, and normals used by each face
+		 */
 		public ArrayList<int[]> facesTexIdxs;
+		/**
+		 * indices for vertices, tex coords, and normals used by each face
+		 */
 		public ArrayList<int[]> facesNormIdxs;
 
 		// references to the model's vertices, normals, and tex coords
@@ -775,8 +782,8 @@ public class WavefrontLoader {
 				// create arrays to hold the v, vt, vn indicies
 
 				int v[] = new int[numTokens];
-				int vt[] = new int[numTokens];
-				int vn[] = new int[numTokens];
+				int vt[] = null;
+				int vn[] = null;
 
 				for (int i = 0; i < numTokens; i++) {
 					String faceToken = addFaceVals(st.nextToken()); // get a v/vt/vn
@@ -788,21 +795,27 @@ public class WavefrontLoader {
 					// the token
 
 					v[i] = Integer.parseInt(st2.nextToken());
-					vt[i] = (numSeps > 1) ? Integer.parseInt(st2.nextToken()) : 0;
-					vn[i] = (numSeps > 2) ? Integer.parseInt(st2.nextToken()) : 0;
+					if (numSeps > 1){
+						if (vt == null)	vt = new int[numTokens];
+						vt[i] = Integer.parseInt(st2.nextToken());
+					}
+					if (numSeps > 2){
+						if (vn == null)	vn = new int[numTokens];
+						vn[i] = Integer.parseInt(st2.nextToken());
+					}
 					// add 0's if the vt or vn index values are missing;
 					// 0 is a good choice since real indices start at 1
 
 					if (WavefrontLoader.INDEXES_START_AT_1) {
 						v[i] = v[i] - 1;
-						vt[i] = vt[i] - 1;
-						vn[i] = vn[i] - 1;
+						if (vt != null)	vt[i] = vt[i] - 1;
+						if (vn != null) vn[i] = vn[i] - 1;
 					}
 				}
-				// store the indicies for this face
+				// store the indices for this face
 				facesVertIdxs.add(v);
-				facesTexIdxs.add(vt);
-				facesNormIdxs.add(vn);
+				if (vt != null)  facesTexIdxs.add(vt);
+				if (vn != null) facesNormIdxs.add(vn);
 
 				verticesReferencesCount += numTokens;
 
