@@ -377,7 +377,7 @@ public final class Object3DBuilder {
 					wfl.getFaceMats(), wfl.getMaterials());
 			data3D.setId(assetFilename);
 			data3D.setAssetsDir(assetDir);
-			data3D.setDrawMode(GLES20.GL_TRIANGLES);
+			// data3D.setDrawMode(GLES20.GL_TRIANGLES);
 			generateArrays(assets, data3D);
 			if (data3D.getVertexColorsArrayBuffer() != null) {
 				data3D.setVersion(5);
@@ -432,6 +432,9 @@ public final class Object3DBuilder {
 	}
 
 	public static Object3DData generateArrays(AssetManager assets, Object3DData obj) throws IOException {
+		int drawMode = GLES20.GL_TRIANGLES;
+		int drawSize = 0;
+
 		ArrayList<Tuple3> verts = obj.getVerts();
 		ArrayList<Tuple3> vertexNormals = obj.getNormals();
 		ArrayList<Tuple3> texCoords = obj.getTexCoords();
@@ -448,7 +451,9 @@ public final class Object3DBuilder {
 
 		// TODO: generate face normals
 		FloatBuffer vertexArrayBuffer = null;
+		ShortBuffer drawOrderBuffer = null;
 		if (obj.isDrawUsingArrays()) {
+			Log.i("Object3DBuilder", "Generating vertex array buffer...");
 			vertexArrayBuffer = createNativeByteBuffer(3 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
 			for (int[] face : faces.facesVertIdxs) {
 				for (int i = 0; i < face.length; i++) {
@@ -457,17 +462,35 @@ public final class Object3DBuilder {
 					vertexArrayBuffer.put(vertexBuffer.get(face[i] * 3 + 2));
 				}
 			}
+		}else{
+			Log.i("Object3DBuilder", "Generating draw order buffer...");
+			// this only works for faces made of a single triangle
+			drawOrderBuffer = createNativeByteBuffer(faces.getVerticesReferencesCount()*2).asShortBuffer();
+			for (int[] face : faces.facesVertIdxs) {
+				for (int i = 0; i < face.length; i++) {
+					drawOrderBuffer.put((short)face[i]);
+				}
+			}
 		}
 
+		boolean onlyTriangles = true;
 		List<int[]> drawModeList = new ArrayList<int[]>();
 		int currentVertexPos = 0;
 		for (int[] face : faces.facesVertIdxs) {
 			if (face.length == 3) {
 				drawModeList.add(new int[] { GLES20.GL_TRIANGLES, currentVertexPos, face.length });
 			} else {
+				onlyTriangles = false;
 				drawModeList.add(new int[] { GLES20.GL_TRIANGLE_FAN, currentVertexPos, face.length });
 			}
 			currentVertexPos += face.length;
+		}
+
+		if (onlyTriangles) {
+			// TODO: test this with all models
+			drawMode = GLES20.GL_TRIANGLES;
+			drawSize = 0;
+			drawModeList = null;
 		}
 
 		FloatBuffer vertexNormalsBuffer = createNativeByteBuffer(3 * vertexNormals.size() * 4).asFloatBuffer();
@@ -541,7 +564,7 @@ public final class Object3DBuilder {
 			if (texture != null) {
 				if (obj.getCurrentDir() != null) {
 					File file = new File(obj.getCurrentDir(), texture);
-					Log.v("materials", "Loading texture '" + file + "'...");
+					Log.i("materials", "Loading texture '" + file + "'...");
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
 					FileInputStream fis = new FileInputStream(file);
 					IOUtils.copy(fis, bos);
@@ -549,7 +572,7 @@ public final class Object3DBuilder {
 					textureData = bos.toByteArray();
 					bos.close();
 				} else {
-					Log.v("materials", "Loading texture '" + obj.getAssetsDir() + texture + "'...");
+					Log.i("materials", "Loading texture '" + obj.getAssetsDir() + texture + "'...");
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
 					InputStream fis = assets.open(obj.getAssetsDir() + texture);
 					IOUtils.copy(fis, bos);
@@ -563,6 +586,8 @@ public final class Object3DBuilder {
 		}
 
 		obj.setVertexBuffer(vertexBuffer);
+		obj.setDrawOrder(drawOrderBuffer);
+		obj.setDrawSize(drawSize);
 		obj.setVertexNormalsBuffer(vertexNormalsBuffer);
 		obj.setTextureCoordsBuffer(textureCoordsBuffer);
 
@@ -571,6 +596,7 @@ public final class Object3DBuilder {
 		obj.setTextureCoordsArrayBuffer(textureCoordsArraysBuffer);
 
 		obj.setDrawModeList(drawModeList);
+		obj.setDrawMode(drawMode);
 		obj.setVertexColorsArrayBuffer(colorArrayBuffer);
 		obj.setTextureData(textureData);
 

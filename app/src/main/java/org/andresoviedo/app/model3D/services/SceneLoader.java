@@ -75,7 +75,10 @@ public class SceneLoader {
 
 						@Override
 						public void onLoadComplete(Object3DData data) {
-							data.setDrawMode(defaultDrawMode);
+							if ("ToyPlane.obj".equals(data.getId())) {
+								// TODO: make this parametrable
+								data.setDrawMode(GLES20.GL_TRIANGLE_FAN);
+							}
 							data.centerAndScale(5.0f);
 							addObject(data);
 
@@ -115,10 +118,10 @@ public class SceneLoader {
 
 	}
 
-	protected void addObject(Object3DData obj) {
-		synchronized (objects) {
-			objects.add(obj);
-		}
+	protected synchronized void addObject(Object3DData obj) {
+		List<Object3DData> newList = new ArrayList<Object3DData>(objects);
+		newList.add(obj);
+		this.objects = newList;
 		requestRender();
 	}
 
@@ -126,10 +129,8 @@ public class SceneLoader {
 		parent.getgLView().requestRender();
 	}
 
-	public List<Object3DData> getObjects() {
-		synchronized (objects) {
-			return new ArrayList<Object3DData>(objects);
-		}
+	public synchronized List<Object3DData> getObjects() {
+		return objects;
 	}
 
 	public void toggleWireframe() {
