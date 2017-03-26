@@ -11,10 +11,11 @@ It is basically an android application with a 3D renderer (OpenGL ES 2.0) that c
 The purpose of this application is to learn and share how to draw using OpenGL language
 
 
-News (25/03/2017)
+News (27/03/2017)
 =================
 
-* Fixed #9
+* Fixed #1: Performance problems
+* Fixed #9: IndexOutOfBoundsException
 * /¡\ The app in the market is not up-to-date: I lost the keystore to sign the updates :(
 * /¡\ Latest version: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
 
@@ -129,10 +130,14 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
-- 2.0.1 (25/03/2017)
+
+- 1.2.3 (27/03/2017)
+  - (f) Fixed #1. Performance optimization
+
+- 1.2.2 (25/03/2017)
   - (f) Fixed #9. IOOBE loading face normals when faces had no texture or normals
  
-- 2.0.0 (27/02/2017)
+- 1.2.1 (27/02/2017)
   - (f) Fixed loading external files issue #6
   - (i) Project moved to gradle
 

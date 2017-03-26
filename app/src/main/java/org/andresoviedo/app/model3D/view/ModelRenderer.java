@@ -3,6 +3,7 @@ package org.andresoviedo.app.model3D.view;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -49,9 +50,18 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	// mvpMatrix is an abbreviation for "Model View Projection Matrix"
 	private final float[] mvpMatrix = new float[16];
 
+	// light
+	private final float[] lightPosInEyeSpace = new float[4];
+	private final float[] mMatrixLight = new float[16];
+	private final float[] rotation =  new float[]{0, 0, 0};
+	private final float[] mLightPosInWorldSpace = new float[4];
+	private final float[] mvMatrixLight = new float[16];
+	private final float[] mvpMatrixLight = new float[16];
+	private final Object3DData lightPoint = Object3DBuilder.buildPoint(new float[4]).setId("light");
+
 	/**
 	 * Construct a new renderer for the specified surface view
-	 * 
+	 *
 	 * @param modelSurfaceView
 	 *            the 3D window
 	 */
@@ -125,32 +135,33 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 			return;
 		}
 
-		float[] lightPosInEyeSpace = null;
+
 		if (scene.isDrawLighting()) {
 			float[] lightPos = scene.getLightPos();
-			lightPosInEyeSpace = new float[4];
 
 			// Do a complete rotation every 10 seconds.
 			long time = SystemClock.uptimeMillis() % 10000L;
 			float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
 
-			Object3DData lightPoint = Object3DBuilder.buildPoint(lightPos);
-			lightPoint.setRotation(new float[] { 0, angleInDegrees, 0 });
+			lightPoint.getVertexArrayBuffer().clear();
+			lightPoint.getVertexArrayBuffer().put(lightPos);
+
+			rotation[1] = angleInDegrees;
+			lightPoint.setRotation(rotation);
 
 			// calculate light matrix
-			float[] mMatrixLight = new float[16];
+
 			// Calculate position of the light. Rotate and then push into the distance.
 			Matrix.setIdentityM(mMatrixLight, 0);
 			// Matrix.translateM(mMatrixLight, 0, lightPos[0], lightPos[1], lightPos[2]);
 			Matrix.rotateM(mMatrixLight, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
 			// Matrix.translateM(mMatrixLight, 0, 0.0f, 0.0f, 2.0f);
-			float[] mLightPosInWorldSpace = new float[4];
+
 			Matrix.multiplyMV(mLightPosInWorldSpace, 0, mMatrixLight, 0, lightPos, 0);
 
 			Matrix.multiplyMV(lightPosInEyeSpace, 0, modelViewMatrix, 0, mLightPosInWorldSpace, 0);
-			float[] mvMatrixLight = new float[16];
+
 			Matrix.multiplyMM(mvMatrixLight, 0, modelViewMatrix, 0, mMatrixLight, 0);
-			float[] mvpMatrixLight = new float[16];
 			Matrix.multiplyMM(mvpMatrixLight, 0, modelProjectionMatrix, 0, mvMatrixLight, 0);
 
 			drawer.getPointDrawer().draw(lightPoint, modelProjectionMatrix, modelViewMatrix, -1, lightPosInEyeSpace);
@@ -159,8 +170,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 			// drawLight(mvpMatrixLight, lightPos);
 		}
 
-		for (Object3DData objData : scene.getObjects()) {
+		List<Object3DData> objects = scene.getObjects();
+		for (int i=0; i<objects.size(); i++) {
 			try {
+				Object3DData objData = objects.get(i);
 				boolean changed = objData.isChanged();
 
 				Object3D drawerObject = drawer.getDrawer(objData, scene.isDrawTextures(), scene.isDrawLighting());

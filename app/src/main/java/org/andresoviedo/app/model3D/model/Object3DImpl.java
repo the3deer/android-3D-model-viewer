@@ -21,6 +21,13 @@ import android.util.Log;
 public abstract class Object3DImpl implements Object3D {
 
 	private final String id;
+	// Transformations
+	private final float[] mMatrix = new float[16];
+	private final float[] rotationMatrix = new float[16];
+	private final float[] translationMatrix = new float[16];
+	// mvp matrix
+	private final float[] mvMatrix = new float[16];
+	private final float[] mvpMatrix = new float[16];
 	// OpenGL data
 	private final int mProgram;
 
@@ -105,10 +112,7 @@ public abstract class Object3DImpl implements Object3D {
 	}
 
 	protected float[] getMMatrix(Object3DData obj) {
-		// Apply transformations
-		float[] mMatrix = new float[16];
-		float[] rotationMatrix = new float[16];
-		float[] translationMatrix = new float[16];
+
 
 		// calculate object transformation
 		Matrix.setIdentityM(rotationMatrix, 0);
@@ -124,13 +128,11 @@ public abstract class Object3DImpl implements Object3D {
 	}
 
 	protected float[] getMvMatrix(float[] mMatrix, float[] vMatrix) {
-		float[] mvMatrix = new float[16];
 		Matrix.multiplyMM(mvMatrix, 0, vMatrix, 0, mMatrix, 0);
 		return mvMatrix;
 	}
 
 	protected float[] getMvpMatrix(float[] mvMatrix, float[] pMatrix) {
-		float[] mvpMatrix = new float[16];
 		Matrix.multiplyMM(mvpMatrix, 0, pMatrix, 0, mvMatrix, 0);
 		return mvpMatrix;
 	}
@@ -284,17 +286,17 @@ public abstract class Object3DImpl implements Object3D {
 
 		if (drawModeList != null) {
 			if (drawOrderBuffer == null) {
-				for (int[] polygon : drawModeList) {
+				Log.d(obj.getId(),"Drawing single polygons using arrays...");
+				for (int j=0; j<drawModeList.size(); j++) {
+					int[] polygon = drawModeList.get(j);
 					int drawModePolygon = polygon[0];
 					int vertexPos = polygon[1];
 					int drawSizePolygon = polygon[2];
 					if (drawMode == GLES20.GL_LINE_LOOP && polygon[2] > 3) {
 						// is this wireframe?
-						Log.v("Object3DImpl",
-								"Drawing wireframe for '" + obj.getId() + "' (" + drawSizePolygon + ")...");
+						// Log.v("Object3DImpl","Drawing wireframe for '" + obj.getId() + "' (" + drawSizePolygon + ")...");
 						for (int i = 0; i < polygon[2] - 2; i++) {
-							Log.v("Object3DImpl",
-									"Drawing wireframe triangle '" + i + "' for '" + obj.getId() + "'...");
+							// Log.v("Object3DImpl","Drawing wireframe triangle '" + i + "' for '" + obj.getId() + "'...");
 							GLES20.glDrawArrays(drawMode, polygon[1] + i, 3);
 						}
 					} else {
@@ -302,7 +304,9 @@ public abstract class Object3DImpl implements Object3D {
 					}
 				}
 			} else {
-				for (int[] drawPart : drawModeList) {
+				Log.d(obj.getId(),"Drawing single polygons...");
+				for (int i=0; i<drawModeList.size(); i++) {
+					int[] drawPart = drawModeList.get(i);
 					int drawModePolygon = drawPart[0];
 					int vertexPos = drawPart[1];
 					int drawSizePolygon = drawPart[2];
@@ -313,10 +317,12 @@ public abstract class Object3DImpl implements Object3D {
 		} else {
 			if (drawOrderBuffer != null) {
 				if (drawSize <= 0) {
+					Log.d(obj.getId(),"Drawing all elements with mode '"+drawMode+"'...");
 					drawOrderBuffer.position(0);
 					GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT,
 							drawOrderBuffer);
 				} else {
+					Log.d(obj.getId(),"Drawing single elements of size '"+drawSize+"'...");
 					for (int i = 0; i < drawOrderBuffer.capacity(); i += drawSize) {
 						drawOrderBuffer.position(i);
 						GLES20.glDrawElements(drawMode, drawSize, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
@@ -324,8 +330,10 @@ public abstract class Object3DImpl implements Object3D {
 				}
 			} else {
 				if (drawSize <= 0) {
+					Log.d(obj.getId(),"Drawing all triangles using arrays...");
 					GLES20.glDrawArrays(drawMode, 0, vertexBuffer.capacity() / COORDS_PER_VERTEX);
 				} else {
+					//Log.d(obj.getId(),"Drawing single triangles using arrays...");
 					for (int i = 0; i < vertexBuffer.capacity() / COORDS_PER_VERTEX; i += drawSize) {
 						GLES20.glDrawArrays(drawMode, i, drawSize);
 					}
