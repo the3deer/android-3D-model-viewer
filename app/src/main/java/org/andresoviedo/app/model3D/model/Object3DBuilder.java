@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -314,6 +315,8 @@ public final class Object3DBuilder {
 	private Object3DV4 object3dv4;
 	private Object3DV5 object3dv5;
 	private Object3DV6 object3dv6;
+	private Object3DV7 object3dv7;
+	private Object3DV8 object3dv8;
 
 	public static Object3DData buildPoint(float[] point) {
 		return new Object3DData(createNativeByteBuffer(point.length * 4).asFloatBuffer().put(point))
@@ -370,6 +373,10 @@ public final class Object3DBuilder {
 		try {
 			InputStream is = assets.open(assetDir + assetFilename);
 			WavefrontLoader wfl = new WavefrontLoader(assetFilename);
+			wfl.reserveData(is);
+			is.close();
+
+			is = assets.open(assetDir + assetFilename);
 			wfl.loadModel(is);
 			is.close();
 
@@ -394,30 +401,28 @@ public final class Object3DBuilder {
 
 		if (object3dv1 == null) {
 			object3dv1 = new Object3DV1();
-		}
-		if (object3dv2 == null) {
 			object3dv2 = new Object3DV2();
-		}
-		if (object3dv3 == null) {
 			object3dv3 = new Object3DV3();
-		}
-		if (object3dv4 == null) {
 			object3dv4 = new Object3DV4();
-		}
-		if (object3dv5 == null) {
 			object3dv5 = new Object3DV5();
-		}
-		if (object3dv6 == null) {
 			object3dv6 = new Object3DV6();
+			object3dv7 = new Object3DV7();
+			object3dv8 = new Object3DV8();
 		}
 
 		if (usingTextures && usingLights && obj.getVertexColorsArrayBuffer() != null && obj.getTextureData() != null
 				&& obj.getTextureCoordsArrayBuffer() != null && obj.getVertexNormalsArrayBuffer() != null
 				&& obj.getVertexNormalsArrayBuffer() != null) {
 			return object3dv6;
+		} else if (usingTextures && usingLights && obj.getVertexColorsArrayBuffer() == null && obj.getTextureData() != null
+				&& obj.getTextureCoordsArrayBuffer() != null && obj.getVertexNormalsArrayBuffer() != null
+				&& obj.getVertexNormalsArrayBuffer() != null) {
+			return object3dv8;
 		} else if (usingLights && obj.getVertexColorsArrayBuffer() != null
 				&& obj.getVertexNormalsArrayBuffer() != null) {
 			return object3dv5;
+		} else if (usingLights && obj.getVertexNormalsArrayBuffer() != null) {
+			return object3dv7;
 		} else if (usingTextures && obj.getVertexColorsArrayBuffer() != null && obj.getTextureData() != null
 				&& obj.getTextureCoordsArrayBuffer() != null) {
 			return object3dv4;
@@ -435,46 +440,32 @@ public final class Object3DBuilder {
 		int drawMode = GLES20.GL_TRIANGLES;
 		int drawSize = 0;
 
-		ArrayList<Tuple3> verts = obj.getVerts();
-		ArrayList<Tuple3> vertexNormals = obj.getNormals();
-		ArrayList<Tuple3> texCoords = obj.getTexCoords();
+		FloatBuffer vertexBuffer = obj.getVerts();
+
+
 		Faces faces = obj.getFaces(); // model faces
 		FaceMaterials faceMats = obj.getFaceMats();
 		Materials materials = obj.getMaterials();
-
-		FloatBuffer vertexBuffer = createNativeByteBuffer(3 * verts.size() * 4).asFloatBuffer();
-		for (Tuple3 vert : verts) {
-			vertexBuffer.put(vert.getX());
-			vertexBuffer.put(vert.getY());
-			vertexBuffer.put(vert.getZ());
-		}
 
 		// TODO: generate face normals
 		FloatBuffer vertexArrayBuffer = null;
 		ShortBuffer drawOrderBuffer = null;
 		if (obj.isDrawUsingArrays()) {
 			Log.i("Object3DBuilder", "Generating vertex array buffer...");
-			vertexArrayBuffer = createNativeByteBuffer(3 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
-			for (int[] face : faces.facesVertIdxs) {
-				for (int i = 0; i < face.length; i++) {
-					vertexArrayBuffer.put(vertexBuffer.get(face[i] * 3));
-					vertexArrayBuffer.put(vertexBuffer.get(face[i] * 3 + 1));
-					vertexArrayBuffer.put(vertexBuffer.get(face[i] * 3 + 2));
-				}
+			vertexArrayBuffer = createNativeByteBuffer(faces.getIndexBuffer().capacity() * 3 * 4).asFloatBuffer();
+			for (int i=0; i<faces.getVerticesReferencesCount(); i++){
+				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i)*3));
+				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i)*3+1));
+				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i)*3+2));
 			}
 		}else{
 			Log.i("Object3DBuilder", "Generating draw order buffer...");
 			// this only works for faces made of a single triangle
-			drawOrderBuffer = createNativeByteBuffer(faces.getVerticesReferencesCount()*2).asShortBuffer();
-			for (int[] face : faces.facesVertIdxs) {
-				for (int i = 0; i < face.length; i++) {
-					drawOrderBuffer.put((short)face[i]);
-				}
-			}
+			// drawOrderBuffer = faces.facesVertIdxs;
 		}
 
 		boolean onlyTriangles = true;
-		List<int[]> drawModeList = new ArrayList<int[]>();
+		/*List<int[]> drawModeList = new ArrayList<int[]>();
 		int currentVertexPos = 0;
 		for (int[] face : faces.facesVertIdxs) {
 			if (face.length == 3) {
@@ -484,21 +475,15 @@ public final class Object3DBuilder {
 				drawModeList.add(new int[] { GLES20.GL_TRIANGLE_FAN, currentVertexPos, face.length });
 			}
 			currentVertexPos += face.length;
-		}
+		}*/
 
 		if (onlyTriangles) {
-			// TODO: test this with all models
 			drawMode = GLES20.GL_TRIANGLES;
 			drawSize = 0;
-			drawModeList = null;
+			/*drawModeList = null;*/
 		}
 
-		FloatBuffer vertexNormalsBuffer = createNativeByteBuffer(3 * vertexNormals.size() * 4).asFloatBuffer();
-		for (Tuple3 norm : vertexNormals) {
-			vertexNormalsBuffer.put(norm.getX());
-			vertexNormalsBuffer.put(norm.getY());
-			vertexNormalsBuffer.put(norm.getZ());
-		}
+		FloatBuffer vertexNormalsBuffer = obj.getNormals();
 
 		FloatBuffer vertexNormalsArrayBuffer = createNativeByteBuffer(3 * faces.getVerticesReferencesCount() * 4)
 				.asFloatBuffer();
@@ -510,48 +495,38 @@ public final class Object3DBuilder {
 			}
 		}
 
-		FloatBuffer textureCoordsBuffer = createNativeByteBuffer(2 * texCoords.size() * 4).asFloatBuffer();
-		for (Tuple3 texCor : texCoords) {
-			textureCoordsBuffer.put(texCor.getX());
-			textureCoordsBuffer.put(obj.isFlipTextCoords() ? 1 - texCor.getY() : texCor.getY());
-		}
-
-		FloatBuffer textureCoordsArraysBuffer = createNativeByteBuffer(2 * faces.getVerticesReferencesCount() * 4)
-				.asFloatBuffer();
-		try {
-			for (int[] text : faces.facesTexIdxs) {
-				for (int i = 0; i < text.length; i++) {
-					textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2));
-					textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2 + 1));
-				}
-			}
-		} catch (Exception ex) {
-			Log.e("WavefrontLoader", "Failure to load texture coordinates");
-		}
-
 		if (materials != null) {
 			materials.readMaterials(obj.getCurrentDir(), obj.getAssetsDir(), assets);
 		}
 
-		FloatBuffer colorArrayBuffer = createNativeByteBuffer(4 * faces.getVerticesReferencesCount() * 4)
-				.asFloatBuffer();
+		FloatBuffer colorArrayBuffer = null;
 		float[] currentColor = DEFAULT_COLOR;
-		for (int i = 0; i < faces.facesVertIdxs.size(); i++) {
-			if (!faceMats.isEmpty() && faceMats.findMaterial(i) != null) {
-				Material mat = materials.getMaterial(faceMats.findMaterial(i));
-				if (mat != null) {
-					currentColor = mat.getKdColor();
+		if(!faceMats.isEmpty()) {
+			colorArrayBuffer = createNativeByteBuffer(4 * faces.getVerticesReferencesCount() * 4)
+					.asFloatBuffer();
+			boolean anyOk = false;
+			for (int i = 0; i < faces.getNumFaces(); i++) {
+				if (faceMats.findMaterial(i) != null) {
+					Material mat = materials.getMaterial(faceMats.findMaterial(i));
+					if (mat != null) {
+						currentColor = mat.getKdColor() != null? mat.getKdColor() : currentColor;
+						anyOk = anyOk || mat.getKdColor() != null;
+					}
 				}
-			}
-			int[] face = faces.facesVertIdxs.get(i);
-			for (int j = 0; j < face.length; j++) {
 				colorArrayBuffer.put(currentColor);
+				colorArrayBuffer.put(currentColor);
+				colorArrayBuffer.put(currentColor);
+			}
+			if (!anyOk){
+				Log.i("Object3DBuilder","Using single color.");
+				colorArrayBuffer = null;
 			}
 		}
 
 		// materials = null;
 
 		byte[] textureData = null;
+		FloatBuffer textureCoordsArraysBuffer = null;
 		if (materials != null && !materials.materials.isEmpty()) {
 			// FileInputStream is = new FileInputStream(fileName);
 			String texture = null;
@@ -580,24 +555,47 @@ public final class Object3DBuilder {
 					textureData = bos.toByteArray();
 					bos.close();
 				}
+				if (textureData != null){
+					ArrayList<Tuple3> texCoords = obj.getTexCoords();
+					if (texCoords != null && texCoords.size() > 0) {
+						FloatBuffer textureCoordsBuffer = createNativeByteBuffer(2 * texCoords.size() * 4).asFloatBuffer();
+						for (Tuple3 texCor : texCoords) {
+							textureCoordsBuffer.put(texCor.getX());
+							textureCoordsBuffer.put(obj.isFlipTextCoords() ? 1 - texCor.getY() : texCor.getY());
+						}
+						textureCoordsArraysBuffer = createNativeByteBuffer(2 * faces.getVerticesReferencesCount() * 4)
+								.asFloatBuffer();
+						try {
+							for (int[] text : faces.facesTexIdxs) {
+								for (int i = 0; i < text.length; i++) {
+									textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2));
+									textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2 + 1));
+								}
+							}
+						} catch (Exception ex) {
+							Log.e("WavefrontLoader", "Failure to load texture coordinates");
+						}
+					}
+				}
 			} else {
 				Log.i("Loader", "Found material(s) but no texture");
 			}
 		}
 
+		obj.setColor(currentColor);
 		obj.setVertexBuffer(vertexBuffer);
+		obj.setVertexNormalsBuffer(vertexNormalsBuffer);
 		obj.setDrawOrder(drawOrderBuffer);
 		obj.setDrawSize(drawSize);
-		obj.setVertexNormalsBuffer(vertexNormalsBuffer);
-		obj.setTextureCoordsBuffer(textureCoordsBuffer);
 
 		obj.setVertexArrayBuffer(vertexArrayBuffer);
 		obj.setVertexNormalsArrayBuffer(vertexNormalsArrayBuffer);
 		obj.setTextureCoordsArrayBuffer(textureCoordsArraysBuffer);
-
-		obj.setDrawModeList(drawModeList);
-		obj.setDrawMode(drawMode);
 		obj.setVertexColorsArrayBuffer(colorArrayBuffer);
+
+		obj.setDrawModeList(null);
+		obj.setDrawMode(drawMode);
+
 		obj.setTextureData(textureData);
 
 		return obj;
@@ -712,11 +710,14 @@ public final class Object3DBuilder {
 			final Callback callback) {
 		Log.i("Loader", "Opening " + (file != null ? " file " + file : "asset " + assetsDir + assetName) + "...");
 		final InputStream modelDataStream;
+		final InputStream modelDataStream2;
 		try {
 			if (file != null) {
 				modelDataStream = new FileInputStream(file);
+				modelDataStream2 = new FileInputStream(file);
 			} else if (assetsDir != null) {
 				modelDataStream = parent.getAssets().open(assetsDir + assetName);
+				modelDataStream2 = parent.getAssets().open(assetsDir + assetName);
 			} else {
 				throw new IllegalArgumentException("Model data source not specified");
 			}
@@ -733,6 +734,7 @@ public final class Object3DBuilder {
 			protected void onPostExecute(Object3DData data) {
 				super.onPostExecute(data);
 				try {
+					modelDataStream2.close();
 					modelDataStream.close();
 				} catch (IOException ex) {
 					Log.e("Menu", "Problem closing stream: " + ex.getMessage(), ex);
@@ -744,7 +746,7 @@ public final class Object3DBuilder {
 				}
 			}
 		};
-		loaderTask.execute(modelDataStream);
+		loaderTask.execute(modelDataStream2, modelDataStream);
 	}
 
 }
@@ -815,8 +817,11 @@ class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 			publishProgress(0);
 
 			WavefrontLoader wfl = new WavefrontLoader("");
-			wfl.loadModel(params[0]);
+			wfl.reserveData(params[0]);
 			publishProgress(1);
+
+			wfl.loadModel(params[1]);
+			publishProgress(2);
 
 			Object3DData data3D = new Object3DData(wfl.getVerts(), wfl.getNormals(), wfl.getTexCoords(), wfl.getFaces(),
 					wfl.getFaceMats(), wfl.getMaterials());
@@ -825,7 +830,7 @@ class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 			data3D.setAssetsDir(assetsDir);
 
 			Object3DBuilder.generateArrays(parent.getAssets(), data3D);
-			publishProgress(2);
+			publishProgress(3);
 			return data3D;
 		} catch (IOException ex) {
 			error = ex;
@@ -837,13 +842,16 @@ class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 	protected void onProgressUpdate(Integer... values) {
 		super.onProgressUpdate(values);
 		switch (values[0]) {
-		case 0:
+			case 0:
+				this.dialog.setMessage("Analyzing model...");
+				break;
+		case 1:
 			this.dialog.setMessage("Loading data...");
 			break;
-		case 1:
+		case 2:
 			this.dialog.setMessage("Building 3D model...");
 			break;
-		case 2:
+		case 3:
 			this.dialog.setMessage("Model '" + modelId + "' built");
 			break;
 		}

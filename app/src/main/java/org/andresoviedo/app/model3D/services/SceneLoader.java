@@ -75,10 +75,6 @@ public class SceneLoader {
 
 						@Override
 						public void onLoadComplete(Object3DData data) {
-							if ("ToyPlane.obj".equals(data.getId())) {
-								// TODO: make this parametrable
-								data.setDrawMode(GLES20.GL_TRIANGLE_FAN);
-							}
 							data.centerAndScale(5.0f);
 							addObject(data);
 

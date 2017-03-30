@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +53,8 @@ public class Object3DData {
 	private int drawSize;
 
 	// Model data
-	private ArrayList<Tuple3> verts;
-	private ArrayList<Tuple3> normals;
+	private FloatBuffer verts;
+	private FloatBuffer normals;
 	private ArrayList<Tuple3> texCoords;
 	private Faces faces;
 	private FaceMaterials faceMats;
@@ -62,7 +63,6 @@ public class Object3DData {
 	// Processed data
 	private FloatBuffer vertexBuffer = null;
 	private FloatBuffer vertexNormalsBuffer = null;
-	private FloatBuffer textureCoordsBuffer = null;
 	private ShortBuffer drawOrderBuffer = null;
 
 	// Processed arrays
@@ -108,7 +108,7 @@ public class Object3DData {
 		this.version = 4;
 	}
 
-	public Object3DData(ArrayList<Tuple3> verts, ArrayList<Tuple3> normals, ArrayList<Tuple3> texCoords, Faces faces,
+	public Object3DData(FloatBuffer verts, FloatBuffer normals, ArrayList<Tuple3> texCoords, Faces faces,
 			FaceMaterials faceMats, Materials materials) {
 		super();
 		this.verts = verts;
@@ -267,11 +267,11 @@ public class Object3DData {
 		this.drawUsingArrays = drawUsingArrays;
 	}
 
-	public ArrayList<Tuple3> getVerts() {
+	public FloatBuffer getVerts() {
 		return verts;
 	}
 
-	public ArrayList<Tuple3> getNormals() {
+	public FloatBuffer getNormals() {
 		return normals;
 	}
 
@@ -307,14 +307,6 @@ public class Object3DData {
 
 	public void setVertexNormalsBuffer(FloatBuffer vertexNormalsBuffer) {
 		this.vertexNormalsBuffer = vertexNormalsBuffer;
-	}
-
-	public FloatBuffer getTextureCoordsBuffer() {
-		return textureCoordsBuffer;
-	}
-
-	public void setTextureCoordsBuffer(FloatBuffer textureCoordsBuffer) {
-		this.textureCoordsBuffer = textureCoordsBuffer;
 	}
 
 	public FloatBuffer getVertexArrayBuffer() {
