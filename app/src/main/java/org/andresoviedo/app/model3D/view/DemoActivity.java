@@ -58,7 +58,7 @@ public class DemoActivity extends ListActivity {
 		// add 1 entry per model found
 		rowItems = new ArrayList<RowItem>();
 		for (String model : models) {
-			if (model.endsWith(".obj")) {
+			if (model.toLowerCase().endsWith(".obj")) {
 				RowItem item = new RowItem("models/" + model, model, "models/" + model + ".jpg");
 				rowItems.add(item);
 			}

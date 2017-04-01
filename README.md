@@ -14,15 +14,17 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 News (01/04/2017)
 =================
 
+* Fixed #11: Normals generation
 * Fixed #10: Texture issue
 * Fixed #1: Cpu Performance problems
 * Fixed #5: Memory Performance problems
-* /¡\ The app in the market is not up-to-date: I lost the keystore to sign the updates :(
-* /¡\ Latest version: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
 
 
 Android Market
 ==============
+
+/¡\ The app in the market is not up-to-date: I lost the keystore to sign the updates :(
+/¡\ Latest version: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
 
 https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
 
@@ -134,6 +136,7 @@ ChangeLog
 
 - 1.2.5 (01/04/2017)
   - (f) Fixed #10. Map faces to texture only when using the only loaded texture
+  - (f) Fixed #11. Generation of missing vertex normals
 
 - 1.2.4 (30/03/2017)
   - (f) Fixed #5. Memory performance optimization

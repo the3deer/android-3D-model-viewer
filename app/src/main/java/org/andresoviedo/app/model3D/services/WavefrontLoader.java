@@ -32,6 +32,7 @@ package org.andresoviedo.app.model3D.services;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -612,8 +613,10 @@ public class WavefrontLoader {
 				BufferedReader br = new BufferedReader(isr);
 				readMaterials(br);
 				br.close();
+			} catch (FileNotFoundException ex){
+				Log.w("WavefrontLoader", ex.getMessage());
 			} catch (IOException e) {
-				Log.e("materials", e.getMessage(), e);
+				Log.e("WavefrontLoader", e.getMessage(), e);
 			}
 
 		} // end of Materials()
@@ -930,14 +933,14 @@ public class WavefrontLoader {
 					if (WavefrontLoader.this.triangleMode == GLES20.GL_TRIANGLE_FAN) {
 						if (faceIndex == 0){
 							// In FAN mode all faces shares the initial vertex
-							faceToken = addFaceVals(tokens[0]);// get a v/vt/vn
+							faceToken = tokens[0];// get a v/vt/vn
 						}else{
-							faceToken = addFaceVals(tokens[i]); // get a v/vt/vn
+							faceToken = tokens[i]; // get a v/vt/vn
 						}
 					}
 					else {
 						// GL.GL_TRIANGLES | GL.GL_TRIANGLE_STRIP
-						faceToken = addFaceVals(tokens[i]); // get a v/vt/vn
+						faceToken = tokens[i]; // get a v/vt/vn
 					}
 					// token
 					// System.out.println(faceToken);
@@ -953,11 +956,19 @@ public class WavefrontLoader {
 					}*/
 					if (numSeps > 1){
 						if (vt == null)	vt = new int[3];
-						vt[faceIndex] = Integer.parseInt(faceTokens[1]);
+						try{
+							vt[faceIndex] = Integer.parseInt(faceTokens[1]);
+						}catch(NumberFormatException ex){
+							vt[faceIndex] = 0;
+						}
 					}
 					if (numSeps > 2){
 						if (vn == null)	vn = new int[3];
-						vn[faceIndex] = Integer.parseInt(faceTokens[2]);
+						try{
+							vn[faceIndex] = Integer.parseInt(faceTokens[2]);
+						}catch(NumberFormatException ex){
+							vn[faceIndex] = 0;
+						}
 					}
 					// add 0's if the vt or vn index values are missing;
 					// 0 is a good choice since real indices start at 1
@@ -983,23 +994,6 @@ public class WavefrontLoader {
 			return true;
 		}
 
-		private String addFaceVals(String faceStr)
-		/*
-		 * A face token (v/vt/vn) may be missing vt or vn index values; add 0's in those cases.
-		 */
-		{
-			char chars[] = faceStr.toCharArray();
-			StringBuilder sb = new StringBuilder();
-			char prevCh = 'x'; // dummy value
-
-			for (int k = 0; k < chars.length; k++) {
-				if (chars[k] == '/' && prevCh == '/') // if no char between /'s
-					sb.append('0'); // add a '0'
-				prevCh = chars[k];
-				sb.append(prevCh);
-			}
-			return sb.toString();
-		} // end of addFaceVals()
 
 		public int getNumFaces() {
 			return numFaces;

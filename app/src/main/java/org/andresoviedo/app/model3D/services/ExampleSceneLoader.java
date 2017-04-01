@@ -170,6 +170,17 @@ public class ExampleSceneLoader extends SceneLoader {
 					} catch (Exception ex) {
 						errors.add(ex);
 					}
+
+					// test loading object without normals
+					try {
+						// this has heterogeneous faces
+						Object3DData obj = Object3DBuilder.loadV5(parent.getAssets(), "models/", "cube4.obj");
+						obj.setPosition(new float[] { 0f, 2f, -2f });
+						obj.setColor(new float[] { 0.3f, 0.52f, 1f, 1.0f });
+						addObject(obj);
+					} catch (Exception ex) {
+						errors.add(ex);
+					}
 				} catch (Exception ex) {
 					errors.add(ex);
 				}

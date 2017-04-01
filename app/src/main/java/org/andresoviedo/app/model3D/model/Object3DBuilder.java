@@ -487,39 +487,69 @@ public final class Object3DBuilder {
 
 		FloatBuffer vertexNormalsArrayBuffer = createNativeByteBuffer(3 * faces.getVerticesReferencesCount() * 4)
 				.asFloatBuffer();
-		for (int[] normal : faces.facesNormIdxs) {
-			for (int i = 0; i < normal.length; i++) {
-				vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3));
-				vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3 + 1));
-				vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3 + 2));
+
+		// load file normals
+		if (vertexNormalsBuffer.capacity() > 0) {
+			Log.i("Object3DBuilder", "Generating normals array...");
+			for (int[] normal : faces.facesNormIdxs) {
+				for (int i = 0; i < normal.length; i++) {
+					vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3));
+					vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3 + 1));
+					vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3 + 2));
+				}
 			}
 		}
+		else{
+			// calculate normals for all triangles
+			Log.i("Object3DBuilder", "Model without normals. Calculating normals...");
 
-		if (materials != null) {
-			materials.readMaterials(obj.getCurrentDir(), obj.getAssetsDir(), assets);
+			final float[] v0 = new float[3], v1 = new float[3], v2 = new float[3];
+			for (int i=0; i<faces.getIndexBuffer().capacity(); i+=3){
+
+				v0[0]=vertexBuffer.get(faces.getIndexBuffer().get(i)*3);
+				v0[1]=vertexBuffer.get(faces.getIndexBuffer().get(i)*3+1);
+				v0[2]=vertexBuffer.get(faces.getIndexBuffer().get(i)*3+2);
+
+				v1[0]=vertexBuffer.get(faces.getIndexBuffer().get(i+1)*3);
+				v1[1]=vertexBuffer.get(faces.getIndexBuffer().get(i+1)*3+1);
+				v1[2]=vertexBuffer.get(faces.getIndexBuffer().get(i+1)*3+2);
+
+				v2[0]=vertexBuffer.get(faces.getIndexBuffer().get(i+2)*3);
+				v2[1]=vertexBuffer.get(faces.getIndexBuffer().get(i+2)*3+1);
+				v2[2]=vertexBuffer.get(faces.getIndexBuffer().get(i+2)*3+2);
+
+				float[] normal = Math3DUtils.calculateFaceNormal2(v0,v1,v2);
+
+				vertexNormalsArrayBuffer.put(normal);
+				vertexNormalsArrayBuffer.put(normal);
+				vertexNormalsArrayBuffer.put(normal);
+			}
 		}
 
 		FloatBuffer colorArrayBuffer = null;
 		float[] currentColor = DEFAULT_COLOR;
-		if(!faceMats.isEmpty()) {
-			colorArrayBuffer = createNativeByteBuffer(4 * faces.getVerticesReferencesCount() * 4)
-					.asFloatBuffer();
-			boolean anyOk = false;
-			for (int i = 0; i < faces.getNumFaces(); i++) {
-				if (faceMats.findMaterial(i) != null) {
-					Material mat = materials.getMaterial(faceMats.findMaterial(i));
-					if (mat != null) {
-						currentColor = mat.getKdColor() != null? mat.getKdColor() : currentColor;
-						anyOk = anyOk || mat.getKdColor() != null;
+		if (materials != null) {
+			materials.readMaterials(obj.getCurrentDir(), obj.getAssetsDir(), assets);
+			if(!faceMats.isEmpty()) {
+				colorArrayBuffer = createNativeByteBuffer(4 * faces.getVerticesReferencesCount() * 4)
+						.asFloatBuffer();
+				boolean anyOk = false;
+				for (int i = 0; i < faces.getNumFaces(); i++) {
+					if (faceMats.findMaterial(i) != null) {
+						Material mat = materials.getMaterial(faceMats.findMaterial(i));
+						if (mat != null) {
+							currentColor = mat.getKdColor() != null? mat.getKdColor() : currentColor;
+							anyOk = anyOk || mat.getKdColor() != null;
+						}
 					}
+					colorArrayBuffer.put(currentColor);
+					colorArrayBuffer.put(currentColor);
+					colorArrayBuffer.put(currentColor);
 				}
-				colorArrayBuffer.put(currentColor);
-				colorArrayBuffer.put(currentColor);
-				colorArrayBuffer.put(currentColor);
-			}
-			if (!anyOk){
-				Log.i("Object3DBuilder","Using single color.");
-				colorArrayBuffer = null;
+				if (!anyOk){
+					Log.i("Object3DBuilder","Using single color.");
+					colorArrayBuffer = null;
+				}
 			}
 		}
 
