@@ -11,9 +11,10 @@ It is basically an android application with a 3D renderer (OpenGL ES 2.0) that c
 The purpose of this application is to learn and share how to draw using OpenGL language
 
 
-News (30/03/2017)
+News (01/04/2017)
 =================
 
+* Fixed #10: Texture issue
 * Fixed #1: Cpu Performance problems
 * Fixed #5: Memory Performance problems
 * /¡\ The app in the market is not up-to-date: I lost the keystore to sign the updates :(
@@ -130,6 +131,9 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+
+- 1.2.5 (01/04/2017)
+  - (f) Fixed #10. Map faces to texture only when using the only loaded texture
 
 - 1.2.4 (30/03/2017)
   - (f) Fixed #5. Memory performance optimization
