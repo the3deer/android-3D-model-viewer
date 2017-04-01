@@ -669,8 +669,10 @@ public class WavefrontLoader {
 						System.out.println("Ignoring MTL line: " + line);
 
 				}
-				materials.put(currMaterial.getName(), currMaterial);
-			} catch (IOException e) {
+				if (currMaterial != null) {
+					materials.put(currMaterial.getName(), currMaterial);
+				}
+			} catch (Exception e) {
 				Log.e("materials", e.getMessage(), e);
 			}
 		} // end of readMaterials()

@@ -528,7 +528,8 @@ public final class Object3DBuilder {
 		byte[] textureData = null;
 		FloatBuffer textureCoordsArraysBuffer = null;
 		if (materials != null && !materials.materials.isEmpty()) {
-			// FileInputStream is = new FileInputStream(fileName);
+
+			// TODO: process all textures
 			String texture = null;
 			for (Material mat : materials.materials.values()) {
 				if (mat.getTexture() != null) {
@@ -566,10 +567,49 @@ public final class Object3DBuilder {
 						textureCoordsArraysBuffer = createNativeByteBuffer(2 * faces.getVerticesReferencesCount() * 4)
 								.asFloatBuffer();
 						try {
-							for (int[] text : faces.facesTexIdxs) {
-								for (int i = 0; i < text.length; i++) {
-									textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2));
-									textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2 + 1));
+
+							boolean anyTextureOk = false;
+							String currentTexture = null;
+
+							for (int i=0; i<faces.facesTexIdxs.size(); i++) {
+
+								// get current texture
+								if (!faceMats.isEmpty() && faceMats.findMaterial(i) != null) {
+									Material mat = materials.getMaterial(faceMats.findMaterial(i));
+									if (mat != null && mat.getTexture() != null){
+										currentTexture = mat.getTexture();
+									}
+								}
+
+								// check if texture is ok (Because we only support 1 texture currently)
+								boolean textureOk = false;
+								if (currentTexture != null && currentTexture.equals(texture)){
+									textureOk = true;
+								}
+
+								// populate texture coords if ok
+								int[] text = faces.facesTexIdxs.get(i);
+								for (int j = 0; j < text.length; j++) {
+									if (textureOk) {
+										anyTextureOk = true;
+										textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[j] * 2));
+										textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[j] * 2 + 1));
+									}
+									else{
+										textureCoordsArraysBuffer.put(0f);
+										textureCoordsArraysBuffer.put(0f);
+									}
+								}
+							}
+
+							if (!anyTextureOk){
+								Log.i("Object3DBuilder","Texture is wrong. Applying global texture");
+								textureCoordsArraysBuffer.position(0);
+								for (int[] text : faces.facesTexIdxs) {
+									for (int i = 0; i < text.length; i++) {
+										textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2));
+										textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2 + 1));
+									}
 								}
 							}
 						} catch (Exception ex) {
