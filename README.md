@@ -86,12 +86,12 @@ Try it
   * APK: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
   * Source code: clone the repository, compile with gradle and install with adb
 
-
-    export ANDROID_HOME=/home/$USER/Android/Sdk
+```
+    export ANDROID_HOME=/home/$USER/Android/Sdk
     ./gradlew assembleDebug
     adb install -r app/build/outputs/apk/app-debug.apk
     adb shell am start -n org.andresoviedo.dddmodel/org.andresoviedo.app.model3D.MainActivity
-
+```
 
 * Open the application. You should see a menu. From there you can load some demos or load your own model
 * Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective.
