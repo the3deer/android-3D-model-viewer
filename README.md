@@ -24,8 +24,8 @@ News (02/04/2017)
 Android Market
 ==============
 
-/¡\ The app in the market is not up-to-date: I lost the keystore to sign the updates :(
-/¡\ Latest version: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
+* /¡\ The app in the market is not up-to-date: I lost the keystore to sign the updates :(
+* /¡\ Latest version: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
 
 https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
 
@@ -93,8 +93,8 @@ Try it
     adb shell am start -n org.andresoviedo.dddmodel/org.andresoviedo.app.model3D.MainActivity
 
 
-Open the application. You should see a menu. From there you can load some demos or load your own model
-Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective.
+* Open the application. You should see a menu. From there you can load some demos or load your own model
+* Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective.
 
 
 Screenshot
