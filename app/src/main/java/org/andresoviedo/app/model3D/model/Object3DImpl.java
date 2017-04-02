@@ -1,6 +1,7 @@
 package org.andresoviedo.app.model3D.model;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.List;
 
@@ -30,6 +31,8 @@ public abstract class Object3DImpl implements Object3D {
 	private final float[] mvpMatrix = new float[16];
 	// OpenGL data
 	private final int mProgram;
+	// put 0 to draw progressively, -1 to draw at once
+	private long counter = -1;
 
 	public Object3DImpl(String id, String vertexShaderCode, String fragmentShaderCode, String... variables) {
 		this.id = id;
@@ -282,7 +285,7 @@ public abstract class Object3DImpl implements Object3D {
 				: obj.getVertexBuffer();
 		vertexBuffer.position(0);
 		List<int[]> drawModeList = obj.getDrawModeList();
-		ShortBuffer drawOrderBuffer = obj.getDrawOrder();
+		IntBuffer drawOrderBuffer = obj.getDrawOrder();
 
 		if (drawModeList != null) {
 			if (drawOrderBuffer == null) {
@@ -304,14 +307,14 @@ public abstract class Object3DImpl implements Object3D {
 					}
 				}
 			} else {
-				//Log.d(obj.getId(),"Drawing single polygons...");
+				// Log.d(obj.getId(),"Drawing single polygons using elements...");
 				for (int i=0; i<drawModeList.size(); i++) {
 					int[] drawPart = drawModeList.get(i);
 					int drawModePolygon = drawPart[0];
 					int vertexPos = drawPart[1];
 					int drawSizePolygon = drawPart[2];
 					drawOrderBuffer.position(vertexPos);
-					GLES20.glDrawElements(drawModePolygon, drawSizePolygon, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
+					GLES20.glDrawElements(drawModePolygon, drawSizePolygon, GLES20.GL_UNSIGNED_INT, drawOrderBuffer);
 				}
 			}
 		} else {
@@ -319,19 +322,28 @@ public abstract class Object3DImpl implements Object3D {
 				if (drawSize <= 0) {
 					//Log.d(obj.getId(),"Drawing all elements with mode '"+drawMode+"'...");
 					drawOrderBuffer.position(0);
-					GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT,
+					GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), GLES20.GL_UNSIGNED_INT,
 							drawOrderBuffer);
 				} else {
 					//Log.d(obj.getId(),"Drawing single elements of size '"+drawSize+"'...");
 					for (int i = 0; i < drawOrderBuffer.capacity(); i += drawSize) {
 						drawOrderBuffer.position(i);
-						GLES20.glDrawElements(drawMode, drawSize, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
+						GLES20.glDrawElements(drawMode, drawSize, GLES20.GL_UNSIGNED_INT, drawOrderBuffer);
 					}
 				}
 			} else {
 				if (drawSize <= 0) {
-					//Log.d(obj.getId(),"Drawing all triangles using arrays...");
-					GLES20.glDrawArrays(drawMode, 0, vertexBuffer.capacity() / COORDS_PER_VERTEX);
+					int drawCount = vertexBuffer.capacity() / COORDS_PER_VERTEX;
+					
+					// if we want to animate, initialize counter=0 at variable declaration
+					Log.d(obj.getId(),"Drawing all triangles using arrays...");
+					if (this.counter >= 0) {
+						counter += 100;
+						counter = counter % Integer.MAX_VALUE;
+						drawCount = (int)counter % drawCount + 1;
+					}
+					
+					GLES20.glDrawArrays(drawMode, 0, drawCount);
 				} else {
 					//Log.d(obj.getId(),"Drawing single triangles using arrays...");
 					for (int i = 0; i < vertexBuffer.capacity() / COORDS_PER_VERTEX; i += drawSize) {

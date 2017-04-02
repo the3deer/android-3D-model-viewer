@@ -63,7 +63,7 @@ public class Object3DData {
 	// Processed data
 	private FloatBuffer vertexBuffer = null;
 	private FloatBuffer vertexNormalsBuffer = null;
-	private ShortBuffer drawOrderBuffer = null;
+	private IntBuffer drawOrderBuffer = null;
 
 	// Processed arrays
 	private FloatBuffer vertexArrayBuffer = null;
@@ -86,7 +86,7 @@ public class Object3DData {
 		this.version = 1;
 	}
 
-	public Object3DData(FloatBuffer vertexBuffer, ShortBuffer drawOrder) {
+	public Object3DData(FloatBuffer vertexBuffer, IntBuffer drawOrder) {
 		this.vertexBuffer = vertexBuffer;
 		this.drawOrderBuffer = drawOrder;
 		this.version = 2;
@@ -226,11 +226,11 @@ public class Object3DData {
 		this.rotation = rotation;
 	}
 
-	public ShortBuffer getDrawOrder() {
+	public IntBuffer getDrawOrder() {
 		return drawOrderBuffer;
 	}
 
-	public Object3DData setDrawOrder(ShortBuffer drawBuffer) {
+	public Object3DData setDrawOrder(IntBuffer drawBuffer) {
 		this.drawOrderBuffer = drawBuffer;
 		return this;
 	}
@@ -297,16 +297,18 @@ public class Object3DData {
 		return vertexBuffer;
 	}
 
-	public void setVertexBuffer(FloatBuffer vertexBuffer) {
+	public Object3DData setVertexBuffer(FloatBuffer vertexBuffer) {
 		this.vertexBuffer = vertexBuffer;
+		return this;
 	}
 
 	public FloatBuffer getVertexNormalsBuffer() {
 		return vertexNormalsBuffer;
 	}
 
-	public void setVertexNormalsBuffer(FloatBuffer vertexNormalsBuffer) {
+	public Object3DData setVertexNormalsBuffer(FloatBuffer vertexNormalsBuffer) {
 		this.vertexNormalsBuffer = vertexNormalsBuffer;
+		return this;
 	}
 
 	public FloatBuffer getVertexArrayBuffer() {
@@ -565,9 +567,7 @@ public class Object3DData {
 
 	private static ByteBuffer createNativeByteBuffer(int length) {
 		// initialize vertex byte buffer for shape coordinates
-		ByteBuffer bb = ByteBuffer.allocateDirect(
-				// (number of coordinate values * 2 bytes per short)
-				length);
+		ByteBuffer bb = ByteBuffer.allocateDirect(length);
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());
 		return bb;

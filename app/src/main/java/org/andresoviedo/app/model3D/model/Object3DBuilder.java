@@ -1,17 +1,11 @@
 package org.andresoviedo.app.model3D.model;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
-import java.util.List;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.res.AssetManager;
+import android.opengl.GLES20;
+import android.os.AsyncTask;
+import android.util.Log;
 
 import org.andresoviedo.app.model3D.services.WavefrontLoader;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.FaceMaterials;
@@ -22,12 +16,17 @@ import org.andresoviedo.app.model3D.services.WavefrontLoader.Tuple3;
 import org.andresoviedo.app.util.math.Math3DUtils;
 import org.apache.commons.io.IOUtils;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.res.AssetManager;
-import android.opengl.GLES20;
-import android.os.AsyncTask;
-import android.util.Log;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Object3DBuilder {
 
@@ -41,30 +40,30 @@ public final class Object3DBuilder {
 	/**
 	 * Default vertices colors
 	 */
-	private static float[] DEFAULT_COLOR = { 1.0f, 1.0f, 0, 1.0f };
+	private static float[] DEFAULT_COLOR = {1.0f, 1.0f, 0, 1.0f};
 
-	final static float[] axisVertexLinesData = new float[] {
-		//@formatter:off
-		0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // right
-		0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // left
-		0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // up
-		0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, // down
-		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // z+
-		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, // z-
+	final static float[] axisVertexLinesData = new float[]{
+			//@formatter:off
+			0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // right
+			0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // left
+			0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // up
+			0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, // down
+			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // z+
+			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, // z-
 
-		0.95f, 0.05f, 0, 1, 0, 0, 0.95f, -0.05f, 0, 1, 0f, 0f, // Arrow X (>)
-		-0.95f, 0.05f, 0, -1, 0, 0, -0.95f, -0.05f, 0, -1, 0f, 0f, // Arrow X (<)
-		-0.05f, 0.95f, 0, 0, 1, 0, 0.05f, 0.95f, 0, 0, 1f, 0f, // Arrox Y (^)
-		-0.05f, 0, 0.95f, 0, 0, 1, 0.05f, 0, 0.95f, 0, 0, 1, // Arrox z (v)
+			0.95f, 0.05f, 0, 1, 0, 0, 0.95f, -0.05f, 0, 1, 0f, 0f, // Arrow X (>)
+			-0.95f, 0.05f, 0, -1, 0, 0, -0.95f, -0.05f, 0, -1, 0f, 0f, // Arrow X (<)
+			-0.05f, 0.95f, 0, 0, 1, 0, 0.05f, 0.95f, 0, 0, 1f, 0f, // Arrox Y (^)
+			-0.05f, 0, 0.95f, 0, 0, 1, 0.05f, 0, 0.95f, 0, 0, 1, // Arrox z (v)
 
-		1.05F, 0.05F, 0, 1.10F, -0.05F, 0, 1.05F, -0.05F, 0, 1.10F, 0.05F, 0, // Letter X
-		-0.05F, 1.05F, 0, 0.05F, 1.10F, 0, -0.05F, 1.10F, 0, 0.0F, 1.075F, 0, // Letter Y
-		-0.05F, 0.05F, 1.05F, 0.05F, 0.05F, 1.05F, 0.05F, 0.05F, 1.05F, -0.05F, -0.05F, 1.05F, -0.05F, -0.05F,
-		1.05F, 0.05F, -0.05F, 1.05F // letter z
-		//@formatter:on
+			1.05F, 0.05F, 0, 1.10F, -0.05F, 0, 1.05F, -0.05F, 0, 1.10F, 0.05F, 0, // Letter X
+			-0.05F, 1.05F, 0, 0.05F, 1.10F, 0, -0.05F, 1.10F, 0, 0.0F, 1.075F, 0, // Letter Y
+			-0.05F, 0.05F, 1.05F, 0.05F, 0.05F, 1.05F, 0.05F, 0.05F, 1.05F, -0.05F, -0.05F, 1.05F, -0.05F, -0.05F,
+			1.05F, 0.05F, -0.05F, 1.05F // letter z
+			//@formatter:on
 	};
 
-	final static float[] squarePositionData = new float[] {
+	final static float[] squarePositionData = new float[]{
 			// @formatter:off
 			-0.5f, 0.5f, 0.5f, // top left front
 			-0.5f, -0.5f, 0.5f, // bottom left front
@@ -77,10 +76,10 @@ public final class Object3DBuilder {
 			// @formatter:on
 	};
 
-	final static short[] squareDrawOrderData = new short[] {
+	final static int[] squareDrawOrderData = new int[]{
 			// @formatter:off
 			// front
-			0, 1, 2, 
+			0, 1, 2,
 			0, 2, 3,
 			// back
 			7, 6, 5,
@@ -103,210 +102,208 @@ public final class Object3DBuilder {
 	final static float[] cubePositionData = {
 			//@formatter:off
 			// Front face
-			-1.0f, 1.0f, 1.0f,				
+			-1.0f, 1.0f, 1.0f,
 			-1.0f, -1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f, 
-			-1.0f, -1.0f, 1.0f, 				
+			1.0f, 1.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f,
 			1.0f, -1.0f, 1.0f,
 			1.0f, 1.0f, 1.0f,
 
 			// Right face
-			1.0f, 1.0f, 1.0f,				
+			1.0f, 1.0f, 1.0f,
 			1.0f, -1.0f, 1.0f,
 			1.0f, 1.0f, -1.0f,
-			1.0f, -1.0f, 1.0f,				
+			1.0f, -1.0f, 1.0f,
 			1.0f, -1.0f, -1.0f,
 			1.0f, 1.0f, -1.0f,
 
 			// Back face
-			1.0f, 1.0f, -1.0f,				
+			1.0f, 1.0f, -1.0f,
 			1.0f, -1.0f, -1.0f,
 			-1.0f, 1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,				
+			1.0f, -1.0f, -1.0f,
 			-1.0f, -1.0f, -1.0f,
 			-1.0f, 1.0f, -1.0f,
 
 			// Left face
-			-1.0f, 1.0f, -1.0f,				
+			-1.0f, 1.0f, -1.0f,
 			-1.0f, -1.0f, -1.0f,
-			-1.0f, 1.0f, 1.0f, 
-			-1.0f, -1.0f, -1.0f,				
-			-1.0f, -1.0f, 1.0f, 
+			-1.0f, 1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f, 1.0f,
 			-1.0f, 1.0f, 1.0f,
 
 			// Top face
-			-1.0f, 1.0f, -1.0f,				
-			-1.0f, 1.0f, 1.0f, 
-			1.0f, 1.0f, -1.0f, 
-			-1.0f, 1.0f, 1.0f, 				
-			1.0f, 1.0f, 1.0f, 
+			-1.0f, 1.0f, -1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, -1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
 			1.0f, 1.0f, -1.0f,
 
 			// Bottom face
-			1.0f, -1.0f, -1.0f,				
-			1.0f, -1.0f, 1.0f, 
+			1.0f, -1.0f, -1.0f,
+			1.0f, -1.0f, 1.0f,
 			-1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, 1.0f, 				
+			1.0f, -1.0f, 1.0f,
 			-1.0f, -1.0f, 1.0f,
 			-1.0f, -1.0f, -1.0f
-			};	
+	};
 
-		final static float[] cubeColorData = {		
-				
+	final static float[] cubeColorData = {
+
 			// Front face (red)
-			1.0f, 0.0f, 0.0f, 1.0f,				
 			1.0f, 0.0f, 0.0f, 1.0f,
 			1.0f, 0.0f, 0.0f, 1.0f,
-			1.0f, 0.0f, 0.0f, 1.0f,				
+			1.0f, 0.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 0.0f, 1.0f,
 			1.0f, 0.0f, 0.0f, 1.0f,
 			1.0f, 0.0f, 0.0f, 1.0f,
 
 			// Right face (green)
-			0.0f, 1.0f, 0.0f, 1.0f,				
 			0.0f, 1.0f, 0.0f, 1.0f,
 			0.0f, 1.0f, 0.0f, 1.0f,
-			0.0f, 1.0f, 0.0f, 1.0f,				
+			0.0f, 1.0f, 0.0f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
 			0.0f, 1.0f, 0.0f, 1.0f,
 			0.0f, 1.0f, 0.0f, 1.0f,
 
 			// Back face (blue)
-			0.0f, 0.0f, 1.0f, 1.0f,				
 			0.0f, 0.0f, 1.0f, 1.0f,
 			0.0f, 0.0f, 1.0f, 1.0f,
-			0.0f, 0.0f, 1.0f, 1.0f,				
+			0.0f, 0.0f, 1.0f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f,
 			0.0f, 0.0f, 1.0f, 1.0f,
 			0.0f, 0.0f, 1.0f, 1.0f,
 
 			// Left face (yellow)
-			1.0f, 1.0f, 0.0f, 1.0f,				
 			1.0f, 1.0f, 0.0f, 1.0f,
 			1.0f, 1.0f, 0.0f, 1.0f,
-			1.0f, 1.0f, 0.0f, 1.0f,				
 			1.0f, 1.0f, 0.0f, 1.0f,
 			1.0f, 1.0f, 0.0f, 1.0f,
-			
+			1.0f, 1.0f, 0.0f, 1.0f,
+			1.0f, 1.0f, 0.0f, 1.0f,
+
 			// Top face (cyan)
-			0.0f, 1.0f, 1.0f, 1.0f,				
 			0.0f, 1.0f, 1.0f, 1.0f,
 			0.0f, 1.0f, 1.0f, 1.0f,
-			0.0f, 1.0f, 1.0f, 1.0f,				
+			0.0f, 1.0f, 1.0f, 1.0f,
+			0.0f, 1.0f, 1.0f, 1.0f,
 			0.0f, 1.0f, 1.0f, 1.0f,
 			0.0f, 1.0f, 1.0f, 1.0f,
 
 			// Bottom face (magenta)
-			1.0f, 0.0f, 1.0f, 1.0f,				
 			1.0f, 0.0f, 1.0f, 1.0f,
 			1.0f, 0.0f, 1.0f, 1.0f,
-			1.0f, 0.0f, 1.0f, 1.0f,				
+			1.0f, 0.0f, 1.0f, 1.0f,
+			1.0f, 0.0f, 1.0f, 1.0f,
 			1.0f, 0.0f, 1.0f, 1.0f,
 			1.0f, 0.0f, 1.0f, 1.0f
-		};
+	};
 
-		final static float[] cubeNormalData =
-		{												
-			// Front face
-			0.0f, 0.0f, 1.0f,				
-			0.0f, 0.0f, 1.0f,
-			0.0f, 0.0f, 1.0f,
-			0.0f, 0.0f, 1.0f,				
-			0.0f, 0.0f, 1.0f,
-			0.0f, 0.0f, 1.0f,
+	final static float[] cubeNormalData =
+			{
+					// Front face
+					0.0f, 0.0f, 1.0f,
+					0.0f, 0.0f, 1.0f,
+					0.0f, 0.0f, 1.0f,
+					0.0f, 0.0f, 1.0f,
+					0.0f, 0.0f, 1.0f,
+					0.0f, 0.0f, 1.0f,
 
-			// Right face
-			1.0f, 0.0f, 0.0f,				
-			1.0f, 0.0f, 0.0f,
-			1.0f, 0.0f, 0.0f,
-			1.0f, 0.0f, 0.0f,				
-			1.0f, 0.0f, 0.0f,
-			1.0f, 0.0f, 0.0f,
+					// Right face
+					1.0f, 0.0f, 0.0f,
+					1.0f, 0.0f, 0.0f,
+					1.0f, 0.0f, 0.0f,
+					1.0f, 0.0f, 0.0f,
+					1.0f, 0.0f, 0.0f,
+					1.0f, 0.0f, 0.0f,
 
-			// Back face
-			0.0f, 0.0f, -1.0f,				
-			0.0f, 0.0f, -1.0f,
-			0.0f, 0.0f, -1.0f,
-			0.0f, 0.0f, -1.0f,				
-			0.0f, 0.0f, -1.0f,
-			0.0f, 0.0f, -1.0f,
+					// Back face
+					0.0f, 0.0f, -1.0f,
+					0.0f, 0.0f, -1.0f,
+					0.0f, 0.0f, -1.0f,
+					0.0f, 0.0f, -1.0f,
+					0.0f, 0.0f, -1.0f,
+					0.0f, 0.0f, -1.0f,
 
-			// Left face
-			-1.0f, 0.0f, 0.0f,				
-			-1.0f, 0.0f, 0.0f,
-			-1.0f, 0.0f, 0.0f,
-			-1.0f, 0.0f, 0.0f,				
-			-1.0f, 0.0f, 0.0f,
-			-1.0f, 0.0f, 0.0f,
+					// Left face
+					-1.0f, 0.0f, 0.0f,
+					-1.0f, 0.0f, 0.0f,
+					-1.0f, 0.0f, 0.0f,
+					-1.0f, 0.0f, 0.0f,
+					-1.0f, 0.0f, 0.0f,
+					-1.0f, 0.0f, 0.0f,
 
-			// Top face
-			0.0f, 1.0f, 0.0f,			
-			0.0f, 1.0f, 0.0f,
-			0.0f, 1.0f, 0.0f,
-			0.0f, 1.0f, 0.0f,				
-			0.0f, 1.0f, 0.0f,
-			0.0f, 1.0f, 0.0f,
+					// Top face
+					0.0f, 1.0f, 0.0f,
+					0.0f, 1.0f, 0.0f,
+					0.0f, 1.0f, 0.0f,
+					0.0f, 1.0f, 0.0f,
+					0.0f, 1.0f, 0.0f,
+					0.0f, 1.0f, 0.0f,
 
-			// Bottom face
-			0.0f, -1.0f, 0.0f,			
-			0.0f, -1.0f, 0.0f,
-			0.0f, -1.0f, 0.0f,
-			0.0f, -1.0f, 0.0f,				
-			0.0f, -1.0f, 0.0f,
-			0.0f, -1.0f, 0.0f
-		};
+					// Bottom face
+					0.0f, -1.0f, 0.0f,
+					0.0f, -1.0f, 0.0f,
+					0.0f, -1.0f, 0.0f,
+					0.0f, -1.0f, 0.0f,
+					0.0f, -1.0f, 0.0f,
+					0.0f, -1.0f, 0.0f
+			};
 
 
-		final static float[] cubeTextureCoordinateData =
-		{												
-			// Front face
-			0.0f, 0.0f, 				
-			0.0f, 1.0f,
-			1.0f, 0.0f,
-			0.0f, 1.0f,
-			1.0f, 1.0f,
-			1.0f, 0.0f,				
+	final static float[] cubeTextureCoordinateData =
+			{
+					// Front face
+					0.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 1.0f,
+					1.0f, 0.0f,
 
-			// Right face
-			0.0f, 0.0f, 				
-			0.0f, 1.0f,
-			1.0f, 0.0f,
-			0.0f, 1.0f,
-			1.0f, 1.0f,
-			1.0f, 0.0f,	
+					// Right face
+					0.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 1.0f,
+					1.0f, 0.0f,
 
-			// Back face
-			0.0f, 0.0f, 				
-			0.0f, 1.0f,
-			1.0f, 0.0f,
-			0.0f, 1.0f,
-			1.0f, 1.0f,
-			1.0f, 0.0f,	
+					// Back face
+					0.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 1.0f,
+					1.0f, 0.0f,
 
-			// Left face
-			0.0f, 0.0f, 				
-			0.0f, 1.0f,
-			1.0f, 0.0f,
-			0.0f, 1.0f,
-			1.0f, 1.0f,
-			1.0f, 0.0f,	
+					// Left face
+					0.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 1.0f,
+					1.0f, 0.0f,
 
-			// Top face
-			0.0f, 0.0f, 				
-			0.0f, 1.0f,
-			1.0f, 0.0f,
-			0.0f, 1.0f,
-			1.0f, 1.0f,
-			1.0f, 0.0f,	
+					// Top face
+					0.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 1.0f,
+					1.0f, 0.0f,
 
-			// Bottom face
-			0.0f, 0.0f, 				
-			0.0f, 1.0f,
-			1.0f, 0.0f,
-			0.0f, 1.0f,
-			1.0f, 1.0f,
-			1.0f, 0.0f
-		};
-		//@formatter:on
-
-	final static short[] cubeDrawOrder = new short[] {};
+					// Bottom face
+					0.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 0.0f,
+					0.0f, 1.0f,
+					1.0f, 1.0f,
+					1.0f, 0.0f
+			};
+	//@formatter:on
 
 	private Object3DV0 object3dv0;
 	private Object3DV1 object3dv1;
@@ -326,29 +323,29 @@ public final class Object3DBuilder {
 	public static Object3DData buildAxis() {
 		return new Object3DData(
 				createNativeByteBuffer(axisVertexLinesData.length * 4).asFloatBuffer().put(axisVertexLinesData))
-						.setDrawMode(GLES20.GL_LINES);
+				.setDrawMode(GLES20.GL_LINES);
 	}
 
 	public static Object3DData buildCubeV1() {
 		return new Object3DData(
 				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData))
-						.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1").centerAndScale(1.0f);
+				.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1").centerAndScale(1.0f);
 	}
 
 	public static Object3DData buildCubeV1_with_normals() {
 		return new Object3DData(
 				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData))
-						.setVertexColorsArrayBuffer(
-								createNativeByteBuffer(cubeColorData.length * 4).asFloatBuffer().put(cubeColorData))
-						.setVertexNormalsArrayBuffer(
-								createNativeByteBuffer(cubeNormalData.length * 4).asFloatBuffer().put(cubeNormalData))
-						.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1_light").centerAndScale(1.0f);
+				.setVertexColorsArrayBuffer(
+						createNativeByteBuffer(cubeColorData.length * 4).asFloatBuffer().put(cubeColorData))
+				.setVertexNormalsArrayBuffer(
+						createNativeByteBuffer(cubeNormalData.length * 4).asFloatBuffer().put(cubeNormalData))
+				.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1_light").centerAndScale(1.0f);
 	}
 
 	public static Object3DData buildSquareV2() {
 		return new Object3DData(
 				createNativeByteBuffer(squarePositionData.length * 4).asFloatBuffer().put(squarePositionData),
-				createNativeByteBuffer(squareDrawOrderData.length * 2).asShortBuffer().put(squareDrawOrderData)
+				createNativeByteBuffer(squareDrawOrderData.length * 4).asIntBuffer().put(squareDrawOrderData)
 						.asReadOnlyBuffer()).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV2").centerAndScale(1.0f);
 	}
 
@@ -449,17 +446,18 @@ public final class Object3DBuilder {
 
 		// TODO: generate face normals
 		FloatBuffer vertexArrayBuffer = null;
-		ShortBuffer drawOrderBuffer = null;
+		IntBuffer drawOrderBuffer = null;
 		if (obj.isDrawUsingArrays()) {
 			Log.i("Object3DBuilder", "Generating vertex array buffer...");
 			vertexArrayBuffer = createNativeByteBuffer(faces.getIndexBuffer().capacity() * 3 * 4).asFloatBuffer();
-			for (int i=0; i<faces.getVerticesReferencesCount(); i++){
-				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i)*3));
-				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i)*3+1));
-				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i)*3+2));
+			for (int i = 0; i < faces.getVerticesReferencesCount(); i++) {
+				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i) * 3));
+				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i) * 3 + 1));
+				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i) * 3 + 2));
 			}
-		}else{
-			Log.i("Object3DBuilder", "Generating draw order buffer...");
+		} else {
+			// TODO:
+			// Log.i("Object3DBuilder", "Generating draw order buffer...");
 			// this only works for faces made of a single triangle
 			// drawOrderBuffer = faces.facesVertIdxs;
 		}
@@ -498,27 +496,26 @@ public final class Object3DBuilder {
 					vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3 + 2));
 				}
 			}
-		}
-		else{
+		} else {
 			// calculate normals for all triangles
 			Log.i("Object3DBuilder", "Model without normals. Calculating normals...");
 
 			final float[] v0 = new float[3], v1 = new float[3], v2 = new float[3];
-			for (int i=0; i<faces.getIndexBuffer().capacity(); i+=3){
+			for (int i = 0; i < faces.getIndexBuffer().capacity(); i += 3) {
 
-				v0[0]=vertexBuffer.get(faces.getIndexBuffer().get(i)*3);
-				v0[1]=vertexBuffer.get(faces.getIndexBuffer().get(i)*3+1);
-				v0[2]=vertexBuffer.get(faces.getIndexBuffer().get(i)*3+2);
+				v0[0] = vertexBuffer.get(faces.getIndexBuffer().get(i) * 3);
+				v0[1] = vertexBuffer.get(faces.getIndexBuffer().get(i) * 3 + 1);
+				v0[2] = vertexBuffer.get(faces.getIndexBuffer().get(i) * 3 + 2);
 
-				v1[0]=vertexBuffer.get(faces.getIndexBuffer().get(i+1)*3);
-				v1[1]=vertexBuffer.get(faces.getIndexBuffer().get(i+1)*3+1);
-				v1[2]=vertexBuffer.get(faces.getIndexBuffer().get(i+1)*3+2);
+				v1[0] = vertexBuffer.get(faces.getIndexBuffer().get(i + 1) * 3);
+				v1[1] = vertexBuffer.get(faces.getIndexBuffer().get(i + 1) * 3 + 1);
+				v1[2] = vertexBuffer.get(faces.getIndexBuffer().get(i + 1) * 3 + 2);
 
-				v2[0]=vertexBuffer.get(faces.getIndexBuffer().get(i+2)*3);
-				v2[1]=vertexBuffer.get(faces.getIndexBuffer().get(i+2)*3+1);
-				v2[2]=vertexBuffer.get(faces.getIndexBuffer().get(i+2)*3+2);
+				v2[0] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3);
+				v2[1] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3 + 1);
+				v2[2] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3 + 2);
 
-				float[] normal = Math3DUtils.calculateFaceNormal2(v0,v1,v2);
+				float[] normal = Math3DUtils.calculateFaceNormal2(v0, v1, v2);
 
 				vertexNormalsArrayBuffer.put(normal);
 				vertexNormalsArrayBuffer.put(normal);
@@ -530,7 +527,7 @@ public final class Object3DBuilder {
 		float[] currentColor = DEFAULT_COLOR;
 		if (materials != null) {
 			materials.readMaterials(obj.getCurrentDir(), obj.getAssetsDir(), assets);
-			if(!faceMats.isEmpty()) {
+			if (!faceMats.isEmpty()) {
 				colorArrayBuffer = createNativeByteBuffer(4 * faces.getVerticesReferencesCount() * 4)
 						.asFloatBuffer();
 				boolean anyOk = false;
@@ -538,7 +535,7 @@ public final class Object3DBuilder {
 					if (faceMats.findMaterial(i) != null) {
 						Material mat = materials.getMaterial(faceMats.findMaterial(i));
 						if (mat != null) {
-							currentColor = mat.getKdColor() != null? mat.getKdColor() : currentColor;
+							currentColor = mat.getKdColor() != null ? mat.getKdColor() : currentColor;
 							anyOk = anyOk || mat.getKdColor() != null;
 						}
 					}
@@ -546,8 +543,8 @@ public final class Object3DBuilder {
 					colorArrayBuffer.put(currentColor);
 					colorArrayBuffer.put(currentColor);
 				}
-				if (!anyOk){
-					Log.i("Object3DBuilder","Using single color.");
+				if (!anyOk) {
+					Log.i("Object3DBuilder", "Using single color.");
 					colorArrayBuffer = null;
 				}
 			}
@@ -586,7 +583,7 @@ public final class Object3DBuilder {
 					textureData = bos.toByteArray();
 					bos.close();
 				}
-				if (textureData != null){
+				if (textureData != null) {
 					ArrayList<Tuple3> texCoords = obj.getTexCoords();
 					if (texCoords != null && texCoords.size() > 0) {
 						FloatBuffer textureCoordsBuffer = createNativeByteBuffer(2 * texCoords.size() * 4).asFloatBuffer();
@@ -601,19 +598,19 @@ public final class Object3DBuilder {
 							boolean anyTextureOk = false;
 							String currentTexture = null;
 
-							for (int i=0; i<faces.facesTexIdxs.size(); i++) {
+							for (int i = 0; i < faces.facesTexIdxs.size(); i++) {
 
 								// get current texture
 								if (!faceMats.isEmpty() && faceMats.findMaterial(i) != null) {
 									Material mat = materials.getMaterial(faceMats.findMaterial(i));
-									if (mat != null && mat.getTexture() != null){
+									if (mat != null && mat.getTexture() != null) {
 										currentTexture = mat.getTexture();
 									}
 								}
 
 								// check if texture is ok (Because we only support 1 texture currently)
 								boolean textureOk = false;
-								if (currentTexture != null && currentTexture.equals(texture)){
+								if (currentTexture != null && currentTexture.equals(texture)) {
 									textureOk = true;
 								}
 
@@ -624,16 +621,15 @@ public final class Object3DBuilder {
 										anyTextureOk = true;
 										textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[j] * 2));
 										textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[j] * 2 + 1));
-									}
-									else{
+									} else {
 										textureCoordsArraysBuffer.put(0f);
 										textureCoordsArraysBuffer.put(0f);
 									}
 								}
 							}
 
-							if (!anyTextureOk){
-								Log.i("Object3DBuilder","Texture is wrong. Applying global texture");
+							if (!anyTextureOk) {
+								Log.i("Object3DBuilder", "Texture is wrong. Applying global texture");
 								textureCoordsArraysBuffer.position(0);
 								for (int[] text : faces.facesTexIdxs) {
 									for (int i = 0; i < text.length; i++) {
@@ -675,6 +671,10 @@ public final class Object3DBuilder {
 		return object3dv2;
 	}
 
+	public Object3D getWireframeDrawer() {
+		return object3dv7;
+	}
+
 	public Object3D getFaceNormalsDrawer() {
 		return object3dv1;
 	}
@@ -697,12 +697,65 @@ public final class Object3DBuilder {
 	}
 
 	/**
-	 * Generate a new object that contains the all the line normals for all the faces for the specified object
-	 * 
+	 * Builds a wireframe of the model by drawing all lines (3) of the triangles. This method uses
+	 * the drawOrder buffer.
+	 * @param objData the 3d model
+	 * @return the 3d wireframe
+	 */
+	public static Object3DData buildWireframe(Object3DData objData) {
+		try {
+			FloatBuffer vertexArrayBuffer = objData.getVertexArrayBuffer();
+			IntBuffer drawOrder = createNativeByteBuffer(vertexArrayBuffer.capacity() / 3 * 2 * 4).asIntBuffer();
+			for (int i = 0; i < vertexArrayBuffer.capacity()/3; i+=3) {
+				drawOrder.put((i));
+				drawOrder.put((i+1));
+				drawOrder.put((i+1));
+				drawOrder.put((i+2));
+				drawOrder.put((i+2));
+				drawOrder.put((i));
+			}
+			return new Object3DData(vertexArrayBuffer).setDrawOrder(drawOrder).
+					setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
+					.setDrawMode(GLES20.GL_LINES).setDrawSize(-1);
+		} catch (Exception ex) {
+			Log.e("Object3DBuilder", ex.getMessage(), ex);
+		}
+		return objData;
+	}
+
+	/**
+	 * Build a wireframe from obj vertices and faces.  This method uses less memory that {@link #buildWireframe(Object3DData)}
+	 * --The problem-- in using this method  is that we are reshaping the object (scaling) after
+	 * it is loaded, so this wireframe wont match current state of the shape
+	 * @param objData the 3d model
+	 * @return the 3d wireframe
+	 */
+	public static Object3DData buildWireframe_from_original(Object3DData objData) {
+		try {
+			IntBuffer drawOrder = createNativeByteBuffer(objData.getFaces().getIndexBuffer().capacity() * 2 * 4).asIntBuffer();
+			for (int i = 0; i < objData.getFaces().getIndexBuffer().capacity(); i+=3) {
+					drawOrder.put(objData.getFaces().getIndexBuffer().get(i));
+					drawOrder.put((objData.getFaces().getIndexBuffer().get(i+1)));
+					drawOrder.put((objData.getFaces().getIndexBuffer().get(i+1)));
+					drawOrder.put((objData.getFaces().getIndexBuffer().get(i+2)));
+					drawOrder.put((objData.getFaces().getIndexBuffer().get(i+2)));
+					drawOrder.put((objData.getFaces().getIndexBuffer().get(i)));
+			}
+			return new Object3DData(objData.getVertexBuffer()).setDrawOrder(drawOrder).
+					setVertexNormalsArrayBuffer(objData.getVertexNormalsBuffer()).setColor(objData.getColor())
+					.setDrawMode(GLES20.GL_LINES).setDrawSize(-1);
+		} catch (Exception ex) {
+			Log.e("Object3DBuilder", ex.getMessage(), ex);
+		}
+		return objData;
+	}
+
+	/**
+	 * Generate a new object that contains all the line normals for all the faces for the specified object
+	 * <p>
 	 * TODO: This only works for objects made of triangles. Make it useful for any kind of polygonal face
-	 * 
-	 * @param obj
-	 *            the object to which we calculate the normals.
+	 *
+	 * @param obj the object to which we calculate the normals.
 	 * @return the model with all the normal lines
 	 */
 	public static Object3DData buildFaceNormals(Object3DData obj) {
@@ -718,7 +771,7 @@ public final class Object3DBuilder {
 		}
 
 		FloatBuffer normalsLines;
-		ShortBuffer drawBuffer = obj.getDrawOrder();
+		IntBuffer drawBuffer = obj.getDrawOrder();
 		if (drawBuffer != null) {
 			Log.v("Builder", "Generating face normals for '" + obj.getId() + "' using indices...");
 			int size = /* 2 points */ 2 * 3 * /* 3 points per face */ (drawBuffer.capacity() / 3)
@@ -730,9 +783,9 @@ public final class Object3DBuilder {
 				int v2 = drawBuffer.get() * COORDS_PER_VERTEX;
 				int v3 = drawBuffer.get() * COORDS_PER_VERTEX;
 				float[][] normalLine = Math3DUtils.calculateFaceNormal(
-						new float[] { vertexBuffer.get(v1), vertexBuffer.get(v1 + 1), vertexBuffer.get(v1 + 2) },
-						new float[] { vertexBuffer.get(v2), vertexBuffer.get(v2 + 1), vertexBuffer.get(v2 + 2) },
-						new float[] { vertexBuffer.get(v3), vertexBuffer.get(v3 + 1), vertexBuffer.get(v3 + 2) });
+						new float[]{vertexBuffer.get(v1), vertexBuffer.get(v1 + 1), vertexBuffer.get(v1 + 2)},
+						new float[]{vertexBuffer.get(v2), vertexBuffer.get(v2 + 1), vertexBuffer.get(v2 + 2)},
+						new float[]{vertexBuffer.get(v3), vertexBuffer.get(v3 + 1), vertexBuffer.get(v3 + 2)});
 				normalsLines.put(normalLine[0]).put(normalLine[1]);
 			}
 		} else {
@@ -748,9 +801,9 @@ public final class Object3DBuilder {
 			vertexBuffer.position(0);
 			for (int i = 0; i < vertexBuffer.capacity() / /* COORDS_PER_VERTEX */ 3 / /* VERTEX_PER_FACE */3; i++) {
 				float[][] normalLine = Math3DUtils.calculateFaceNormal(
-						new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() },
-						new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() },
-						new float[] { vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get() });
+						new float[]{vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get()},
+						new float[]{vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get()},
+						new float[]{vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get()});
 				normalsLines.put(normalLine[0]).put(normalLine[1]);
 
 				// debug
@@ -768,16 +821,14 @@ public final class Object3DBuilder {
 
 	private static ByteBuffer createNativeByteBuffer(int length) {
 		// initialize vertex byte buffer for shape coordinates
-		ByteBuffer bb = ByteBuffer.allocateDirect(
-				// (number of coordinate values * 2 bytes per short)
-				length);
+		ByteBuffer bb = ByteBuffer.allocateDirect(length);
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());
 		return bb;
 	}
 
 	public static void loadV5Async(Activity parent, File file, String assetsDir, String assetName,
-			final Callback callback) {
+								   final Callback callback) {
 		Log.i("Loader", "Opening " + (file != null ? " file " + file : "asset " + assetsDir + assetName) + "...");
 		final InputStream modelDataStream;
 		final InputStream modelDataStream2;
@@ -823,9 +874,8 @@ public final class Object3DBuilder {
 
 /**
  * This component allows loading the model without blocking the UI.
- * 
- * @author andresoviedo
  *
+ * @author andresoviedo
  */
 class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 
@@ -856,12 +906,9 @@ class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 
 	/**
 	 * Build a new progress dialog for loading the data model asynchronously
-	 * 
-	 * @param currentDir
-	 *            the directory where the model is located (null when the model is an asset)
-	 * @param modelId
-	 *            the id the data being loaded
-	 * 
+	 *
+	 * @param currentDir the directory where the model is located (null when the model is an asset)
+	 * @param modelId    the id the data being loaded
 	 */
 	public LoaderTask(Activity parent, File currentDir, String assetsDir, String modelId) {
 		this.parent = parent;
@@ -915,15 +962,15 @@ class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 			case 0:
 				this.dialog.setMessage("Analyzing model...");
 				break;
-		case 1:
-			this.dialog.setMessage("Loading data...");
-			break;
-		case 2:
-			this.dialog.setMessage("Building 3D model...");
-			break;
-		case 3:
-			this.dialog.setMessage("Model '" + modelId + "' built");
-			break;
+			case 1:
+				this.dialog.setMessage("Loading data...");
+				break;
+			case 2:
+				this.dialog.setMessage("Building 3D model...");
+				break;
+			case 3:
+				this.dialog.setMessage("Model '" + modelId + "' built");
+				break;
 		}
 	}
 
@@ -945,7 +992,7 @@ class BoundingBox {
 	public FloatBuffer vertices;
 	public FloatBuffer vertexArray;
 	public FloatBuffer colors;
-	public ShortBuffer drawOrder;
+	public IntBuffer drawOrder;
 
 	public float xMin = Float.MAX_VALUE;
 	public float xMax = Float.MIN_VALUE;
@@ -960,11 +1007,9 @@ class BoundingBox {
 
 	/**
 	 * Build a bounding box for the specified 3D object vertex buffer.
-	 * 
-	 * @param vertexBuffer
-	 *            the 3D object vertex buffer
-	 * @param color
-	 *            the color of the bounding box
+	 *
+	 * @param vertexBuffer the 3D object vertex buffer
+	 * @param color        the color of the bounding box
 	 */
 	public BoundingBox(FloatBuffer vertexBuffer, float[] color) {
 		// initialize vertex byte buffer for shape coordinates
@@ -976,11 +1021,11 @@ class BoundingBox {
 		vertices = bb.asFloatBuffer();
 
 		ByteBuffer bb2 = ByteBuffer.allocateDirect(
-				// (number of coordinate values * 2 bytes per short)
-				(6 * 4) * 2);
+				// (number of coordinate values * 4 bytes per int)
+				(6 * 4) * 4);
 		// use the device hardware's native byte order
 		bb2.order(ByteOrder.nativeOrder());
-		drawOrder = bb2.asShortBuffer();
+		drawOrder = bb2.asIntBuffer();
 
 		// vertex colors
 		ByteBuffer bb3 = ByteBuffer.allocateDirect(24 * COORDS_PER_COLOR * 4);
@@ -997,45 +1042,45 @@ class BoundingBox {
 		}
 
 		// back-face
-		drawOrder.put((short) 0);
-		drawOrder.put((short) 1);
-		drawOrder.put((short) 2);
-		drawOrder.put((short) 3);
+		drawOrder.put( 0);
+		drawOrder.put( 1);
+		drawOrder.put( 2);
+		drawOrder.put( 3);
 
 		// front-face
-		drawOrder.put((short) 4);
-		drawOrder.put((short) 5);
-		drawOrder.put((short) 6);
-		drawOrder.put((short) 7);
+		drawOrder.put( 4);
+		drawOrder.put( 5);
+		drawOrder.put( 6);
+		drawOrder.put( 7);
 
 		// left-face
-		drawOrder.put((short) 4);
-		drawOrder.put((short) 5);
-		drawOrder.put((short) 1);
-		drawOrder.put((short) 0);
+		drawOrder.put( 4);
+		drawOrder.put( 5);
+		drawOrder.put( 1);
+		drawOrder.put( 0);
 
 		// right-face
-		drawOrder.put((short) 3);
-		drawOrder.put((short) 2);
-		drawOrder.put((short) 6);
-		drawOrder.put((short) 7);
+		drawOrder.put( 3);
+		drawOrder.put( 2);
+		drawOrder.put( 6);
+		drawOrder.put( 7);
 
 		// top-face
-		drawOrder.put((short) 1);
-		drawOrder.put((short) 2);
-		drawOrder.put((short) 6);
-		drawOrder.put((short) 5);
+		drawOrder.put( 1);
+		drawOrder.put( 2);
+		drawOrder.put( 6);
+		drawOrder.put( 5);
 
 		// bottom-face
-		drawOrder.put((short) 0);
-		drawOrder.put((short) 3);
-		drawOrder.put((short) 7);
-		drawOrder.put((short) 4);
+		drawOrder.put( 0);
+		drawOrder.put( 3);
+		drawOrder.put( 7);
+		drawOrder.put( 4);
 
 		recalculate(vertexBuffer);
 	}
 
-	public ShortBuffer getDrawOrder() {
+	public IntBuffer getDrawOrder() {
 		return drawOrder;
 	}
 
@@ -1055,7 +1100,7 @@ class BoundingBox {
 		List<int[]> ret = new ArrayList<int[]>();
 		int drawOrderPos = 0;
 		for (int i = 0; i < drawOrder.capacity(); i += 4) {
-			ret.add(new int[] { GLES20.GL_LINE_LOOP, drawOrderPos, 4 });
+			ret.add(new int[]{GLES20.GL_LINE_LOOP, drawOrderPos, 4});
 			drawOrderPos += 4;
 		}
 		return ret;
@@ -1081,7 +1126,7 @@ class BoundingBox {
 
 	/**
 	 * This works only when COORDS_PER_VERTEX = 3
-	 * 
+	 *
 	 * @param vertexBuffer
 	 */
 	private void calculateMins(FloatBuffer vertexBuffer) {
@@ -1126,8 +1171,8 @@ class BoundingBox {
 	}
 
 	private void calculateOther(FloatBuffer vertexBuffer) {
-		center = new float[] { (xMax + xMin) / 2, (yMax + yMin) / 2, (zMax + zMin) / 2 };
-		sizes = new float[] { xMax - xMin, yMax - yMin, zMax - zMin };
+		center = new float[]{(xMax + xMin) / 2, (yMax + yMin) / 2, (zMax + zMin) / 2};
+		sizes = new float[]{xMax - xMin, yMax - yMin, zMax - zMin};
 
 		vertexBuffer.position(0);
 
@@ -1215,9 +1260,7 @@ class BoundingBox {
 
 	private static ByteBuffer createNativeByteBuffer(int length) {
 		// initialize vertex byte buffer for shape coordinates
-		ByteBuffer bb = ByteBuffer.allocateDirect(
-				// (number of coordinate values * 2 bytes per short)
-				length);
+		ByteBuffer bb = ByteBuffer.allocateDirect(length);
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());
 		return bb;

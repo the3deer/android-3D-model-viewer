@@ -37,6 +37,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	private Camera camera;
 
 	private Object3DBuilder drawer;
+	// The wireframe associated shape (it should be made of lines only)
+	private Map<Object3DData, Object3DData> wireframes = new HashMap<Object3DData, Object3DData>();
 	// The loaded textures
 	private Map<byte[], Integer> textures = new HashMap<byte[], Integer>();
 	// The corresponding opengl bounding boxes and drawer
@@ -190,9 +192,23 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				if (scene.isDrawWireframe() && objData.getDrawMode() != GLES20.GL_POINTS
 						&& objData.getDrawMode() != GLES20.GL_LINES && objData.getDrawMode() != GLES20.GL_LINE_STRIP
 						&& objData.getDrawMode() != GLES20.GL_LINE_LOOP) {
-					// Only draw wireframes for objects having faces (triangles)
-					drawerObject.draw(objData, modelProjectionMatrix, modelViewMatrix, GLES20.GL_LINE_LOOP, 3,
-							textureId != null ? textureId : -1, lightPosInEyeSpace);
+					Log.d("ModelRenderer","Drawing wireframe model...");
+					try{
+						// Only draw wireframes for objects having faces (triangles)
+						Object3DData wireframe = wireframes.get(objData);
+						if (wireframe == null || changed) {
+							Log.i("ModelRenderer","Generating wireframe model...");
+//							wireframe = Object3DBuilder.buildWireframe4(objData);
+//							wireframe.centerAndScale(5.0f);
+							wireframe = Object3DBuilder.buildWireframe(objData);
+							wireframes.put(objData, wireframe);
+						}
+						Object3D wireframeDrawer = drawer.getWireframeDrawer();
+						wireframeDrawer.draw(wireframe, modelProjectionMatrix, modelViewMatrix, wireframe.getDrawMode(), wireframe.getDrawSize(),
+								textureId != null ? textureId : -1, lightPosInEyeSpace);
+					}catch(Error e){
+						Log.e("ModelRenderer",e.getMessage(),e);
+					}
 				} else {
 
 					drawerObject.draw(objData, modelProjectionMatrix, modelViewMatrix,

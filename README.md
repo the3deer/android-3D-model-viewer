@@ -3,19 +3,20 @@ Android 3D Model Viewer
 
 ![codeship badge](https://codeship.com/projects/52cf9560-deb2-0134-4203-2aaddef843aa/status?branch=master)
 
-
 This is a demo of OpenGL ES 2.0.
-
-It is basically an android application with a 3D renderer (OpenGL ES 2.0) that can load 3D models.
-
-The purpose of this application is to learn and share how to draw using OpenGL language
+It is basically an android application with a 3D renderer that can load Wavefront Obj files.
+The purpose of this application is to learn and share how to draw using OpenGL language.
 
 
-News (01/04/2017)
+https://en.wikipedia.org/wiki/Wavefront_.obj_file
+
+
+News (02/04/2017)
 =================
 
+* Fixed #12: Wireframe performance
 * Fixed #11: Normals generation
-* Fixed #10: Texture issue
+* Fixed #10: Fixed texture issue
 * Fixed #1: Cpu Performance problems
 * Fixed #5: Memory Performance problems
 
@@ -36,12 +37,11 @@ Load 3D models and see how to do it with this open source code application.
 
 The main purpose of this app is to show how to draw in android using the OpenGL 2.0 by sharing the source code.
 So please, don't expect this application to be much richer or nicer than the ones already published in the app store,
-but at least it's unique in the sense it's opened to anyone who wants to contribute or don't want to start a similar
-project from scratch.
+but at least it's opened to anyone who wants to contribute or don't want to start a similar project from scratch.
 
 As this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs;
 but I will try to continue improving the app and adding more features. So please send me your comments, suggestions or
-complains to andresoviedo@gmail.com.
+complains by opening an [issue](https://github.com/andresoviedo/android-3D-model-viewer/issues) or email me to andresoviedo@gmail.com.
 
 The app comes with some included 3D models that were taken for free from Internet (http://www.turbosquid.com).
 
@@ -49,21 +49,19 @@ The app comes with some included 3D models that were taken for free from Interne
 Whats next
 ==========
 
-* Choose different texture
+* Stabilize app performance
+* Load multiple textures #3
+* Refactoring
+* Render model in Chromecast :)
+* Update the app in the market
 * Many more...
-
-
-Future
-======
-
-* Integrate app with assimp library to load more file formats (http://www.assimp.org/)
 
 
 Features
 ========
 
   - OpenGL ES 2.0 API
-  - obj format supported (wavefront)
+  - OBJ format supported (wavefront)
   - textures
   - colors
   - lighting
@@ -74,7 +72,7 @@ Features
   - touch support!
     - tap to select object
     - drag to move camera
-    - rotate to rotate camera
+    - rotate with 2 fingers to rotate camera
     - pinch & spread to zoom in/out the camera
   - moving of objects (not yet!)
   - primitive collision detection (not yet!)
@@ -84,11 +82,19 @@ Features
 Try it
 ======
 
-  1. Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
-  1. APK: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
-  1. Gradle: clone the repository, compile with gradle and install with adb
-  2. Open the application. You should see a menu. From there you can load some demos or load your own model
-  3. Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective.
+  * Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
+  * APK: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
+  * Source code: clone the repository, compile with gradle and install with adb
+
+
+    export ANDROID_HOME=/home/$USER/Android/Sdk
+    ./gradlew assembleDebug
+    adb install -r app/build/outputs/apk/app-debug.apk
+    adb shell am start -n org.andresoviedo.dddmodel/org.andresoviedo.app.model3D.MainActivity
+
+
+Open the application. You should see a menu. From there you can load some demos or load your own model
+Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective.
 
 
 Screenshot
@@ -103,24 +109,6 @@ Screenshot
 ![Screenshot7](screenshots/screenshot7.png)
 
 
-Tests
-=====
-
-  - Tested on Alcatel Flash Plus 2 (android 6)
-  - Tested on Nexus 7 3G 2012 (android 4.4.2)
-  - Tested on BQ Aquaris 5 (android 4.2.1)
-  - Tested on Samsung GT-S5280 (android 4.1.2)
-
-
-Build
-=====
-
-    export ANDROID_HOME=/home/$USER/Android/Sdk
-    ./gradlew assembleDebug
-    adb install -r app/build/outputs/apk/app-debug.apk
-    adb shell am start -n org.andresoviedo.dddmodel/org.andresoviedo.app.model3D.MainActivity
-
-
 Final Notes
 ===========
 
@@ -128,11 +116,20 @@ You are free to use this program while you keep this file and the authoring comm
 Any comments and suggestions are welcome.
 
 
+Contact
+=======
+
+http://www.andresoviedo.org
+
+
 ChangeLog
 =========
 
 (f) fixed, (i) improved, (n) new feature
 
+
+- 1.2.6 (02/04/2017)
+  - (f) Fixed #12. Drawing the wireframe using GL_LINES and the index buffer (drawElements)
 
 - 1.2.5 (01/04/2017)
   - (f) Fixed #10. Map faces to texture only when using the only loaded texture

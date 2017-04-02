@@ -220,9 +220,7 @@ public class WavefrontLoader {
 
 	private static ByteBuffer createNativeByteBuffer(int length) {
 		// initialize vertex byte buffer for shape coordinates
-		ByteBuffer bb = ByteBuffer.allocateDirect(
-				// (number of coordinate values * 2 bytes per short)
-				length);
+		ByteBuffer bb = ByteBuffer.allocateDirect(length);
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());
 		return bb;
