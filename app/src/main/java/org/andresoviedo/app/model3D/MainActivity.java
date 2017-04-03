@@ -5,7 +5,7 @@ import java.io.File;
 import org.andresoviedo.app.model3D.view.MenuActivity;
 import org.andresoviedo.app.model3D.view.ModelActivity;
 import org.andresoviedo.app.util.Utils;
-import org.andresoviedo.dddmodel.R;
+import org.andresoviedo.dddmodel2.R;
 
 import android.app.Activity;
 import android.content.Intent;

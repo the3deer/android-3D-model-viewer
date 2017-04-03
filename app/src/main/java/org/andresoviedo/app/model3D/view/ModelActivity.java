@@ -5,7 +5,7 @@ import java.io.File;
 import org.andresoviedo.app.model3D.services.ExampleSceneLoader;
 import org.andresoviedo.app.model3D.services.SceneLoader;
 import org.andresoviedo.app.util.Utils;
-import org.andresoviedo.dddmodel.R;
+import org.andresoviedo.dddmodel2.R;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

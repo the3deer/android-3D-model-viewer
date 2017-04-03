@@ -1,6 +1,6 @@
 package org.andresoviedo.app.util.view;
 
-import org.andresoviedo.dddmodel.R;
+import org.andresoviedo.dddmodel2.R;
 
 import android.app.Activity;
 import android.os.Bundle;

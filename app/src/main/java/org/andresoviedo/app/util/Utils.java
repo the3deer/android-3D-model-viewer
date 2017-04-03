@@ -1,5 +1,13 @@
 package org.andresoviedo.app.util;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.util.Log;
+
+import org.apache.commons.io.IOUtils;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -7,15 +15,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
-
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.util.Log;
 
 /**
  * General purpose android utilities
@@ -35,7 +34,7 @@ public final class Utils {
 		try {
 			AssetManager assets = context.getAssets();
 			String[] files = assets.list(sourceDirectory);
-			if (ArrayUtils.isEmpty(files)) {
+			if (files == null || files.length == 0) {
 				throw new IllegalStateException("No se han encontrado los ficheros fuente de instalación");
 			}
 			if (!targetDir.exists()) {

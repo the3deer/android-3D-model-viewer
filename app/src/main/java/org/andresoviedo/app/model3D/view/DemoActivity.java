@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andresoviedo.dddmodel.R;
+import org.andresoviedo.dddmodel2.R;
 
 import android.app.Activity;
 import android.app.Dialog;

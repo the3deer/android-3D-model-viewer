@@ -5,7 +5,7 @@ import java.util.Locale;
 import org.andresoviedo.app.util.Utils;
 import org.andresoviedo.app.util.content.ContentUtils;
 import org.andresoviedo.app.util.view.TextActivity;
-import org.andresoviedo.dddmodel.R;
+import org.andresoviedo.dddmodel2.R;
 
 import android.app.ListActivity;
 import android.content.ActivityNotFoundException;

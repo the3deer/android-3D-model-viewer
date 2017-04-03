@@ -24,10 +24,7 @@ News (02/04/2017)
 Android Market
 ==============
 
-* /¡\ The app in the market is not up-to-date: I lost the keystore to sign the updates :(
-* /¡\ Latest version: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
-
-https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
+https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2
 
 
 About
@@ -83,7 +80,7 @@ Try it
 ======
 
   * Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
-  * APK: [app-debug.apk](app/build/outputs/apk/app-debug.apk)
+  * APK: [app-release.apk](app/build/outputs/apk/app-release.apk)
   * Source code: clone the repository, compile with gradle and install with adb
 
 ```
@@ -127,6 +124,9 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+
+- 1.2.7 (03/04/2017)
+  - (i) Removed commons-lang3 dependency
 
 - 1.2.6 (02/04/2017)
   - (f) Fixed #12. Drawing the wireframe using GL_LINES and the index buffer (drawElements)
