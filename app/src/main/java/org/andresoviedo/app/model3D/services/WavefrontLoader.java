@@ -174,7 +174,7 @@ public class WavefrontLoader {
 		} catch (IOException e) {
 			Log.e("WavefrontLoader","Problem reading line '"+(++lineNum)+"'");
 			Log.e("WavefrontLoader",e.getMessage(),e);
-			System.exit(1);
+			throw new RuntimeException(e);
 		} finally{
 			if (br != null){
 				try {
@@ -241,23 +241,23 @@ public class WavefrontLoader {
 		faces = new Faces(buffer, vertsBuffer, normalsBuffer, texCoords);
 
 		try {
-			while (((line = br.readLine()) != null) && isLoaded) {
+			while (((line = br.readLine()) != null)) {
 				lineNum++;
 				line = line.trim();
 				if (line.length() > 0) {
 
 					if (line.startsWith("v ")) { // vertex
-						isLoaded = addVert(vertsBuffer, line, isFirstCoord, modelDims);
+						isLoaded = addVert(vertsBuffer, line, isFirstCoord, modelDims) && isLoaded;
 						if (isFirstCoord)
 							isFirstCoord = false;
 					} else if (line.startsWith("vt")) { // tex coord
-						isLoaded = addTexCoord(line, isFirstTC);
+						isLoaded = addTexCoord(line, isFirstTC) && isLoaded;
 						if (isFirstTC)
 							isFirstTC = false;
 					} else if (line.startsWith("vn")) // normal
-						isLoaded = addVert(normalsBuffer, line, isFirstCoord, null);
+						isLoaded = addVert(normalsBuffer, line, isFirstCoord, null) && isLoaded;
 					else if (line.startsWith("f ")) { // face
-						isLoaded = faces.addFace(line);
+						isLoaded = faces.addFace(line) && isLoaded;
 						numFaces++;
 					} else if (line.startsWith("mtllib ")) // load material
 					{
@@ -280,12 +280,12 @@ public class WavefrontLoader {
 			}
 		} catch (IOException e) {
 			Log.e("WavefrontLoader",e.getMessage(),e);
-			System.exit(1);
+			throw new RuntimeException(e);
 		}
 
 		if (!isLoaded) {
 			Log.e("WavefrontLoader","Error loading model");
-			System.exit(1);
+			// throw new RuntimeException("Error loading model");
 		}
 	} // end of readModel()
 
@@ -294,12 +294,18 @@ public class WavefrontLoader {
 	 * Add vertex from line "v x y z" to vert ArrayList, and update the model dimension's info.
 	 */
 	{
+		float x=0,y=0,z=0;
 		try{
-			String[] tokens = line.split(" ");
-			float x = Float.parseFloat(tokens[1]);
-			float y = Float.parseFloat(tokens[2]);
-			float z = Float.parseFloat(tokens[3]);
-			buffer.put(x).put(y).put(z);
+			String[] tokens = null;
+			if (line.contains("  ")){
+				tokens = line.split(" +");
+			}
+			else{
+				tokens = line.split(" ");
+			}
+			x = Float.parseFloat(tokens[1]);
+			y = Float.parseFloat(tokens[2]);
+			z = Float.parseFloat(tokens[3]);
 
 			if (dimensions != null) {
 				if (isFirstCoord)
@@ -311,34 +317,14 @@ public class WavefrontLoader {
 			return true;
 
 		}catch(NumberFormatException ex){
-			Log.e("WavefrontLoader",ex.getMessage(),ex);
+			Log.e("WavefrontLoader",ex.getMessage());
+		} finally{
+			// try to load even with errors
+			buffer.put(x).put(y).put(z);
 		}
 
 		return false;
 	} // end of addVert()
-
-	private Tuple3 readTuple3(String line)
-	/*
-	 * The line starts with an OBJ word ("v" or "vn"), followed by three floats (x, y, z) separated by spaces
-	 */
-	{
-		String[] tokens = line.split(" ");
-
-
-		try {
-
-			float x = Float.parseFloat(tokens[1]);
-			float y = Float.parseFloat(tokens[2]);
-			float z = Float.parseFloat(tokens[3]);
-
-			// System.out.println("Read tuple " + x + ", " + y + ", " + z);
-			return new Tuple3(x, y, z);
-		} catch (NumberFormatException e) {
-			Log.e("WavefrontLoader",e.getMessage(),e);
-		}
-
-		return null; // means an error occurred
-	} // end of readTuple3()
 
 	private boolean addTexCoord(String line, boolean isFirstTC)
 	/*

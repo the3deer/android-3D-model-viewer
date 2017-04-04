@@ -11,9 +11,10 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 https://en.wikipedia.org/wiki/Wavefront_.obj_file
 
 
-News (02/04/2017)
+News (04/04/2017)
 =================
 
+* Fixed #13: Fixed parsing of vertices
 * Fixed #12: Wireframe performance
 * Fixed #11: Normals generation
 * Fixed #10: Fixed texture issue
@@ -79,7 +80,7 @@ Features
 Try it
 ======
 
-  * Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel
+  * Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2
   * APK: [app-release.apk](app/build/outputs/apk/app-release.apk)
   * Source code: clone the repository, compile with gradle and install with adb
 
@@ -87,7 +88,7 @@ Try it
     export ANDROID_HOME=/home/$USER/Android/Sdk
     ./gradlew assembleDebug
     adb install -r app/build/outputs/apk/app-debug.apk
-    adb shell am start -n org.andresoviedo.dddmodel/org.andresoviedo.app.model3D.MainActivity
+    adb shell am start -n org.andresoviedo.dddmodel2/org.andresoviedo.app.model3D.MainActivity
 ```
 
 * Open the application. You should see a menu. From there you can load some demos or load your own model
@@ -124,6 +125,11 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+
+- 1.2.8 (04/04/2017)
+  - (f) Fixed #13: parsing of vertices with multiple spaces
+  - (i) Improved error handling on loading task
+  - (i) Vertices are defaulted to (0,0,0) if parsing fails
 
 - 1.2.7 (03/04/2017)
   - (i) Removed commons-lang3 dependency

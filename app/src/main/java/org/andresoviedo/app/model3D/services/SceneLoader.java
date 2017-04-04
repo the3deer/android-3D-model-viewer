@@ -11,6 +11,7 @@ import org.andresoviedo.app.model3D.view.ModelActivity;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.SystemClock;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -82,6 +83,7 @@ public class SceneLoader {
 
 						@Override
 						public void onLoadError(Exception ex) {
+							Log.e("SceneLoader",ex.getMessage(),ex);
 							Toast.makeText(parent.getApplicationContext(),
 									"There was a problem building the model: " + ex.getMessage(), Toast.LENGTH_LONG)
 									.show();

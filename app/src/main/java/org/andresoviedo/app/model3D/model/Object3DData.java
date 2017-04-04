@@ -407,6 +407,9 @@ public class Object3DData {
 			else if (vertexBuffer.get(i + 2) < farPt)
 				farPt = vertexBuffer.get(i + 2);
 		} // end
+		Log.i("Object3DData", "Dimensions for '" + getId() + " (X left, X right): ("+leftPt+","+rightPt+")");
+		Log.i("Object3DData", "Dimensions for '" + getId() + " (Y top, Y bottom): ("+topPt+","+bottomPt+")");
+		Log.i("Object3DData", "Dimensions for '" + getId() + " (Z near, Z far): ("+nearPt+","+farPt+")");
 
 		// calculate center of 3D object
 		float xc = (rightPt + leftPt) / 2.0f;
@@ -421,6 +424,7 @@ public class Object3DData {
 			largest = height;
 		if (depth > largest)
 			largest = depth;
+		Log.i("Object3DData", "Largest dimension ["+largest+"]");
 
 		// scale object
 
@@ -430,7 +434,7 @@ public class Object3DData {
 		if (largest != 0.0f)
 			scaleFactor = (maxSize / largest);
 		Log.i("Object3DData",
-				"Centering & scaling '" + getId() + "' to '" + xc + "," + yc + "," + zc + "' '" + scaleFactor + "'");
+				"Centering & scaling '" + getId() + "' to (" + xc + "," + yc + "," + zc + ") scale: '" + scaleFactor + "'");
 
 		// modify the model's vertices
 		for (int i = 0; i < vertexBuffer.capacity(); i += 3) {

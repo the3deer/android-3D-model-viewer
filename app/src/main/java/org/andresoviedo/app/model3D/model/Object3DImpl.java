@@ -336,7 +336,7 @@ public abstract class Object3DImpl implements Object3D {
 					int drawCount = vertexBuffer.capacity() / COORDS_PER_VERTEX;
 					
 					// if we want to animate, initialize counter=0 at variable declaration
-					Log.d(obj.getId(),"Drawing all triangles using arrays...");
+					// Log.d(obj.getId(),"Drawing all triangles using arrays...");
 					if (this.counter >= 0) {
 						counter += 100;
 						counter = counter % Integer.MAX_VALUE;

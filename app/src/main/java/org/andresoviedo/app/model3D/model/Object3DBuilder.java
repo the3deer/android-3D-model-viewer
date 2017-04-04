@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -483,10 +484,11 @@ public final class Object3DBuilder {
 
 		FloatBuffer vertexNormalsBuffer = obj.getNormals();
 
-		FloatBuffer vertexNormalsArrayBuffer = createNativeByteBuffer(3 * faces.getVerticesReferencesCount() * 4)
+		FloatBuffer vertexNormalsArrayBuffer = createNativeByteBuffer(faces.getIndexBuffer().capacity() / 3 * 9 * 4)
 				.asFloatBuffer();
 
 		// load file normals
+
 		if (vertexNormalsBuffer.capacity() > 0) {
 			Log.i("Object3DBuilder", "Generating normals array...");
 			for (int[] normal : faces.facesNormIdxs) {
@@ -498,30 +500,34 @@ public final class Object3DBuilder {
 			}
 		} else {
 			// calculate normals for all triangles
-			Log.i("Object3DBuilder", "Model without normals. Calculating normals...");
+			Log.i("Object3DBuilder", "Model without normals. Calculating [" + faces.getIndexBuffer().capacity() / 3 + "] normals...");
 
 			final float[] v0 = new float[3], v1 = new float[3], v2 = new float[3];
 			for (int i = 0; i < faces.getIndexBuffer().capacity(); i += 3) {
+				try {
+					v0[0] = vertexBuffer.get(faces.getIndexBuffer().get(i) * 3);
+					v0[1] = vertexBuffer.get(faces.getIndexBuffer().get(i) * 3 + 1);
+					v0[2] = vertexBuffer.get(faces.getIndexBuffer().get(i) * 3 + 2);
 
-				v0[0] = vertexBuffer.get(faces.getIndexBuffer().get(i) * 3);
-				v0[1] = vertexBuffer.get(faces.getIndexBuffer().get(i) * 3 + 1);
-				v0[2] = vertexBuffer.get(faces.getIndexBuffer().get(i) * 3 + 2);
+					v1[0] = vertexBuffer.get(faces.getIndexBuffer().get(i + 1) * 3);
+					v1[1] = vertexBuffer.get(faces.getIndexBuffer().get(i + 1) * 3 + 1);
+					v1[2] = vertexBuffer.get(faces.getIndexBuffer().get(i + 1) * 3 + 2);
 
-				v1[0] = vertexBuffer.get(faces.getIndexBuffer().get(i + 1) * 3);
-				v1[1] = vertexBuffer.get(faces.getIndexBuffer().get(i + 1) * 3 + 1);
-				v1[2] = vertexBuffer.get(faces.getIndexBuffer().get(i + 1) * 3 + 2);
+					v2[0] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3);
+					v2[1] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3 + 1);
+					v2[2] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3 + 2);
 
-				v2[0] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3);
-				v2[1] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3 + 1);
-				v2[2] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3 + 2);
+					float[] normal = Math3DUtils.calculateFaceNormal2(v0, v1, v2);
 
-				float[] normal = Math3DUtils.calculateFaceNormal2(v0, v1, v2);
-
-				vertexNormalsArrayBuffer.put(normal);
-				vertexNormalsArrayBuffer.put(normal);
-				vertexNormalsArrayBuffer.put(normal);
+					vertexNormalsArrayBuffer.put(normal);
+					vertexNormalsArrayBuffer.put(normal);
+					vertexNormalsArrayBuffer.put(normal);
+				} catch (BufferOverflowException ex) {
+					throw new RuntimeException("Error calculating mormal for face ["+i/3+"]");
+				}
 			}
 		}
+
 
 		FloatBuffer colorArrayBuffer = null;
 		float[] currentColor = DEFAULT_COLOR;
@@ -949,7 +955,7 @@ class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 			Object3DBuilder.generateArrays(parent.getAssets(), data3D);
 			publishProgress(3);
 			return data3D;
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			error = ex;
 			return null;
 		}
