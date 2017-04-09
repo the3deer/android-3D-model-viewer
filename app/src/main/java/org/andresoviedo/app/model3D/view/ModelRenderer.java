@@ -35,6 +35,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	private int height;
 	// Out point of view handler
 	private Camera camera;
+	// frustrum - nearest pixel
+	private float near = 1f;
+	// frustrum - fartest pixel
+	private float far = 10f;
 
 	private Object3DBuilder drawer;
 	// The wireframe associated shape (it should be made of lines only)
@@ -69,6 +73,14 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	 */
 	public ModelRenderer(ModelSurfaceView modelSurfaceView) {
 		this.main = modelSurfaceView;
+	}
+
+	public float getNear() {
+		return near;
+	}
+
+	public float getFar() {
+		return far;
 	}
 
 	@Override
@@ -110,7 +122,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 		// the projection matrix is the 3D virtual space (cube) that we want to project
 		float ratio = (float) width / height;
 		Log.d(TAG, "projection: [" + -ratio + "," + ratio + ",-1,1]-near/far[1,10]");
-		Matrix.frustumM(modelProjectionMatrix, 0, -ratio, ratio, -1, 1, 1f, 10f);
+		Matrix.frustumM(modelProjectionMatrix, 0, -ratio, ratio, -1, 1, getNear(), getFar());
 
 		// Calculate the projection and view transformation
 		Matrix.multiplyMM(mvpMatrix, 0, modelProjectionMatrix, 0, modelViewMatrix, 0);
@@ -136,6 +148,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 			// scene not ready
 			return;
 		}
+
+
+		// camera should know about objects that collision with it
+		camera.setScene(scene);
 
 
 		if (scene.isDrawLighting()) {

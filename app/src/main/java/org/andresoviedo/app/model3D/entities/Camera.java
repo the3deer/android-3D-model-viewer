@@ -5,6 +5,12 @@ package org.andresoviedo.app.model3D.entities;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import org.andresoviedo.app.model3D.model.Object3DData;
+import org.andresoviedo.app.model3D.services.SceneLoader;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /*
  Class Name:
 
@@ -34,10 +40,16 @@ public class Camera {
 	public float zPos;
 	public float xView, yView, zView; // Look at position.
 	public float xUp, yUp, zUp; // Up direction.
+
+	private SceneLoader scene;
+	private final BoundingBox boundingBox = new BoundingBox("scene",-9,9,-9,9,-9,9);
+
 	float xStrafe = 0, yStrafe = 0, zStrafe = 0; // Strafe direction.
 	float currentRotationAngle; // Keeps us from going too far up or down.
 
+	float[] matrix = new float[16];
 	float[] buffer = new float[12 + 12 + 16 + 16];
+	float[] buffer4x3 = new float[12];
 	private boolean changed = false;
 
 	public Camera() {
@@ -60,6 +72,10 @@ public class Camera {
 		this.xUp = xUp;
 		this.yUp = yUp;
 		this.zUp = zUp;
+	}
+
+	public void setScene(SceneLoader scene) {
+		this.scene = scene;
 	}
 
 	private void normalize() {
@@ -147,16 +163,14 @@ public class Camera {
 		// yView += yDir * dir;
 		// zView += zDir * dir;
 
-		float[] matrix = new float[16];
 		Matrix.setIdentityM(matrix, 0);
-		Matrix.translateM(matrix, 0, -xPos, -yPos, -zPos);
 		Matrix.translateM(matrix, 0, xDir * dir, yDir * dir, zDir * dir);
-		Matrix.translateM(matrix, 0, xPos, yPos, zPos);
 
-		float[] buffer = new float[12];
 		Matrix.multiplyMV(buffer, 0, matrix, 0, getLocationVector(), 0);
 		Matrix.multiplyMV(buffer, 4, matrix, 0, getLocationViewVector(), 0);
 		Matrix.multiplyMV(buffer, 8, matrix, 0, getLocationUpVector(), 0);
+
+		if (isOutOfBounds(buffer)) return;
 
 		xPos = buffer[0] / buffer[3];
 		yPos = buffer[1] / buffer[3];
@@ -169,6 +183,26 @@ public class Camera {
 		zUp = buffer[10] / buffer[11];
 
 		setChanged(true);
+	}
+
+	private boolean isOutOfBounds(float[] buffer) {
+		if (boundingBox.outOfBound(buffer[0] / buffer[3],buffer[1] / buffer[3],buffer[2] / buffer[3])){
+			Log.d("Camera", "Out of bounds scene bounds");
+			return true;
+		}
+		List<Object3DData> objects = scene.getObjects();
+		for (int i = 0; objects != null && i < objects.size(); i++) {
+			BoundingBox boundingBox = objects.get(i).getBoundingBox();
+			// Log.d("Camera","BoundingBox? "+boundingBox);
+			if (boundingBox != null && boundingBox.insideBounds(
+					buffer[0] / buffer[3]
+					, buffer[1] / buffer[3]
+					, buffer[2] / buffer[3] )) {
+				Log.d("Camera", "Inside bounds of '" + objects.get(i).getId() + "'");
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void StrafeCam(float dX, float dY) {
@@ -355,15 +389,29 @@ public class Camera {
 		RotateCamera(yDirection, 0, 1, 0);
 	}
 
+	/**
+	 * Translation is the movement that makes the Earth around the Sun.
+	 * So in this context, translating the camera means moving the camera around the Zero (0,0,0)
+	 *
+	 * This implementation makes uses of 3D Vectors Algebra.
+	 *
+	 * The idea behind this implementation is to translate the 2D user vectors (the line in the
+	 * screen) with the 3D equivalents.
+	 *
+	 * In order to to that, we need to calculate the Right and Arriba vectors so we have a match
+	 * for user 2D vector.
+	 *
+	 * @param dX the X component of the user 2D vector, that is, a value between [-1,1]
+	 * @param dY the Y component of the user 2D vector, that is, a value between [-1,1]
+	 */
 	public void translateCamera(float dX, float dY) {
-		float xLook = 0, yLook = 0, zLook = 0;
-		float xArriba = 0, yArriba = 0, zArriba = 0;
 		float vlen;
 
 		// Translating the camera requires a directional vector to rotate
 		// First we need to get the direction at which we are looking.
 		// The look direction is the view minus the position (where we are).
 		// Get the Direction of the view.
+		float xLook = 0, yLook = 0, zLook = 0;
 		xLook = xView - xPos;
 		yLook = yView - yPos;
 		zLook = zView - zPos;
@@ -372,11 +420,9 @@ public class Camera {
 		yLook /= vlen;
 		zLook /= vlen;
 
-		// Next we get the axis which is a perpendicular vector of the view
-		// direction and up values.
-		// We use the cross product of that to get the axis then we normalize
-		// it.
-		float xRight = 0, yRight = 0, zRight = 0;
+		// Arriba is the 3D vector that is **almost** equivalent to the 2D user Y vector
+		// Get the direction of the up vector
+		float xArriba = 0, yArriba = 0, zArriba = 0;
 		xArriba = xUp - xPos;
 		yArriba = yUp - yPos;
 		zArriba = zUp - zPos;
@@ -386,8 +432,13 @@ public class Camera {
 		yArriba /= vlen;
 		zArriba /= vlen;
 
-		// Get the cross product of the direction and the up.
+		// Right is the 3D vector that is equivalent to the 2D user X vector
+		// In order to calculate the Right vector, we have to calculate the cross product of the
+		// previously calculated vectors...
+
+		// The cross product is defined like:
 		// A x B = (a1, a2, a3) x (b1, b2, b3) = (a2 * b3 - b2 * a3 , - a1 * b3 + b1 * a3 , a1 * b2 - b1 * a2)
+		float xRight = 0, yRight = 0, zRight = 0;
 		xRight = (yLook * zArriba) - (zLook * yArriba);
 		yRight = (zLook * xArriba) - (xLook * zArriba);
 		zRight = (xLook * yArriba) - (yLook * xArriba);
@@ -397,7 +448,8 @@ public class Camera {
 		yRight /= vlen;
 		zRight /= vlen;
 
-		// Once we have the look & right, we can recalculate where is the final up vector
+		// Once we have the Look & Right vector, we can recalculate where is the final Arriba vector,
+		// so its equivalent to the user 2D Y vector.
 		xArriba = (yRight * zLook) - (zRight * yLook);
 		yArriba = (zRight * xLook) - (xRight * zLook);
 		zArriba = (xRight * yLook) - (yRight * xLook);
@@ -409,23 +461,45 @@ public class Camera {
 
 		float[] coordinates = new float[] { xPos, yPos, zPos, 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
 
-		createRotationMatrixAroundVector(buffer, 24, dX, xArriba, yArriba, zArriba);
+		if (dX != 0 && dY != 0) {
+
+			// in this case the user is drawing a diagonal line:    \v     ^\    v/     /^
+			// so, we have to calculate the perpendicular vector of that diagonal
+
+			// The perpendicular vector is calculated by inverting the X/Y values
+			// We multiply the initial Right and Arriba vectors by the User's 2D vector
+			xRight *= dY;
+			yRight *= dY;
+			zRight *= dY;
+			xArriba *= dX;
+			yArriba *= dX;
+			zArriba *= dX;
+
+			// Then we add the 2 affected vectors to the the final rotation vector
+			float rotX, rotY, rotZ;
+			rotX = xRight + xArriba;
+			rotY = yRight + yArriba;
+			rotZ = zRight + zArriba;
+			vlen = Matrix.length(rotX, rotY, rotZ);
+			rotX /= vlen;
+			rotY /= vlen;
+			rotZ /= vlen;
+
+			// in this case we use the vlen angle because the diagonal is not perpendicular
+			// to the initial Right and Arriba vectors
+			createRotationMatrixAroundVector(buffer, 24, vlen, rotX, rotY, rotZ);
+		}
+		else if (dX != 0){
+			// in this case the user is drawing an horizontal line: <-- ó -->
+			createRotationMatrixAroundVector(buffer, 24, dX, xArriba, yArriba, zArriba);
+		}
+		else{
+			// in this case the user is drawing a vertical line: |^  v|
+			createRotationMatrixAroundVector(buffer, 24, dY, xRight, yRight, zRight);
+		}
 		multiplyMMV(buffer, 0, buffer, 24, coordinates, 0);
-		multiplyMMV(buffer, 12, buffer, 40, coordinates, 0);
 
-		xPos = buffer[0] / buffer[3];
-		yPos = buffer[1] / buffer[3];
-		zPos = buffer[2] / buffer[3];
-		xView = buffer[4 + 0] / buffer[4 + 3];
-		yView = buffer[4 + 1] / buffer[4 + 3];
-		zView = buffer[4 + 2] / buffer[4 + 3];
-		xUp = buffer[8 + 0] / buffer[8 + 3];
-		yUp = buffer[8 + 1] / buffer[8 + 3];
-		zUp = buffer[8 + 2] / buffer[8 + 3];
-
-		createRotationMatrixAroundVector(buffer, 40, dY, xRight, yRight, zRight);
-		coordinates = new float[] { xPos, yPos, zPos, 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
-		multiplyMMV(buffer, 0, buffer, 40, coordinates, 0);
+		if (isOutOfBounds(buffer)) return;
 
 		xPos = buffer[0] / buffer[3];
 		yPos = buffer[1] / buffer[3];
@@ -540,5 +614,6 @@ public class Camera {
 
 		setChanged(true);
 	}
+
 
 }

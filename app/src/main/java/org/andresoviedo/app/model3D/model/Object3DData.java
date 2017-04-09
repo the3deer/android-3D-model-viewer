@@ -11,6 +11,8 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andresoviedo.app.model3D.entities.*;
+import org.andresoviedo.app.model3D.entities.BoundingBox;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.FaceMaterials;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Faces;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Materials;
@@ -73,6 +75,9 @@ public class Object3DData {
 	private List<int[]> drawModeList = null;
 	private byte[] textureData = null;
 	private List<InputStream> textureStreams = null;
+
+	// derived data
+	private BoundingBox boundingBox;
 
 	// Transformation data
 	protected float[] position = new float[] { 0f, 0f, 0f };
@@ -577,4 +582,37 @@ public class Object3DData {
 		return bb;
 	}
 
+	public BoundingBox getBoundingBox() {
+		if (boundingBox == null && vertexBuffer != null) {
+			float xMin = Float.MAX_VALUE, xMax = Float.MIN_VALUE, yMin = Float.MAX_VALUE, yMax = Float.MIN_VALUE, zMin = Float.MAX_VALUE, zMax = Float.MIN_VALUE;
+			vertexBuffer.position(0);
+			while (vertexBuffer.hasRemaining()) {
+				float vertexx = vertexBuffer.get();
+				float vertexy = vertexBuffer.get();
+				float vertexz = vertexBuffer.get();
+				if (vertexx < xMin) {
+					xMin = vertexx;
+				}
+				if (vertexx > xMax) {
+					xMax = vertexx;
+				}
+				if (vertexy < yMin) {
+					yMin = vertexy;
+				}
+				if (vertexy > yMax) {
+					yMax = vertexy;
+				}
+				if (vertexz < zMin) {
+					zMin = vertexz;
+				}
+				if (vertexz > zMax) {
+					zMax = vertexz;
+				}
+			}
+			boundingBox = new BoundingBox(getId(), xMin+getPositionX(), xMax+getPositionX()
+					, yMin+getPositionY(), yMax+getPositionY()
+					, zMin+getPositionZ(), zMax+getPositionZ());
+		}
+		return boundingBox;
+	}
 }

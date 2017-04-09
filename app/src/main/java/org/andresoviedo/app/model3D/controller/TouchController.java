@@ -188,19 +188,21 @@ public class TouchController {
 			selectObjectImpl(hit1, hit2);
 		}
 
+
+		int max = Math.max(mRenderer.getWidth(), mRenderer.getHeight());
 		if (touchDelay > 1) {
 			// INFO: Procesar gesto
 			if (pointerCount == 1 && currentPress1 > 4.0f) {
 			} else if (pointerCount == 1) {
 				touchStatus = TOUCH_STATUS_MOVING_WORLD;
-				// Log.i("Touch", "Moving World '" + dx1 + "','" + dy1 + "'...");
-				mRenderer.getCamera().translateCamera(dx1 * 10 / mRenderer.getWidth(),
-						dy1 * 10 / mRenderer.getHeight());
+				// Log.d("TouchController", "Translating camera (dx,dy) '" + dx1 + "','" + dy1 + "'...");
+				dx1 = (float)(dx1 / max * Math.PI * 2);
+				dy1 = (float)(dy1 / max * Math.PI * 2);
+				mRenderer.getCamera().translateCamera(dx1,dy1);
 			} else if (pointerCount == 2) {
 				if (fingersAreClosing) {
 					touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
-					float zoomFactor = (length - previousLength) / ((mRenderer.getWidth() + mRenderer.getHeight()) / 2)
-							* 10;
+					float zoomFactor = (length - previousLength) / max * mRenderer.getFar();
 					Log.i("Camera", "Zooming '" + zoomFactor + "'...");
 					mRenderer.getCamera().MoveCameraZ(zoomFactor);
 				}

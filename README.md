@@ -11,9 +11,10 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 https://en.wikipedia.org/wiki/Wavefront_.obj_file
 
 
-News (04/04/2017)
+News (10/04/2017)
 =================
 
+* Camera movement improved
 * Fixed #13: Fixed parsing of vertices
 * Fixed #12: Wireframe performance
 * Fixed #11: Normals generation
@@ -125,6 +126,9 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+
+- 1.2.8 (10/04/2017)
+  - (f) Camera movement improved. Only 1 rotation vector is used + space bounds set
 
 - 1.2.8 (04/04/2017)
   - (f) Fixed #13: parsing of vertices with multiple spaces
