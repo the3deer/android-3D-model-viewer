@@ -14,7 +14,8 @@ https://en.wikipedia.org/wiki/Wavefront_.obj_file
 News (10/04/2017)
 =================
 
-* Camera movement improved
+* Fixed #15: Toggle rotating light + fixed wireframe colors
+* Fixed #14: Camera movement improved
 * Fixed #13: Fixed parsing of vertices
 * Fixed #12: Wireframe performance
 * Fixed #11: Normals generation
@@ -50,10 +51,10 @@ Whats next
 
 * Stabilize app performance
 * Load multiple textures #3
-* Refactoring
-* Render model in Chromecast :)
-* Update the app in the market
-* Many more...
+* Code refactoring
+* Carboard support
+* Chromecast support
+* ...
 
 
 Features
@@ -76,7 +77,6 @@ Features
   - moving of objects (not yet!)
   - primitive collision detection (not yet!)
   - animation of sprites (not yet!)
-
 
 Try it
 ======
@@ -127,8 +127,12 @@ ChangeLog
 (f) fixed, (i) improved, (n) new feature
 
 
+- 1.2.9 (11/04/2017)
+  - (f) #15: Toggle rotating light
+  - (f) #15: Wireframe with textures and colors
+
 - 1.2.8 (10/04/2017)
-  - (f) Camera movement improved. Only 1 rotation vector is used + space bounds set
+  - (f) Fixed #14: Camera movement improved. Only 1 rotation vector is used + space bounds set
 
 - 1.2.8 (04/04/2017)
   - (f) Fixed #13: parsing of vertices with multiple spaces

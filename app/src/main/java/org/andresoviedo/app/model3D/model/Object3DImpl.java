@@ -24,8 +24,6 @@ public abstract class Object3DImpl implements Object3D {
 	private final String id;
 	// Transformations
 	private final float[] mMatrix = new float[16];
-	private final float[] rotationMatrix = new float[16];
-	private final float[] translationMatrix = new float[16];
 	// mvp matrix
 	private final float[] mvMatrix = new float[16];
 	private final float[] mvpMatrix = new float[16];
@@ -114,23 +112,20 @@ public abstract class Object3DImpl implements Object3D {
 		}
 	}
 
-	protected float[] getMMatrix(Object3DData obj) {
-
+	public float[] getMMatrix(Object3DData obj) {
 
 		// calculate object transformation
-		Matrix.setIdentityM(rotationMatrix, 0);
+		Matrix.setIdentityM(mMatrix, 0);
 		if (obj.getRotation() != null) {
-			Matrix.rotateM(rotationMatrix, 0, obj.getRotation()[0], 1f, 0f, 0f);
-			Matrix.rotateM(rotationMatrix, 0, obj.getRotation()[1], 0, 1f, 0f);
-			Matrix.rotateM(rotationMatrix, 0, obj.getRotationZ(), 0, 0, 1f);
+			Matrix.rotateM(mMatrix, 0, obj.getRotation()[0], 1f, 0f, 0f);
+			Matrix.rotateM(mMatrix, 0, obj.getRotation()[1], 0, 1f, 0f);
+			Matrix.rotateM(mMatrix, 0, obj.getRotationZ(), 0, 0, 1f);
 		}
-		Matrix.setIdentityM(translationMatrix, 0);
-		Matrix.translateM(translationMatrix, 0, obj.getPositionX(), obj.getPositionY(), obj.getPositionZ());
-		Matrix.multiplyMM(mMatrix, 0, translationMatrix, 0, rotationMatrix, 0);
+		Matrix.translateM(mMatrix, 0, obj.getPositionX(), obj.getPositionY(), obj.getPositionZ());
 		return mMatrix;
 	}
 
-	protected float[] getMvMatrix(float[] mMatrix, float[] vMatrix) {
+	public float[] getMvMatrix(float[] mMatrix, float[] vMatrix) {
 		Matrix.multiplyMM(mvMatrix, 0, vMatrix, 0, mMatrix, 0);
 		return mvMatrix;
 	}
@@ -580,7 +575,7 @@ class Object3DV5 extends Object3DImpl {
 		  "   float diffuse = max(dot(modelViewNormal, lightVector), 0.1);\n   " 	+  		  													  
 		// Attenuate the light based on distance.
 		   "   float distance = length(u_LightPos - modelViewVertex);\n         "+
-		   "   diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));\n"+
+		   "   diffuse = diffuse * (1.0 / (1.0 + (0.05 * distance * distance)));\n"+
 			//  Add ambient lighting
 			"  diffuse = diffuse + 0.3;"+
 		// Multiply the color by the illumination level. It will be interpolated across the triangle.
@@ -660,7 +655,7 @@ class Object3DV6 extends Object3DImpl {
 		  "   float diffuse = max(dot(modelViewNormal, lightVector), 0.1);\n   " 	+  		  													  
 		// Attenuate the light based on distance.
 		   "   float distance = length(u_LightPos - modelViewVertex);\n         "+
-		   "   diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));\n"+
+		   "   diffuse = diffuse * (1.0 / (1.0 + (0.05 * distance * distance)));\n"+
 			//  Add ambient lighting
 			"  diffuse = diffuse + 0.3;"+
 		// Multiply the color by the illumination level. It will be interpolated across the triangle.

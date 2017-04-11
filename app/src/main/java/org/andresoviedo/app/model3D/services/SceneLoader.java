@@ -47,7 +47,11 @@ public class SceneLoader {
 	 */
 	private boolean drawTextures = true;
 	/**
-	 * Whether to draw using lights
+	 * Light toggle feature: we have 3 states: no light, light, light + rotation
+	 */
+	private boolean rotatingLight = true;
+	/**
+	 * Light toggle feature: whether to draw using lights
 	 */
 	private boolean drawLighting = true;
 	/**
@@ -55,13 +59,18 @@ public class SceneLoader {
 	 */
 	private int defaultDrawMode = GLES20.GL_TRIANGLE_FAN;
 	/**
-	 * Light position
-	 */
-	private float[] lightPos = new float[] { 0, 0, 3, 1 };
-	/**
 	 * Object selected by the user
 	 */
 	private Object3DData selectedObject = null;
+	/**
+	 * Initial light position
+	 */
+	private float[] lightPosition = new float[]{0, 0, 3, 1};
+
+	/**
+	 * Light bulb 3d data
+	 */
+	private final Object3DData lightPoint = Object3DBuilder.buildPoint(new float[4]).setId("light").setPosition(lightPosition);
 
 	public SceneLoader(ModelActivity main) {
 		this.parent = main;
@@ -78,7 +87,6 @@ public class SceneLoader {
 						public void onLoadComplete(Object3DData data) {
 							data.centerAndScale(5.0f);
 							addObject(data);
-
 						}
 
 						@Override
@@ -92,28 +100,24 @@ public class SceneLoader {
 		}
 	}
 
-	public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize) {
-		float[] mLightPosInEyeSpace = new float[4];
-		// Do a complete rotation every 10 seconds.
-		long time = SystemClock.uptimeMillis() % 10000L;
-		float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
+	public Object3DData getLightBulb() {
+		return lightPoint;
+	}
 
-		// calculate light matrix
-		float[] mMatrixLight = new float[16];
-		// Calculate position of the light. Rotate and then push into the distance.
-		Matrix.setIdentityM(mMatrixLight, 0);
-		// Matrix.translateM(mMatrixLight, 0, lightPos[0], lightPos[1], lightPos[2]);
-		Matrix.rotateM(mMatrixLight, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
-		// Matrix.translateM(mMatrixLight, 0, 0.0f, 0.0f, 2.0f);
-		float[] mLightPosInWorldSpace = new float[4];
-		Matrix.multiplyMV(mLightPosInWorldSpace, 0, mMatrixLight, 0, lightPos, 0);
+	/**
+	 * Hook for animating the objects before the rendering
+	 */
+	public void onDrawFrame(){
+		animateLight();
+	}
 
-		Matrix.multiplyMV(mLightPosInEyeSpace, 0, vMatrix, 0, mLightPosInWorldSpace, 0);
-		float[] mvMatrixLight = new float[16];
-		Matrix.multiplyMM(mvMatrixLight, 0, vMatrix, 0, mMatrixLight, 0);
-		float[] mvpMatrixLight = new float[16];
-		Matrix.multiplyMM(mvpMatrixLight, 0, pMatrix, 0, mvMatrixLight, 0);
+	private void animateLight() {
+		if (!rotatingLight) return;
 
+		// animate light - Do a complete rotation every 5 seconds.
+		long time = SystemClock.uptimeMillis() % 5000L;
+		float angleInDegrees = (360.0f / 5000.0f) * ((int) time);
+		lightPoint.setRotationY(angleInDegrees);
 	}
 
 	protected synchronized void addObject(Object3DData obj) {
@@ -153,16 +157,19 @@ public class SceneLoader {
 		return drawNormals;
 	}
 
-	public float[] getLightPos() {
-		return lightPos;
-	}
-
 	public void toggleTextures() {
 		this.drawTextures = !drawTextures;
 	}
 
 	public void toggleLighting() {
-		this.drawLighting = !drawLighting;
+		if (this.drawLighting && this.rotatingLight){
+			this.rotatingLight = false;
+		}
+		else {
+			this.drawLighting = !drawLighting;
+			rotatingLight = true;
+		}
+		requestRender();
 	}
 
 	public boolean isDrawTextures() {

@@ -13,13 +13,13 @@ import org.andresoviedo.app.model3D.entities.Camera;
 import org.andresoviedo.app.model3D.model.Object3D;
 import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DData;
+import org.andresoviedo.app.model3D.model.Object3DImpl;
 import org.andresoviedo.app.model3D.services.SceneLoader;
 import org.andresoviedo.app.model3D.util.GLUtil;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -56,14 +56,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	// mvpMatrix is an abbreviation for "Model View Projection Matrix"
 	private final float[] mvpMatrix = new float[16];
 
-	// light
+	// light position required to render with lighting
 	private final float[] lightPosInEyeSpace = new float[4];
-	private final float[] mMatrixLight = new float[16];
-	private final float[] rotation =  new float[]{0, 0, 0};
-	private final float[] mLightPosInWorldSpace = new float[4];
-	private final float[] mvMatrixLight = new float[16];
-	private final float[] mvpMatrixLight = new float[16];
-	private final Object3DData lightPoint = Object3DBuilder.buildPoint(new float[4]).setId("light");
 
 	/**
 	 * Construct a new renderer for the specified surface view
@@ -153,39 +147,21 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 		// camera should know about objects that collision with it
 		camera.setScene(scene);
 
+		// animate scene
+		scene.onDrawFrame();
 
+		// draw light
 		if (scene.isDrawLighting()) {
-			float[] lightPos = scene.getLightPos();
 
-			// Do a complete rotation every 10 seconds.
-			long time = SystemClock.uptimeMillis() % 10000L;
-			float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
+			Object3DImpl lightBulbDrawer = (Object3DImpl) drawer.getPointDrawer();
 
-			lightPoint.getVertexArrayBuffer().clear();
-			lightPoint.getVertexArrayBuffer().put(lightPos);
+			float[] lightModelViewMatrix = lightBulbDrawer.getMvMatrix(lightBulbDrawer.getMMatrix(scene.getLightBulb()),modelViewMatrix);
 
-			rotation[1] = angleInDegrees;
-			lightPoint.setRotation(rotation);
+			// Calculate position of the light in eye space to support lighting
+			Matrix.multiplyMV(lightPosInEyeSpace, 0, lightModelViewMatrix, 0, scene.getLightBulb().getPosition(), 0);
 
-			// calculate light matrix
-
-			// Calculate position of the light. Rotate and then push into the distance.
-			Matrix.setIdentityM(mMatrixLight, 0);
-			// Matrix.translateM(mMatrixLight, 0, lightPos[0], lightPos[1], lightPos[2]);
-			Matrix.rotateM(mMatrixLight, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
-			// Matrix.translateM(mMatrixLight, 0, 0.0f, 0.0f, 2.0f);
-
-			Matrix.multiplyMV(mLightPosInWorldSpace, 0, mMatrixLight, 0, lightPos, 0);
-
-			Matrix.multiplyMV(lightPosInEyeSpace, 0, modelViewMatrix, 0, mLightPosInWorldSpace, 0);
-
-			Matrix.multiplyMM(mvMatrixLight, 0, modelViewMatrix, 0, mMatrixLight, 0);
-			Matrix.multiplyMM(mvpMatrixLight, 0, modelProjectionMatrix, 0, mvMatrixLight, 0);
-
-			drawer.getPointDrawer().draw(lightPoint, modelProjectionMatrix, modelViewMatrix, -1, lightPosInEyeSpace);
-			// // Draw a point to indicate the light.
-			// GLES20.glUseProgram(mPointProgramHandle);
-			// drawLight(mvpMatrixLight, lightPos);
+			// Draw a point that represents the light bulb
+			lightBulbDrawer.draw(scene.getLightBulb(), modelProjectionMatrix, modelViewMatrix, -1, lightPosInEyeSpace);
 		}
 
 		List<Object3DData> objects = scene.getObjects();
@@ -219,9 +195,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 							wireframe = Object3DBuilder.buildWireframe(objData);
 							wireframes.put(objData, wireframe);
 						}
-						Object3D wireframeDrawer = drawer.getWireframeDrawer();
-						wireframeDrawer.draw(wireframe, modelProjectionMatrix, modelViewMatrix, wireframe.getDrawMode(), wireframe.getDrawSize(),
-								textureId != null ? textureId : -1, lightPosInEyeSpace);
+						drawerObject.draw(wireframe,modelProjectionMatrix,modelViewMatrix,wireframe.getDrawMode(),
+								wireframe.getDrawSize(),textureId != null? textureId:-1, lightPosInEyeSpace);
 					}catch(Error e){
 						Log.e("ModelRenderer",e.getMessage(),e);
 					}

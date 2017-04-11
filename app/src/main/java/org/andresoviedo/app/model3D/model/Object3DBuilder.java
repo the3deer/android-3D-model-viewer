@@ -677,10 +677,6 @@ public final class Object3DBuilder {
 		return object3dv2;
 	}
 
-	public Object3D getWireframeDrawer() {
-		return object3dv7;
-	}
-
 	public Object3D getFaceNormalsDrawer() {
 		return object3dv1;
 	}
@@ -722,6 +718,8 @@ public final class Object3DBuilder {
 			}
 			return new Object3DData(vertexArrayBuffer).setDrawOrder(drawOrder).
 					setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
+					.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
+					.setPosition(objData.getPosition()).setRotation(objData.getRotation())
 					.setDrawMode(GLES20.GL_LINES).setDrawSize(-1);
 		} catch (Exception ex) {
 			Log.e("Object3DBuilder", ex.getMessage(), ex);

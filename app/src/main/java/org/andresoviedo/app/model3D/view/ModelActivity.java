@@ -125,7 +125,7 @@ public class ModelActivity extends Activity {
 		super.onWindowFocusChanged(hasFocus);
 		if (hasFocus) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-				hideSystemUIDelayed(3000);
+				hideSystemUIDelayed(5000);
 			}
 		}
 	}

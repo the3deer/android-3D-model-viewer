@@ -227,8 +227,14 @@ public class Object3DData {
 		return rotation != null ? rotation[2] : 0;
 	}
 
-	public void setRotation(float[] rotation) {
+	public Object3DData setRotation(float[] rotation) {
 		this.rotation = rotation;
+		return this;
+	}
+
+	public Object3DData setRotationY(float rotY) {
+		this.rotation[1] = rotY;
+		return this;
 	}
 
 	public IntBuffer getDrawOrder() {
@@ -337,8 +343,9 @@ public class Object3DData {
 		return textureCoordsArrayBuffer;
 	}
 
-	public void setTextureCoordsArrayBuffer(FloatBuffer textureCoordsArrayBuffer) {
+	public Object3DData setTextureCoordsArrayBuffer(FloatBuffer textureCoordsArrayBuffer) {
 		this.textureCoordsArrayBuffer = textureCoordsArrayBuffer;
+		return this;
 	}
 
 	public List<int[]> getDrawModeList() {
