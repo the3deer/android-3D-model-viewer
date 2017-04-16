@@ -31,6 +31,14 @@ public class ModelActivity extends Activity {
 	 * The file to load. Passed as input parameter
 	 */
 	private String paramFilename;
+	/**
+	 * Enter into Android Immersive mode so the renderer is full screen or not
+	 */
+	private boolean immersiveMode = true;
+	/**
+	 * Background GL clear color. Default is light gray
+	 */
+	private float[] backgroundColor = new float[]{0.2f, 0.2f, 0.2f, 1.0f};
 
 	private GLSurfaceView gLView;
 
@@ -48,6 +56,16 @@ public class ModelActivity extends Activity {
 			this.paramAssetDir = b.getString("assetDir");
 			this.paramAssetFilename = b.getString("assetFilename");
 			this.paramFilename = b.getString("uri");
+			this.immersiveMode = "true".equalsIgnoreCase(b.getString("immersiveMode"));
+			try{
+				String[] backgroundColors = b.getString("backgroundColor").split(" ");
+				backgroundColor[0] = Float.parseFloat(backgroundColors[0]);
+				backgroundColor[1] = Float.parseFloat(backgroundColors[1]);
+				backgroundColor[2] = Float.parseFloat(backgroundColors[2]);
+				backgroundColor[3] = Float.parseFloat(backgroundColors[3]);
+			}catch(Exception ex){
+				// Assuming default background color
+			}
 		}
 		Log.i("Renderer", "Params: assetDir '" + paramAssetDir + "', assetFilename '" + paramAssetFilename + "', uri '"
 				+ paramFilename + "'");
@@ -125,7 +143,7 @@ public class ModelActivity extends Activity {
 		super.onWindowFocusChanged(hasFocus);
 		if (hasFocus) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-				hideSystemUIDelayed(5000);
+				if (immersiveMode) hideSystemUIDelayed(5000);
 			}
 		}
 	}
@@ -221,6 +239,10 @@ public class ModelActivity extends Activity {
 
 	public String getParamFilename() {
 		return paramFilename;
+	}
+
+	public float[] getBackgroundColor(){
+		return backgroundColor;
 	}
 
 	public SceneLoader getScene() {

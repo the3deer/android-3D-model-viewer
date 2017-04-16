@@ -12,7 +12,6 @@ import org.andresoviedo.app.model3D.view.ModelActivity;
 import org.apache.commons.io.IOUtils;
 
 import android.app.ProgressDialog;
-import android.opengl.GLES20;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -75,10 +74,9 @@ public class ExampleSceneLoader extends SceneLoader {
 					// test loading object
 					try {
 						// this has no color array
-						Object3DData android = Object3DBuilder.loadV5(parent.getAssets(), "models/", "android.obj");
-						android.generateVertexColorsArrayBuffer();
+						Object3DData android = Object3DBuilder.loadV5(parent.getAssets(), "models", "android.obj");
 						android.setPosition(new float[] { 0f, 0f, 0f });
-						android.setColor(new float[] { 1.0f, 1.0f, 0f, 1.0f });
+						android.setColor(new float[] { 1.0f, 1.0f, 1.0f, 1.0f });
 						addObject(android);
 					} catch (Exception ex) {
 						errors.add(ex);
@@ -139,7 +137,7 @@ public class ExampleSceneLoader extends SceneLoader {
 					// test loading object
 					try {
 						// this has no color array
-						Object3DData obj51 = Object3DBuilder.loadV5(parent.getAssets(), "models/", "teapot.obj");
+						Object3DData obj51 = Object3DBuilder.loadV5(parent.getAssets(), "models", "teapot.obj");
 						obj51.setPosition(new float[] { -2f, 0f, 0f });
 						obj51.setColor(new float[] { 1.0f, 1.0f, 0f, 1.0f });
 						addObject(obj51);
@@ -150,7 +148,7 @@ public class ExampleSceneLoader extends SceneLoader {
 					// test loading object with materials
 					try {
 						// this has color array
-						Object3DData obj52 = Object3DBuilder.loadV5(parent.getAssets(), "models/", "cube.obj");
+						Object3DData obj52 = Object3DBuilder.loadV5(parent.getAssets(), "models", "cube.obj");
 						obj52.setPosition(new float[] { 2f, -2f, 0f });
 						obj52.setColor(new float[] { 0.0f, 1.0f, 1f, 1.0f });
 						addObject(obj52);
@@ -161,7 +159,7 @@ public class ExampleSceneLoader extends SceneLoader {
 					// test loading object made of polygonal faces
 					try {
 						// this has heterogeneous faces
-						Object3DData obj53 = Object3DBuilder.loadV5(parent.getAssets(), "models/", "ToyPlane.obj");
+						Object3DData obj53 = Object3DBuilder.loadV5(parent.getAssets(), "models", "ToyPlane.obj");
 						obj53.centerAndScale(2.0f);
 						obj53.setPosition(new float[] { 2f, 0f, 0f });
 						obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
@@ -174,7 +172,7 @@ public class ExampleSceneLoader extends SceneLoader {
 					// test loading object without normals
 					try {
 						// this has heterogeneous faces
-						Object3DData obj = Object3DBuilder.loadV5(parent.getAssets(), "models/", "cube4.obj");
+						Object3DData obj = Object3DBuilder.loadV5(parent.getAssets(), "models", "cube4.obj");
 						obj.setPosition(new float[] { 0f, 2f, -2f });
 						obj.setColor(new float[] { 0.3f, 0.52f, 1f, 1.0f });
 						addObject(obj);

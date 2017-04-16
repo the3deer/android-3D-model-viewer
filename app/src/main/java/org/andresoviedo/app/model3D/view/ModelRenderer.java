@@ -80,7 +80,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
 		// Set the background frame color
-		GLES20.glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		float[] backgroundColor = main.getModelActivity().getBackgroundColor();
+		GLES20.glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
 
 		// Use culling to remove back faces.
 		// Don't remove back faces so we can see them
@@ -184,7 +185,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				if (scene.isDrawWireframe() && objData.getDrawMode() != GLES20.GL_POINTS
 						&& objData.getDrawMode() != GLES20.GL_LINES && objData.getDrawMode() != GLES20.GL_LINE_STRIP
 						&& objData.getDrawMode() != GLES20.GL_LINE_LOOP) {
-					Log.d("ModelRenderer","Drawing wireframe model...");
+					// Log.d("ModelRenderer","Drawing wireframe model...");
 					try{
 						// Only draw wireframes for objects having faces (triangles)
 						Object3DData wireframe = wireframes.get(objData);
@@ -200,8 +201,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 					}catch(Error e){
 						Log.e("ModelRenderer",e.getMessage(),e);
 					}
+				} else if (scene.isDrawPoints() || (objData.getFaces() != null && !objData.getFaces().loaded())){
+					drawerObject.draw(objData, modelProjectionMatrix, modelViewMatrix
+							,GLES20.GL_POINTS, objData.getDrawSize(),
+							textureId != null ? textureId : -1, lightPosInEyeSpace);
 				} else {
-
 					drawerObject.draw(objData, modelProjectionMatrix, modelViewMatrix,
 							textureId != null ? textureId : -1, lightPosInEyeSpace);
 				}

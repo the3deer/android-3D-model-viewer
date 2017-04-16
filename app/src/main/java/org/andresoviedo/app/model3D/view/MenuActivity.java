@@ -56,6 +56,9 @@ public class MenuActivity extends ListActivity {
 			switch (action) {
 			case DEMO: {// Start Model activity.
 				Intent intent = new Intent(MenuActivity.this.getApplicationContext(), ModelActivity.class);
+				Bundle b = new Bundle();
+				b.putString("backgroundColor", "0 0 0 1");
+				intent.putExtras(b);
 				MenuActivity.this.startActivity(intent);
 				break;
 			}
@@ -138,6 +141,7 @@ public class MenuActivity extends ListActivity {
 		Intent intent = new Intent(getApplicationContext(), ModelActivity.class);
 		Bundle b = new Bundle();
 		b.putString("uri", filename);
+		b.putString("immersiveMode", "true");
 		intent.putExtras(b);
 		startActivity(intent);
 	}

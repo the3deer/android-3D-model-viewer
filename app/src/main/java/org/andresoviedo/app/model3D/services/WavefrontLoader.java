@@ -40,7 +40,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,6 +81,7 @@ public class WavefrontLoader {
 	// buffers
 	private FloatBuffer vertsBuffer;
 	private FloatBuffer normalsBuffer;
+	// TODO: load texture data directly into this buffer
 	private FloatBuffer textureCoordsBuffer;
 
 	// flags
@@ -126,11 +126,9 @@ public class WavefrontLoader {
 	 * Count verts, normals, faces etc and reserve buffers to save the data.
 	 * @param br data source
 	 */
-	public void reserveData(InputStream is)
-	{
+	public void analyzeModel(InputStream is) {
 		int lineNum = 0;
 		String line;
-
 
 
 		BufferedReader br = null;
@@ -149,17 +147,20 @@ public class WavefrontLoader {
 					} else if (line.startsWith("vn")) {// normal
 						numNormals++;
 					} else if (line.startsWith("f ")) { // face
-						int faceSize = line.split(" ").length - 1;
-						numFaces += (faceSize-2);
+						final int faceSize;
+						if (line.contains("  ")) {
+							faceSize = line.split(" +").length - 1;
+						} else {
+							faceSize = line.split(" ").length - 1;
+						}
+						numFaces += (faceSize - 2);
 						// (faceSize-2)x3 = converting polygon to triangles
-						numVertsReferences += (faceSize-2)*3;
+						numVertsReferences += (faceSize - 2) * 3;
 					} else if (line.startsWith("mtllib ")) // load material
 					{
-						// materials = new Materials(new File(modelFile.getParent(),
-						// line.substring(7)).getAbsolutePath());
+						materials = new Materials(line.substring(7));
 					} else if (line.startsWith("usemtl ")) {// use material
-					}
-					else if (line.charAt(0) == 'g') { // group name
+					} else if (line.charAt(0) == 'g') { // group name
 						// not implemented
 					} else if (line.charAt(0) == 's') { // smoothing group
 						// not implemented
@@ -172,30 +173,35 @@ public class WavefrontLoader {
 				}
 			}
 		} catch (IOException e) {
-			Log.e("WavefrontLoader","Problem reading line '"+(++lineNum)+"'");
-			Log.e("WavefrontLoader",e.getMessage(),e);
+			Log.e("WavefrontLoader", "Problem reading line '" + (++lineNum) + "'");
+			Log.e("WavefrontLoader", e.getMessage(), e);
 			throw new RuntimeException(e);
-		} finally{
-			if (br != null){
+		} finally {
+			if (br != null) {
 				try {
 					br.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					Log.e("WavefrontLoader", e.getMessage(), e);
 				}
 			}
 		}
 
+		Log.i("WavefrontLoader","Number of vertices:"+numVerts);
+		Log.i("WavefrontLoader","Number of faces:"+numFaces);
+	}
+
+	/**
+	 * Allocate buffers for pushing the model data
+	 * TODO: use textureCoordsBuffer
+	 */
+	public void allocateBuffers() {
 		// size = 3 (x,y,z) * 4 (bytes per float)
 		vertsBuffer = createNativeByteBuffer(numVerts*3*4).asFloatBuffer();
 		normalsBuffer = createNativeByteBuffer(numNormals*3*4).asFloatBuffer();
 		textureCoordsBuffer = createNativeByteBuffer(numTextures*3*4).asFloatBuffer();
-
-		Log.i("WavefrontLoader","numVerts:"+numVerts);
-		Log.i("WavefrontLoader","numFaces:"+numFaces);
-		Log.i("WavefrontLoader","numVertsReferences:"+numVertsReferences);
-		Log.i("WavefrontLoader","model based on triangles:"+((numVertsReferences/numFaces)==3));
-
-	} // end of readModel()
+		IntBuffer buffer = createNativeByteBuffer(numFaces*3*4).asIntBuffer();
+		faces = new Faces(numFaces, buffer, vertsBuffer, normalsBuffer, texCoords);
+	}
 
 	public void loadModel(InputStream is) {
 		// String fnm = MODEL_DIR + modelNm + ".obj";
@@ -203,9 +209,6 @@ public class WavefrontLoader {
 		try {
 			br = new BufferedReader(new InputStreamReader(is));
 			readModel(br);
-
-			centerScale();
-			reportOnModel();
 		} finally{
 			if (br != null){
 				try {
@@ -237,8 +240,9 @@ public class WavefrontLoader {
 		boolean isFirstTC = true;
 		int numFaces = 0;
 
-		IntBuffer buffer = createNativeByteBuffer(numVertsReferences*4).asIntBuffer();
-		faces = new Faces(buffer, vertsBuffer, normalsBuffer, texCoords);
+		int vertNumber = 0;
+		int normalNumber = 0;
+
 
 		try {
 			while (((line = br.readLine()) != null)) {
@@ -247,7 +251,7 @@ public class WavefrontLoader {
 				if (line.length() > 0) {
 
 					if (line.startsWith("v ")) { // vertex
-						isLoaded = addVert(vertsBuffer, line, isFirstCoord, modelDims) && isLoaded;
+						isLoaded = addVert(vertsBuffer, vertNumber++ * 3, line, isFirstCoord, modelDims) && isLoaded;
 						if (isFirstCoord)
 							isFirstCoord = false;
 					} else if (line.startsWith("vt")) { // tex coord
@@ -255,7 +259,7 @@ public class WavefrontLoader {
 						if (isFirstTC)
 							isFirstTC = false;
 					} else if (line.startsWith("vn")) // normal
-						isLoaded = addVert(normalsBuffer, line, isFirstCoord, null) && isLoaded;
+						isLoaded = addVert(normalsBuffer, normalNumber++ * 3,line, isFirstCoord, null) && isLoaded;
 					else if (line.startsWith("f ")) { // face
 						isLoaded = faces.addFace(line) && isLoaded;
 						numFaces++;
@@ -263,7 +267,7 @@ public class WavefrontLoader {
 					{
 						// materials = new Materials(new File(modelFile.getParent(),
 						// line.substring(7)).getAbsolutePath());
-						materials = new Materials(line.substring(7));
+						// materials = new Materials(line.substring(7));
 					} else if (line.startsWith("usemtl ")) // use material
 						faceMats.addUse(numFaces, line.substring(7));
 					else if (line.charAt(0) == 'g') { // group name
@@ -289,7 +293,18 @@ public class WavefrontLoader {
 		}
 	} // end of readModel()
 
-	private boolean addVert(FloatBuffer buffer, String line, boolean isFirstCoord, ModelDimensions dimensions)
+	/**
+	 * Parse the vertex and add it to the buffer. If the vertex cannot be parsed,
+	 * then a default (0,0,0) vertex is added instead.
+	 *
+	 * @param buffer the buffer where the vertex is to be added
+	 * @param offset the offset of the buffer
+	 * @param line the vertex to parse
+	 * @param isFirstCoord if this is the first vertex to be parsed
+	 * @param dimensions the model dimesions so they are updated (TODO move this out of this method)
+	 * @return <code>true</code> if the vertex could be parsed, <code>false</code> otherwise
+	 */
+	private boolean addVert(FloatBuffer buffer, int offset, String line, boolean isFirstCoord, ModelDimensions dimensions)
 	/*
 	 * Add vertex from line "v x y z" to vert ArrayList, and update the model dimension's info.
 	 */
@@ -320,7 +335,7 @@ public class WavefrontLoader {
 			Log.e("WavefrontLoader",ex.getMessage());
 		} finally{
 			// try to load even with errors
-			buffer.put(x).put(y).put(z);
+			buffer.put(offset, x).put(offset+1, y).put(offset+2, z);
 		}
 
 		return false;
@@ -379,7 +394,7 @@ public class WavefrontLoader {
 		return null; // means an error occurred
 	} // end of readTCTuple()
 
-	private void centerScale()
+	public void centerScale()
 	/*
 	 * Position the model so it's center is at the origin, and scale it so its longest dimension is no bigger than
 	 * maxSize.
@@ -394,7 +409,7 @@ public class WavefrontLoader {
 		// System.out.println("Largest dimension: " + largest);
 		if (largest != 0.0f)
 			scaleFactor = (maxSize / largest);
-		System.out.println("Scale factor: " + scaleFactor);
+		Log.i("WavefrontLoader","Scaling model with factor: " + scaleFactor);
 
 		// modify the model's vertices
 		float x0, y0, z0;
@@ -412,11 +427,11 @@ public class WavefrontLoader {
 		}
 	} // end of centerScale()
 
-	private void reportOnModel() {
+	public void reportOnModel() {
 		Log.i("WavefrontLoader","No. of vertices: " + vertsBuffer.capacity()/3);
 		Log.i("WavefrontLoader","No. of normal coords: " + normalsBuffer.capacity()/3);
 		Log.i("WavefrontLoader","No. of tex coords: " + texCoords.size());
-		Log.i("WavefrontLoader","No. of faces: " + faces.getNumFaces());
+		Log.i("WavefrontLoader","No. of faces: " + faces.getSize());
 
 		modelDims.reportDimensions();
 		// dimensions of model (before centering and scaling)
@@ -591,7 +606,7 @@ public class WavefrontLoader {
 					is = new FileInputStream(file);
 				} else {
 					System.out.println("Loading material from " + mfnm);
-					is = am.open(assetsDir + mfnm);
+					is = am.open(assetsDir + "/" + mfnm);
 				}
 				InputStreamReader isr = new InputStreamReader(is);
 				BufferedReader br = new BufferedReader(isr);
@@ -841,6 +856,7 @@ public class WavefrontLoader {
 	public class Faces {
 		private static final float DUMMY_Z_TC = -5.0f;
 
+		public final int totalFaces;
 		/**
 		 * indices for verticesused by each face
 		 */
@@ -859,13 +875,15 @@ public class WavefrontLoader {
 
 		// Total number of vertices references. That is, each face references 3 or more vectors. This is the sum for all
 		// faces
-		private int numFaces;
+		private int facesLoadCounter;
+		private int faceVertexLoadCounter = 0;
 		private int verticesReferencesCount;
 
 		// for reporting
 		// private DecimalFormat df = new DecimalFormat("0.##"); // 2 dp
 
-		Faces(IntBuffer buffer, FloatBuffer vs, FloatBuffer ns, ArrayList<Tuple3> ts) {
+		Faces(int totalFaces, IntBuffer buffer, FloatBuffer vs, FloatBuffer ns, ArrayList<Tuple3> ts) {
+			this.totalFaces = totalFaces;
 			normals = ns;
 			texCoords = ts;
 
@@ -874,6 +892,16 @@ public class WavefrontLoader {
 			facesNormIdxs = new ArrayList<int[]>();
 		} // end of Faces()
 
+		public int getSize(){
+			return totalFaces;
+		}
+
+		/**
+		 * @return <code>true</code> if all faces are loaded
+		 */
+		public boolean loaded(){
+			return facesLoadCounter == totalFaces;
+		}
 
 		/**
 		 * get this face's indicies from line "f v/vt/vn ..." with vt or vn index values perhaps being absent.
@@ -894,6 +922,7 @@ public class WavefrontLoader {
 				int vt[] = null;
 				int vn[] = null;
 
+
 				for (int i = 0, faceIndex = 0; i < numTokens; i++, faceIndex++) {
 
 					// convert to triangles all polygons
@@ -901,7 +930,7 @@ public class WavefrontLoader {
 						// Converting polygon to triangle
 						faceIndex = 0;
 
-						numFaces++;
+						facesLoadCounter++;
 						verticesReferencesCount += 3;
 						if (vt != null)  facesTexIdxs.add(vt);
 						if (vn != null) facesNormIdxs.add(vn);
@@ -963,12 +992,12 @@ public class WavefrontLoader {
 						if (vn != null) vn[faceIndex] = vn[faceIndex] - 1;
 					}
 					// store the indices for this face
-					facesVertIdxs.put(vertIdx);
+					facesVertIdxs.put(faceVertexLoadCounter++,vertIdx);
 				}
 				if (vt != null)  facesTexIdxs.add(vt);
 				if (vn != null) facesNormIdxs.add(vn);
 
-				numFaces++;
+				facesLoadCounter++;
 				verticesReferencesCount += 3;
 
 			} catch (NumberFormatException e) {
@@ -979,12 +1008,9 @@ public class WavefrontLoader {
 		}
 
 
-		public int getNumFaces() {
-			return numFaces;
-		}
-
 		public int getVerticesReferencesCount() {
-			return verticesReferencesCount;
+			// we have only triangles
+			return getSize()*3;
 		}
 
 		public IntBuffer getIndexBuffer(){return facesVertIdxs;}

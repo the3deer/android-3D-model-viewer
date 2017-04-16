@@ -23,6 +23,10 @@ import android.widget.Toast;
 public class SceneLoader {
 
 	/**
+	 * Default model color: yellow
+	 */
+	private static float[] DEFAULT_COLOR = {1.0f, 1.0f, 0, 1.0f};
+	/**
 	 * Parent component
 	 */
 	protected final ModelActivity parent;
@@ -34,6 +38,10 @@ public class SceneLoader {
 	 * Whether to draw objects as wireframes
 	 */
 	private boolean drawWireframe = false;
+	/**
+	 * Whether to draw using points
+	 */
+	private boolean drawingPoints = false;
 	/**
 	 * Whether to draw bounding boxes around objects
 	 */
@@ -54,10 +62,6 @@ public class SceneLoader {
 	 * Light toggle feature: whether to draw using lights
 	 */
 	private boolean drawLighting = true;
-	/**
-	 * Default draw mode when loading models from files
-	 */
-	private int defaultDrawMode = GLES20.GL_TRIANGLE_FAN;
 	/**
 	 * Object selected by the user
 	 */
@@ -84,8 +88,13 @@ public class SceneLoader {
 					parent.getParamAssetFilename(), new Callback() {
 
 						@Override
+						public void onBuildComplete(Object3DData data) {
+						}
+
+						@Override
 						public void onLoadComplete(Object3DData data) {
-							data.centerAndScale(5.0f);
+							data.setColor(DEFAULT_COLOR);
+							data.setScale(new float[]{5f, 5f, 5f});
 							addObject(data);
 						}
 
@@ -96,6 +105,7 @@ public class SceneLoader {
 									"There was a problem building the model: " + ex.getMessage(), Toast.LENGTH_LONG)
 									.show();
 						}
+
 					});
 		}
 	}
@@ -136,12 +146,25 @@ public class SceneLoader {
 	}
 
 	public void toggleWireframe() {
-		this.drawWireframe = !this.drawWireframe;
+		if (this.drawWireframe && !this.drawingPoints) {
+			this.drawWireframe = false;
+			this.drawingPoints = true;
+		}
+		else if (this.drawingPoints){
+			this.drawingPoints = false;
+		}
+		else {
+			this.drawWireframe = true;
+		}
 		requestRender();
 	}
 
 	public boolean isDrawWireframe() {
 		return this.drawWireframe;
+	}
+
+	public boolean isDrawPoints() {
+		return this.drawingPoints;
 	}
 
 	public void toggleBoundingBox() {

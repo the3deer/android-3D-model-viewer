@@ -35,6 +35,8 @@ public final class Object3DBuilder {
 		public void onLoadError(Exception ex);
 
 		public void onLoadComplete(Object3DData data);
+
+		public void onBuildComplete(Object3DData data);
 	}
 
 	private static final int COORDS_PER_VERTEX = 3;
@@ -369,26 +371,29 @@ public final class Object3DBuilder {
 
 	public static Object3DData loadV5(AssetManager assets, String assetDir, String assetFilename) {
 		try {
-			InputStream is = assets.open(assetDir + assetFilename);
+			final String modelId = assetDir + "/" + assetFilename;
+
+			InputStream is = assets.open(modelId);
 			WavefrontLoader wfl = new WavefrontLoader(assetFilename);
-			wfl.reserveData(is);
+			wfl.analyzeModel(is);
 			is.close();
 
-			is = assets.open(assetDir + assetFilename);
+			wfl.allocateBuffers();
+
+			is = assets.open(modelId);
 			wfl.loadModel(is);
+
+			wfl.centerScale();
 			is.close();
 
 			Object3DData data3D = new Object3DData(wfl.getVerts(), wfl.getNormals(), wfl.getTexCoords(), wfl.getFaces(),
 					wfl.getFaceMats(), wfl.getMaterials());
 			data3D.setId(assetFilename);
 			data3D.setAssetsDir(assetDir);
-			// data3D.setDrawMode(GLES20.GL_TRIANGLES);
+
+			data3D.setDrawMode(GLES20.GL_TRIANGLES);
 			generateArrays(assets, data3D);
-			if (data3D.getVertexColorsArrayBuffer() != null) {
-				data3D.setVersion(5);
-			} else {
-				data3D.setVersion(3);
-			}
+
 			return data3D;
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
@@ -435,67 +440,45 @@ public final class Object3DBuilder {
 	}
 
 	public static Object3DData generateArrays(AssetManager assets, Object3DData obj) throws IOException {
-		int drawMode = GLES20.GL_TRIANGLES;
-		int drawSize = 0;
-
-		FloatBuffer vertexBuffer = obj.getVerts();
-
 
 		Faces faces = obj.getFaces(); // model faces
 		FaceMaterials faceMats = obj.getFaceMats();
 		Materials materials = obj.getMaterials();
 
-		// TODO: generate face normals
-		FloatBuffer vertexArrayBuffer = null;
-		IntBuffer drawOrderBuffer = null;
-		if (obj.isDrawUsingArrays()) {
-			Log.i("Object3DBuilder", "Generating vertex array buffer...");
-			vertexArrayBuffer = createNativeByteBuffer(faces.getIndexBuffer().capacity() * 3 * 4).asFloatBuffer();
-			for (int i = 0; i < faces.getVerticesReferencesCount(); i++) {
-				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i) * 3));
-				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i) * 3 + 1));
-				vertexArrayBuffer.put(vertexBuffer.get(faces.getIndexBuffer().get(i) * 3 + 2));
-			}
-		} else {
-			// TODO:
-			// Log.i("Object3DBuilder", "Generating draw order buffer...");
-			// this only works for faces made of a single triangle
-			// drawOrderBuffer = faces.facesVertIdxs;
+		// TODO: remove this
+// 		if (true) return obj;
+
+		Log.i("Object3DBuilder", "Allocating vertex array buffer... Vertices ("+faces.getVerticesReferencesCount()+")");
+		final FloatBuffer vertexArrayBuffer = createNativeByteBuffer(faces.getVerticesReferencesCount() * 3 * 4).asFloatBuffer();
+		obj.setVertexArrayBuffer(vertexArrayBuffer);
+		obj.setDrawUsingArrays(true);
+
+		Log.i("Object3DBuilder", "Populating vertex array...");
+		final FloatBuffer vertexBuffer = obj.getVerts().asReadOnlyBuffer();
+		final IntBuffer indexBuffer = faces.getIndexBuffer().asReadOnlyBuffer();
+		for (int i = 0; i < faces.getVerticesReferencesCount(); i++) {
+			vertexArrayBuffer.put(i*3,vertexBuffer.get(indexBuffer.get(i) * 3));
+			vertexArrayBuffer.put(i*3+1,vertexBuffer.get(indexBuffer.get(i) * 3 + 1));
+			vertexArrayBuffer.put(i*3+2,vertexBuffer.get(indexBuffer.get(i) * 3 + 2));
 		}
 
-		boolean onlyTriangles = true;
-		/*List<int[]> drawModeList = new ArrayList<int[]>();
-		int currentVertexPos = 0;
-		for (int[] face : faces.facesVertIdxs) {
-			if (face.length == 3) {
-				drawModeList.add(new int[] { GLES20.GL_TRIANGLES, currentVertexPos, face.length });
-			} else {
-				onlyTriangles = false;
-				drawModeList.add(new int[] { GLES20.GL_TRIANGLE_FAN, currentVertexPos, face.length });
-			}
-			currentVertexPos += face.length;
-		}*/
 
-		if (onlyTriangles) {
-			drawMode = GLES20.GL_TRIANGLES;
-			drawSize = 0;
-			/*drawModeList = null;*/
-		}
 
-		FloatBuffer vertexNormalsBuffer = obj.getNormals();
-
-		FloatBuffer vertexNormalsArrayBuffer = createNativeByteBuffer(faces.getIndexBuffer().capacity() / 3 * 9 * 4)
-				.asFloatBuffer();
+		Log.i("Object3DBuilder", "Allocating vertex normals buffer... Total normals ("+faces.facesNormIdxs.size()+")");
+		// Normals buffer size = Number_of_faces X 3 (vertices_per_face) X 3 (coords_per_normal) X 4 (bytes_per_float)
+		final FloatBuffer vertexNormalsArrayBuffer = createNativeByteBuffer(faces.getSize() * 3 * 3 * 4).asFloatBuffer();;
+		obj.setVertexNormalsArrayBuffer(vertexNormalsArrayBuffer);
 
 		// load file normals
-
+		final FloatBuffer vertexNormalsBuffer = obj.getNormals().asReadOnlyBuffer();
 		if (vertexNormalsBuffer.capacity() > 0) {
-			Log.i("Object3DBuilder", "Generating normals array...");
-			for (int[] normal : faces.facesNormIdxs) {
+			Log.i("Object3DBuilder", "Populating normals buffer...");
+			for (int n=0; n<faces.facesNormIdxs.size(); n++) {
+				int[] normal = faces.facesNormIdxs.get(n);
 				for (int i = 0; i < normal.length; i++) {
-					vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3));
-					vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3 + 1));
-					vertexNormalsArrayBuffer.put(vertexNormalsBuffer.get(normal[i] * 3 + 2));
+					vertexNormalsArrayBuffer.put(n*9+i*3,vertexNormalsBuffer.get(normal[i] * 3));
+					vertexNormalsArrayBuffer.put(n*9+i*3+1,vertexNormalsBuffer.get(normal[i] * 3 + 1));
+					vertexNormalsArrayBuffer.put(n*9+i*3+2,vertexNormalsBuffer.get(normal[i] * 3 + 2));
 				}
 			}
 		} else {
@@ -519,9 +502,15 @@ public final class Object3DBuilder {
 
 					float[] normal = Math3DUtils.calculateFaceNormal2(v0, v1, v2);
 
-					vertexNormalsArrayBuffer.put(normal);
-					vertexNormalsArrayBuffer.put(normal);
-					vertexNormalsArrayBuffer.put(normal);
+					vertexNormalsArrayBuffer.put(i*3,normal[0]);
+					vertexNormalsArrayBuffer.put(i*3+1,normal[1]);
+					vertexNormalsArrayBuffer.put(i*3+2,normal[2]);
+					vertexNormalsArrayBuffer.put(i*3+3,normal[0]);
+					vertexNormalsArrayBuffer.put(i*3+4,normal[1]);
+					vertexNormalsArrayBuffer.put(i*3+5,normal[2]);
+					vertexNormalsArrayBuffer.put(i*3+6,normal[0]);
+					vertexNormalsArrayBuffer.put(i*3+7,normal[1]);
+					vertexNormalsArrayBuffer.put(i*3+8,normal[2]);
 				} catch (BufferOverflowException ex) {
 					throw new RuntimeException("Error calculating mormal for face ["+i/3+"]");
 				}
@@ -530,40 +519,42 @@ public final class Object3DBuilder {
 
 
 		FloatBuffer colorArrayBuffer = null;
-		float[] currentColor = DEFAULT_COLOR;
 		if (materials != null) {
+			Log.i("Object3DBuilder", "Reading materials...");
 			materials.readMaterials(obj.getCurrentDir(), obj.getAssetsDir(), assets);
-			if (!faceMats.isEmpty()) {
-				colorArrayBuffer = createNativeByteBuffer(4 * faces.getVerticesReferencesCount() * 4)
-						.asFloatBuffer();
-				boolean anyOk = false;
-				for (int i = 0; i < faces.getNumFaces(); i++) {
-					if (faceMats.findMaterial(i) != null) {
-						Material mat = materials.getMaterial(faceMats.findMaterial(i));
-						if (mat != null) {
-							currentColor = mat.getKdColor() != null ? mat.getKdColor() : currentColor;
-							anyOk = anyOk || mat.getKdColor() != null;
-						}
-					}
-					colorArrayBuffer.put(currentColor);
-					colorArrayBuffer.put(currentColor);
-					colorArrayBuffer.put(currentColor);
-				}
-				if (!anyOk) {
-					Log.i("Object3DBuilder", "Using single color.");
-					colorArrayBuffer = null;
-				}
-			}
 		}
 
-		// materials = null;
+		if (materials != null && !faceMats.isEmpty()) {
+			Log.i("Object3DBuilder", "Processing face materials...");
+			colorArrayBuffer = createNativeByteBuffer(4 * faces.getVerticesReferencesCount() * 4)
+					.asFloatBuffer();
+			boolean anyOk = false;
+			float[] currentColor = DEFAULT_COLOR;
+			for (int i = 0; i < faces.getSize(); i++) {
+				if (faceMats.findMaterial(i) != null) {
+					Material mat = materials.getMaterial(faceMats.findMaterial(i));
+					if (mat != null) {
+						currentColor = mat.getKdColor() != null ? mat.getKdColor() : currentColor;
+						anyOk = anyOk || mat.getKdColor() != null;
+					}
+				}
+				colorArrayBuffer.put(currentColor);
+				colorArrayBuffer.put(currentColor);
+				colorArrayBuffer.put(currentColor);
+			}
+			if (!anyOk) {
+				Log.i("Object3DBuilder", "Using single color.");
+				colorArrayBuffer = null;
+			}
+		}
+		obj.setVertexColorsArrayBuffer(colorArrayBuffer);
 
+
+		String texture = null;
 		byte[] textureData = null;
-		FloatBuffer textureCoordsArraysBuffer = null;
 		if (materials != null && !materials.materials.isEmpty()) {
 
 			// TODO: process all textures
-			String texture = null;
 			for (Material mat : materials.materials.values()) {
 				if (mat.getTexture() != null) {
 					texture = mat.getTexture();
@@ -573,7 +564,7 @@ public final class Object3DBuilder {
 			if (texture != null) {
 				if (obj.getCurrentDir() != null) {
 					File file = new File(obj.getCurrentDir(), texture);
-					Log.i("materials", "Loading texture '" + file + "'...");
+					Log.i("Object3DBuilder", "Loading texture '" + file + "'...");
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
 					FileInputStream fis = new FileInputStream(file);
 					IOUtils.copy(fis, bos);
@@ -581,93 +572,89 @@ public final class Object3DBuilder {
 					textureData = bos.toByteArray();
 					bos.close();
 				} else {
-					Log.i("materials", "Loading texture '" + obj.getAssetsDir() + texture + "'...");
+					String assetResourceName = obj.getAssetsDir() + "/" + texture;
+					Log.i("Object3DBuilder", "Loading texture '" + assetResourceName + "'...");
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					InputStream fis = assets.open(obj.getAssetsDir() + texture);
+					InputStream fis = assets.open(assetResourceName);
 					IOUtils.copy(fis, bos);
 					fis.close();
 					textureData = bos.toByteArray();
 					bos.close();
 				}
-				if (textureData != null) {
-					ArrayList<Tuple3> texCoords = obj.getTexCoords();
-					if (texCoords != null && texCoords.size() > 0) {
-						FloatBuffer textureCoordsBuffer = createNativeByteBuffer(2 * texCoords.size() * 4).asFloatBuffer();
-						for (Tuple3 texCor : texCoords) {
-							textureCoordsBuffer.put(texCor.getX());
-							textureCoordsBuffer.put(obj.isFlipTextCoords() ? 1 - texCor.getY() : texCor.getY());
-						}
-						textureCoordsArraysBuffer = createNativeByteBuffer(2 * faces.getVerticesReferencesCount() * 4)
-								.asFloatBuffer();
-						try {
-
-							boolean anyTextureOk = false;
-							String currentTexture = null;
-
-							for (int i = 0; i < faces.facesTexIdxs.size(); i++) {
-
-								// get current texture
-								if (!faceMats.isEmpty() && faceMats.findMaterial(i) != null) {
-									Material mat = materials.getMaterial(faceMats.findMaterial(i));
-									if (mat != null && mat.getTexture() != null) {
-										currentTexture = mat.getTexture();
-									}
-								}
-
-								// check if texture is ok (Because we only support 1 texture currently)
-								boolean textureOk = false;
-								if (currentTexture != null && currentTexture.equals(texture)) {
-									textureOk = true;
-								}
-
-								// populate texture coords if ok
-								int[] text = faces.facesTexIdxs.get(i);
-								for (int j = 0; j < text.length; j++) {
-									if (textureOk) {
-										anyTextureOk = true;
-										textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[j] * 2));
-										textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[j] * 2 + 1));
-									} else {
-										textureCoordsArraysBuffer.put(0f);
-										textureCoordsArraysBuffer.put(0f);
-									}
-								}
-							}
-
-							if (!anyTextureOk) {
-								Log.i("Object3DBuilder", "Texture is wrong. Applying global texture");
-								textureCoordsArraysBuffer.position(0);
-								for (int[] text : faces.facesTexIdxs) {
-									for (int i = 0; i < text.length; i++) {
-										textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2));
-										textureCoordsArraysBuffer.put(textureCoordsBuffer.get(text[i] * 2 + 1));
-									}
-								}
-							}
-						} catch (Exception ex) {
-							Log.e("WavefrontLoader", "Failure to load texture coordinates");
-						}
-					}
-				}
 			} else {
-				Log.i("Loader", "Found material(s) but no texture");
+				Log.i("Object3DBuilder", "Found material(s) but no texture");
 			}
+		} else{
+			Log.i("Object3DBuilder", "No materials -> No texture");
 		}
 
-		obj.setColor(currentColor);
-		obj.setVertexBuffer(vertexBuffer);
-		obj.setVertexNormalsBuffer(vertexNormalsBuffer);
-		obj.setDrawOrder(drawOrderBuffer);
-		obj.setDrawSize(drawSize);
 
-		obj.setVertexArrayBuffer(vertexArrayBuffer);
-		obj.setVertexNormalsArrayBuffer(vertexNormalsArrayBuffer);
-		obj.setTextureCoordsArrayBuffer(textureCoordsArraysBuffer);
-		obj.setVertexColorsArrayBuffer(colorArrayBuffer);
+		if (textureData != null) {
+			ArrayList<Tuple3> texCoords = obj.getTexCoords();
+			if (texCoords != null && texCoords.size() > 0) {
 
-		obj.setDrawModeList(null);
-		obj.setDrawMode(drawMode);
+				Log.i("Object3DBuilder", "Allocating texture buffer...");
+				FloatBuffer textureCoordsBuffer = createNativeByteBuffer(texCoords.size() * 2 * 4).asFloatBuffer();
+				FloatBuffer textureCoordsArraysBuffer = createNativeByteBuffer(2 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
+				obj.setTextureCoordsArrayBuffer(textureCoordsArraysBuffer);
 
+				Log.i("Object3DBuilder", "Populating texture buffer...");
+				for (Tuple3 texCor : texCoords) {
+					textureCoordsBuffer.put(texCor.getX());
+					textureCoordsBuffer.put(obj.isFlipTextCoords() ? 1 - texCor.getY() : texCor.getY());
+				}
+				try {
+
+					boolean anyTextureOk = false;
+					String currentTexture = null;
+
+					int counter = 0;
+					for (int i = 0; i < faces.facesTexIdxs.size(); i++) {
+
+						// get current texture
+						if (!faceMats.isEmpty() && faceMats.findMaterial(i) != null) {
+							Material mat = materials.getMaterial(faceMats.findMaterial(i));
+							if (mat != null && mat.getTexture() != null) {
+								currentTexture = mat.getTexture();
+							}
+						}
+
+						// check if texture is ok (Because we only support 1 texture currently)
+						boolean textureOk = false;
+						if (currentTexture != null && currentTexture.equals(texture)) {
+							textureOk = true;
+						}
+
+						// populate texture coords if ok
+						int[] text = faces.facesTexIdxs.get(i);
+						for (int j = 0; j < text.length; j++) {
+							if (textureOk) {
+								anyTextureOk = true;
+								textureCoordsArraysBuffer.put(counter++, textureCoordsBuffer.get(text[j] * 2));
+								textureCoordsArraysBuffer.put(counter++, textureCoordsBuffer.get(text[j] * 2 + 1));
+							} else {
+								textureCoordsArraysBuffer.put(counter++, 0f);
+								textureCoordsArraysBuffer.put(counter++, 0f);
+							}
+						}
+					}
+
+					if (!anyTextureOk) {
+						Log.i("Object3DBuilder", "Texture is wrong. Applying global texture");
+						counter = 0;
+						for (int j=0; j<faces.facesTexIdxs.size(); j++) {
+							int[] text = faces.facesTexIdxs.get(j);
+							for (int i = 0; i < text.length; i++) {
+								textureCoordsArraysBuffer.put(counter++, textureCoordsBuffer.get(text[i] * 2));
+								textureCoordsArraysBuffer.put(counter++, textureCoordsBuffer.get(text[i] * 2 + 1));
+							}
+						}
+					}
+				} catch (Exception ex) {
+					Log.e("Object3DBuilder", "Failure to load texture coordinates", ex);
+				}
+			}
+		}
 		obj.setTextureData(textureData);
 
 		return obj;
@@ -694,8 +681,9 @@ public final class Object3DBuilder {
 				obj.getColor());
 		return new Object3DData(boundingBox.getVertices()).setDrawModeList(boundingBox.getDrawModeList())
 				.setVertexColorsArrayBuffer(boundingBox.getColors()).setDrawOrder(boundingBox.getDrawOrder())
-				.setDrawMode(boundingBox.getDrawMode()).setDrawSize(boundingBox.getDrawSize())
-				.setPosition(obj.getPosition()).setColor(obj.getColor()).setId(obj.getId() + "_boundingBox");
+				.setDrawMode(boundingBox.getDrawMode())
+				.setPosition(obj.getPosition()).setRotation(obj.getRotation()).setScale(obj.getScale())
+				.setColor(obj.getColor()).setId(obj.getId() + "_boundingBox");
 	}
 
 	/**
@@ -705,22 +693,34 @@ public final class Object3DBuilder {
 	 * @return the 3d wireframe
 	 */
 	public static Object3DData buildWireframe(Object3DData objData) {
+
+		if (objData.getDrawOrder() == null) return objData;
+
 		try {
-			FloatBuffer vertexArrayBuffer = objData.getVertexArrayBuffer();
-			IntBuffer drawOrder = createNativeByteBuffer(vertexArrayBuffer.capacity() / 3 * 2 * 4).asIntBuffer();
-			for (int i = 0; i < vertexArrayBuffer.capacity()/3; i+=3) {
-				drawOrder.put((i));
-				drawOrder.put((i+1));
-				drawOrder.put((i+1));
-				drawOrder.put((i+2));
-				drawOrder.put((i+2));
-				drawOrder.put((i));
+			Log.i("Object3DBuilder", "Building wireframe...");
+			IntBuffer drawBuffer = objData.getDrawOrder().asReadOnlyBuffer();
+			IntBuffer wireframeDrawOrder = createNativeByteBuffer(drawBuffer.capacity() * 2 * 4).asIntBuffer();
+			for (int i = 0; i < drawBuffer.capacity(); i+=3) {
+				int v0 = drawBuffer.get(i);
+				int v1 = drawBuffer.get(i+1);
+				int v2 = drawBuffer.get(i+2);
+				if (objData.isDrawUsingArrays()){
+					v0 = i;
+					v1 = i+1;
+					v2 = i+2;
+				}
+				wireframeDrawOrder.put(v0);
+				wireframeDrawOrder.put(v1);
+				wireframeDrawOrder.put(v1);
+				wireframeDrawOrder.put(v2);
+				wireframeDrawOrder.put(v2);
+				wireframeDrawOrder.put(v0);
 			}
-			return new Object3DData(vertexArrayBuffer).setDrawOrder(drawOrder).
+			return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder).
 					setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
 					.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
-					.setPosition(objData.getPosition()).setRotation(objData.getRotation())
-					.setDrawMode(GLES20.GL_LINES).setDrawSize(-1);
+					.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
+					.setDrawMode(GLES20.GL_LINES).setDrawUsingArrays(false);
 		} catch (Exception ex) {
 			Log.e("Object3DBuilder", ex.getMessage(), ex);
 		}
@@ -747,7 +747,7 @@ public final class Object3DBuilder {
 			}
 			return new Object3DData(objData.getVertexBuffer()).setDrawOrder(drawOrder).
 					setVertexNormalsArrayBuffer(objData.getVertexNormalsBuffer()).setColor(objData.getColor())
-					.setDrawMode(GLES20.GL_LINES).setDrawSize(-1);
+					.setDrawMode(GLES20.GL_LINES);
 		} catch (Exception ex) {
 			Log.e("Object3DBuilder", ex.getMessage(), ex);
 		}
@@ -831,39 +831,19 @@ public final class Object3DBuilder {
 		return bb;
 	}
 
-	public static void loadV5Async(Activity parent, File file, String assetsDir, String assetName,
+	public static void loadV5Async(final Activity parent, final File file, final String assetsDir, final String assetName,
 								   final Callback callback) {
-		Log.i("Loader", "Opening " + (file != null ? " file " + file : "asset " + assetsDir + assetName) + "...");
-		final InputStream modelDataStream;
-		final InputStream modelDataStream2;
-		try {
-			if (file != null) {
-				modelDataStream = new FileInputStream(file);
-				modelDataStream2 = new FileInputStream(file);
-			} else if (assetsDir != null) {
-				modelDataStream = parent.getAssets().open(assetsDir + assetName);
-				modelDataStream2 = parent.getAssets().open(assetsDir + assetName);
-			} else {
-				throw new IllegalArgumentException("Model data source not specified");
-			}
-		} catch (IOException ex) {
-			throw new RuntimeException(
-					"There was a problem opening file/asset '" + (file != null ? file : assetsDir + assetName) + "'");
-		}
 
-		Log.i("Loader", "Loading model...");
-		LoaderTask loaderTask = new LoaderTask(parent, file != null ? file.getParentFile() : null, assetsDir,
-				file != null ? file.getName() : assetName) {
+		final String modelId = file != null ? file.getName() : assetName;
+		final File currentDir = file != null ? file.getParentFile() : null;
+
+		Log.i("Object3DBuilder", "Loading model "+modelId+". async..");
+
+		LoaderTask loaderTask = new LoaderTask(parent, currentDir, assetsDir, modelId) {
 
 			@Override
-			protected void onPostExecute(Object3DData data) {
+			protected void onPostExecute(final Object3DData data) {
 				super.onPostExecute(data);
-				try {
-					modelDataStream2.close();
-					modelDataStream.close();
-				} catch (IOException ex) {
-					Log.e("Menu", "Problem closing stream: " + ex.getMessage(), ex);
-				}
 				if (error != null) {
 					callback.onLoadError(error);
 				} else {
@@ -871,8 +851,70 @@ public final class Object3DBuilder {
 				}
 			}
 		};
-		loaderTask.execute(modelDataStream2, modelDataStream);
+		loaderTask.execute();
 	}
+
+	public static void loadV6AsyncParallel(final Activity parent, final File file, final String assetsDir, final String assetName,
+										   final Callback callback) {
+
+		final String modelId = file != null ? file.getName() : assetName;
+		final File currentDir = file != null ? file.getParentFile() : null;
+
+		Log.i("Object3DBuilder", "Loading model "+modelId+". async and parallel..");
+
+		LoaderTask loaderTask = new LoaderTask(parent, currentDir, assetsDir, modelId) {
+
+			@Override
+			protected void onPostExecute(final Object3DData data) {
+				super.onPostExecute(data);
+				if (error != null) {
+					callback.onLoadError(error);
+				} else {
+					callback.onLoadComplete(data);
+					new AsyncTask<Void, Void, Void>() {
+						@Override
+						protected Void doInBackground(Void... params) {
+							build3DData(currentDir,modelId,assetsDir,parent,data,callback);
+							return null;
+						}
+					}.execute();
+				}
+			}
+		};
+		loaderTask.execute();
+	}
+
+	private static void build3DData(File file, String modelId, String assetsDir, Activity parent, Object3DData data, Callback callback) {
+		try {
+			InputStream modelDataStream = null;
+			if (file != null) {
+				modelDataStream = new FileInputStream(new File(file, modelId));
+			} else if (assetsDir != null) {
+				modelDataStream = parent.getAssets().open(assetsDir + "/" + modelId);
+			}
+			if (modelDataStream == null) {
+				Log.e("Object3DBuilder", "Problem loading data. Null stream");
+				return;
+			}
+			data.getLoader().loadModel(modelDataStream);
+			data.getLoader().centerScale();
+
+			modelDataStream.close();
+			data.setDrawMode(GLES20.GL_TRIANGLES);
+			Object3DBuilder.generateArrays(parent.getAssets(), data);
+
+			if (callback != null){
+				callback.onLoadComplete(data);
+			}
+		} catch (Exception e) {
+			Log.e("Object3DBuilder",e.getMessage(),e);
+
+			if (callback != null) {
+				callback.onLoadError(e);
+			}
+		}
+	}
+
 
 }
 
@@ -881,7 +923,7 @@ public final class Object3DBuilder {
  *
  * @author andresoviedo
  */
-class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
+class LoaderTask extends AsyncTask<Void, Integer, Object3DData> {
 
 	/**
 	 * The parent activity
@@ -907,6 +949,10 @@ class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 	 * Exception when loading data (if any)
 	 */
 	protected Exception error;
+	/**
+	 * Whether to build the model immediately or lazily
+	 */
+	boolean immediateBuild = true;
 
 	/**
 	 * Build a new progress dialog for loading the data model asynchronously
@@ -932,30 +978,84 @@ class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 		this.dialog.show();
 	}
 
-	@Override
-	protected Object3DData doInBackground(InputStream... params) {
+	private InputStream getInputStream(){
+		Log.i("LoaderTask", "Opening "+modelId+"...");
 		try {
-			publishProgress(0);
+			final InputStream ret;
+			if (currentDir != null) {
+				return new FileInputStream(new File(currentDir,modelId));
+			} else if (assetsDir != null) {
+				return parent.getAssets().open(assetsDir + "/"+modelId);
+			} else {
+				throw new IllegalArgumentException("Model data source not specified");
+			}
+		} catch (IOException ex) {
+			throw new RuntimeException(
+					"There was a problem opening file/asset '" + (currentDir != null ? currentDir : assetsDir)  + "/"+modelId + "'");
+		}
+	}
 
+	private static void closeStream(InputStream stream){
+		if (stream == null) return;
+		try {
+			if (stream != null) {
+				stream.close();
+			}
+		} catch (IOException ex) {
+			Log.e("LoaderTask", "Problem closing stream: " + ex.getMessage(), ex);
+		}
+	}
+
+	@Override
+	protected Object3DData doInBackground(Void... params) {
+
+		InputStream params0 = getInputStream();
+		InputStream params1 = getInputStream();
+		try {
 			WavefrontLoader wfl = new WavefrontLoader("");
-			wfl.reserveData(params[0]);
-			publishProgress(1);
 
-			wfl.loadModel(params[1]);
-			publishProgress(2);
+			// allocate memory
+			publishProgress(0);
+			wfl.analyzeModel(params0);
 
+			// load obj file
+			if (immediateBuild){
+
+				publishProgress(1);
+				wfl.allocateBuffers();
+
+				publishProgress(2);
+				wfl.loadModel(params1);
+				wfl.reportOnModel();
+
+				// scale object
+				publishProgress(3);
+				wfl.centerScale();
+			}
+
+			// create the 3D object
 			Object3DData data3D = new Object3DData(wfl.getVerts(), wfl.getNormals(), wfl.getTexCoords(), wfl.getFaces(),
 					wfl.getFaceMats(), wfl.getMaterials());
 			data3D.setId(modelId);
 			data3D.setCurrentDir(currentDir);
 			data3D.setAssetsDir(assetsDir);
+			data3D.setLoader(wfl);
+			data3D.setDrawMode(GLES20.GL_TRIANGLES);
 
-			Object3DBuilder.generateArrays(parent.getAssets(), data3D);
-			publishProgress(3);
+			// load 3D object buffers
+			if (immediateBuild){
+				publishProgress(4);
+				Object3DBuilder.generateArrays(parent.getAssets(), data3D);
+				publishProgress(5);
+			}
+
 			return data3D;
 		} catch (Exception ex) {
 			error = ex;
 			return null;
+		} finally {
+			closeStream(params0);
+			closeStream(params1);
 		}
 	}
 
@@ -967,13 +1067,19 @@ class LoaderTask extends AsyncTask<InputStream, Integer, Object3DData> {
 				this.dialog.setMessage("Analyzing model...");
 				break;
 			case 1:
-				this.dialog.setMessage("Loading data...");
+				this.dialog.setMessage("Allocating memory...");
 				break;
 			case 2:
-				this.dialog.setMessage("Building 3D model...");
+				this.dialog.setMessage("Loading data...");
 				break;
 			case 3:
-				this.dialog.setMessage("Model '" + modelId + "' built");
+				this.dialog.setMessage("Scaling object...");
+				break;
+			case 4:
+				this.dialog.setMessage("Building 3D model...");
+				break;
+			case 5:
+				// Toast.makeText(parent, modelId + " Build!", Toast.LENGTH_LONG).show();
 				break;
 		}
 	}

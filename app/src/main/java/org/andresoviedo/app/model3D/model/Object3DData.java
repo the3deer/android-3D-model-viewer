@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.andresoviedo.app.model3D.entities.*;
 import org.andresoviedo.app.model3D.entities.BoundingBox;
+import org.andresoviedo.app.model3D.services.WavefrontLoader;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.FaceMaterials;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Faces;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Materials;
@@ -43,7 +44,7 @@ public class Object3DData {
 	 */
 	private String assetsDir;
 	private String id;
-	private boolean drawUsingArrays = true;
+	private boolean drawUsingArrays = false;
 	private boolean flipTextCoords = true;
 
 	// Model data for the simplest object
@@ -51,21 +52,25 @@ public class Object3DData {
 	private boolean isVisible = true;
 
 	private float[] color;
-	private int drawMode;
+	/**
+	 * The minimum thing we can draw in space is a vertex (or point).
+	 * This drawing mode uses the vertexBuffer
+	 */
+	private int drawMode = GLES20.GL_POINTS;
 	private int drawSize;
 
 	// Model data
-	private FloatBuffer verts;
+	private FloatBuffer vertexBuffer = null;
 	private FloatBuffer normals;
+	private IntBuffer drawOrderBuffer = null;
+
 	private ArrayList<Tuple3> texCoords;
 	private Faces faces;
 	private FaceMaterials faceMats;
 	private Materials materials;
 
 	// Processed data
-	private FloatBuffer vertexBuffer = null;
 	private FloatBuffer vertexNormalsBuffer = null;
-	private IntBuffer drawOrderBuffer = null;
 
 	// Processed arrays
 	private FloatBuffer vertexArrayBuffer = null;
@@ -82,9 +87,13 @@ public class Object3DData {
 	// Transformation data
 	protected float[] position = new float[] { 0f, 0f, 0f };
 	protected float[] rotation = new float[] { 0f, 0f, 0f };
+	protected float[] scale;
 
 	// whether the object has changed
 	private boolean changed;
+
+	// Async Loader
+	private WavefrontLoader loader;
 
 	public Object3DData(FloatBuffer vertexArrayBuffer) {
 		this.vertexArrayBuffer = vertexArrayBuffer;
@@ -116,8 +125,9 @@ public class Object3DData {
 	public Object3DData(FloatBuffer verts, FloatBuffer normals, ArrayList<Tuple3> texCoords, Faces faces,
 			FaceMaterials faceMats, Materials materials) {
 		super();
-		this.verts = verts;
+		this.vertexBuffer = verts;
 		this.normals = normals;
+		this.drawOrderBuffer = faces.getIndexBuffer();
 		this.texCoords = texCoords;
 		this.faces = faces;
 		this.faceMats = faceMats;
@@ -183,11 +193,6 @@ public class Object3DData {
 		return drawSize;
 	}
 
-	public Object3DData setDrawSize(int drawSize) {
-		this.drawSize = drawSize;
-		return this;
-	}
-
 	// -----------
 
 	public byte[] getTextureData() {
@@ -225,6 +230,27 @@ public class Object3DData {
 
 	public float getRotationZ() {
 		return rotation != null ? rotation[2] : 0;
+	}
+
+	public Object3DData setScale(float[] scale){
+		this.scale = scale;
+		return this;
+	}
+
+	public float[] getScale(){
+		return scale;
+	}
+
+	public float getScaleX() {
+		return getScale()[0];
+	}
+
+	public float getScaleY() {
+		return getScale()[1];
+	}
+
+	public float getScaleZ() {
+		return getScale()[2];
 	}
 
 	public Object3DData setRotation(float[] rotation) {
@@ -274,12 +300,13 @@ public class Object3DData {
 		this.flipTextCoords = flipTextCoords;
 	}
 
-	public void setDrawUsingArrays(boolean drawUsingArrays) {
+	public Object3DData setDrawUsingArrays(boolean drawUsingArrays) {
 		this.drawUsingArrays = drawUsingArrays;
+		return this;
 	}
 
 	public FloatBuffer getVerts() {
-		return verts;
+		return vertexBuffer;
 	}
 
 	public FloatBuffer getNormals() {
@@ -361,15 +388,6 @@ public class Object3DData {
 		return vertexColorsArrayBuffer;
 	}
 
-	public Object3DData generateVertexColorsArrayBuffer() {
-		FloatBuffer colorsArray = createNativeByteBuffer(4 * getVertexArrayBuffer().capacity() / 3 * 4).asFloatBuffer();
-		for (int i = 0; i < getVertexArrayBuffer().capacity() / 3; i++) {
-			colorsArray.put(1.0f).put(1.0f).put(1.0f).put(1.0f);
-		}
-		this.vertexColorsArrayBuffer = colorsArray;
-		return this;
-	}
-
 	public Object3DData setVertexColorsArrayBuffer(FloatBuffer vertexColorsArrayBuffer) {
 		this.vertexColorsArrayBuffer = vertexColorsArrayBuffer;
 		return this;
@@ -398,7 +416,7 @@ public class Object3DData {
 		float topPt = Float.MIN_VALUE, bottomPt = Float.MAX_VALUE; // on y-axis
 		float farPt = Float.MAX_VALUE, nearPt = Float.MIN_VALUE; // on z-axis
 
-		FloatBuffer vertexBuffer = getVertexArrayBuffer() != null ? getVertexArrayBuffer() : getVertexBuffer();
+		 FloatBuffer vertexBuffer = getVertexArrayBuffer() != null ? getVertexArrayBuffer() : getVertexBuffer();
 		if (vertexBuffer == null) {
 			Log.v("Object3DData", "Scaling for '" + getId() + "' I found that there is no vertex data");
 			return this;
@@ -428,6 +446,8 @@ public class Object3DData {
 		float yc = (topPt + bottomPt) / 2.0f;
 		float zc = (nearPt + farPt) / 2.0f;
 
+		// this.setOriginalPosition(new float[]{-xc,-yc,-zc});
+
 		// calculate largest dimension
 		float height = topPt - bottomPt;
 		float depth = nearPt - farPt;
@@ -447,6 +467,8 @@ public class Object3DData {
 			scaleFactor = (maxSize / largest);
 		Log.i("Object3DData",
 				"Centering & scaling '" + getId() + "' to (" + xc + "," + yc + "," + zc + ") scale: '" + scaleFactor + "'");
+
+		// this.setOriginalScale(new float[]{scaleFactor,scaleFactor,scaleFactor});
 
 		// modify the model's vertices
 		for (int i = 0; i < vertexBuffer.capacity(); i += 3) {
@@ -592,6 +614,7 @@ public class Object3DData {
 	public BoundingBox getBoundingBox() {
 		if (boundingBox == null && vertexBuffer != null) {
 			float xMin = Float.MAX_VALUE, xMax = Float.MIN_VALUE, yMin = Float.MAX_VALUE, yMax = Float.MIN_VALUE, zMin = Float.MAX_VALUE, zMax = Float.MIN_VALUE;
+			FloatBuffer vertexBuffer = getVertexBuffer().asReadOnlyBuffer();
 			vertexBuffer.position(0);
 			while (vertexBuffer.hasRemaining()) {
 				float vertexx = vertexBuffer.get();
@@ -622,4 +645,13 @@ public class Object3DData {
 		}
 		return boundingBox;
 	}
+
+	public void setLoader(WavefrontLoader loader) {
+		this.loader = loader;
+	}
+
+	public WavefrontLoader getLoader() {
+		return loader;
+	}
+
 }

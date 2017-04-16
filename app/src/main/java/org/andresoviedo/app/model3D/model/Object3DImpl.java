@@ -9,6 +9,7 @@ import org.andresoviedo.app.model3D.util.GLUtil;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.os.SystemClock;
 import android.util.Log;
 
 /**
@@ -29,8 +30,11 @@ public abstract class Object3DImpl implements Object3D {
 	private final float[] mvpMatrix = new float[16];
 	// OpenGL data
 	private final int mProgram;
+
+	// animation data
 	// put 0 to draw progressively, -1 to draw at once
 	private long counter = -1;
+	private double shift = -1d;
 
 	public Object3DImpl(String id, String vertexShaderCode, String fragmentShaderCode, String... variables) {
 		this.id = id;
@@ -121,7 +125,12 @@ public abstract class Object3DImpl implements Object3D {
 			Matrix.rotateM(mMatrix, 0, obj.getRotation()[1], 0, 1f, 0f);
 			Matrix.rotateM(mMatrix, 0, obj.getRotationZ(), 0, 0, 1f);
 		}
-		Matrix.translateM(mMatrix, 0, obj.getPositionX(), obj.getPositionY(), obj.getPositionZ());
+		if (obj.getScale() != null) {
+			Matrix.scaleM(mMatrix, 0, obj.getScaleX(), obj.getScaleY(),obj.getScaleZ());
+		}
+		if (obj.getPosition() != null) {
+			Matrix.translateM(mMatrix, 0, obj.getPositionX(), obj.getPositionY(), obj.getPositionZ());
+		}
 		return mMatrix;
 	}
 
@@ -194,6 +203,7 @@ public abstract class Object3DImpl implements Object3D {
 		vertexBuffer.position(0);
 		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, VERTEX_STRIDE,
 				vertexBuffer);
+		GLUtil.checkGlError("glVertexAttribPointer");
 
 		return mPositionHandle;
 	}
@@ -282,6 +292,11 @@ public abstract class Object3DImpl implements Object3D {
 		List<int[]> drawModeList = obj.getDrawModeList();
 		IntBuffer drawOrderBuffer = obj.getDrawOrder();
 
+
+		if (obj.isDrawUsingArrays()){
+			drawOrderBuffer = null;
+		}
+
 		if (drawModeList != null) {
 			if (drawOrderBuffer == null) {
 				Log.d(obj.getId(),"Drawing single polygons using arrays...");
@@ -315,7 +330,8 @@ public abstract class Object3DImpl implements Object3D {
 		} else {
 			if (drawOrderBuffer != null) {
 				if (drawSize <= 0) {
-					//Log.d(obj.getId(),"Drawing all elements with mode '"+drawMode+"'...");
+					// String mode = drawMode == GLES20.GL_POINTS ? "Points" : drawMode == GLES20.GL_LINES? "Lines": "Triangles?";
+					// Log.d(obj.getId(),"Drawing all elements with mode '"+mode+"'...");
 					drawOrderBuffer.position(0);
 					GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), GLES20.GL_UNSIGNED_INT,
 							drawOrderBuffer);
@@ -331,13 +347,15 @@ public abstract class Object3DImpl implements Object3D {
 					int drawCount = vertexBuffer.capacity() / COORDS_PER_VERTEX;
 					
 					// if we want to animate, initialize counter=0 at variable declaration
-					// Log.d(obj.getId(),"Drawing all triangles using arrays...");
-					if (this.counter >= 0) {
-						counter += 100;
-						counter = counter % Integer.MAX_VALUE;
-						drawCount = (int)counter % drawCount + 1;
+					if (this.shift >= 0) {
+						double rotation = ((SystemClock.uptimeMillis() % 10000) / 10000f) * (Math.PI * 2);
+
+						if (this.shift == 0d){
+							this.shift = rotation ;
+						}
+						drawCount = (int)((Math.sin(rotation-this.shift+ Math.PI / 2 * 3)+1)/2f*drawCount);
 					}
-					
+					// Log.d(obj.getId(),"Drawing all triangles using arrays... counter("+drawCount+")");
 					GLES20.glDrawArrays(drawMode, 0, drawCount);
 				} else {
 					//Log.d(obj.getId(),"Drawing single triangles using arrays...");
@@ -395,7 +413,8 @@ class Object3DV1 extends Object3DImpl {
 		"uniform mat4 u_MVPMatrix;" + 
 		"attribute vec4 a_Position;" + 
 		"void main() {" +
-			"  gl_Position = u_MVPMatrix * a_Position;" + 
+			"  gl_Position = u_MVPMatrix * a_Position;\n" +
+			"  gl_PointSize = 2.5;  \n"+
 		"}";
 	// @formatter:on
 
@@ -433,7 +452,8 @@ class Object3DV2 extends Object3DImpl {
 		"varying vec4 vColor;"+
 		"void main() {" +
 			"  vColor = a_Color;"+
-			"  gl_Position = u_MVPMatrix * a_Position;" + 
+			"  gl_Position = u_MVPMatrix * a_Position;" +
+			"  gl_PointSize = 2.5;  \n"+
 		"}";
 	// @formatter:on
 
@@ -471,7 +491,8 @@ class Object3DV3 extends Object3DImpl {
 		"varying vec2 v_TexCoordinate;"+   // This will be passed into the fragment shader.
 		"void main() {" +
 			"  v_TexCoordinate = a_TexCoordinate;"+
-			"  gl_Position = u_MVPMatrix * a_Position;" + 
+			"  gl_Position = u_MVPMatrix * a_Position;" +
+			"  gl_PointSize = 2.5;  \n"+
 		"}";
 	// @formatter:on
 
@@ -515,6 +536,7 @@ class Object3DV4 extends Object3DImpl {
 			"  vColor = a_Color;"+
 			"  v_TexCoordinate = a_TexCoordinate;"+
 		    "  gl_Position = u_MVPMatrix * a_Position;"+
+			"  gl_PointSize = 2.5;  \n"+
 		"}";
 	// @formatter:on
 
@@ -580,8 +602,9 @@ class Object3DV5 extends Object3DImpl {
 			"  diffuse = diffuse + 0.3;"+
 		// Multiply the color by the illumination level. It will be interpolated across the triangle.
 		   "   v_Color = a_Color * diffuse;\n"+
-		   "   v_Color[3] = a_Color[3];"+ // correct alpha
-			"  gl_Position = u_MVPMatrix * a_Position;\n" + 
+		    "   v_Color[3] = a_Color[3];"+ // correct alpha
+			"  gl_Position = u_MVPMatrix * a_Position;\n" +
+			"  gl_PointSize = 2.5;  \n"+
 		"}";
 	// @formatter:on
 
@@ -661,7 +684,8 @@ class Object3DV6 extends Object3DImpl {
 		// Multiply the color by the illumination level. It will be interpolated across the triangle.
 		   "   v_Color = a_Color * diffuse;\n"+
 		   "   v_Color[3] = a_Color[3];"+ // correct alpha
-			"  gl_Position = u_MVPMatrix * a_Position;\n" + 
+			"  gl_Position = u_MVPMatrix * a_Position;\n" +
+			"  gl_PointSize = 2.5;  \n"+
 		"}";
 	// @formatter:on
 
@@ -747,6 +771,7 @@ class Object3DV7 extends Object3DImpl {
 					"   v_Color = vColor * diffuse;\n"+
 					"   v_Color[3] = vColor[3];"+ // correct alpha
 					"  gl_Position = u_MVPMatrix * a_Position;\n" +
+					"  gl_PointSize = 2.5;  \n"+
 					"}";
 	// @formatter:on
 
@@ -830,6 +855,7 @@ class Object3DV8 extends Object3DImpl {
 					"   v_Color = vColor * diffuse;\n"+
 					"   v_Color[3] = vColor[3];"+ // correct alpha
 					"  gl_Position = u_MVPMatrix * a_Position;\n" +
+					"  gl_PointSize = 2.5;  \n"+
 					"}";
 	// @formatter:on
 

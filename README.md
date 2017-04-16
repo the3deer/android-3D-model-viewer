@@ -11,9 +11,10 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 https://en.wikipedia.org/wiki/Wavefront_.obj_file
 
 
-News (10/04/2017)
+News (16/04/2017)
 =================
 
+* Fixed #16: Toogle point drawing + several improvements
 * Fixed #15: Toggle rotating light + fixed wireframe colors
 * Fixed #14: Camera movement improved
 * Fixed #13: Fixed parsing of vertices
@@ -62,14 +63,15 @@ Features
 
   - OpenGL ES 2.0 API
   - OBJ format supported (wavefront)
-  - textures
+  - calculation of normals
+  - transformations: scaling, rotation, translation
   - colors
+  - textures
   - lighting
-  - display of normals
-  - display of bounding box
-  - scaling, rotation
+  - wireframe & points mode
+  - bounding box drawing
   - object selection
-  - touch support!
+  - camera support!
     - tap to select object
     - drag to move camera
     - rotate with 2 fingers to rotate camera
@@ -126,6 +128,15 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 1.2.10 (16/04/2017)
+  - (f) #16: Immersive mode is now configurable in the ModelActivity Intent: b.putString("immersiveMode", "false");
+  - (f) #16: Background color configurable in the ModelActivity Intent: b.putString("backgroundColor", "0 0 0 1");
+  - (f) #16: Fixed vertex normals generation (vertices were missing)
+  - (f) #16: Scaling is now implemented in the ModelView Matrix with Object3DData.setScale(float[])
+  - (f) #16: Wireframe generation is now using the source data
+  - (n) #16: Implemented Point Drawing, like wireframe mode but only the points are drawn
+  - (f) #16: Removed trailing slash from parameter "assetDir"
+  - (f) #16: Access to ByteBuffers made absolute so there are thread safe (future fixes need this)
 
 - 1.2.9 (11/04/2017)
   - (f) #15: Toggle rotating light

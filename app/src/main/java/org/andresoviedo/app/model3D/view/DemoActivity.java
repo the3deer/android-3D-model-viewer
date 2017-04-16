@@ -70,8 +70,9 @@ public class DemoActivity extends ListActivity {
 	private void loadDemo(final String selectedItem) {
 		Intent intent = new Intent(DemoActivity.this.getApplicationContext(), ModelActivity.class);
 		Bundle b = new Bundle();
-		b.putString("assetDir", "models/");
+		b.putString("assetDir", "models");
 		b.putString("assetFilename", selectedItem);
+		b.putString("immersiveMode", "true");
 		intent.putExtras(b);
 		DemoActivity.this.startActivity(intent);
 	}
