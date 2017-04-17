@@ -81,7 +81,7 @@ public class WavefrontLoader {
 	// buffers
 	private FloatBuffer vertsBuffer;
 	private FloatBuffer normalsBuffer;
-	// TODO: load texture data directly into this buffer
+	// TODO: build texture data directly into this buffer
 	private FloatBuffer textureCoordsBuffer;
 
 	// flags
@@ -122,6 +122,10 @@ public class WavefrontLoader {
 		return materials;
 	}
 
+	public ModelDimensions getDimensions() {
+		return modelDims;
+	}
+
 	/**
 	 * Count verts, normals, faces etc and reserve buffers to save the data.
 	 * @param br data source
@@ -156,7 +160,7 @@ public class WavefrontLoader {
 						numFaces += (faceSize - 2);
 						// (faceSize-2)x3 = converting polygon to triangles
 						numVertsReferences += (faceSize - 2) * 3;
-					} else if (line.startsWith("mtllib ")) // load material
+					} else if (line.startsWith("mtllib ")) // build material
 					{
 						materials = new Materials(line.substring(7));
 					} else if (line.startsWith("usemtl ")) {// use material
@@ -263,7 +267,7 @@ public class WavefrontLoader {
 					else if (line.startsWith("f ")) { // face
 						isLoaded = faces.addFace(line) && isLoaded;
 						numFaces++;
-					} else if (line.startsWith("mtllib ")) // load material
+					} else if (line.startsWith("mtllib ")) // build material
 					{
 						// materials = new Materials(new File(modelFile.getParent(),
 						// line.substring(7)).getAbsolutePath());
@@ -334,7 +338,7 @@ public class WavefrontLoader {
 		}catch(NumberFormatException ex){
 			Log.e("WavefrontLoader",ex.getMessage());
 		} finally{
-			// try to load even with errors
+			// try to build even with errors
 			buffer.put(offset, x).put(offset+1, y).put(offset+2, z);
 		}
 
@@ -393,39 +397,6 @@ public class WavefrontLoader {
 
 		return null; // means an error occurred
 	} // end of readTCTuple()
-
-	public void centerScale()
-	/*
-	 * Position the model so it's center is at the origin, and scale it so its longest dimension is no bigger than
-	 * maxSize.
-	 */
-	{
-		// get the model's center point
-		Tuple3 center = modelDims.getCenter();
-
-		// calculate a scale factor
-		float scaleFactor = 1.0f;
-		float largest = modelDims.getLargest();
-		// System.out.println("Largest dimension: " + largest);
-		if (largest != 0.0f)
-			scaleFactor = (maxSize / largest);
-		Log.i("WavefrontLoader","Scaling model with factor: " + scaleFactor);
-
-		// modify the model's vertices
-		float x0, y0, z0;
-		float x, y, z;
-		for (int i = 0; i < vertsBuffer.capacity()/3; i++) {
-			x0 = vertsBuffer.get(i*3);
-			y0 = vertsBuffer.get(i*3+1);
-			z0 = vertsBuffer.get(i*3+2);
-			x = (x0 - center.getX()) * scaleFactor;
-			vertsBuffer.put(i*3,x);
-			y = (y0 - center.getY()) * scaleFactor;
-			vertsBuffer.put(i*3+1,y);
-			z = (z0 - center.getZ()) * scaleFactor;
-			vertsBuffer.put(i*3+2,z);
-		}
-	} // end of centerScale()
 
 	public void reportOnModel() {
 		Log.i("WavefrontLoader","No. of vertices: " + vertsBuffer.capacity()/3);

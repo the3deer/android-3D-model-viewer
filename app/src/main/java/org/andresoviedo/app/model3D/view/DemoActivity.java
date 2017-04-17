@@ -58,7 +58,7 @@ public class DemoActivity extends ListActivity {
 		// add 1 entry per model found
 		rowItems = new ArrayList<RowItem>();
 		for (String model : models) {
-			if (model.toLowerCase().endsWith(".obj")) {
+			if (model.toLowerCase().endsWith(".obj") || model.toLowerCase().endsWith(".stl")) {
 				RowItem item = new RowItem("models/" + model, model, "models/" + model + ".jpg");
 				rowItems.add(item);
 			}
@@ -136,7 +136,7 @@ class RowItem {
 	 */
 	String name;
 	/**
-	 * Assets path from where to load the .obj file
+	 * Assets path from where to build the .obj file
 	 */
 	String path;
 

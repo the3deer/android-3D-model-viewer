@@ -1,5 +1,8 @@
 package org.andresoviedo.app.model3D.services;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,9 +10,8 @@ import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DBuilder.Callback;
 import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.view.ModelActivity;
+import org.andresoviedo.app.util.url.android.Handler;
 
-import android.opengl.GLES20;
-import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
@@ -84,11 +86,35 @@ public class SceneLoader {
 
 		// Load object
 		if (parent.getParamFile() != null || parent.getParamAssetDir() != null) {
-			Object3DBuilder.loadV5Async(parent, parent.getParamFile(), parent.getParamAssetDir(),
+
+			// Initialize assets url handler
+			Handler.assets = parent.getAssets();
+			// Handler.classLoader = parent.getClassLoader(); (optional)
+			// Handler.androidResources = parent.getResources(); (optional)
+
+			// Create asset url
+			final URL url;
+			try {
+				if (parent.getParamFile() != null) {
+					url = parent.getParamFile().toURI().toURL();
+				} else {
+					url = new URL("android://org.andresoviedo.dddmodel2/assets/" + parent.getParamAssetDir() + File.separator + parent.getParamAssetFilename());
+
+				}
+			} catch (MalformedURLException e) {
+				Log.e("SceneLoader", e.getMessage(), e);
+				throw new RuntimeException(e);
+			}
+
+			Object3DBuilder.loadV6AsyncParallel(parent, url, parent.getParamFile(), parent.getParamAssetDir(),
 					parent.getParamAssetFilename(), new Callback() {
+
+						long startTime = SystemClock.uptimeMillis();
 
 						@Override
 						public void onBuildComplete(Object3DData data) {
+							final String elapsed = (SystemClock.uptimeMillis() - startTime)/1000+" secs";
+							makeToastText("Load complete ("+elapsed+")", Toast.LENGTH_LONG);
 						}
 
 						@Override
@@ -105,9 +131,16 @@ public class SceneLoader {
 									"There was a problem building the model: " + ex.getMessage(), Toast.LENGTH_LONG)
 									.show();
 						}
-
 					});
 		}
+	}
+
+	private void makeToastText(final String text, final int toastDuration) {
+		parent.runOnUiThread(new Runnable() {
+			public void run() {
+				Toast.makeText(parent.getApplicationContext(), text, toastDuration).show();
+			}
+		});
 	}
 
 	public Object3DData getLightBulb() {
@@ -149,11 +182,14 @@ public class SceneLoader {
 		if (this.drawWireframe && !this.drawingPoints) {
 			this.drawWireframe = false;
 			this.drawingPoints = true;
+			makeToastText("Points", Toast.LENGTH_SHORT);
 		}
 		else if (this.drawingPoints){
 			this.drawingPoints = false;
+			makeToastText("Faces", Toast.LENGTH_SHORT);
 		}
 		else {
+			makeToastText("Wireframe", Toast.LENGTH_SHORT);
 			this.drawWireframe = true;
 		}
 		requestRender();
@@ -187,10 +223,16 @@ public class SceneLoader {
 	public void toggleLighting() {
 		if (this.drawLighting && this.rotatingLight){
 			this.rotatingLight = false;
+			makeToastText("Light stopped", Toast.LENGTH_SHORT);
+		}
+		else if (this.drawLighting && !this.rotatingLight){
+			this.drawLighting = false;
+			makeToastText("Lightsoff", Toast.LENGTH_SHORT);
 		}
 		else {
-			this.drawLighting = !drawLighting;
-			rotatingLight = true;
+			this.drawLighting = true;
+			this.rotatingLight = true;
+			makeToastText("Light on", Toast.LENGTH_SHORT);
 		}
 		requestRender();
 	}

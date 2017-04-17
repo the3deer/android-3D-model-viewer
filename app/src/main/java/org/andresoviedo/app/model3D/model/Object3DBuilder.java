@@ -1,10 +1,8 @@
 package org.andresoviedo.app.model3D.model;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.res.AssetManager;
 import android.opengl.GLES20;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import org.andresoviedo.app.model3D.services.WavefrontLoader;
@@ -13,6 +11,8 @@ import org.andresoviedo.app.model3D.services.WavefrontLoader.Faces;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Material;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Materials;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Tuple3;
+import org.andresoviedo.app.model3D.services.stl.STLLoader;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader2;
 import org.andresoviedo.app.util.math.Math3DUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -318,6 +319,11 @@ public final class Object3DBuilder {
 	private Object3DV7 object3dv7;
 	private Object3DV8 object3dv8;
 
+	static {
+		System.setProperty("java.protocol.handler.pkgs", "org.andresoviedo.app.util.url|"+System.getProperty("java.protocol.handler.pkgs"));
+		Log.i("Object3DBuilder", "java.protocol.handler.pkgs=" + System.getProperty("java.protocol.handler.pkgs"));
+	}
+
 	public static Object3DData buildPoint(float[] point) {
 		return new Object3DData(createNativeByteBuffer(point.length * 4).asFloatBuffer().put(point))
 				.setDrawMode(GLES20.GL_POINTS);
@@ -382,14 +388,14 @@ public final class Object3DBuilder {
 
 			is = assets.open(modelId);
 			wfl.loadModel(is);
-
-			wfl.centerScale();
 			is.close();
 
 			Object3DData data3D = new Object3DData(wfl.getVerts(), wfl.getNormals(), wfl.getTexCoords(), wfl.getFaces(),
 					wfl.getFaceMats(), wfl.getMaterials());
 			data3D.setId(assetFilename);
 			data3D.setAssetsDir(assetDir);
+			data3D.setDimensions(wfl.getDimensions());
+			data3D.centerScale();
 
 			data3D.setDrawMode(GLES20.GL_TRIANGLES);
 			generateArrays(assets, data3D);
@@ -469,7 +475,7 @@ public final class Object3DBuilder {
 		final FloatBuffer vertexNormalsArrayBuffer = createNativeByteBuffer(faces.getSize() * 3 * 3 * 4).asFloatBuffer();;
 		obj.setVertexNormalsArrayBuffer(vertexNormalsArrayBuffer);
 
-		// load file normals
+		// build file normals
 		final FloatBuffer vertexNormalsBuffer = obj.getNormals().asReadOnlyBuffer();
 		if (vertexNormalsBuffer.capacity() > 0) {
 			Log.i("Object3DBuilder", "Populating normals buffer...");
@@ -593,21 +599,23 @@ public final class Object3DBuilder {
 			ArrayList<Tuple3> texCoords = obj.getTexCoords();
 			if (texCoords != null && texCoords.size() > 0) {
 
-				Log.i("Object3DBuilder", "Allocating texture buffer...");
+				Log.i("Object3DBuilder", "Allocating/populating texture buffer...");
 				FloatBuffer textureCoordsBuffer = createNativeByteBuffer(texCoords.size() * 2 * 4).asFloatBuffer();
-				FloatBuffer textureCoordsArraysBuffer = createNativeByteBuffer(2 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
-				obj.setTextureCoordsArrayBuffer(textureCoordsArraysBuffer);
-
-				Log.i("Object3DBuilder", "Populating texture buffer...");
 				for (Tuple3 texCor : texCoords) {
 					textureCoordsBuffer.put(texCor.getX());
 					textureCoordsBuffer.put(obj.isFlipTextCoords() ? 1 - texCor.getY() : texCor.getY());
 				}
+
+				Log.i("Object3DBuilder", "Populating texture array buffer...");
+				FloatBuffer textureCoordsArraysBuffer = createNativeByteBuffer(2 * faces.getVerticesReferencesCount() * 4).asFloatBuffer();
+				obj.setTextureCoordsArrayBuffer(textureCoordsArraysBuffer);
+
 				try {
 
 					boolean anyTextureOk = false;
 					String currentTexture = null;
 
+					Log.i("Object3DBuilder", "Populating texture array buffer...");
 					int counter = 0;
 					for (int i = 0; i < faces.facesTexIdxs.size(); i++) {
 
@@ -694,35 +702,54 @@ public final class Object3DBuilder {
 	 */
 	public static Object3DData buildWireframe(Object3DData objData) {
 
-		if (objData.getDrawOrder() == null) return objData;
+		if (objData.getDrawOrder() != null) {
 
-		try {
-			Log.i("Object3DBuilder", "Building wireframe...");
-			IntBuffer drawBuffer = objData.getDrawOrder().asReadOnlyBuffer();
-			IntBuffer wireframeDrawOrder = createNativeByteBuffer(drawBuffer.capacity() * 2 * 4).asIntBuffer();
-			for (int i = 0; i < drawBuffer.capacity(); i+=3) {
-				int v0 = drawBuffer.get(i);
-				int v1 = drawBuffer.get(i+1);
-				int v2 = drawBuffer.get(i+2);
-				if (objData.isDrawUsingArrays()){
-					v0 = i;
-					v1 = i+1;
-					v2 = i+2;
+			try {
+				Log.i("Object3DBuilder", "Building wireframe...");
+				IntBuffer drawBuffer = objData.getDrawOrder().asReadOnlyBuffer();
+				IntBuffer wireframeDrawOrder = createNativeByteBuffer(drawBuffer.capacity() * 2 * 4).asIntBuffer();
+				for (int i = 0; i < drawBuffer.capacity(); i += 3) {
+					int v0 = drawBuffer.get(i);
+					int v1 = drawBuffer.get(i + 1);
+					int v2 = drawBuffer.get(i + 2);
+					if (objData.isDrawUsingArrays()) {
+						v0 = i;
+						v1 = i + 1;
+						v2 = i + 2;
+					}
+					wireframeDrawOrder.put(v0);
+					wireframeDrawOrder.put(v1);
+					wireframeDrawOrder.put(v1);
+					wireframeDrawOrder.put(v2);
+					wireframeDrawOrder.put(v2);
+					wireframeDrawOrder.put(v0);
 				}
-				wireframeDrawOrder.put(v0);
-				wireframeDrawOrder.put(v1);
-				wireframeDrawOrder.put(v1);
-				wireframeDrawOrder.put(v2);
-				wireframeDrawOrder.put(v2);
-				wireframeDrawOrder.put(v0);
+				return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder).
+						setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
+						.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
+						.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
+						.setDrawMode(GLES20.GL_LINES).setDrawUsingArrays(false);
+			} catch (Exception ex) {
+				Log.e("Object3DBuilder", ex.getMessage(), ex);
+			}
+		}
+		else if (objData.getVertexArrayBuffer() != null){
+			Log.i("Object3DBuilder", "Building wireframe...");
+			FloatBuffer vertexBuffer = objData.getVertexArrayBuffer();
+			IntBuffer wireframeDrawOrder = createNativeByteBuffer(vertexBuffer.capacity()/3 * 2 * 4).asIntBuffer();
+			for (int i = 0; i < vertexBuffer.capacity()/3; i += 3) {
+				wireframeDrawOrder.put(i);
+				wireframeDrawOrder.put(i+1);
+				wireframeDrawOrder.put(i+1);
+				wireframeDrawOrder.put(i+2);
+				wireframeDrawOrder.put(i+2);
+				wireframeDrawOrder.put(i);
 			}
 			return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder).
 					setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
 					.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
 					.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
 					.setDrawMode(GLES20.GL_LINES).setDrawUsingArrays(false);
-		} catch (Exception ex) {
-			Log.e("Object3DBuilder", ex.getMessage(), ex);
 		}
 		return objData;
 	}
@@ -831,267 +858,33 @@ public final class Object3DBuilder {
 		return bb;
 	}
 
-	public static void loadV5Async(final Activity parent, final File file, final String assetsDir, final String assetName,
-								   final Callback callback) {
+	public static void loadV6AsyncParallel(final Activity parent, final URL url, final File file, final String assetsDir, final String assetName,
+										   final Callback callback) {
 
 		final String modelId = file != null ? file.getName() : assetName;
-		final File currentDir = file != null ? file.getParentFile() : null;
 
-		Log.i("Object3DBuilder", "Loading model "+modelId+". async..");
-
-		LoaderTask loaderTask = new LoaderTask(parent, currentDir, assetsDir, modelId) {
-
-			@Override
-			protected void onPostExecute(final Object3DData data) {
-				super.onPostExecute(data);
-				if (error != null) {
-					callback.onLoadError(error);
-				} else {
-					callback.onLoadComplete(data);
-				}
-			}
-		};
-		loaderTask.execute();
+		Log.i("Object3DBuilder", "Loading model " + modelId + ". async and parallel..");
+		if (modelId.toLowerCase().endsWith(".obj")) {
+			loadV6AsyncParallel_Obj(parent, file, assetsDir, assetName, callback);
+		} else if (modelId.toLowerCase().endsWith(".stl")) {
+			Log.i("Object3DBuilder", "Loading STL object from: "+url);
+			STLLoader.loadSTLAsync(parent, url, callback);
+		}
 	}
 
-	public static void loadV6AsyncParallel(final Activity parent, final File file, final String assetsDir, final String assetName,
+
+
+	public static void loadV6AsyncParallel_Obj(final Activity parent, final File file, final String assetsDir, final String assetName,
 										   final Callback callback) {
 
 		final String modelId = file != null ? file.getName() : assetName;
 		final File currentDir = file != null ? file.getParentFile() : null;
 
 		Log.i("Object3DBuilder", "Loading model "+modelId+". async and parallel..");
-
-		LoaderTask loaderTask = new LoaderTask(parent, currentDir, assetsDir, modelId) {
-
-			@Override
-			protected void onPostExecute(final Object3DData data) {
-				super.onPostExecute(data);
-				if (error != null) {
-					callback.onLoadError(error);
-				} else {
-					callback.onLoadComplete(data);
-					new AsyncTask<Void, Void, Void>() {
-						@Override
-						protected Void doInBackground(Void... params) {
-							build3DData(currentDir,modelId,assetsDir,parent,data,callback);
-							return null;
-						}
-					}.execute();
-				}
-			}
-		};
-		loaderTask.execute();
-	}
-
-	private static void build3DData(File file, String modelId, String assetsDir, Activity parent, Object3DData data, Callback callback) {
-		try {
-			InputStream modelDataStream = null;
-			if (file != null) {
-				modelDataStream = new FileInputStream(new File(file, modelId));
-			} else if (assetsDir != null) {
-				modelDataStream = parent.getAssets().open(assetsDir + "/" + modelId);
-			}
-			if (modelDataStream == null) {
-				Log.e("Object3DBuilder", "Problem loading data. Null stream");
-				return;
-			}
-			data.getLoader().loadModel(modelDataStream);
-			data.getLoader().centerScale();
-
-			modelDataStream.close();
-			data.setDrawMode(GLES20.GL_TRIANGLES);
-			Object3DBuilder.generateArrays(parent.getAssets(), data);
-
-			if (callback != null){
-				callback.onLoadComplete(data);
-			}
-		} catch (Exception e) {
-			Log.e("Object3DBuilder",e.getMessage(),e);
-
-			if (callback != null) {
-				callback.onLoadError(e);
-			}
-		}
-	}
-
-
-}
-
-/**
- * This component allows loading the model without blocking the UI.
- *
- * @author andresoviedo
- */
-class LoaderTask extends AsyncTask<Void, Integer, Object3DData> {
-
-	/**
-	 * The parent activity
-	 */
-	private final Activity parent;
-	/**
-	 * Directory where the model is located (null when its loaded from asset)
-	 */
-	private final File currentDir;
-	/**
-	 * Asset directory where the model is loaded (null when its loaded from the filesystem)
-	 */
-	private final String assetsDir;
-	/**
-	 * Id of the data being loaded
-	 */
-	private final String modelId;
-	/**
-	 * The dialog that will show the progress of the loading
-	 */
-	private final ProgressDialog dialog;
-	/**
-	 * Exception when loading data (if any)
-	 */
-	protected Exception error;
-	/**
-	 * Whether to build the model immediately or lazily
-	 */
-	boolean immediateBuild = true;
-
-	/**
-	 * Build a new progress dialog for loading the data model asynchronously
-	 *
-	 * @param currentDir the directory where the model is located (null when the model is an asset)
-	 * @param modelId    the id the data being loaded
-	 */
-	public LoaderTask(Activity parent, File currentDir, String assetsDir, String modelId) {
-		this.parent = parent;
-		this.currentDir = currentDir;
-		this.assetsDir = assetsDir;
-		this.modelId = modelId;
-		this.dialog = new ProgressDialog(parent);
-	}
-
-	@Override
-	protected void onPreExecute() {
-		super.onPreExecute();
-		// this.dialog = ProgressDialog.show(this.parent, "Please wait ...", "Loading model data...", true);
-		// this.dialog.setTitle(modelId);
-		// this.dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-		this.dialog.setCancelable(false);
-		this.dialog.show();
-	}
-
-	private InputStream getInputStream(){
-		Log.i("LoaderTask", "Opening "+modelId+"...");
-		try {
-			final InputStream ret;
-			if (currentDir != null) {
-				return new FileInputStream(new File(currentDir,modelId));
-			} else if (assetsDir != null) {
-				return parent.getAssets().open(assetsDir + "/"+modelId);
-			} else {
-				throw new IllegalArgumentException("Model data source not specified");
-			}
-		} catch (IOException ex) {
-			throw new RuntimeException(
-					"There was a problem opening file/asset '" + (currentDir != null ? currentDir : assetsDir)  + "/"+modelId + "'");
-		}
-	}
-
-	private static void closeStream(InputStream stream){
-		if (stream == null) return;
-		try {
-			if (stream != null) {
-				stream.close();
-			}
-		} catch (IOException ex) {
-			Log.e("LoaderTask", "Problem closing stream: " + ex.getMessage(), ex);
-		}
-	}
-
-	@Override
-	protected Object3DData doInBackground(Void... params) {
-
-		InputStream params0 = getInputStream();
-		InputStream params1 = getInputStream();
-		try {
-			WavefrontLoader wfl = new WavefrontLoader("");
-
-			// allocate memory
-			publishProgress(0);
-			wfl.analyzeModel(params0);
-
-			// load obj file
-			if (immediateBuild){
-
-				publishProgress(1);
-				wfl.allocateBuffers();
-
-				publishProgress(2);
-				wfl.loadModel(params1);
-				wfl.reportOnModel();
-
-				// scale object
-				publishProgress(3);
-				wfl.centerScale();
-			}
-
-			// create the 3D object
-			Object3DData data3D = new Object3DData(wfl.getVerts(), wfl.getNormals(), wfl.getTexCoords(), wfl.getFaces(),
-					wfl.getFaceMats(), wfl.getMaterials());
-			data3D.setId(modelId);
-			data3D.setCurrentDir(currentDir);
-			data3D.setAssetsDir(assetsDir);
-			data3D.setLoader(wfl);
-			data3D.setDrawMode(GLES20.GL_TRIANGLES);
-
-			// load 3D object buffers
-			if (immediateBuild){
-				publishProgress(4);
-				Object3DBuilder.generateArrays(parent.getAssets(), data3D);
-				publishProgress(5);
-			}
-
-			return data3D;
-		} catch (Exception ex) {
-			error = ex;
-			return null;
-		} finally {
-			closeStream(params0);
-			closeStream(params1);
-		}
-	}
-
-	@Override
-	protected void onProgressUpdate(Integer... values) {
-		super.onProgressUpdate(values);
-		switch (values[0]) {
-			case 0:
-				this.dialog.setMessage("Analyzing model...");
-				break;
-			case 1:
-				this.dialog.setMessage("Allocating memory...");
-				break;
-			case 2:
-				this.dialog.setMessage("Loading data...");
-				break;
-			case 3:
-				this.dialog.setMessage("Scaling object...");
-				break;
-			case 4:
-				this.dialog.setMessage("Building 3D model...");
-				break;
-			case 5:
-				// Toast.makeText(parent, modelId + " Build!", Toast.LENGTH_LONG).show();
-				break;
-		}
-	}
-
-	@Override
-	protected void onPostExecute(Object3DData success) {
-		super.onPostExecute(success);
-		if (dialog.isShowing()) {
-			dialog.dismiss();
-		}
+		WavefrontLoader2.loadAsync(parent, null, currentDir, assetsDir, modelId, callback);
 	}
 }
+
 
 class BoundingBox {
 

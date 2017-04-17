@@ -7,11 +7,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andresoviedo.app.model3D.entities.*;
 import org.andresoviedo.app.model3D.entities.BoundingBox;
 import org.andresoviedo.app.model3D.services.WavefrontLoader;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.FaceMaterials;
@@ -34,12 +32,12 @@ public class Object3DData {
 	// opengl version to use to draw this object
 	private int version = 5;
 	/**
-	 * The directory where the files reside so we can load referenced files in the model like material and textures
+	 * The directory where the files reside so we can build referenced files in the model like material and textures
 	 * files
 	 */
 	private File currentDir;
 	/**
-	 * The assets directory where the files reside so we can load referenced files in the model like material and
+	 * The assets directory where the files reside so we can build referenced files in the model like material and
 	 * textures files
 	 */
 	private String assetsDir;
@@ -61,16 +59,12 @@ public class Object3DData {
 
 	// Model data
 	private FloatBuffer vertexBuffer = null;
-	private FloatBuffer normals;
+	private FloatBuffer vertexNormalsBuffer = null;
 	private IntBuffer drawOrderBuffer = null;
-
 	private ArrayList<Tuple3> texCoords;
 	private Faces faces;
 	private FaceMaterials faceMats;
 	private Materials materials;
-
-	// Processed data
-	private FloatBuffer vertexNormalsBuffer = null;
 
 	// Processed arrays
 	private FloatBuffer vertexArrayBuffer = null;
@@ -93,6 +87,7 @@ public class Object3DData {
 	private boolean changed;
 
 	// Async Loader
+	private WavefrontLoader.ModelDimensions modelDimensions;
 	private WavefrontLoader loader;
 
 	public Object3DData(FloatBuffer vertexArrayBuffer) {
@@ -126,12 +121,38 @@ public class Object3DData {
 			FaceMaterials faceMats, Materials materials) {
 		super();
 		this.vertexBuffer = verts;
-		this.normals = normals;
-		this.drawOrderBuffer = faces.getIndexBuffer();
+		this.vertexNormalsBuffer = normals;
 		this.texCoords = texCoords;
-		this.faces = faces;
+		this.faces = faces;  // parameter "faces" could be null in case of async loading
 		this.faceMats = faceMats;
 		this.materials = materials;
+	}
+
+	public void setLoader(WavefrontLoader loader) {
+		this.loader = loader;
+	}
+
+
+	public WavefrontLoader getLoader() {
+		return loader;
+	}
+
+	public void setDimensions(WavefrontLoader.ModelDimensions modelDimensions) {
+		this.modelDimensions = modelDimensions;
+	}
+
+	public WavefrontLoader.ModelDimensions getDimensions() {
+		return modelDimensions;
+	}
+
+	/**
+	 * Can be called when the faces were loaded asynchronously
+	 *
+	 * @param faces 3d faces
+	 */
+	public void setFaces(Faces faces) {
+		this.faces = faces;
+		this.drawOrderBuffer = faces.getIndexBuffer();
 	}
 
 	public boolean isVisible() {
@@ -310,7 +331,7 @@ public class Object3DData {
 	}
 
 	public FloatBuffer getNormals() {
-		return normals;
+		return vertexNormalsBuffer;
 	}
 
 	public ArrayList<Tuple3> getTexCoords() {
@@ -353,8 +374,9 @@ public class Object3DData {
 		return vertexArrayBuffer;
 	}
 
-	public void setVertexArrayBuffer(FloatBuffer vertexArrayBuffer) {
+	public Object3DData setVertexArrayBuffer(FloatBuffer vertexArrayBuffer) {
 		this.vertexArrayBuffer = vertexArrayBuffer;
+		return this;
 	}
 
 	public FloatBuffer getVertexNormalsArrayBuffer() {
@@ -646,12 +668,40 @@ public class Object3DData {
 		return boundingBox;
 	}
 
-	public void setLoader(WavefrontLoader loader) {
-		this.loader = loader;
-	}
+	public void centerScale()
+	/*
+	 * Position the model so it's center is at the origin, and scale it so its longest dimension is no bigger than
+	 * maxSize.
+	 */
+	{
+		// calculate a scale factor
+		float scaleFactor = 1.0f;
+		float largest = modelDimensions.getLargest();
+		// System.out.println("Largest dimension: " + largest);
+		if (largest != 0.0f)
+			scaleFactor = (1.0f / largest);
+		Log.i("Object3DData","Scaling model with factor: " + scaleFactor+". Largest: "+largest);
 
-	public WavefrontLoader getLoader() {
-		return loader;
-	}
+		// get the model's center point
+		Tuple3 center = modelDimensions.getCenter();
+		Log.i("Object3DData","Objects actual position: " + center.toString());
+
+		// modify the model's vertices
+		float x0, y0, z0;
+		float x, y, z;
+		FloatBuffer vertexBuffer = getVertexBuffer() != null? getVertexBuffer() : getVertexArrayBuffer();
+		for (int i = 0; i < vertexBuffer.capacity()/3; i++) {
+			x0 = vertexBuffer.get(i*3);
+			y0 = vertexBuffer.get(i*3+1);
+			z0 = vertexBuffer.get(i*3+2);
+			x = (x0 - center.getX()) * scaleFactor;
+			vertexBuffer.put(i*3,x);
+			y = (y0 - center.getY()) * scaleFactor;
+			vertexBuffer.put(i*3+1,y);
+			z = (z0 - center.getZ()) * scaleFactor;
+			vertexBuffer.put(i*3+2,z);
+		}
+	} // end of centerScale()
+
 
 }

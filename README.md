@@ -4,23 +4,20 @@ Android 3D Model Viewer
 ![codeship badge](https://codeship.com/projects/52cf9560-deb2-0134-4203-2aaddef843aa/status?branch=master)
 
 This is a demo of OpenGL ES 2.0.
-It is basically an android application with a 3D renderer that can load Wavefront Obj files.
+It is basically an android application with a 3D renderer that can load Wavefront Obj & STL files.
 The purpose of this application is to learn and share how to draw using OpenGL language.
 
 
-https://en.wikipedia.org/wiki/Wavefront_.obj_file
+* Wafefront format (OBJ): https://en.wikipedia.org/wiki/Wavefront_.obj_file
+* STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 
 
-News (16/04/2017)
+News (17/04/2017)
 =================
 
-* Fixed #16: Toogle point drawing + several improvements
-* Fixed #15: Toggle rotating light + fixed wireframe colors
-* Fixed #14: Camera movement improved
-* Fixed #13: Fixed parsing of vertices
-* Fixed #12: Wireframe performance
-* Fixed #11: Normals generation
-* Fixed #10: Fixed texture issue
+* Enhancement #17: Added support for TLS format
+* Fixed #16: Toogle point drawing
+* Fixed #15: Toggle rotating light
 * Fixed #1: Cpu Performance problems
 * Fixed #5: Memory Performance problems
 
@@ -62,7 +59,7 @@ Features
 ========
 
   - OpenGL ES 2.0 API
-  - OBJ format supported (wavefront)
+  - Formats: OBJ (wavefront) & STL (STereoLithography)
   - calculation of normals
   - transformations: scaling, rotation, translation
   - colors
@@ -127,6 +124,11 @@ ChangeLog
 =========
 
 (f) fixed, (i) improved, (n) new feature
+
+- 1.3.1 (17/04/2017)
+  - (n) #17: Added support for STL files
+  - (n) #17: Asynchronous building of model so the build rendering is previewed
+  - (f) #17: Added Toasts to buttons to show current state
 
 - 1.2.10 (16/04/2017)
   - (f) #16: Immersive mode is now configurable in the ModelActivity Intent: b.putString("immersiveMode", "false");
