@@ -12,9 +12,10 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 
 
-News (17/04/2017)
+News (23/04/2017)
 =================
 
+* Fixed #18: Removed asReadOnlyBuffer() - not working on Android 7
 * Enhancement #17: Added support for TLS format
 * Fixed #16: Toogle point drawing
 * Fixed #15: Toggle rotating light
@@ -125,7 +126,10 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
-- 1.3.1 (17/04/2017)
+- 1.3.1 (23/04/2017)
+ - (f) #18: Removed asReadOnlyBuffer() because it is causing IndexOutOfBounds on Android 7
+
+- 1.3.0 (17/04/2017)
   - (n) #17: Added support for STL files
   - (n) #17: Asynchronous building of model so the build rendering is previewed
   - (f) #17: Added Toasts to buttons to show current state

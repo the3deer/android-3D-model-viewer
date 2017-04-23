@@ -460,8 +460,8 @@ public final class Object3DBuilder {
 		obj.setDrawUsingArrays(true);
 
 		Log.i("Object3DBuilder", "Populating vertex array...");
-		final FloatBuffer vertexBuffer = obj.getVerts().asReadOnlyBuffer();
-		final IntBuffer indexBuffer = faces.getIndexBuffer().asReadOnlyBuffer();
+		final FloatBuffer vertexBuffer = obj.getVerts();
+		final IntBuffer indexBuffer = faces.getIndexBuffer();
 		for (int i = 0; i < faces.getVerticesReferencesCount(); i++) {
 			vertexArrayBuffer.put(i*3,vertexBuffer.get(indexBuffer.get(i) * 3));
 			vertexArrayBuffer.put(i*3+1,vertexBuffer.get(indexBuffer.get(i) * 3 + 1));
@@ -476,7 +476,7 @@ public final class Object3DBuilder {
 		obj.setVertexNormalsArrayBuffer(vertexNormalsArrayBuffer);
 
 		// build file normals
-		final FloatBuffer vertexNormalsBuffer = obj.getNormals().asReadOnlyBuffer();
+		final FloatBuffer vertexNormalsBuffer = obj.getNormals();
 		if (vertexNormalsBuffer.capacity() > 0) {
 			Log.i("Object3DBuilder", "Populating normals buffer...");
 			for (int n=0; n<faces.facesNormIdxs.size(); n++) {
@@ -706,7 +706,7 @@ public final class Object3DBuilder {
 
 			try {
 				Log.i("Object3DBuilder", "Building wireframe...");
-				IntBuffer drawBuffer = objData.getDrawOrder().asReadOnlyBuffer();
+				IntBuffer drawBuffer = objData.getDrawOrder();
 				IntBuffer wireframeDrawOrder = createNativeByteBuffer(drawBuffer.capacity() * 2 * 4).asIntBuffer();
 				for (int i = 0; i < drawBuffer.capacity(); i += 3) {
 					int v0 = drawBuffer.get(i);
