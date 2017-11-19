@@ -518,7 +518,7 @@ class Object3DV3 extends Object3DImpl {
 }
 
 /**
- * Drawer using textures & multiple colors
+ * Drawer using textures & colors
  * 
  * @author andresoviedo
  *
@@ -599,7 +599,7 @@ class Object3DV5 extends Object3DImpl {
 		   "   float distance = length(u_LightPos - modelViewVertex);\n         "+
 		   "   diffuse = diffuse * (1.0 / (1.0 + (0.05 * distance * distance)));\n"+
 			//  Add ambient lighting
-			"  diffuse = diffuse + 0.3;"+
+			"  diffuse = diffuse + 0.5;"+
 		// Multiply the color by the illumination level. It will be interpolated across the triangle.
 		   "   v_Color = a_Color * diffuse;\n"+
 		    "   v_Color[3] = a_Color[3];"+ // correct alpha
@@ -680,7 +680,7 @@ class Object3DV6 extends Object3DImpl {
 		   "   float distance = length(u_LightPos - modelViewVertex);\n         "+
 		   "   diffuse = diffuse * (1.0 / (1.0 + (0.05 * distance * distance)));\n"+
 			//  Add ambient lighting
-			"  diffuse = diffuse + 0.3;"+
+			"  diffuse = diffuse + 0.5;"+
 		// Multiply the color by the illumination level. It will be interpolated across the triangle.
 		   "   v_Color = a_Color * diffuse;\n"+
 		   "   v_Color[3] = a_Color[3];"+ // correct alpha
@@ -734,7 +734,7 @@ class Object3DV6 extends Object3DImpl {
 }
 
 /**
- * Drawer using color & lights
+ * Drawer using colors & lights
  *
  * @author andresoviedo
  *
@@ -766,7 +766,7 @@ class Object3DV7 extends Object3DImpl {
 					"   float distance = length(u_LightPos - modelViewVertex);\n         "+
 					"   diffuse = diffuse * (1.0 / (1.0 + (0.05 * distance * distance)));\n"+
 					//  Add ambient lighting
-					"  diffuse = diffuse + 0.3;"+
+					"  diffuse = diffuse + 0.5;"+
 					// Multiply the color by the illumination level. It will be interpolated across the triangle.
 					"   v_Color = vColor * diffuse;\n"+
 					"   v_Color[3] = vColor[3];"+ // correct alpha
@@ -830,7 +830,6 @@ class Object3DV8 extends Object3DImpl {
 					// light variables
 					"uniform mat4 u_MVMatrix;\n"+
 					"uniform vec3 u_LightPos;\n"+
-					"attribute vec4 a_Color;\n"+
 					"attribute vec3 a_Normal;\n"+
 					// calculated color
 					"varying vec4 v_Color;\n"+
@@ -850,7 +849,7 @@ class Object3DV8 extends Object3DImpl {
 					"   float distance = length(u_LightPos - modelViewVertex);\n         "+
 					"   diffuse = diffuse * (1.0 / (1.0 + (0.05 * distance * distance)));\n"+
 					//  Add ambient lighting
-					"  diffuse = diffuse + 0.3;"+
+					"  diffuse = diffuse + 0.5;"+
 					// Multiply the color by the illumination level. It will be interpolated across the triangle.
 					"   v_Color = vColor * diffuse;\n"+
 					"   v_Color[3] = vColor[3];"+ // correct alpha
@@ -873,7 +872,7 @@ class Object3DV8 extends Object3DImpl {
 	// @formatter:on
 
 	public Object3DV8() {
-		super("V8", vertexShaderCode, fragmentShaderCode, "a_Position", "a_TexCoordinate", "a_Normal");
+		super("V8", vertexShaderCode, fragmentShaderCode, "vColor", "a_Position", "a_TexCoordinate", "a_Normal");
 	}
 
 	@Override

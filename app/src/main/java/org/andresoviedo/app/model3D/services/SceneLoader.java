@@ -1,6 +1,10 @@
 package org.andresoviedo.app.model3D.services;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -11,6 +15,7 @@ import org.andresoviedo.app.model3D.model.Object3DBuilder.Callback;
 import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.view.ModelActivity;
 import org.andresoviedo.app.util.url.android.Handler;
+import org.apache.commons.io.IOUtils;
 
 import android.os.SystemClock;
 import android.util.Log;
@@ -227,7 +232,7 @@ public class SceneLoader {
 		}
 		else if (this.drawLighting && !this.rotatingLight){
 			this.drawLighting = false;
-			makeToastText("Lightsoff", Toast.LENGTH_SHORT);
+			makeToastText("Lights off", Toast.LENGTH_SHORT);
 		}
 		else {
 			this.drawLighting = true;
@@ -251,6 +256,25 @@ public class SceneLoader {
 
 	public void setSelectedObject(Object3DData selectedObject) {
 		this.selectedObject = selectedObject;
+	}
+
+	public void loadTexture(String path){
+		if (objects.size() != 1) {
+			makeToastText("Unavailable", Toast.LENGTH_SHORT);
+			return;
+		}
+
+		try {
+			InputStream is = new FileInputStream(path);
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			IOUtils.copy(is,bos);
+			is.close();
+
+			Object3DData obj = objects.get(0);
+			obj.setTextureData(bos.toByteArray());
+		} catch (IOException ex) {
+			makeToastText("Problem loading texture: "+ex.getMessage(), Toast.LENGTH_SHORT);
+		}
 	}
 
 }

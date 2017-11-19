@@ -11,6 +11,7 @@ import org.andresoviedo.app.model3D.services.WavefrontLoader.Faces;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Material;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Materials;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.Tuple3;
+import org.andresoviedo.app.model3D.services.collada.loader.ColladaLoader;
 import org.andresoviedo.app.model3D.services.stl.STLLoader;
 import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader2;
 import org.andresoviedo.app.util.math.Math3DUtils;
@@ -595,7 +596,7 @@ public final class Object3DBuilder {
 		}
 
 
-		if (textureData != null) {
+		//if (textureData != null) {
 			ArrayList<Tuple3> texCoords = obj.getTexCoords();
 			if (texCoords != null && texCoords.size() > 0) {
 
@@ -633,10 +634,10 @@ public final class Object3DBuilder {
 							textureOk = true;
 						}
 
-						// populate texture coords if ok
+						// populate texture coords if ok (in case we have more than 1 texture and 1 is missing. see face.obj example)
 						int[] text = faces.facesTexIdxs.get(i);
 						for (int j = 0; j < text.length; j++) {
-							if (textureOk) {
+							if (textureData == null || textureOk) {
 								anyTextureOk = true;
 								textureCoordsArraysBuffer.put(counter++, textureCoordsBuffer.get(text[j] * 2));
 								textureCoordsArraysBuffer.put(counter++, textureCoordsBuffer.get(text[j] * 2 + 1));
@@ -662,7 +663,7 @@ public final class Object3DBuilder {
 					Log.e("Object3DBuilder", "Failure to load texture coordinates", ex);
 				}
 			}
-		}
+		//}
 		obj.setTextureData(textureData);
 
 		return obj;
@@ -869,6 +870,9 @@ public final class Object3DBuilder {
 		} else if (modelId.toLowerCase().endsWith(".stl")) {
 			Log.i("Object3DBuilder", "Loading STL object from: "+url);
 			STLLoader.loadSTLAsync(parent, url, callback);
+		} else if (modelId.toLowerCase().endsWith(".dae")) {
+			Log.i("Object3DBuilder", "Loading Collada object from: "+url);
+			ColladaLoader.loadAsync(parent, url, callback);
 		}
 	}
 

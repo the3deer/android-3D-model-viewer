@@ -40,6 +40,7 @@
     <string name="toggle_textures">Toggle textures</string>
     <string name="toggle_lights">Toggle lights</string>
     <string name="toggle_boundingbox">Toggle bounding box</string>
+    <string name="load_texture">Load texture</string>
 
     <!-- To review -->
     <string name="app_logo_desc">Teapot animated logo</string>

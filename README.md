@@ -12,9 +12,10 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 
 
-News (23/04/2017)
+News (19/11/2017)
 =================
 
+* Fixed #28: Load texture feature is now available
 * Fixed #18: Removed asReadOnlyBuffer() - not working on Android 7
 * Enhancement #17: Added support for TLS format
 * Fixed #16: Toogle point drawing
@@ -49,7 +50,7 @@ Whats next
 ==========
 
 * Stabilize app performance
-* Load multiple textures #3
+* Skeletal animations
 * Code refactoring
 * Carboard support
 * Chromecast support
@@ -125,6 +126,9 @@ ChangeLog
 =========
 
 (f) fixed, (i) improved, (n) new feature
+
+- 1.3.2 (19/11/2017)
+ - (f) #28: Load texture available for any model having texture coordinates
 
 - 1.3.1 (23/04/2017)
  - (f) #18: Removed asReadOnlyBuffer() because it is causing IndexOutOfBounds on Android 7

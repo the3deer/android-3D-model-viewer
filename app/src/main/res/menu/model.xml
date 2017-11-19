@@ -24,6 +24,11 @@
         android:orderInCategory="500"
         android:showAsAction="ifRoom"
         android:title="@string/toggle_boundingbox"/>
+    <item
+        android:id="@+id/model_load_texture"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:orderInCategory="501"
+        android:title="@string/load_texture"/>
     <!--
     <item
         android:id="@+id/action_settings"

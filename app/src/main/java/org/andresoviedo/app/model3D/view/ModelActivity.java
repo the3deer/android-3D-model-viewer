@@ -5,10 +5,14 @@ import java.io.File;
 import org.andresoviedo.app.model3D.services.ExampleSceneLoader;
 import org.andresoviedo.app.model3D.services.SceneLoader;
 import org.andresoviedo.app.util.Utils;
+import org.andresoviedo.app.util.content.ContentUtils;
 import org.andresoviedo.dddmodel2.R;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 /**
  * This activity represents the container for our 3D viewer.
@@ -24,6 +29,8 @@ import android.view.View;
  * @author andresoviedo
  */
 public class ModelActivity extends Activity {
+
+	private static final int REQUEST_CODE_OPEN_FILE = 1000;
 
 	private String paramAssetDir;
 	private String paramAssetFilename;
@@ -163,6 +170,15 @@ public class ModelActivity extends Activity {
 		case R.id.model_toggle_lights:
 			scene.toggleLighting();
 			break;
+		case R.id.model_load_texture:
+			Intent target = Utils.createGetContentIntent();
+			Intent intent = Intent.createChooser(target, "Select a file");
+			try {
+				startActivityForResult(intent, REQUEST_CODE_OPEN_FILE);
+			} catch (ActivityNotFoundException e) {
+				// The reason for the existence of aFileChooser
+			}
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -253,4 +269,27 @@ public class ModelActivity extends Activity {
 		return gLView;
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
+			case REQUEST_CODE_OPEN_FILE:
+				if (resultCode == RESULT_OK) {
+					// The URI of the selected file
+					final Uri uri = data.getData();
+					Log.i("Menu", "Loading '" + uri.toString() + "'");
+					if (uri != null) {
+						final String path = ContentUtils.getPath(getApplicationContext(), uri);
+						if (path != null) {
+							scene.loadTexture(path);
+						} else {
+							Toast.makeText(getApplicationContext(), "Problem loading texture '" + uri.toString() + "'",
+									Toast.LENGTH_SHORT).show();
+						}
+					}
+				} else {
+					Toast.makeText(getApplicationContext(), "Result when loading texture was '" + resultCode + "'",
+							Toast.LENGTH_SHORT).show();
+				}
+		}
+	}
 }
