@@ -56,7 +56,7 @@ public class SkeletonLoader {
 			matrix.multiply(matrix);
 		}
 		jointCount++;
-		return new JointData(index, nameId, matrix);
+		return new JointData(index, nameId, matrix.getArray());
 	}
 	
 	private float[] convertData(String[] rawData){

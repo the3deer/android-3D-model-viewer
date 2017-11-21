@@ -319,6 +319,7 @@ public final class Object3DBuilder {
 	private Object3DV6 object3dv6;
 	private Object3DV7 object3dv7;
 	private Object3DV8 object3dv8;
+	private Object3DV9 object3dv9;
 
 	static {
 		System.setProperty("java.protocol.handler.pkgs", "org.andresoviedo.app.util.url|"+System.getProperty("java.protocol.handler.pkgs"));
@@ -418,9 +419,13 @@ public final class Object3DBuilder {
 			object3dv6 = new Object3DV6();
 			object3dv7 = new Object3DV7();
 			object3dv8 = new Object3DV8();
+			object3dv9 = new Object3DV9();
 		}
 
-		if (usingTextures && usingLights && obj.getVertexColorsArrayBuffer() != null && obj.getTextureData() != null
+		if (obj instanceof AnimatedModel){
+			return object3dv9;
+		}
+		else if (usingTextures && usingLights && obj.getVertexColorsArrayBuffer() != null && obj.getTextureData() != null
 				&& obj.getTextureCoordsArrayBuffer() != null && obj.getVertexNormalsArrayBuffer() != null
 				&& obj.getVertexNormalsArrayBuffer() != null) {
 			return object3dv6;
@@ -431,7 +436,7 @@ public final class Object3DBuilder {
 		} else if (usingLights && obj.getVertexColorsArrayBuffer() != null
 				&& obj.getVertexNormalsArrayBuffer() != null) {
 			return object3dv5;
-		} else if (usingLights && obj.getVertexNormalsArrayBuffer() != null) {
+		} else if (usingLights && (obj.getNormals() != null || obj.getVertexNormalsArrayBuffer() != null)) {
 			return object3dv7;
 		} else if (usingTextures && obj.getVertexColorsArrayBuffer() != null && obj.getTextureData() != null
 				&& obj.getTextureCoordsArrayBuffer() != null) {
@@ -452,8 +457,10 @@ public final class Object3DBuilder {
 		FaceMaterials faceMats = obj.getFaceMats();
 		Materials materials = obj.getMaterials();
 
-		// TODO: remove this
-// 		if (true) return obj;
+		if (faces == null)  {
+			Log.i("Object3DBuilder", "No faces. Not generating arrays");
+			return obj;
+		}
 
 		Log.i("Object3DBuilder", "Allocating vertex array buffer... Vertices ("+faces.getVerticesReferencesCount()+")");
 		final FloatBuffer vertexArrayBuffer = createNativeByteBuffer(faces.getVerticesReferencesCount() * 3 * 4).asFloatBuffer();
@@ -468,8 +475,6 @@ public final class Object3DBuilder {
 			vertexArrayBuffer.put(i*3+1,vertexBuffer.get(indexBuffer.get(i) * 3 + 1));
 			vertexArrayBuffer.put(i*3+2,vertexBuffer.get(indexBuffer.get(i) * 3 + 2));
 		}
-
-
 
 		Log.i("Object3DBuilder", "Allocating vertex normals buffer... Total normals ("+faces.facesNormIdxs.size()+")");
 		// Normals buffer size = Number_of_faces X 3 (vertices_per_face) X 3 (coords_per_normal) X 4 (bytes_per_float)

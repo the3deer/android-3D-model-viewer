@@ -13,9 +13,9 @@ import android.renderscript.Matrix4f;
 public class JointTransformData {
 
 	public final String jointNameId;
-	public final Matrix4f jointLocalTransform;
+	public final float[] jointLocalTransform;
 
-	public JointTransformData(String jointNameId, Matrix4f jointLocalTransform) {
+	public JointTransformData(String jointNameId, float[] jointLocalTransform) {
 		this.jointNameId = jointNameId;
 		this.jointLocalTransform = jointLocalTransform;
 	}

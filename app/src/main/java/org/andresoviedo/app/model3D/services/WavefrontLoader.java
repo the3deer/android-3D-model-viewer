@@ -85,7 +85,7 @@ public class WavefrontLoader {
 	private FloatBuffer textureCoordsBuffer;
 
 	// flags
-	private final int triangleMode = GLES20.GL_TRIANGLE_FAN;
+	private static final int triangleMode = GLES20.GL_TRIANGLE_FAN;
 
 	public WavefrontLoader(String nm) {
 		modelNm = nm;
@@ -201,10 +201,14 @@ public class WavefrontLoader {
 	public void allocateBuffers() {
 		// size = 3 (x,y,z) * 4 (bytes per float)
 		vertsBuffer = createNativeByteBuffer(numVerts*3*4).asFloatBuffer();
-		normalsBuffer = createNativeByteBuffer(numNormals*3*4).asFloatBuffer();
+		if (numNormals > 0) {
+			normalsBuffer = createNativeByteBuffer(numNormals * 3 * 4).asFloatBuffer();
+		}
 		textureCoordsBuffer = createNativeByteBuffer(numTextures*3*4).asFloatBuffer();
-		IntBuffer buffer = createNativeByteBuffer(numFaces*3*4).asIntBuffer();
-		faces = new Faces(numFaces, buffer, vertsBuffer, normalsBuffer, texCoords);
+		if (numFaces > 0) {
+			IntBuffer buffer = createNativeByteBuffer(numFaces * 3 * 4).asIntBuffer();
+			faces = new Faces(numFaces, buffer, vertsBuffer, normalsBuffer, texCoords);
+		}
 	}
 
 	public void loadModel(InputStream is) {
@@ -400,9 +404,9 @@ public class WavefrontLoader {
 
 	public void reportOnModel() {
 		Log.i("WavefrontLoader","No. of vertices: " + vertsBuffer.capacity()/3);
-		Log.i("WavefrontLoader","No. of normal coords: " + normalsBuffer.capacity()/3);
+		Log.i("WavefrontLoader","No. of normal coords: " + numNormals);
 		Log.i("WavefrontLoader","No. of tex coords: " + texCoords.size());
-		Log.i("WavefrontLoader","No. of faces: " + faces.getSize());
+		Log.i("WavefrontLoader","No. of faces: " + numFaces);
 
 		modelDims.reportDimensions();
 		// dimensions of model (before centering and scaling)
@@ -824,7 +828,7 @@ public class WavefrontLoader {
 
 	} // end of Material class
 
-	public class Faces {
+	public static class Faces {
 		private static final float DUMMY_Z_TC = -5.0f;
 
 		public final int totalFaces;
@@ -852,6 +856,11 @@ public class WavefrontLoader {
 
 		// for reporting
 		// private DecimalFormat df = new DecimalFormat("0.##"); // 2 dp
+
+		public Faces(int numFaces){
+			this.totalFaces = numFaces;
+			this.facesLoadCounter = numFaces;
+		}
 
 		Faces(int totalFaces, IntBuffer buffer, FloatBuffer vs, FloatBuffer ns, ArrayList<Tuple3> ts) {
 			this.totalFaces = totalFaces;
@@ -914,7 +923,7 @@ public class WavefrontLoader {
 
 					// convert to triangles all polygons
 					String faceToken = null;
-					if (WavefrontLoader.this.triangleMode == GLES20.GL_TRIANGLE_FAN) {
+					if (WavefrontLoader.triangleMode == GLES20.GL_TRIANGLE_FAN) {
 						if (faceIndex == 0){
 							// In FAN mode all faces shares the initial vertex
 							faceToken = tokens[0];// get a v/vt/vn

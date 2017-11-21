@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andresoviedo.app.model3D.animation.Animator;
 import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DBuilder.Callback;
 import org.andresoviedo.app.model3D.model.Object3DData;
@@ -76,12 +77,15 @@ public class SceneLoader {
 	/**
 	 * Initial light position
 	 */
-	private float[] lightPosition = new float[]{0, 0, 3, 1};
-
+	private final float[] lightPosition = new float[]{0, 0, 3, 1};
 	/**
 	 * Light bulb 3d data
 	 */
 	private final Object3DData lightPoint = Object3DBuilder.buildPoint(new float[4]).setId("light").setPosition(lightPosition);
+	/**
+	 * Animator
+	 */
+	private Animator animator = new Animator();
 
 	public SceneLoader(ModelActivity main) {
 		this.parent = main;
@@ -156,7 +160,11 @@ public class SceneLoader {
 	 * Hook for animating the objects before the rendering
 	 */
 	public void onDrawFrame(){
+
 		animateLight();
+
+		if (objects.isEmpty()) return;
+		animator.update(objects.get(0));
 	}
 
 	private void animateLight() {

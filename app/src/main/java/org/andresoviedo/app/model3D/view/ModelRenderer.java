@@ -201,7 +201,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 					}catch(Error e){
 						Log.e("ModelRenderer",e.getMessage(),e);
 					}
-				} else if (scene.isDrawPoints() || (objData.getFaces() != null && !objData.getFaces().loaded())){
+				} else if (scene.isDrawPoints() || objData.getFaces() == null || !objData.getFaces().loaded()){
 					drawerObject.draw(objData, modelProjectionMatrix, modelViewMatrix
 							,GLES20.GL_POINTS, objData.getDrawSize(),
 							textureId != null ? textureId : -1, lightPosInEyeSpace);

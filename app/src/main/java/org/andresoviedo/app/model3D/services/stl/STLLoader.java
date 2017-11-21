@@ -63,6 +63,9 @@ public final class STLLoader {
 			data3D.setDimensions(modelDimensions);
 			data3D.setDrawUsingArrays(true);
 			data3D.setDrawMode(GLES20.GL_TRIANGLES);
+			if (totalFaces > 0){
+				data3D.setFaces(new WavefrontLoader.Faces(totalFaces));
+			}
 			return data3D;
 		}
 

@@ -18,11 +18,11 @@ public class JointData {
 
 	public final int index;
 	public final String nameId;
-	public final Matrix4f bindLocalTransform;
+	public final float[] bindLocalTransform;
 
 	public final List<JointData> children = new ArrayList<JointData>();
 
-	public JointData(int index, String nameId, Matrix4f bindLocalTransform) {
+	public JointData(int index, String nameId, float[] bindLocalTransform) {
 		this.index = index;
 		this.nameId = nameId;
 		this.bindLocalTransform = bindLocalTransform;

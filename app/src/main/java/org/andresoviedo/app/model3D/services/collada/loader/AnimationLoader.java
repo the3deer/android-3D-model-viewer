@@ -1,5 +1,6 @@
 package org.andresoviedo.app.model3D.services.collada.loader;
 
+import android.opengl.Matrix;
 import android.renderscript.Matrix4f;
 
 import java.nio.ByteBuffer;
@@ -88,12 +89,11 @@ public class AnimationLoader {
 			buffer.clear();
 			buffer.put(matrixData);
 			buffer.flip();
-			Matrix4f transform = new Matrix4f(buffer.array());
-			transform.transpose();
+			float[] transform = matrixData;
+			Matrix.transposeM(transform,0,transform,0);
 			if(root){
 				//because up axis in Blender is different to up axis in game
-				transform = new Matrix4f(CORRECTION.getArray());
-				transform.multiply(transform);
+				Matrix.multiplyMM(transform,0,CORRECTION.getArray(),0,transform,0);
 			}
 			keyFrames[i].addJointTransform(new JointTransformData(jointName, transform));
 		}

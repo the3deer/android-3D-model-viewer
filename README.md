@@ -12,7 +12,7 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 
 
-News (19/11/2017)
+News (21/11/2017)
 =================
 
 * Fixed #28: Load texture feature is now available
@@ -127,11 +127,14 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
-- 1.3.2 (19/11/2017)
- - (f) #28: Load texture available for any model having texture coordinates
+- 1.4.1 (21/11/2017)
+  - (f) #29: Crash loading obj with only vertex info
+
+- 1.4.0 (19/11/2017)
+  - (f) #28: Load texture available for any model having texture coordinates
 
 - 1.3.1 (23/04/2017)
- - (f) #18: Removed asReadOnlyBuffer() because it is causing IndexOutOfBounds on Android 7
+  - (f) #18: Removed asReadOnlyBuffer() because it is causing IndexOutOfBounds on Android 7
 
 - 1.3.0 (17/04/2017)
   - (n) #17: Added support for STL files
