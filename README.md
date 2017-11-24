@@ -4,13 +4,13 @@ Android 3D Model Viewer
 ![codeship badge](https://codeship.com/projects/52cf9560-deb2-0134-4203-2aaddef843aa/status?branch=master)
 
 This is a demo of OpenGL ES 2.0.
-It is basically an android application with a 3D renderer that can load Wavefront Obj & STL files.
+It is basically an android application with a 3D renderer that can load Wavefront Obj, STL files & Collada files.
 The purpose of this application is to learn and share how to draw using OpenGL language.
 
 
 * Wafefront format (OBJ): https://en.wikipedia.org/wiki/Wavefront_.obj_file
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
-
+* Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 News (24/11/2017)
 =================
