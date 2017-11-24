@@ -12,9 +12,10 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 
 
-News (21/11/2017)
+News (24/11/2017)
 =================
 
+* Support for collada files with skeletal animations :)
 * Fixed #28: Load texture feature is now available
 * Fixed #18: Removed asReadOnlyBuffer() - not working on Android 7
 * Enhancement #17: Added support for TLS format
@@ -50,7 +51,6 @@ Whats next
 ==========
 
 * Stabilize app performance
-* Skeletal animations
 * Code refactoring
 * Carboard support
 * Chromecast support
@@ -126,6 +126,9 @@ ChangeLog
 =========
 
 (f) fixed, (i) improved, (n) new feature
+
+- 2.0.0 (24/11/2017)
+  - (n) Support for collada files with skeletal animations :)
 
 - 1.4.1 (21/11/2017)
   - (f) #29: Crash loading obj with only vertex info

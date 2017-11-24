@@ -2,6 +2,7 @@ package org.andresoviedo.app.model3D.animation;
 
 import android.opengl.Matrix;
 import android.os.SystemClock;
+import android.util.Log;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,7 +69,7 @@ public class Animator {
 	 * reset, causing the animation to loop.
 	 */
 	private void increaseAnimationTime(AnimatedModel obj) {
-		animationTime += SystemClock.uptimeMillis();
+		animationTime += 0.01; // System.nanoTime();
 		if (animationTime > obj.getAnimation().getLength()) {
 			this.animationTime %= obj.getAnimation().getLength();
 		}
@@ -139,8 +140,9 @@ public class Animator {
 		for (Joint childJoint : joint.children) {
 			applyPoseToJoints(currentPose, childJoint, currentTransform);
 		}
-		Matrix.multiplyMM(currentTransform,0,joint.getInverseBindTransform(), 0, currentTransform, 0);
-		joint.setAnimationTransform(currentTransform);
+		float[] animationTransform = new float[16];
+		Matrix.multiplyMM(animationTransform, 0, currentTransform, 0, joint.getInverseBindTransform(),0);
+		joint.setAnimationTransform(animationTransform);
 	}
 
 	/**

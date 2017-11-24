@@ -97,6 +97,7 @@ public class WavefrontLoader2 {
 					// scale object
 					publishProgress(3);
 					data.centerScale();
+					data.setScale(new float[]{5,5,5});
 
 					// draw triangles instead of points
 					data.setDrawMode(GLES20.GL_TRIANGLES);

@@ -118,7 +118,7 @@ public final class STLLoader {
 				}
 
 				Log.i("STLLoader", "Building 3D object...");
-				data.centerScale();
+				data.centerAndScale(5, new float[]{0,0,0});
 
 			} catch (Exception e) {
 				Log.e("STLLoader", "Face '"+counter+"'"+e.getMessage(), e);

@@ -1,6 +1,8 @@
 package org.andresoviedo.app.model3D.view;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.andresoviedo.app.model3D.services.ExampleSceneLoader;
 import org.andresoviedo.app.model3D.services.SceneLoader;
@@ -280,7 +282,12 @@ public class ModelActivity extends Activity {
 					if (uri != null) {
 						final String path = ContentUtils.getPath(getApplicationContext(), uri);
 						if (path != null) {
-							scene.loadTexture(path);
+							try {
+								scene.loadTexture(null, new URL("file://"+path));
+							} catch (MalformedURLException e) {
+								Toast.makeText(getApplicationContext(), "Problem loading texture '" + uri.toString() + "'",
+										Toast.LENGTH_SHORT).show();
+							}
 						} else {
 							Toast.makeText(getApplicationContext(), "Problem loading texture '" + uri.toString() + "'",
 									Toast.LENGTH_SHORT).show();

@@ -56,9 +56,8 @@ public class JointTransform {
 		float[] matrix = new float[16];
 		Matrix.setIdentityM(matrix,0);
 		Matrix.translateM(matrix,0,matrix,0,position.x,position.y,position.z);
-		float[] ret = new float[16];
-		Matrix.multiplyMM(ret,0,matrix,0,rotation.toRotationMatrix(),0);
-		return ret;
+		Matrix.multiplyMM(matrix,0,matrix,0,rotation.toRotationMatrix(),0);
+		return matrix;
 	}
 
 	/**

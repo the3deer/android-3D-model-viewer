@@ -17,9 +17,10 @@ import org.andresoviedo.app.util.xml.XmlNode;
 
 public class AnimationLoader {
 
-	private static final Matrix4f CORRECTION = new Matrix4f();
+	private static final float[] CORRECTION = new float[16];
 	static{
-		CORRECTION.rotate((float) Math.toRadians(-90), 1, 0, 0);
+		Matrix.setIdentityM(CORRECTION,0);
+		Matrix.rotateM(CORRECTION,0,CORRECTION,0,-90, 1, 0, 0);
 	}
 	
 	private XmlNode animationData;
@@ -80,22 +81,18 @@ public class AnimationLoader {
 	}
 	
 	private void processTransforms(String jointName, String[] rawData, KeyFrameData[] keyFrames, boolean root){
-		FloatBuffer buffer = createNativeByteBuffer(16*4).asFloatBuffer();
 		float[] matrixData = new float[16];
 		for(int i=0;i<keyFrames.length;i++){
 			for(int j=0;j<16;j++){
 				matrixData[j] = Float.parseFloat(rawData[i*16 + j]);
 			}
-			buffer.clear();
-			buffer.put(matrixData);
-			buffer.flip();
-			float[] transform = matrixData;
-			Matrix.transposeM(transform,0,transform,0);
+			float[] transpose = new float[16];
+			Matrix.transposeM(transpose,0,matrixData,0);
 			if(root){
 				//because up axis in Blender is different to up axis in game
-				Matrix.multiplyMM(transform,0,CORRECTION.getArray(),0,transform,0);
+				Matrix.multiplyMM(transpose,0,CORRECTION,0,transpose,0);
 			}
-			keyFrames[i].addJointTransform(new JointTransformData(jointName, transform));
+			keyFrames[i].addJointTransform(new JointTransformData(jointName, transpose));
 		}
 	}
 	
@@ -103,13 +100,4 @@ public class AnimationLoader {
 		XmlNode skeleton = jointHierarchy.getChild("visual_scene").getChildWithAttribute("node", "id", "Armature");
 		return skeleton.getChild("node").getAttribute("id");
 	}
-
-	private static ByteBuffer createNativeByteBuffer(int length) {
-		// initialize vertex byte buffer for shape coordinates
-		ByteBuffer bb = ByteBuffer.allocateDirect(length);
-		// use the device hardware's native byte order
-		bb.order(ByteOrder.nativeOrder());
-		return bb;
-	}
-
 }

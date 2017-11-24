@@ -54,7 +54,7 @@ public class Camera {
 
 	public Camera() {
 		// Initialize variables...
-		this(0, 0, 3, 0, 0, -1, 0, 1, 0);
+		this(0, 0, 6, 0, 0, -1, 0, 1, 0);
 
 	}
 
@@ -198,7 +198,7 @@ public class Camera {
 					buffer[0] / buffer[3]
 					, buffer[1] / buffer[3]
 					, buffer[2] / buffer[3] )) {
-				Log.d("Camera", "Inside bounds of '" + objects.get(i).getId() + "'");
+				Log.i("Camera", "Inside bounds of '" + objects.get(i).getId() + "'");
 				return true;
 			}
 		}

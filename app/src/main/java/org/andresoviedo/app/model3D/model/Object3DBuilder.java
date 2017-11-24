@@ -340,7 +340,7 @@ public final class Object3DBuilder {
 	public static Object3DData buildCubeV1() {
 		return new Object3DData(
 				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData))
-				.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1").centerAndScale(1.0f);
+				.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1").centerAndScale(1.0f).setFaces(new Faces(8));
 	}
 
 	public static Object3DData buildCubeV1_with_normals() {
@@ -350,14 +350,14 @@ public final class Object3DBuilder {
 						createNativeByteBuffer(cubeColorData.length * 4).asFloatBuffer().put(cubeColorData))
 				.setVertexNormalsArrayBuffer(
 						createNativeByteBuffer(cubeNormalData.length * 4).asFloatBuffer().put(cubeNormalData))
-				.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1_light").centerAndScale(1.0f);
+				.setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV1_light").centerAndScale(1.0f).setFaces(new Faces(8));
 	}
 
 	public static Object3DData buildSquareV2() {
-		return new Object3DData(
-				createNativeByteBuffer(squarePositionData.length * 4).asFloatBuffer().put(squarePositionData),
-				createNativeByteBuffer(squareDrawOrderData.length * 4).asIntBuffer().put(squareDrawOrderData)
-						.asReadOnlyBuffer()).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV2").centerAndScale(1.0f);
+		IntBuffer drawBuffer = createNativeByteBuffer(squareDrawOrderData.length * 4).asIntBuffer().put(squareDrawOrderData);
+		FloatBuffer vertexBuffer = createNativeByteBuffer(squarePositionData.length * 4).asFloatBuffer().put(squarePositionData);
+		return new Object3DData(vertexBuffer,drawBuffer.asReadOnlyBuffer()).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV2")
+				.centerAndScale(1.0f).setFaces(new Faces(8)).setDrawOrder(drawBuffer);
 	}
 
 	public static Object3DData buildCubeV3(byte[] textureData) {
@@ -365,7 +365,7 @@ public final class Object3DBuilder {
 				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData),
 				createNativeByteBuffer(cubeTextureCoordinateData.length * 4).asFloatBuffer()
 						.put(cubeTextureCoordinateData).asReadOnlyBuffer(),
-				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV3").centerAndScale(1.0f);
+				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV3").centerAndScale(1.0f).setFaces(new Faces(8));
 	}
 
 	public static Object3DData buildCubeV4(byte[] textureData) {
@@ -374,7 +374,7 @@ public final class Object3DBuilder {
 				createNativeByteBuffer(cubeColorData.length * 4).asFloatBuffer().put(cubeColorData).asReadOnlyBuffer(),
 				createNativeByteBuffer(cubeTextureCoordinateData.length * 4).asFloatBuffer()
 						.put(cubeTextureCoordinateData).asReadOnlyBuffer(),
-				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV4").centerAndScale(1.0f);
+				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV4").centerAndScale(1.0f).setFaces(new Faces(8));
 	}
 
 	public static Object3DData loadV5(AssetManager assets, String assetDir, String assetFilename) {
@@ -397,6 +397,7 @@ public final class Object3DBuilder {
 			data3D.setId(assetFilename);
 			data3D.setAssetsDir(assetDir);
 			data3D.setDimensions(wfl.getDimensions());
+			//data3D.centerAndScale(5,new float[]{0,0,0});
 			data3D.centerScale();
 
 			data3D.setDrawMode(GLES20.GL_TRIANGLES);
@@ -483,7 +484,7 @@ public final class Object3DBuilder {
 
 		// build file normals
 		final FloatBuffer vertexNormalsBuffer = obj.getNormals();
-		if (vertexNormalsBuffer.capacity() > 0) {
+		if (vertexNormalsBuffer != null && vertexNormalsBuffer.capacity() > 0) {
 			Log.i("Object3DBuilder", "Populating normals buffer...");
 			for (int n=0; n<faces.facesNormIdxs.size(); n++) {
 				int[] normal = faces.facesNormIdxs.get(n);

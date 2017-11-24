@@ -1,5 +1,6 @@
 package org.andresoviedo.app.model3D.services.collada.loader;
 
+import android.opengl.Matrix;
 import android.renderscript.Matrix4f;
 
 import java.nio.ByteBuffer;
@@ -19,10 +20,11 @@ public class SkeletonLoader {
 	private List<String> boneOrder;
 	
 	private int jointCount = 0;
-	
-	private static final Matrix4f CORRECTION = new Matrix4f();
+
+	private static final float[] CORRECTION = new float[16];
 	static{
-	CORRECTION.rotate((float) Math.toRadians(-90), 1, 0, 0);
+		Matrix.setIdentityM(CORRECTION,0);
+		Matrix.rotateM(CORRECTION,0,CORRECTION,0,-90, 1, 0, 0);
 	}
 
 	public SkeletonLoader(XmlNode visualSceneNode, List<String> boneOrder) {
@@ -52,8 +54,9 @@ public class SkeletonLoader {
 		matrix.transpose();
 		if(isRoot){
 			//because in Blender z is up, but in our game y is up.
-			matrix = new Matrix4f(CORRECTION.getArray());
-			matrix.multiply(matrix);
+			Matrix4f correction = new Matrix4f(CORRECTION);
+			correction.multiply(matrix);
+			matrix = correction;
 		}
 		jointCount++;
 		return new JointData(index, nameId, matrix.getArray());

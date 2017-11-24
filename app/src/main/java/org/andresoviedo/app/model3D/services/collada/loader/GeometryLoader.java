@@ -21,9 +21,10 @@ import org.andresoviedo.app.util.xml.XmlNode;
  */
 public class GeometryLoader {
 
-	private static final Matrix4f CORRECTION = new Matrix4f();
+	private static final float[] CORRECTION = new float[16];
 	static{
-		CORRECTION.rotate((float) Math.toRadians(-90), 1, 0, 0);
+		Matrix.setIdentityM(CORRECTION,0);
+		Matrix.rotateM(CORRECTION,0,CORRECTION,0,-90, 1, 0, 0);
 	}
 	
 	private final XmlNode meshData;
@@ -74,7 +75,7 @@ public class GeometryLoader {
 			float z = Float.parseFloat(posData[i * 3 + 2]);
 			Vector4f position = new Vector4f(x, y, z, 1);
 			float[] positionV = new float[4];
-			Matrix.multiplyMV(positionV, 0, CORRECTION.getArray(), 0, position.toArray(), 0);
+			Matrix.multiplyMV(positionV, 0, CORRECTION, 0, position.toArray(), 0);
 			position = new Vector4f(positionV);
 
 			vertices.add(new Vertex(vertices.size(), new Vector3f(position.x, position.y, position.z), vertexWeights.get(vertices.size())));
@@ -93,7 +94,7 @@ public class GeometryLoader {
 			float z = Float.parseFloat(normData[i * 3 + 2]);
 			Vector4f norm = new Vector4f(x, y, z, 0f);
 			float[] normV = new float[4];
-			Matrix.multiplyMV(normV, 0, CORRECTION.getArray(), 0, norm.toArray(), 0);
+			Matrix.multiplyMV(normV, 0, CORRECTION, 0, norm.toArray(), 0);
 			norm = new Vector4f(normV);
 			normals.add(new Vector3f(norm.x, norm.y, norm.z));
 		}

@@ -1,13 +1,18 @@
 package org.andresoviedo.app.model3D.services;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andresoviedo.app.model3D.model.AnimatedModel;
 import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DData;
+import org.andresoviedo.app.model3D.services.collada.loader.ColladaLoader;
 import org.andresoviedo.app.model3D.view.ModelActivity;
 import org.apache.commons.io.IOUtils;
 
@@ -176,6 +181,18 @@ public class ExampleSceneLoader extends SceneLoader {
 						obj.setPosition(new float[] { 0f, 2f, -2f });
 						obj.setColor(new float[] { 0.3f, 0.52f, 1f, 1.0f });
 						addObject(obj);
+					} catch (Exception ex) {
+						errors.add(ex);
+					}
+
+					// test loading collada object
+					try {
+						// this has heterogeneous faces
+						Object3DData data = ColladaLoader.load(new URL("android://org.andresoviedo.dddmodel2/assets/models/cowboy.dae"));
+						loadTexture(data, new URL("android://org.andresoviedo.dddmodel2/assets/models/cowboy.png"));
+						data.centerAndScale(4,new float[]{0,0,2});
+						data.setColor(new float[]{1,1,1,1});
+						addObject(data);
 					} catch (Exception ex) {
 						errors.add(ex);
 					}

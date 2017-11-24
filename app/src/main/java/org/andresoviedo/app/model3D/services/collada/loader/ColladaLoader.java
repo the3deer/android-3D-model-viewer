@@ -47,6 +47,102 @@ public class ColladaLoader {
 		return bb;
 	}
 
+	private static Object[] buildAnimatedModel(URL url) throws IOException {
+		AnimatedModelData modelData = loadColladaModel(url.openStream(),3);
+		MeshData meshData = modelData.getMeshData();
+		int totalVertex = meshData.getVertexCount();
+		int totalTextures = meshData.getTextureCoords().length;
+
+		// Allocate data
+		FloatBuffer normalsBuffer = createNativeByteBuffer(totalVertex * 3 * 4).asFloatBuffer();
+		FloatBuffer vertexBuffer = createNativeByteBuffer(totalVertex * 3 * 4).asFloatBuffer();
+		IntBuffer indexBuffer = createNativeByteBuffer(meshData.getIndices().length * 4).asIntBuffer();
+		FloatBuffer textureBuffer = createNativeByteBuffer(totalTextures * 4).asFloatBuffer();
+		textureBuffer.put(meshData.getTextureCoords());
+
+		// Initialize model dimensions (needed by the Object3DData#scaleCenter()
+		WavefrontLoader.ModelDimensions modelDimensions = new WavefrontLoader.ModelDimensions();
+
+		// notify succeded!
+		AnimatedModel data3D = new AnimatedModel(vertexBuffer);
+		data3D.setVertexNormalsArrayBuffer(normalsBuffer);
+		data3D.setTextureCoordsArrayBuffer(textureBuffer);
+		data3D.setDimensions(modelDimensions);
+		data3D.setDrawOrder(indexBuffer);
+		data3D.setDrawUsingArrays(false);
+		data3D.setDrawMode(GLES20.GL_TRIANGLES);
+
+		FloatBuffer intBuffer = createNativeByteBuffer(meshData.getJointIds().length * 4).asFloatBuffer();
+		for (int i:meshData.getJointIds()){
+			intBuffer.put(i);
+		}
+		data3D.setJointIds(intBuffer);
+		FloatBuffer floatBuffer = createNativeByteBuffer(meshData.getVertexWeights().length * 4).asFloatBuffer();
+		floatBuffer.put(meshData.getVertexWeights());
+		data3D.setVertexWeights(floatBuffer);
+
+		return new Object[]{modelData,data3D};
+	}
+
+	private static void populateAnimatedModel(URL url, Object3DData data, AnimatedModelData modelData) throws IOException {
+		int counter = 0;
+		try {
+			// Parse all facets...
+			double[] normal = new double[3];
+			double[][] vertices = new double[3][3];
+			int normalCounter=0, vertexCounter=0;
+
+			FloatBuffer normalsBuffer = data.getVertexNormalsArrayBuffer();
+			FloatBuffer vertexBuffer = data.getVertexArrayBuffer();
+			IntBuffer indexBuffer = data.getDrawOrder();
+
+			WavefrontLoader.ModelDimensions modelDimensions = data.getDimensions();
+
+			MeshData meshData = modelData.getMeshData();
+
+			boolean first = true;
+			for (counter=0; counter < meshData.getVertices().length-3;counter+=3) {
+
+				// update model dimensions
+				if (first){
+					modelDimensions.set(meshData.getVertices()[counter],meshData.getVertices()[counter+1],meshData.getVertices()[counter+2]);
+					first = false;
+				}
+				modelDimensions.update(meshData.getVertices()[counter],meshData.getVertices()[counter+1],meshData.getVertices()[counter+2]);
+
+			}
+			vertexBuffer.put(meshData.getVertices());
+			normalsBuffer.put(meshData.getNormals());
+			indexBuffer.put(meshData.getIndices());
+
+			Log.i("ColladaLoaderTask", "Building 3D object...");
+
+
+			AnimatedModel data3D = (AnimatedModel)data;
+			// load skeleton
+			SkeletonData skeletonData = modelData.getJointsData();
+			Joint headJoint = createJoints(skeletonData.headJoint);
+			data3D.setRootJoint(headJoint, skeletonData.jointCount);
+			data3D.setFaces(new WavefrontLoader.Faces(vertexBuffer.capacity()/3));
+			data3D.setDrawOrder(indexBuffer);
+
+			// load animation
+			Animation animation = loadAnimation(url.openStream());
+			data3D.doAnimation(animation);
+
+		} catch (IOException e) {
+			Log.e("ColladaLoaderTask", "Vertex '"+counter+"'"+e.getMessage(), e);
+			throw e;
+		}finally {
+
+		}
+	}
+
+	public static Object3DData load(URL url) throws IOException {
+		Object[] ret = buildAnimatedModel(url);
+		populateAnimatedModel(url,(Object3DData)ret[1],(AnimatedModelData) ret[0]);
+		return (Object3DData)ret[1];
+	}
 
 	public static void loadAsync(final Activity parent, URL url, final Object3DBuilder.Callback callback) {
 		new ColladaLoader.ColladaLoaderTask(parent,url,callback).execute();
@@ -63,96 +159,17 @@ public class ColladaLoader {
 		@Override
 		protected Object3DData build() throws IOException {
 			// Parse STL
-			modelData = loadColladaModel(url.openStream(),3);
-			MeshData meshData = modelData.getMeshData();
-			int totalVertex = meshData.getVertexCount();
-
-			// Allocate data
-			FloatBuffer normalsBuffer = createNativeByteBuffer(totalVertex * 3 * 4).asFloatBuffer();
-			FloatBuffer vertexBuffer = createNativeByteBuffer(totalVertex * 3 * 4).asFloatBuffer();
-			IntBuffer indexBuffer = createNativeByteBuffer(meshData.getIndices().length * 4).asIntBuffer();
-
-			// Initialize model dimensions (needed by the Object3DData#scaleCenter()
-			WavefrontLoader.ModelDimensions modelDimensions = new WavefrontLoader.ModelDimensions();
-
-			// notify succeded!
-			AnimatedModel data3D = new AnimatedModel(vertexBuffer);
-			data3D.setVertexNormalsArrayBuffer(normalsBuffer);
-			data3D.setDimensions(modelDimensions);
-			data3D.setDrawOrder(indexBuffer);
-			data3D.setDrawUsingArrays(false);
-			data3D.setDrawMode(GLES20.GL_TRIANGLES);
-
-			FloatBuffer intBuffer = createNativeByteBuffer(meshData.getJointIds().length * 4).asFloatBuffer();
-			for (int i:meshData.getJointIds()){
-				intBuffer.put(i);
-			}
-			data3D.setJointIds(intBuffer);
-			FloatBuffer floatBuffer = createNativeByteBuffer(meshData.getVertexWeights().length * 4).asFloatBuffer();
-			floatBuffer.put(meshData.getVertexWeights());
-			data3D.setVertexWeights(floatBuffer);
-
-			return data3D;
+			Object[] ret = buildAnimatedModel(url);
+			Object3DData data = (Object3DData)ret[1];
+			modelData = (AnimatedModelData) ret[0];
+			return (Object3DData) data;
 		}
 
 		@Override
 		protected void build(Object3DData data) throws Exception
 		{
-			int counter = 0;
-			try {
-				// Parse all facets...
-				double[] normal = new double[3];
-				double[][] vertices = new double[3][3];
-				int normalCounter=0, vertexCounter=0;
-
-				FloatBuffer normalsBuffer = data.getVertexNormalsArrayBuffer();
-				FloatBuffer vertexBuffer = data.getVertexArrayBuffer();
-				IntBuffer indexBuffer = data.getDrawOrder();
-
-				WavefrontLoader.ModelDimensions modelDimensions = data.getDimensions();
-
-				MeshData meshData = modelData.getMeshData();
-
-				boolean first = true;
-				for (counter=0; counter < meshData.getVertices().length-3;counter+=3) {
-
-					// update model dimensions
-					if (first){
-						modelDimensions.set(meshData.getVertices()[counter],meshData.getVertices()[counter+1],meshData.getVertices()[counter+2]);
-						first = false;
-					}
-					modelDimensions.update(meshData.getVertices()[counter],meshData.getVertices()[counter+1],meshData.getVertices()[counter+2]);
-
-				}
-				vertexBuffer.put(meshData.getVertices());
-				normalsBuffer.put(meshData.getNormals());
-				indexBuffer.put(meshData.getIndices());
-
-				Log.i("ColladaLoaderTask", "Building 3D object...");
-				data.centerScale();
-
-				AnimatedModel data3D = (AnimatedModel)data;
-				// load skeleton
-				SkeletonData skeletonData = modelData.getJointsData();
-				Joint headJoint = createJoints(skeletonData.headJoint);
-				data3D.setRootJoint(headJoint, skeletonData.jointCount);
-				/*IntBuffer intBuffer = createNativeByteBuffer(meshData.getJointIds().length * 4).asIntBuffer();
-				intBuffer.put(meshData.getJointIds());
-				data3D.setJointIds(intBuffer);
-				FloatBuffer floatBuffer = createNativeByteBuffer(meshData.getVertexWeights().length * 4).asFloatBuffer();
-				floatBuffer.put(meshData.getVertexWeights());
-				data3D.setVertexBuffer(floatBuffer);*/
-
-				// load animation
-				Animation animation = loadAnimation(url.openStream());
-				data3D.doAnimation(animation);
-
-			} catch (Exception e) {
-				Log.e("ColladaLoaderTask", "Vertex '"+counter+"'"+e.getMessage(), e);
-				throw e;
-			}finally {
-
-			}
+			populateAnimatedModel(url, data, modelData);
+			data.centerAndScale(5,new float[]{0,0,0});
 		}
 	}
 

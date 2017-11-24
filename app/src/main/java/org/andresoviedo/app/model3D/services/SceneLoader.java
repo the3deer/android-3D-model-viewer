@@ -77,11 +77,11 @@ public class SceneLoader {
 	/**
 	 * Initial light position
 	 */
-	private final float[] lightPosition = new float[]{0, 0, 3, 1};
+	private final float[] lightPosition = new float[]{0, 0, 6, 1};
 	/**
 	 * Light bulb 3d data
 	 */
-	private final Object3DData lightPoint = Object3DBuilder.buildPoint(new float[4]).setId("light").setPosition(lightPosition);
+	private final Object3DData lightPoint = Object3DBuilder.buildPoint(lightPosition).setId("light");
 	/**
 	 * Animator
 	 */
@@ -129,7 +129,7 @@ public class SceneLoader {
 						@Override
 						public void onLoadComplete(Object3DData data) {
 							data.setColor(DEFAULT_COLOR);
-							data.setScale(new float[]{5f, 5f, 5f});
+							// data.setScale(new float[]{5f, 5f, 5f});
 							addObject(data);
 						}
 
@@ -156,6 +156,10 @@ public class SceneLoader {
 		return lightPoint;
 	}
 
+	public float[] getLightPosition(){
+		return lightPosition;
+	}
+
 	/**
 	 * Hook for animating the objects before the rendering
 	 */
@@ -164,7 +168,10 @@ public class SceneLoader {
 		animateLight();
 
 		if (objects.isEmpty()) return;
-		animator.update(objects.get(0));
+
+		for (Object3DData obj : objects) {
+			animator.update(obj);
+		}
 	}
 
 	private void animateLight() {
@@ -266,19 +273,19 @@ public class SceneLoader {
 		this.selectedObject = selectedObject;
 	}
 
-	public void loadTexture(String path){
-		if (objects.size() != 1) {
+	public void loadTexture(Object3DData obj, URL path){
+		if (obj == null && objects.size() != 1) {
 			makeToastText("Unavailable", Toast.LENGTH_SHORT);
 			return;
 		}
 
 		try {
-			InputStream is = new FileInputStream(path);
+			InputStream is = path.openStream();
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			IOUtils.copy(is,bos);
 			is.close();
 
-			Object3DData obj = objects.get(0);
+			obj = obj != null? obj : objects.get(0);
 			obj.setTextureData(bos.toByteArray());
 		} catch (IOException ex) {
 			makeToastText("Problem loading texture: "+ex.getMessage(), Toast.LENGTH_SHORT);

@@ -121,7 +121,7 @@ public class Quaternion {
 			y = (matrix[1] + matrix[4]) / x4;
 			z = (matrix[2] + matrix[8]) / x4;
 		} else if (matrix[5] > matrix[10]) {
-			float y4 = (float) (Math.sqrt(1f + matrix[6] - matrix[0] - matrix[10]) * 2f);
+			float y4 = (float) (Math.sqrt(1f + matrix[5] - matrix[0] - matrix[10]) * 2f);
 			w = (matrix[2] - matrix[8]) / y4;
 			x = (matrix[1] + matrix[4]) / y4;
 			y = y4 / 4f;

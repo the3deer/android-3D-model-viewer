@@ -19,6 +19,7 @@ import org.andresoviedo.app.model3D.services.WavefrontLoader.Tuple3;
 import org.andresoviedo.app.util.math.Math3DUtils;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import android.util.Log;
 
 /**
@@ -81,7 +82,7 @@ public class Object3DData {
 	// Transformation data
 	protected float[] position = new float[] { 0f, 0f, 0f };
 	protected float[] rotation = new float[] { 0f, 0f, 0f };
-	protected float[] scale;
+	protected float[] scale = new float[] { 1, 1, 1 };
 
 	// whether the object has changed
 	private boolean changed;
@@ -150,9 +151,10 @@ public class Object3DData {
 	 *
 	 * @param faces 3d faces
 	 */
-	public void setFaces(Faces faces) {
+	public Object3DData setFaces(Faces faces) {
 		this.faces = faces;
 		this.drawOrderBuffer = faces.getIndexBuffer();
+		return this;
 	}
 
 	public boolean isVisible() {
@@ -661,13 +663,38 @@ public class Object3DData {
 					zMax = vertexz;
 				}
 			}
-			boundingBox = new BoundingBox(getId(), xMin+getPositionX(), xMax+getPositionX()
-					, yMin+getPositionY(), yMax+getPositionY()
-					, zMin+getPositionZ(), zMax+getPositionZ());
+			boundingBox = new BoundingBox(getId(), (xMin+getPositionX())*getScaleX(), (xMax+getPositionX())*getScaleX()
+					, (yMin+getPositionY())*getScaleY(), (yMax+getPositionY())*getScaleY()
+					, (zMin+getPositionZ())*getScaleZ(), (zMax+getPositionZ())*getScaleZ());
 		}
 		return boundingBox;
 	}
 
+	public void centerAndScale(float newScale, float[] newPosition){
+		// calculate a scale factor
+		float scaleFactor = 1.0f;
+		float largest = modelDimensions.getLargest();
+		// System.out.println("Largest dimension: " + largest);
+		if (largest != 0.0f)
+			scaleFactor = (1.0f / largest);
+		scale[0] = scaleFactor * newScale;
+		scale[1] = scaleFactor * newScale;
+		scale[2] = scaleFactor * newScale;
+
+		// get the model's center point
+		Tuple3 center = modelDimensions.getCenter();
+		position[0] = -center.getX() + newPosition[0];
+		position[1] = -center.getY() + newPosition[1];
+		position[2] = -center.getZ() + newPosition[2];
+
+		/*float[] ret = new float[16];
+		Matrix.setIdentityM(ret,0);
+		Matrix.translateM(ret,0,center.getX(),center.getY(),center.getZ());
+		Matrix.scaleM(ret,0,scaleFactor, scaleFactor, scaleFactor);
+		return ret;*/
+	}
+
+	@Deprecated
 	public void centerScale()
 	/*
 	 * Position the model so it's center is at the origin, and scale it so its longest dimension is no bigger than
