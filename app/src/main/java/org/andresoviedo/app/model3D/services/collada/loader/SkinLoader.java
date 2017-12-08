@@ -1,30 +1,43 @@
 package org.andresoviedo.app.model3D.services.collada.loader;
 
+import android.util.Log;
+
 import org.andresoviedo.app.model3D.services.collada.entities.SkinningData;
 import org.andresoviedo.app.model3D.services.collada.entities.VertexSkinData;
 import org.andresoviedo.app.util.xml.XmlNode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class SkinLoader {
 
-	private final XmlNode skinningData;
+	private final XmlNode controllersNode;
+	private XmlNode skinningData;
 	private final int maxWeights;
 
 	public SkinLoader(XmlNode controllersNode, int maxWeights) {
-		this.skinningData = controllersNode.getChild("controller").getChild("skin");
 		this.maxWeights = maxWeights;
+		this.controllersNode = controllersNode;
 	}
 
-	public SkinningData extractSkinData() {
-		List<String> jointsList = loadJointsList();
-		float[] weights = loadWeights();
-		XmlNode weightsDataNode = skinningData.getChild("vertex_weights");
-		int[] effectorJointCounts = getEffectiveJointsCounts(weightsDataNode);
-		List<VertexSkinData> vertexWeights = getSkinData(weightsDataNode, effectorJointCounts, weights);
-		return new SkinningData(jointsList, vertexWeights);
+	public Map<String,SkinningData> extractSkinData() {
+		Map<String,SkinningData> ret = new HashMap<String, SkinningData>();
+		for (XmlNode controller : controllersNode.getChildren("controller")) {
+			XmlNode skinningDataNode = controller.getChild("skin");
+			this.skinningData = skinningDataNode;
+			String source = skinningData.getAttribute("source").substring(1);
+			List<String> jointsList = loadJointsList();
+			float[] weights = loadWeights();
+			XmlNode weightsDataNode = skinningData.getChild("vertex_weights");
+			int[] effectorJointCounts = getEffectiveJointsCounts(weightsDataNode);
+			List<VertexSkinData> vertexWeights = getSkinData(weightsDataNode, effectorJointCounts, weights);
+			ret.put(source,new SkinningData(jointsList, vertexWeights));
+		}
+		Log.d("SkinLoader","Skinning datas '"+ret.keySet()+"'");
+		return ret;
 	}
 
 	private List<String> loadJointsList() {

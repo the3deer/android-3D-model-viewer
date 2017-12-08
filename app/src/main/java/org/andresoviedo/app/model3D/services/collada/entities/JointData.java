@@ -19,6 +19,7 @@ public class JointData {
 	public final int index;
 	public final String nameId;
 	public final float[] bindLocalTransform;
+	public String meshId;
 
 	public final List<JointData> children = new ArrayList<JointData>();
 
@@ -32,4 +33,8 @@ public class JointData {
 		children.add(child);
 	}
 
+	public JointData setMeshId(String meshId) {
+		this.meshId = meshId;
+		return this;
+	}
 }

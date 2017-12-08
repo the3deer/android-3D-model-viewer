@@ -13,13 +13,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 
 /**
  * This component allows loading the model without blocking the UI.
  *
  * @author andresoviedo
  */
-public abstract class LoaderTask extends AsyncTask<Void, Integer, Object3DData> {
+public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DData>> {
 
 	/**
 	 * URL to the 3D model
@@ -85,9 +86,9 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, Object3DData> 
 
 
 	@Override
-	protected Object3DData doInBackground(Void... params) {
+	protected List<Object3DData> doInBackground(Void... params) {
 		try {
-			Object3DData data = build();
+			List<Object3DData> data = build();
 			callback.onLoadComplete(data);
 			build(data);
 			return  data;
@@ -97,9 +98,9 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, Object3DData> 
 		}
 	}
 
-	protected abstract Object3DData build() throws Exception;
+	protected abstract List<Object3DData> build() throws Exception;
 
-	protected abstract void build(Object3DData data) throws Exception;
+	protected abstract void build(List<Object3DData> data) throws Exception;
 
 	@Override
 	protected void onProgressUpdate(Integer... values) {
@@ -127,7 +128,7 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, Object3DData> 
 	}
 
 	@Override
-	protected void onPostExecute(Object3DData data) {
+	protected void onPostExecute(List<Object3DData> data) {
 		super.onPostExecute(data);
 		if (dialog.isShowing()) {
 			dialog.dismiss();

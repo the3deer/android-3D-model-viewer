@@ -33,7 +33,7 @@
   </library_cameras>
   <library_images>
     <image id="character_Texture_png" name="character_Texture_png">
-      <init_from>character%20Texture.png</init_from>
+      <init_from>cowboy.png</init_from>
     </image>
   </library_images>
   <library_effects>

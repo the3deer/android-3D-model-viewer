@@ -2,6 +2,7 @@ package org.andresoviedo.app.model3D.services.collada.loader;
 
 import android.opengl.Matrix;
 import android.renderscript.Matrix4f;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -35,6 +36,10 @@ public class SkeletonLoader {
 	public SkeletonData extractBoneData(){
 		XmlNode headNode = armatureData.getChild("node");
 		JointData headJoint = loadJointData(headNode, true);
+		if (jointCount != boneOrder.size()){
+			Log.e("SkeletonLoader","jointCount != boneOrder: "+jointCount+" != "+boneOrder.size());
+			jointCount = boneOrder.size();
+		}
 		return new SkeletonData(jointCount, headJoint);
 	}
 	
@@ -49,6 +54,11 @@ public class SkeletonLoader {
 	private JointData extractMainJointData(XmlNode jointNode, boolean isRoot){
 		String nameId = jointNode.getAttribute("id");
 		int index = boneOrder.indexOf(nameId);
+		if (index == -1){
+			Log.e("SkeletonLoader","Joint not found in order: "+nameId);
+			boneOrder.add(nameId);
+			index = boneOrder.indexOf(nameId);
+		}
 		String[] matrixData = jointNode.getChild("matrix").getData().split(" ");
 		Matrix4f matrix = new Matrix4f(convertData(matrixData));
 		matrix.transpose();
@@ -67,17 +77,6 @@ public class SkeletonLoader {
 		for(int i=0;i<matrixData.length;i++){
 			matrixData[i] = Float.parseFloat(rawData[i]);
 		}
-		FloatBuffer buffer = createNativeByteBuffer(16*4).asFloatBuffer();
-		buffer.put(matrixData);
-		buffer.flip();
 		return matrixData;
-	}
-
-	private static ByteBuffer createNativeByteBuffer(int length) {
-		// initialize vertex byte buffer for shape coordinates
-		ByteBuffer bb = ByteBuffer.allocateDirect(length);
-		// use the device hardware's native byte order
-		bb.order(ByteOrder.nativeOrder());
-		return bb;
 	}
 }

@@ -4,6 +4,7 @@ import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,7 +70,7 @@ public class Animator {
 	 * reset, causing the animation to loop.
 	 */
 	private void increaseAnimationTime(AnimatedModel obj) {
-		animationTime += 0.01; // System.nanoTime();
+		animationTime += 0.01;
 		if (animationTime > obj.getAnimation().getLength()) {
 			this.animationTime %= obj.getAnimation().getLength();
 		}
@@ -136,7 +137,11 @@ public class Animator {
 	private void applyPoseToJoints(Map<String, float[]> currentPose, Joint joint, float[] parentTransform) {
 		float[] currentLocalTransform = currentPose.get(joint.name);
 		float[] currentTransform = new float[16];
-		Matrix.multiplyMM(currentTransform,0,parentTransform,0,currentLocalTransform,0);
+		if (currentLocalTransform == null) {
+			currentLocalTransform = new float[16];
+			Matrix.setIdentityM(currentLocalTransform,0);
+		}
+		Matrix.multiplyMM(currentTransform, 0, parentTransform, 0, currentLocalTransform, 0);
 		for (Joint childJoint : joint.children) {
 			applyPoseToJoints(currentPose, childJoint, currentTransform);
 		}

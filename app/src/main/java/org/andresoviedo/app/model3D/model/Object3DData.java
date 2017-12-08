@@ -66,6 +66,7 @@ public class Object3DData {
 	private Faces faces;
 	private FaceMaterials faceMats;
 	private Materials materials;
+	private String textureFile;
 
 	// Processed arrays
 	private FloatBuffer vertexArrayBuffer = null;
@@ -417,6 +418,14 @@ public class Object3DData {
 		return this;
 	}
 
+	public void setTextureFile(String textureFile) {
+		this.textureFile = textureFile;
+	}
+
+	public String getTextureFile(){
+		return textureFile;
+	}
+
 	public InputStream getTextureStream0() {
 		if (textureData != null) {
 			return new ByteArrayInputStream(textureData);
@@ -694,6 +703,52 @@ public class Object3DData {
 		return ret;*/
 	}
 
+	public static void centerAndScale(List<Object3DData> datas, float newScale, float[] newPosition){
+		// calculate the global max length
+		float maxRight = datas.get(0).getDimensions().rightPt;
+		float maxLeft = datas.get(0).getDimensions().leftPt;
+		float maxTop = datas.get(0).getDimensions().topPt;
+		float maxBottom = datas.get(0).getDimensions().bottomPt;
+		float maxNear = datas.get(0).getDimensions().nearPt;
+		float maxFar = datas.get(0).getDimensions().farPt;
+		for (int i=1; i<datas.size(); i++){
+			float maxRight2 = datas.get(i).getDimensions().rightPt;
+			float maxLeft2 = datas.get(i).getDimensions().leftPt;
+			float maxTop2 = datas.get(i).getDimensions().topPt;
+			float maxBottom2 = datas.get(i).getDimensions().bottomPt;
+			float maxNear2 = datas.get(i).getDimensions().nearPt;
+			float maxFar2 = datas.get(i).getDimensions().farPt;
+			if (maxRight2 > maxRight) maxRight = maxRight2;
+			if (maxLeft2 < maxLeft) maxLeft = maxLeft2;
+			if (maxTop2 > maxTop) maxTop = maxTop2;
+			if (maxBottom2 < maxBottom) maxBottom = maxBottom2;
+			if (maxNear2 > maxNear) maxNear = maxNear2;
+			if (maxFar2 < maxFar) maxFar = maxFar2;
+		}
+		float lengthX = maxRight - maxLeft;
+		float lengthY = maxTop - maxBottom;
+		float lengthZ = maxNear - maxFar;
+		float maxLength = lengthX;
+		if (lengthY > maxLength) maxLength = lengthY;
+		if (lengthZ > maxLength) maxLength = lengthZ;
+
+		// calculate the global center
+		float centerX = (maxRight + maxLeft)/2;
+		float centerY = (maxTop + maxBottom)/2;
+		float centerZ = (maxNear + maxFar)/2;
+
+		// calculate the scale factor
+		float scaleFactor = 1.0f / maxLength * newScale;
+		float translationX = -centerX + newPosition[0];
+		float translationY = -centerY + newPosition[1];
+		float translationZ = -centerZ + newPosition[2];
+
+		for (Object3DData data : datas){
+			data.setPosition(new float[]{translationX, translationY, translationZ});
+			data.setScale(new float[]{scaleFactor, scaleFactor, scaleFactor});
+		}
+	}
+
 	@Deprecated
 	public void centerScale()
 	/*
@@ -729,6 +784,5 @@ public class Object3DData {
 			vertexBuffer.put(i*3+2,z);
 		}
 	} // end of centerScale()
-
 
 }

@@ -71,6 +71,10 @@ public final class BoundingBox {
 		this.zMax = zMax;
 	}
 
+	public float[] getCenter(){
+		return new float[]{(xMax+xMin)/2,(yMax+yMin)/2,(zMax+zMin)/2};
+	}
+
 	public boolean insideBounds(float x, float y, float z){
 		return !outOfBound(x,y,z);
 	}

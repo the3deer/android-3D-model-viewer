@@ -5,11 +5,7 @@ package org.andresoviedo.app.model3D.entities;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.services.SceneLoader;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /*
  Class Name:
@@ -42,7 +38,7 @@ public class Camera {
 	public float xUp, yUp, zUp; // Up direction.
 
 	private SceneLoader scene;
-	private final BoundingBox boundingBox = new BoundingBox("scene",-9,9,-9,9,-9,9);
+	private final BoundingBox boundingBox = new BoundingBox("scene",-20,20,-20,20,-20,20);
 
 	float xStrafe = 0, yStrafe = 0, zStrafe = 0; // Strafe direction.
 	float currentRotationAngle; // Keeps us from going too far up or down.
@@ -149,19 +145,6 @@ public class Camera {
 	}
 
 	void UpdateCamera(float xDir, float yDir, float zDir, float dir) {
-		// Move the camera on the X and Z axis. Notice I commented out the yPos
-		// and yView
-		// updates. This is because without them we can keep the camera on the
-		// ground in
-		// the simple camera tutorials without having to alter them afterwards.
-		// xPos += xDir * dir;
-		// yPos += yDir * dir;
-		// zPos += zDir * dir;
-		//
-		// // Move the view along with the position
-		// xView += xDir * dir;
-		// yView += yDir * dir;
-		// zView += zDir * dir;
 
 		Matrix.setIdentityM(matrix, 0);
 		Matrix.translateM(matrix, 0, xDir * dir, yDir * dir, zDir * dir);
@@ -182,15 +165,27 @@ public class Camera {
 		yUp = buffer[9] / buffer[11];
 		zUp = buffer[10] / buffer[11];
 
+		pointViewToOrigin();
+
 		setChanged(true);
+	}
+
+	private void pointViewToOrigin(){
+		xView = -xPos;
+		yView = -yPos;
+		zView = -zPos;
+		float length = Matrix.length(xView, yView, zView);
+		xView /= length;
+		yView /= length;
+		zView /= length;
 	}
 
 	private boolean isOutOfBounds(float[] buffer) {
 		if (boundingBox.outOfBound(buffer[0] / buffer[3],buffer[1] / buffer[3],buffer[2] / buffer[3])){
-			Log.d("Camera", "Out of bounds scene bounds");
+			Log.i("Camera", "Out of scene bounds");
 			return true;
 		}
-		List<Object3DData> objects = scene.getObjects();
+		/*List<Object3DData> objects = scene.getObjects();
 		for (int i = 0; objects != null && i < objects.size(); i++) {
 			BoundingBox boundingBox = objects.get(i).getBoundingBox();
 			// Log.d("Camera","BoundingBox? "+boundingBox);
@@ -201,7 +196,7 @@ public class Camera {
 				Log.i("Camera", "Inside bounds of '" + objects.get(i).getId() + "'");
 				return true;
 			}
-		}
+		}*/
 		return false;
 	}
 

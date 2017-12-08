@@ -121,16 +121,19 @@ public class SceneLoader {
 						long startTime = SystemClock.uptimeMillis();
 
 						@Override
-						public void onBuildComplete(Object3DData data) {
+						public void onBuildComplete(List<Object3DData> datas) {
+							for (Object3DData data : datas) {
+								loadTexture(data, parent.getParamFile(), parent.getParamAssetDir());
+							}
 							final String elapsed = (SystemClock.uptimeMillis() - startTime)/1000+" secs";
 							makeToastText("Load complete ("+elapsed+")", Toast.LENGTH_LONG);
 						}
 
 						@Override
-						public void onLoadComplete(Object3DData data) {
-							data.setColor(DEFAULT_COLOR);
-							// data.setScale(new float[]{5f, 5f, 5f});
-							addObject(data);
+						public void onLoadComplete(List<Object3DData> datas) {
+							for (Object3DData data : datas) {
+								addObject(data);
+							}
 						}
 
 						@Override
@@ -271,6 +274,29 @@ public class SceneLoader {
 
 	public void setSelectedObject(Object3DData selectedObject) {
 		this.selectedObject = selectedObject;
+	}
+
+	public void loadTexture(Object3DData data, File file, String parentAssetsDir){
+		if (data.getTextureData() == null && data.getTextureFile() != null){
+			try {
+				Log.i("SceneLoader","Loading texture '"+data.getTextureFile()+"'...");
+				InputStream stream = null;
+				if (file != null){
+					File textureFile = new File(file.getParent(),data.getTextureFile());
+					stream = new FileInputStream(textureFile);
+				}
+				else{
+					stream = parent.getAssets().open(parentAssetsDir + "/" + data.getTextureFile());
+				}
+				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				IOUtils.copy(stream,bos);
+				stream.close();
+
+				data.setTextureData(bos.toByteArray());
+			} catch (IOException ex) {
+				makeToastText("Problem loading texture "+data.getTextureFile(), Toast.LENGTH_SHORT);
+			}
+		}
 	}
 
 	public void loadTexture(Object3DData obj, URL path){

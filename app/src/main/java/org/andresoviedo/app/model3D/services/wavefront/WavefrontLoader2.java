@@ -14,6 +14,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Wavefront loader implementation
@@ -58,7 +60,7 @@ public class WavefrontLoader2 {
 			}
 
 			@Override
-			protected Object3DData build() throws IOException {
+			protected List<Object3DData> build() throws IOException {
 				InputStream params0 = getInputStream();
 				org.andresoviedo.app.model3D.services.WavefrontLoader wfl = new org.andresoviedo.app.model3D.services.WavefrontLoader("");
 
@@ -82,13 +84,15 @@ public class WavefrontLoader2 {
 				data3D.setDrawMode(GLES20.GL_TRIANGLES);
 				data3D.setDimensions(data3D.getLoader().getDimensions());
 
-				return data3D;
+				return Collections.singletonList(data3D);
 			}
 
 			@Override
-			protected void build(Object3DData data) throws Exception {
+			protected void build(List<Object3DData> datas) throws Exception {
 				InputStream stream = getInputStream();
 				try {
+					Object3DData data = datas.get(0);
+
 					// parse model
 					publishProgress(2);
 					data.getLoader().loadModel(stream);

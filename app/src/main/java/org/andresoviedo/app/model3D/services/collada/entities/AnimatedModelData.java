@@ -1,5 +1,7 @@
 package org.andresoviedo.app.model3D.services.collada.entities;
 
+import java.util.List;
+
 /**
  * Contains the extracted data for an animated model, which includes the mesh data, and skeleton (joints heirarchy) data.
  * @author Karl
@@ -8,9 +10,9 @@ package org.andresoviedo.app.model3D.services.collada.entities;
 public class AnimatedModelData {
 
 	private final SkeletonData joints;
-	private final MeshData mesh;
+	private final List<MeshData> mesh;
 	
-	public AnimatedModelData(MeshData mesh, SkeletonData joints){
+	public AnimatedModelData(List<MeshData> mesh, SkeletonData joints){
 		this.joints = joints;
 		this.mesh = mesh;
 	}
@@ -19,7 +21,7 @@ public class AnimatedModelData {
 		return joints;
 	}
 	
-	public MeshData getMeshData(){
+	public List<MeshData> getMeshData(){
 		return mesh;
 	}
 	

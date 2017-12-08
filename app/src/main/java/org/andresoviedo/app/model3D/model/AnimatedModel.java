@@ -57,6 +57,15 @@ public class AnimatedModel extends Object3DData {
 		return this;
 	}
 
+	public int getJointCount(){
+		return jointCount;
+	}
+
+	public AnimatedModel setJointCount(int jointCount){
+		this.jointCount = jointCount;
+		return this;
+	}
+
 	public AnimatedModel setJointIds(FloatBuffer jointIds){
 		this.jointIds = jointIds;
 		return this;
@@ -103,7 +112,10 @@ public class AnimatedModel extends Object3DData {
 	 *         animation pose.
 	 */
 	public float[][] getJointTransforms() {
-		float[][] jointMatrices = new float[16][jointCount];
+		float[][] jointMatrices = new float[jointCount][16];
+		for (int i=0; i<jointMatrices.length;i++){
+			Matrix.setIdentityM(jointMatrices[i],0);
+		}
 		addJointsToArray(rootJoint, jointMatrices);
 		return jointMatrices;
 	}

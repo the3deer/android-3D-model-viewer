@@ -36,9 +36,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	// Out point of view handler
 	private Camera camera;
 	// frustrum - nearest pixel
-	private float near = 1f;
+	private final float near = 1f;
 	// frustrum - fartest pixel
-	private float far = 10f;
+	private final float far = 100f;
 
 	private Object3DBuilder drawer;
 	// The wireframe associated shape (it should be made of lines only)
@@ -167,8 +167,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 		List<Object3DData> objects = scene.getObjects();
 		for (int i=0; i<objects.size(); i++) {
+			Object3DData objData = null;
 			try {
-				Object3DData objData = objects.get(i);
+				objData = objects.get(i);
 				boolean changed = objData.isChanged();
 
 				Object3D drawerObject = drawer.getDrawer(objData, scene.isDrawTextures(), scene.isDrawLighting());
@@ -238,9 +239,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				}
 				// TODO: enable this only when user wants it
 				// obj3D.drawVectorNormals(result, modelViewMatrix);
-			} catch (IOException ex) {
-				Toast.makeText(main.getModelActivity().getApplicationContext(),
-						"There was a problem creating 3D object", Toast.LENGTH_LONG).show();
+			} catch (Exception ex) {
+				Log.e("ModelRenderer","There was a problem rendering the object '"+objData.getId()+"':"+ex.getMessage(),ex);
 			}
 		}
 	}

@@ -14,6 +14,8 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Collections;
+import java.util.List;
 
 /**
  + STL loader supported by the org.j3d STL parser
@@ -43,7 +45,7 @@ public final class STLLoader {
 		}
 
 		@Override
-		protected Object3DData build() throws IOException {
+		protected List<Object3DData> build() throws IOException {
 			// Parse STL
 			this.stlFileReader = new STLFileReader(url);
 			int totalFaces = stlFileReader.getNumOfFacets()[0];
@@ -66,14 +68,17 @@ public final class STLLoader {
 			if (totalFaces > 0){
 				data3D.setFaces(new WavefrontLoader.Faces(totalFaces));
 			}
-			return data3D;
+			return Collections.singletonList(data3D);
 		}
 
 		@Override
-		protected void build(Object3DData data) throws Exception
+		protected void build(List<Object3DData> datas) throws Exception
 		{
 			int counter = 0;
 			try {
+
+				Object3DData data = datas.get(0);
+
 				// Parse all facets...
 				double[] normal = new double[3];
 				double[][] vertices = new double[3][3];

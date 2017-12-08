@@ -118,7 +118,7 @@ public class TouchController {
 			x1 = motionEvent.getX();
 			y1 = motionEvent.getY();
 			if (gestureChanged) {
-				Log.d("Touch", "x:" + x1 + ",y:" + y1);
+				Log.d(TAG, "x:" + x1 + ",y:" + y1);
 				previousX1 = x1;
 				previousY1 = y1;
 			}
@@ -137,7 +137,7 @@ public class TouchController {
 			vector[0] /= len;
 			vector[1] /= len;
 
-			// Log.d("Touch", "x1:" + x1 + ",y1:" + y1 + ",x2:" + x2 + ",y2:" + y2);
+			// Log.d(TAG, "x1:" + x1 + ",y1:" + y1 + ",x2:" + x2 + ",y2:" + y2);
 			if (gestureChanged) {
 				previousX1 = x1;
 				previousY1 = y1;
@@ -195,7 +195,7 @@ public class TouchController {
 			if (pointerCount == 1 && currentPress1 > 4.0f) {
 			} else if (pointerCount == 1) {
 				touchStatus = TOUCH_STATUS_MOVING_WORLD;
-				// Log.d("TouchController", "Translating camera (dx,dy) '" + dx1 + "','" + dy1 + "'...");
+				// Log.d(TAG, "Translating camera (dx,dy) '" + dx1 + "','" + dy1 + "'...");
 				dx1 = (float)(dx1 / max * Math.PI * 2);
 				dy1 = (float)(dy1 / max * Math.PI * 2);
 				mRenderer.getCamera().translateCamera(dx1,dy1);
@@ -203,12 +203,12 @@ public class TouchController {
 				if (fingersAreClosing) {
 					touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
 					float zoomFactor = (length - previousLength) / max * mRenderer.getFar();
-					Log.i("Camera", "Zooming '" + zoomFactor + "'...");
+					Log.i(TAG, "Zooming '" + zoomFactor + "'...");
 					mRenderer.getCamera().MoveCameraZ(zoomFactor);
 				}
 				if (isRotating) {
 					touchStatus = TOUCH_STATUS_ROTATING_CAMERA;
-					Log.i("Camera", "Rotating camera '" + Math.signum(rotationVector[2]) + "'...");
+					Log.i(TAG, "Rotating camera '" + Math.signum(rotationVector[2]) + "'...");
 					mRenderer.getCamera().Rotate((float) (Math.signum(rotationVector[2]) / Math.PI) / 4);
 				}
 			}
@@ -227,7 +227,7 @@ public class TouchController {
 			// // Log.d(TAG, "Reversing dy");
 			// dy = dy * -1;
 			// }
-			// Log.w("Object", "Rotating '" + dx + "','" + dy + "'...");
+			// Log.w(TAG, "Rotating '" + dx + "','" + dy + "'...");
 			//
 			// if (wzSquare > wzTriangle) {
 			// mRenderer.getmSquare().setRotationZ(mRenderer.getmSquare().getRotationZ() + ((dx + dy) *
@@ -243,7 +243,7 @@ public class TouchController {
 			// // TODO: guess front object
 			// boolean sqHit = wzSquare > wzTriangle;
 			// boolean triHit = wzTriangle > wzSquare;
-			// Log.w("Object", "Moving '" + sqHit + "','" + triHit + "'...");
+			// Log.w(TAG, "Moving '" + sqHit + "','" + triHit + "'...");
 			//
 			// if (sqHit) {
 			// mRenderer.getmSquare().translateX((dx * mRenderer.getRatio() * 2 / mRenderer.getWidth()) *
@@ -258,7 +258,7 @@ public class TouchController {
 			// break;
 			//
 			// case TOUCH_STATUS_ROTATING_OBJECT2:
-			// Log.w("Object", "Rotating '" + wzSquare + "','" + wzTriangle + "'...");
+			// Log.w(TAG, "Rotating '" + wzSquare + "','" + wzTriangle + "'...");
 			// // INFO: We are moving 2 fingers in different directions
 			// // Rotate Camera
 			// // TODO: Rotationfactor deber�a ser proporcional a la z?
@@ -317,9 +317,10 @@ public class TouchController {
 		Object3DData objectToSelect = null;
 		float objectToSelectDistance = Integer.MAX_VALUE;
 		for (Object3DData obj : scene.getObjects()) {
-			float distance = Math3DUtils.calculateDistanceOfIntersection(nearPoint, farPoint, obj.getPosition(), 1f);
+			Log.i(TAG, "Testing object " + obj.getId());
+			float distance = Math3DUtils.calculateDistanceOfIntersection(nearPoint, farPoint, obj.getBoundingBox().getCenter(), 1f);
 			if (distance != -1) {
-				Log.d(TAG, "Hit object " + obj.getId() + " at distance " + distance);
+				Log.i(TAG, "Hit object " + obj.getId() + " at distance " + distance);
 				if (distance < objectToSelectDistance) {
 					objectToSelectDistance = distance;
 					objectToSelect = obj;

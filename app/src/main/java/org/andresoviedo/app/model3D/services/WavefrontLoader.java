@@ -458,9 +458,9 @@ public class WavefrontLoader {
 
 	public static class ModelDimensions {
 		// edge coordinates
-		private float leftPt, rightPt; // on x-axis
-		private float topPt, bottomPt; // on y-axis
-		private float farPt, nearPt; // on z-axis
+		public float leftPt, rightPt; // on x-axis
+		public float topPt, bottomPt; // on y-axis
+		public float farPt, nearPt; // on z-axis
 
 		// for reporting
 		private DecimalFormat df = new DecimalFormat("0.##"); // 2 dp

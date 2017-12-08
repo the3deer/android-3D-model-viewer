@@ -52,7 +52,7 @@ public class JointTransform {
 	 *         transform as represented by the position and rotation in this
 	 *         instance, just in matrix form.
 	 */
-	protected float[] getLocalTransform() {
+	public float[] getLocalTransform() {
 		float[] matrix = new float[16];
 		Matrix.setIdentityM(matrix,0);
 		Matrix.translateM(matrix,0,matrix,0,position.x,position.y,position.z);

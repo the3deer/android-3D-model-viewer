@@ -12,17 +12,11 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
-News (24/11/2017)
+News (08/12/2017)
 =================
 
 * Support for collada files with skeletal animations :)
 * Fixed #28: Load texture feature is now available
-* Fixed #18: Removed asReadOnlyBuffer() - not working on Android 7
-* Enhancement #17: Added support for TLS format
-* Fixed #16: Toogle point drawing
-* Fixed #15: Toggle rotating light
-* Fixed #1: Cpu Performance problems
-* Fixed #5: Memory Performance problems
 
 
 Android Market
@@ -52,8 +46,8 @@ Whats next
 
 * Stabilize app performance
 * Code refactoring
-* Carboard support
-* Chromecast support
+* Carboard support?
+* Chromecast support?
 * ...
 
 
@@ -61,7 +55,7 @@ Features
 ========
 
   - OpenGL ES 2.0 API
-  - Formats: OBJ (wavefront) & STL (STereoLithography)
+  - Formats: OBJ (wavefront), STL (STereoLithography) & DAE (Collada-BETA)
   - calculation of normals
   - transformations: scaling, rotation, translation
   - colors
@@ -75,9 +69,9 @@ Features
     - drag to move camera
     - rotate with 2 fingers to rotate camera
     - pinch & spread to zoom in/out the camera
+  - skeletal animations
   - moving of objects (not yet!)
   - primitive collision detection (not yet!)
-  - animation of sprites (not yet!)
 
 Try it
 ======
@@ -126,6 +120,10 @@ ChangeLog
 =========
 
 (f) fixed, (i) improved, (n) new feature
+
+- 2.0.1 (08/12/2017)
+  - (f) Multiple Collada parser fixes
+  - (f) Camera now can look inside objects
 
 - 2.0.0 (24/11/2017)
   - (n) Support for collada files with skeletal animations :)

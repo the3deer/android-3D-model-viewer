@@ -33,12 +33,13 @@ import java.util.List;
 
 public final class Object3DBuilder {
 
+
 	public static interface Callback {
 		public void onLoadError(Exception ex);
 
-		public void onLoadComplete(Object3DData data);
+		public void onLoadComplete(List<Object3DData> data);
 
-		public void onBuildComplete(Object3DData data);
+		public void onBuildComplete(List<Object3DData> data);
 	}
 
 	private static final int COORDS_PER_VERTEX = 3;
@@ -320,6 +321,8 @@ public final class Object3DBuilder {
 	private Object3DV7 object3dv7;
 	private Object3DV8 object3dv8;
 	private Object3DV9 object3dv9;
+	private Object3DV10 object3dv10;
+	private Object3DV11 object3dv11;
 
 	static {
 		System.setProperty("java.protocol.handler.pkgs", "org.andresoviedo.app.util.url|"+System.getProperty("java.protocol.handler.pkgs"));
@@ -421,10 +424,18 @@ public final class Object3DBuilder {
 			object3dv7 = new Object3DV7();
 			object3dv8 = new Object3DV8();
 			object3dv9 = new Object3DV9();
+			object3dv10 = new Object3DV10();
+			object3dv11 = new Object3DV11();
 		}
 
-		if (obj instanceof AnimatedModel){
+		if (obj instanceof AnimatedModel && ((AnimatedModel)obj).getAnimation() != null && obj.getTextureData() != null){
 			return object3dv9;
+		}
+		else if (obj instanceof AnimatedModel && ((AnimatedModel)obj).getAnimation() != null && obj.getVertexColorsArrayBuffer() != null){
+			return object3dv11;
+		}
+		else if (obj instanceof AnimatedModel && ((AnimatedModel)obj).getAnimation() != null){
+			return object3dv10;
 		}
 		else if (usingTextures && usingLights && obj.getVertexColorsArrayBuffer() != null && obj.getTextureData() != null
 				&& obj.getTextureCoordsArrayBuffer() != null && obj.getVertexNormalsArrayBuffer() != null
@@ -731,11 +742,26 @@ public final class Object3DBuilder {
 					wireframeDrawOrder.put(v2);
 					wireframeDrawOrder.put(v0);
 				}
-				return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder).
-						setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
-						.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
-						.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
-						.setDrawMode(GLES20.GL_LINES).setDrawUsingArrays(false);
+				if (objData instanceof AnimatedModel){
+					AnimatedModel object3DData = new AnimatedModel(objData.getVertexArrayBuffer());
+					object3DData.setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder).
+							setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
+							.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
+							.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
+							.setDrawMode(GLES20.GL_LINES).setDrawUsingArrays(false);
+					object3DData.setVertexWeights(((AnimatedModel) objData).getVertexWeights());
+					object3DData.setJointIds(((AnimatedModel) objData).getJointIds());
+					object3DData.setRootJoint(((AnimatedModel) objData).getRootJoint(), ((AnimatedModel) objData).getJointCount());
+					object3DData.doAnimation(((AnimatedModel) objData).getAnimation());
+					return object3DData;
+				}
+				else {
+					return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder).
+							setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
+							.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
+							.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
+							.setDrawMode(GLES20.GL_LINES).setDrawUsingArrays(false);
+				}
 			} catch (Exception ex) {
 				Log.e("Object3DBuilder", ex.getMessage(), ex);
 			}
