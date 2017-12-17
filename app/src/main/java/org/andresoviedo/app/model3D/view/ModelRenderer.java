@@ -130,6 +130,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
 		// recalculate mvp matrix according to where we are looking at now
+		camera.animate();
 		if (camera.hasChanged()) {
 			Matrix.setLookAtM(modelViewMatrix, 0, camera.xPos, camera.yPos, camera.zPos, camera.xView, camera.yView,
 					camera.zView, camera.xUp, camera.yUp, camera.zUp);

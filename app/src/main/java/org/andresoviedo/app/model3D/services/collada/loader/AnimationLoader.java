@@ -1,19 +1,16 @@
 package org.andresoviedo.app.model3D.services.collada.loader;
 
 import android.opengl.Matrix;
-import android.renderscript.Matrix4f;
 import android.util.Log;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.andresoviedo.app.model3D.services.collada.entities.AnimationData;
 import org.andresoviedo.app.model3D.services.collada.entities.JointTransformData;
 import org.andresoviedo.app.model3D.services.collada.entities.KeyFrameData;
-import org.andresoviedo.app.model3D.services.collada.entities.Vector3f;
 import org.andresoviedo.app.util.xml.XmlNode;
 
 
@@ -35,55 +32,77 @@ public class AnimationLoader {
 	
 	public AnimationData extractAnimation(){
 		String rootNode = findRootJointName();
-		float[] times = getKeyTimes();
-		float duration = times[times.length-1];
-		KeyFrameData[] keyFrames = initKeyFrames(times);
+		TreeSet<Float> times = getKeyTimes();
+		float duration = times.last();
+		List<Float> keyTimes = new ArrayList<Float>(times);
+		KeyFrameData[] keyFrames = initKeyFrames(keyTimes);
 		List<XmlNode> animationNodes = animationData.getChildren("animation");
 		for(XmlNode jointNode : animationNodes){
-			loadJointTransforms(keyFrames, jointNode, rootNode);
+			if (jointNode.getChild("animation") != null){
+				jointNode = jointNode.getChild("animation");
+			}
+			loadJointTransforms(keyTimes, keyFrames, jointNode, rootNode);
 		}
-		Log.i("AnimationLoader","Animation duration: "+duration+", key frames: "+keyFrames.length);
+		Log.i("AnimationLoader","Animation duration: "+duration+", key frames("+keyFrames.length+"):"+times);
 		return new AnimationData(duration, keyFrames);
 	}
 	
-	private float[] getKeyTimes(){
-		// TODO: there are multiple animations with different key frames
-		XmlNode timeData = animationData.getChild("animation").getChild("source").getChild("float_array");
-		String[] rawTimes = timeData.getData().split(" ");
-		float[] times = new float[rawTimes.length];
-		for(int i=0;i<times.length;i++){
-			times[i] = Float.parseFloat(rawTimes[i]);
+	private TreeSet<Float> getKeyTimes(){
+		TreeSet<Float> ret = new TreeSet<Float>();
+		for (XmlNode animation : animationData.getChildren("animation")) {
+			if (animation.getChild("animation") != null) {
+				animation = animation.getChild("animation");
+			}
+			XmlNode timeData = animation.getChild("source").getChild("float_array");
+			String[] rawTimes = timeData.getData().trim().split("\\s+");
+			for (int i = 0; i < rawTimes.length; i++) {
+				ret.add(Float.parseFloat(rawTimes[i]));
+
+			}
 		}
-		return times;
+		return ret;
 	}
 	
-	private KeyFrameData[] initKeyFrames(float[] times){
-		KeyFrameData[] frames = new KeyFrameData[times.length];
-		for(int i=0;i<frames.length;i++){
-			frames[i] = new KeyFrameData(times[i]);
+	private KeyFrameData[] initKeyFrames(List<Float> times){
+		KeyFrameData[] frames = new KeyFrameData[times.size()];
+		int i=0;
+		for(Float time : times){
+			frames[i++] = new KeyFrameData(time);
 		}
 		return frames;
 	}
 	
-	private void loadJointTransforms(KeyFrameData[] frames, XmlNode jointData, String rootNodeId){
-		String jointNameId = getJointName(jointData);
+	private void loadJointTransforms(List<Float> keyTimes, KeyFrameData[] frames, XmlNode jointData, String rootNodeId){
+		String[] channel = getChannel(jointData);
+		String jointNameId = channel[0];
+		String transform = channel[1];
 		String dataId = getDataId(jointData);
-		XmlNode transformData = jointData.getChildWithAttribute("source", "id", dataId);
-		String[] rawData = transformData.getChild("float_array").getData().split(" ");
-		XmlNode technique_common = transformData.getChild("technique_common");
-		XmlNode accessor = technique_common.getChild("accessor");
-		if (accessor.getAttribute("stride").equals("16")) {
-			processTransforms(jointNameId, rawData, frames, jointNameId.equals(rootNodeId));
-		}
-		else if (accessor.getAttribute("stride").equals("2")){
-			processXYTransforms(jointNameId, rawData, frames, jointNameId.equals(rootNodeId));
-		}
-		else if (accessor.getAttribute("stride").equals("1")) {
-			if (accessor.getChildWithAttribute("param", "name", "X") != null) {
-				processXTransforms(jointNameId, rawData, frames, jointNameId.equals(rootNodeId));
-			} else if (accessor.getChildWithAttribute("param", "name", "Z") != null) {
-				processZTransforms(jointNameId, rawData, frames, jointNameId.equals(rootNodeId));
+		String timeId = getTimeId(jointData);
+		try {
+			XmlNode timeData = jointData.getChildWithAttribute("source", "id", timeId);
+			String[] rawTimes = timeData.getChild("float_array").getData().trim().split("\\s+");
+			XmlNode transformData = jointData.getChildWithAttribute("source", "id", dataId);
+			String[] rawData = transformData.getChild("float_array").getData().trim().split("\\s+");
+			XmlNode technique_common = transformData.getChild("technique_common");
+			XmlNode accessor = technique_common.getChild("accessor");
+			if (accessor.getAttribute("stride").equals("16")) {
+				processTransforms(jointNameId, rawTimes, rawData, keyTimes, frames, jointNameId.equals(rootNodeId));
 			}
+			else if (accessor.getAttribute("stride").equals("2")){
+				processXYTransforms(jointNameId, rawTimes, rawData, keyTimes, frames, jointNameId.equals(rootNodeId));
+			}
+			else if (accessor.getAttribute("stride").equals("1")) {
+				if (accessor.getChildWithAttribute("param", "name", "X") != null) {
+					processXTransforms(jointNameId, rawTimes, rawData, keyTimes, frames, jointNameId.equals(rootNodeId));
+				} else if (accessor.getChildWithAttribute("param", "name", "Z") != null) {
+					processZTransforms(jointNameId, rawTimes, rawData, keyTimes, frames, jointNameId.equals(rootNodeId));
+				} else if (transform.equals("rotationZ.ANGLE")) {
+					processRotationZTransforms(jointNameId, rawTimes, rawData, keyTimes, frames, jointNameId.equals(rootNodeId));
+				}
+			}
+		} catch (Exception e) {
+			Log.e("AnimationLoader","Problem loading animation for joint '"+jointNameId+"' with source '"+dataId+"'",e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -92,20 +111,21 @@ public class AnimationLoader {
 		return node.getAttribute("source").substring(1);
 	}
 
-	private String getDataId2(XmlNode jointData){
-		XmlNode node = jointData.getChild("sampler").getChildWithAttribute("input", "semantic", "OUT_TANGENT");
+	private String getTimeId(XmlNode jointData){
+		XmlNode node = jointData.getChild("sampler").getChildWithAttribute("input", "semantic", "INPUT");
 		return node.getAttribute("source").substring(1);
 	}
 	
-	private String getJointName(XmlNode jointData){
+	private String[] getChannel(XmlNode jointData){
 		XmlNode channelNode = jointData.getChild("channel");
 		String data = channelNode.getAttribute("target");
-		return data.split("/")[0];
+		return data.split("/");
 	}
 	
-	private void processTransforms(String jointName, String[] rawData, KeyFrameData[] keyFrames, boolean root){
+	private void processTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames, boolean root){
 		float[] matrixData = new float[16];
-		for(int i=0;i<keyFrames.length;i++){
+		for(int i=0;i<rawTimes.length;i++){
+			Float keyTime = Float.parseFloat(rawTimes[i]);
 			for(int j=0;j<16;j++){
 				matrixData[j] = Float.parseFloat(rawData[i*16 + j]);
 			}
@@ -115,54 +135,60 @@ public class AnimationLoader {
 				//because up axis in Blender is different to up axis in game
 				Matrix.multiplyMM(transpose,0,CORRECTION,0,transpose,0);
 			}
-			keyFrames[i].addJointTransform(new JointTransformData(jointName, transpose));
+			int keyFrameIndex = keyTimes.indexOf(keyTime);
+			keyFrames[keyFrameIndex].addJointTransform(new JointTransformData(jointName, transpose));
 		}
 	}
 
-	private void processXYTransforms(String jointName, String[] rawData, KeyFrameData[] keyFrames, boolean root){
-		float[] matrixData = new float[16];
-		Matrix.setIdentityM(matrixData,0);
-		for(int i=0;i<keyFrames.length;i++){
+	private void processXYTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames, boolean root){
+		for(int i=0;i<rawTimes.length;i++){
+			Float keyTime = Float.parseFloat(rawTimes[i]);
+			float[] matrixData = new float[16];
+			Matrix.setIdentityM(matrixData,0);
 			Matrix.translateM(matrixData,0,matrixData,0, Float.parseFloat(rawData[i*2 + 0]),Float.parseFloat(rawData[i*2 + 1]),0);
-			float[] transpose = new float[16];
-			Matrix.transposeM(transpose,0,matrixData,0);
 			if(root){
 				//because up axis in Blender is different to up axis in game
-				Matrix.multiplyMM(transpose,0,CORRECTION,0,transpose,0);
+				Matrix.multiplyMM(matrixData,0,CORRECTION,0,matrixData,0);
 			}
-			keyFrames[i].addJointTransform(new JointTransformData(jointName, transpose));
+			keyFrames[keyTimes.indexOf(keyTime)].addJointTransform(new JointTransformData(jointName, matrixData));
 		}
 	}
 
-	private void processXTransforms(String jointName, String[] rawData, KeyFrameData[] keyFrames, boolean root){
-		for(int i=0;i<keyFrames.length;i++){
+	private void processXTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames, boolean root){
+		for(int i=0;i<rawTimes.length;i++){
+			Float keyTime = Float.parseFloat(rawTimes[i]);
 			float[] matrixData = new float[16];
 			Matrix.setIdentityM(matrixData,0);
 			Matrix.translateM(matrixData,0,matrixData,0, Float.parseFloat(rawData[i]), 0, 0);
-			float[] transpose = new float[16];
-			Matrix.transposeM(transpose,0,matrixData,0);
 			if(root){
 				//because up axis in Blender is different to up axis in game
-				Matrix.multiplyMM(matrixData,0,CORRECTION,0,transpose,0);
+				Matrix.multiplyMM(matrixData,0,CORRECTION,0,matrixData,0);
 			}
-			keyFrames[i].addJointTransform(new JointTransformData(jointName, matrixData));
-			Log.d("AnimationLoader",jointName+"["+i+"]:"+ Arrays.toString(matrixData));
+			keyFrames[keyTimes.indexOf(keyTime)].addJointTransform(new JointTransformData(jointName, matrixData));
 		}
 	}
 
-	private void processZTransforms(String jointName, String[] rawData, KeyFrameData[] keyFrames, boolean root){
-		for(int i=0;i<keyFrames.length;i++){
+	private void processZTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames, boolean root){
+		for(int i=0;i<rawTimes.length;i++){
+			Float keyTime = Float.parseFloat(rawTimes[i]);
 			float[] matrixData = new float[16];
 			Matrix.setIdentityM(matrixData,0);
 			Matrix.translateM(matrixData,0,matrixData,0, 0, 0, Float.parseFloat(rawData[i]));
-			float[] transpose = new float[16];
-			Matrix.transposeM(transpose,0,matrixData,0);
 			if(root){
 				//because up axis in Blender is different to up axis in game
-				Matrix.multiplyMM(matrixData,0,CORRECTION,0,transpose,0);
+				Matrix.multiplyMM(matrixData,0,CORRECTION,0,matrixData,0);
 			}
-			keyFrames[i].addJointTransform(new JointTransformData(jointName, matrixData));
-			Log.d("AnimationLoader",jointName+"["+i+"]:"+ Arrays.toString(matrixData));
+			keyFrames[keyTimes.indexOf(keyTime)].addJointTransform(new JointTransformData(jointName, matrixData));
+		}
+	}
+
+	private void processRotationZTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames, boolean root){
+		for(int i=0;i<rawTimes.length;i++){
+			Float keyTime = Float.parseFloat(rawTimes[i]);
+			float[] matrixData = new float[16];
+			Matrix.setIdentityM(matrixData,0);
+			Matrix.rotateM(matrixData,0,matrixData,0, Float.parseFloat(rawData[i]), 0,1,0);
+			keyFrames[keyTimes.indexOf(keyTime)].addJointTransform(new JointTransformData(jointName, matrixData));
 		}
 	}
 	

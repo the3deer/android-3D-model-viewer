@@ -4,15 +4,15 @@ Android 3D Model Viewer
 ![codeship badge](https://codeship.com/projects/52cf9560-deb2-0134-4203-2aaddef843aa/status?branch=master)
 
 This is a demo of OpenGL ES 2.0.
-It is basically an android application with a 3D renderer that can load Wavefront Obj, STL files & Collada files.
+It is basically an android application with a 3D engine that can load Wavefront OBJ, STL & DAE files.
 The purpose of this application is to learn and share how to draw using OpenGL language.
-
 
 * Wafefront format (OBJ): https://en.wikipedia.org/wiki/Wavefront_.obj_file
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
-News (08/12/2017)
+
+News (17/12/2017)
 =================
 
 * Support for collada files with skeletal animations :)
@@ -70,8 +70,7 @@ Features
     - rotate with 2 fingers to rotate camera
     - pinch & spread to zoom in/out the camera
   - skeletal animations
-  - moving of objects (not yet!)
-  - primitive collision detection (not yet!)
+
 
 Try it
 ======
@@ -101,6 +100,8 @@ Screenshot
 ![Screenshot5](screenshots/screenshot5.png)
 ![Screenshot6](screenshots/screenshot6.png)
 ![Screenshot7](screenshots/screenshot7.png)
+![cowboy.gif](screenshots/cowboy.gif)
+![stormtrooper.gif](screenshots/stormtrooper.gif)
 
 
 Final Notes
@@ -120,6 +121,11 @@ ChangeLog
 =========
 
 (f) fixed, (i) improved, (n) new feature
+
+- 2.0.2 (17/12/2017)
+  - (f) Collada XML parser is now android's XmlPullParser
+  - (f) Animation engine frame times improved
+  - (n) Camera now moves smoothly
 
 - 2.0.1 (08/12/2017)
   - (f) Multiple Collada parser fixes

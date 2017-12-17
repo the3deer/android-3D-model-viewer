@@ -34,7 +34,7 @@ public class SkeletonLoader2 {
 		XmlNode node = visualScene.getChildWithAttribute("node","id","Armature");
 		JointData headJoint = loadJointData(node, true);
 		if (jointCount != boneOrder.size()) {
-			Log.e("SkeletonLoader", "jointCount != boneOrder: " + jointCount + " != " + boneOrder.size());
+			Log.e("SkeletonLoader2", "jointCount != boneOrder: " + jointCount + " != " + boneOrder.size());
 			jointCount = boneOrder.size();
 		}
 		return new SkeletonData(jointCount, headJoint);
@@ -50,11 +50,11 @@ public class SkeletonLoader2 {
 	
 	private JointData extractMainJointData(XmlNode jointNode, boolean isRoot){
 		XmlNode instance_geometry = jointNode.getChild("instance_geometry");
-		String meshId = instance_geometry.getAttribute("url").substring(1);
+		String meshId = instance_geometry != null? instance_geometry.getAttribute("url").substring(1) : null;
 		String nameId = jointNode.getAttribute("id");
 		int index = boneOrder.indexOf(nameId);
 		if (index == -1){
-			Log.e("SkeletonLoader","Joint not found in order: "+nameId);
+			Log.e("SkeletonLoader2","Joint not found in order: "+nameId);
 			boneOrder.add(nameId);
 			index = boneOrder.indexOf(nameId);
 		}

@@ -15,6 +15,7 @@ public class Animation {
 
 	private final float length;//in seconds
 	private final KeyFrame[] keyFrames;
+	private boolean initialized;
 
 	/**
 	 * @param lengthInSeconds
@@ -26,6 +27,14 @@ public class Animation {
 	public Animation(float lengthInSeconds, KeyFrame[] frames) {
 		this.keyFrames = frames;
 		this.length = lengthInSeconds;
+	}
+
+	public void setInitialized(boolean initialized){
+		this.initialized = initialized;
+	}
+
+	public boolean isInitialized(){
+		return initialized;
 	}
 
 	/**

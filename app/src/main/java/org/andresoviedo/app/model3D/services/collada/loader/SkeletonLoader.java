@@ -34,7 +34,7 @@ public class SkeletonLoader {
 	}
 	
 	public SkeletonData extractBoneData(){
-		XmlNode headNode = armatureData.getChild("node");
+		XmlNode headNode = armatureData.getChildWithAttribute("node","type","JOINT");
 		JointData headJoint = loadJointData(headNode, true);
 		if (jointCount != boneOrder.size()){
 			Log.e("SkeletonLoader","jointCount != boneOrder: "+jointCount+" != "+boneOrder.size());
@@ -59,7 +59,7 @@ public class SkeletonLoader {
 			boneOrder.add(nameId);
 			index = boneOrder.indexOf(nameId);
 		}
-		String[] matrixData = jointNode.getChild("matrix").getData().split(" ");
+		String[] matrixData = jointNode.getChild("matrix").getData().trim().split("\\s+");
 		Matrix4f matrix = new Matrix4f(convertData(matrixData));
 		matrix.transpose();
 		if(isRoot){

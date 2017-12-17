@@ -45,7 +45,8 @@ public class Camera {
 
 	float[] matrix = new float[16];
 	float[] buffer = new float[12 + 12 + 16 + 16];
-	float[] buffer4x3 = new float[12];
+	private long animationCounter;
+	private Object[] lastAction;
 	private boolean changed = false;
 
 	public Camera() {
@@ -72,6 +73,24 @@ public class Camera {
 
 	public void setScene(SceneLoader scene) {
 		this.scene = scene;
+	}
+
+	public void animate(){
+		if (lastAction == null || animationCounter == 0){
+			lastAction = null;
+			animationCounter = 100;
+			return;
+		}
+		String method = (String) lastAction[0];
+		if (method.equals("translate")){
+			float dX = (Float) lastAction[1];
+			float dY = (Float) lastAction[2];
+			translateCameraImpl(dX*animationCounter/100, dY*animationCounter/100);
+		} else if (method.equals("rotate")){
+			float rotZ = (Float)lastAction[1];
+			RotateImpl(rotZ/100*animationCounter);
+		}
+		animationCounter--;
 	}
 
 	private void normalize() {
@@ -123,7 +142,12 @@ public class Camera {
 		zUp = zArriba + zPos;
 	}
 
-	public void MoveCameraZ(float direction) {
+	public void MoveCameraZ(float direction){
+		if (direction == 0) return;
+		MoveCameraZImpl(direction);
+		lastAction = new Object[]{"zoom",direction};
+	}
+	public void MoveCameraZImpl(float direction) {
 		// Moving the camera requires a little more then adding 1 to the z or
 		// subracting 1.
 		// First we need to get the direction at which we are looking.
@@ -400,6 +424,13 @@ public class Camera {
 	 * @param dY the Y component of the user 2D vector, that is, a value between [-1,1]
 	 */
 	public void translateCamera(float dX, float dY) {
+		Log.d("Camera","translate:"+dX+","+dY);
+		if (dX == 0 && dY == 0) return;
+		translateCameraImpl(dX, dY);
+		lastAction = new Object[]{"translate",dX, dY};
+	}
+
+	public void translateCameraImpl(float dX, float dY) {
 		float vlen;
 
 		// Translating the camera requires a directional vector to rotate
@@ -581,6 +612,12 @@ public class Camera {
 	}
 
 	public void Rotate(float rotViewerZ) {
+		if (rotViewerZ == 0) return;
+		RotateImpl(rotViewerZ);
+		lastAction = new Object[]{"rotate",rotViewerZ};
+	}
+
+	public void RotateImpl(float rotViewerZ) {
 		if (Float.isNaN(rotViewerZ)) {
 			Log.w("Rot", "NaN");
 			return;

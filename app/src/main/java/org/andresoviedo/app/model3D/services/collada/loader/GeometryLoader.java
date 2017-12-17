@@ -129,7 +129,7 @@ public class GeometryLoader {
 	}
 
 	private JointData getJointData(JointData jointData, String geometryId){
-		if (jointData.meshId.equals(geometryId)) {
+		if (geometryId.equals(jointData.meshId)) {
 			return jointData;
 		}
 		for (JointData childJointData : jointData.children) {
@@ -143,7 +143,7 @@ public class GeometryLoader {
 		String positionsId = meshData.getChild("vertices").getChild("input").getAttribute("source").substring(1);
 		XmlNode positionsData = meshData.getChildWithAttribute("source", "id", positionsId).getChild("float_array");
 		int count = Integer.parseInt(positionsData.getAttribute("count"));
-		String[] posData = positionsData.getData().split(" ");
+		String[] posData = positionsData.getData().trim().split("\\s+");
 		for (int i = 0; i < count / 3; i++) {
 			float x = Float.parseFloat(posData[i * 3]);
 			float y = Float.parseFloat(posData[i * 3 + 1]);
@@ -155,7 +155,6 @@ public class GeometryLoader {
 			VertexSkinData weightsData = skinningDataMap != null && skinningDataMap.containsKey(geometryId) ?
 					skinningDataMap.get(geometryId).verticesSkinData.get(vertices.size()) : null;
 
-			// TODO: test this
 			if (weightsData == null && skeletonData != null){
 				JointData jointData = getJointData(skeletonData.headJoint, geometryId);
 				if (jointData != null) {
@@ -175,7 +174,7 @@ public class GeometryLoader {
 	private void readNormals(XmlNode meshData, String normalsId) {
 		XmlNode normalsData = meshData.getChildWithAttribute("source", "id", normalsId).getChild("float_array");
 		int count = Integer.parseInt(normalsData.getAttribute("count"));
-		String[] normData = normalsData.getData().split(" ");
+		String[] normData = normalsData.getData().trim().split("\\s+");
 		for (int i = 0; i < count/3; i++) {
 			float x = Float.parseFloat(normData[i * 3]);
 			float y = Float.parseFloat(normData[i * 3 + 1]);
@@ -191,7 +190,7 @@ public class GeometryLoader {
 	private void readTextureCoords(XmlNode meshData, String texCoordsId) {
 		XmlNode texCoordsData = meshData.getChildWithAttribute("source", "id", texCoordsId).getChild("float_array");
 		int count = Integer.parseInt(texCoordsData.getAttribute("count"));
-		String[] texData = texCoordsData.getData().split(" ");
+		String[] texData = texCoordsData.getData().trim().split("\\s+");
 		for (int i = 0; i < count/2; i++) {
 			float s = Float.parseFloat(texData[i * 2]);
 			float t = Float.parseFloat(texData[i * 2 + 1]);
@@ -207,12 +206,12 @@ public class GeometryLoader {
 				typeCount = offset;
 			}
 		}
-		Log.i("GeometryLoader", "Type count: " + typeCount);
+		Log.i("GeometryLoader", "Loading polygon. Stride: " + typeCount);
 
 		XmlNode texcoordSemantic = poly.getChildWithAttribute("input","semantic","TEXCOORD");
 		int texcoordOffset = texcoordSemantic != null? Integer.parseInt(texcoordSemantic.getAttribute("offset")) : -1;
 
-		String[] indexData = poly.getChild("p").getData().split(" ");
+		String[] indexData = poly.getChild("p").getData().trim().split("\\s+");
 		for (int i = 0; i < indexData.length / typeCount; i++) {
 			int positionIndex = Integer.parseInt(indexData[i * typeCount]);
 			int normalIndex = Integer.parseInt(indexData[i * typeCount + 1]);
@@ -254,7 +253,7 @@ public class GeometryLoader {
 			XmlNode diffuse = lambert.getChild("diffuse");
 			XmlNode colorNode = diffuse.getChild("color");
 			if (colorNode != null) {
-				String[] color = colorNode.getData().split(" ");
+				String[] color = colorNode.getData().trim().split("\\s+");
 				return new float[]{Float.valueOf(color[0]), Float.valueOf(color[1]), Float.valueOf(color[2]), Float.valueOf(color[3])};
 			}
 			return null;

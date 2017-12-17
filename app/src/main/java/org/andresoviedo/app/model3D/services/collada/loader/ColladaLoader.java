@@ -23,7 +23,6 @@ import org.andresoviedo.app.model3D.services.collada.entities.MeshData;
 import org.andresoviedo.app.model3D.services.collada.entities.SkeletonData;
 import org.andresoviedo.app.model3D.services.collada.entities.SkinningData;
 import org.andresoviedo.app.model3D.services.collada.entities.Vector3f;
-import org.andresoviedo.app.model3D.services.collada.entities.VertexSkinData;
 import org.andresoviedo.app.util.math.Quaternion;
 import org.andresoviedo.app.util.xml.XmlNode;
 import org.andresoviedo.app.util.xml.XmlParser;
@@ -57,14 +56,12 @@ public class ColladaLoader {
 		List<MeshData> meshDataList = modelData.getMeshData();
 		for (MeshData meshData : meshDataList) {
 			int totalVertex = meshData.getVertexCount();
-			int totalTextures = meshData.getTextureCoords().length;
 
 			// Allocate data
 			FloatBuffer normalsBuffer = createNativeByteBuffer(totalVertex * 3 * 4).asFloatBuffer();
 			FloatBuffer vertexBuffer = createNativeByteBuffer(totalVertex * 3 * 4).asFloatBuffer();
 			IntBuffer indexBuffer = createNativeByteBuffer(meshData.getIndices().length * 4).asIntBuffer();
-			FloatBuffer textureBuffer = createNativeByteBuffer(totalTextures * 4).asFloatBuffer();
-			textureBuffer.put(meshData.getTextureCoords());
+
 
 			// Initialize model dimensions (needed by the Object3DData#scaleCenter()
 			WavefrontLoader.ModelDimensions modelDimensions = new WavefrontLoader.ModelDimensions();
@@ -73,8 +70,13 @@ public class ColladaLoader {
 			AnimatedModel data3D = new AnimatedModel(vertexBuffer);
 			data3D.setVertexBuffer(vertexBuffer);
 			data3D.setVertexNormalsArrayBuffer(normalsBuffer);
-			data3D.setTextureCoordsArrayBuffer(textureBuffer);
 			data3D.setTextureFile(meshData.getTexture());
+			if (meshData.getTextureCoords() != null) {
+				int totalTextures = meshData.getTextureCoords().length;
+				FloatBuffer textureBuffer = createNativeByteBuffer(totalTextures * 4).asFloatBuffer();
+				textureBuffer.put(meshData.getTextureCoords());
+				data3D.setTextureCoordsArrayBuffer(textureBuffer);
+			}
 			data3D.setDimensions(modelDimensions);
 			data3D.setDrawOrder(indexBuffer);
 			data3D.setDrawUsingArrays(false);
@@ -200,10 +202,13 @@ public class ColladaLoader {
 	}
 
 	public static AnimatedModelData loadColladaModel(InputStream colladaFile, int maxWeights) {
-		XmlNode node = XmlParser.loadXmlFile(colladaFile);
+		//XmlNode node = XmlParser.loadXmlFile(colladaFile);
+		XmlNode node = null;
 		Map<String,SkinningData> skinningData = null;
 		SkeletonData jointsData = null;
 		try {
+			node = XmlParser.parse(colladaFile);
+
 			SkinLoader skinLoader = new SkinLoader(node.getChild("library_controllers"), maxWeights);
 			skinningData = skinLoader.extractSkinData();
 
@@ -245,7 +250,7 @@ public class ColladaLoader {
 	}
 
 	static AnimationData loadColladaAnimation(InputStream colladaFile) {
-		XmlNode node = XmlParser.loadXmlFile(colladaFile);
+		XmlNode node = XmlParser.parse(colladaFile);
 		XmlNode animNode = node.getChild("library_animations");
 		XmlNode jointsNode = node.getChild("library_visual_scenes");
 		AnimationLoader loader = new AnimationLoader(animNode, jointsNode);
@@ -284,7 +289,6 @@ public class ColladaLoader {
 		for (JointTransformData jointData : data.jointTransforms) {
 			JointTransform jointTransform = createTransform(jointData);
 			map.put(jointData.jointNameId, jointTransform);
-			Log.d("ColladaLoader","Keyframe["+data.time+"]:"+jointData.jointNameId+":"+ Arrays.toString(jointData.jointLocalTransform));
 		}
 		return new KeyFrame(data.time, map);
 	}

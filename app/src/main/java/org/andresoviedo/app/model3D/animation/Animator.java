@@ -1,5 +1,6 @@
 package org.andresoviedo.app.model3D.animation;
 
+import android.animation.Keyframe;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
@@ -57,11 +58,48 @@ public class Animator {
 		AnimatedModel animatedModel = (AnimatedModel)obj;
 		if (animatedModel.getAnimation() == null) return;
 
+		initAnimation(animatedModel);
+
 		increaseAnimationTime((AnimatedModel)obj);
 		Map<String, float[]> currentPose = calculateCurrentAnimationPose(animatedModel);
 		float parentTransform[] = new float[16];
 		Matrix.setIdentityM(parentTransform,0);
 		applyPoseToJoints(currentPose, (animatedModel).getRootJoint(), parentTransform);
+	}
+
+	private void initAnimation(AnimatedModel animatedModel) {
+		if (animatedModel.getAnimation().isInitialized()) {
+			return;
+		}
+		KeyFrame[] keyFrames = animatedModel.getAnimation().getKeyFrames();
+		Log.i("Animator", "Initializing " + animatedModel.getId() + ". " + keyFrames.length + " key frames...");
+		for (int i = 0; i < keyFrames.length; i++) {
+			int j = (i + 1) % keyFrames.length;
+			KeyFrame keyFramePrevious = keyFrames[i];
+			KeyFrame keyFrameNext = keyFrames[j];
+			Map<String, JointTransform> jointTransforms = keyFramePrevious.getJointKeyFrames();
+			for (Map.Entry<String, JointTransform> transform : jointTransforms.entrySet()) {
+				String jointId = transform.getKey();
+				if (keyFrameNext.getJointKeyFrames().containsKey(jointId)) {
+					continue;
+				}
+				JointTransform keyFramePreviousTransform = keyFramePrevious.getJointKeyFrames().get(jointId);
+				JointTransform keyFrameNextTransform = null;
+				KeyFrame keyFrameNextNext = null;
+				int k = (j + 1) % keyFrames.length;
+				do {
+					keyFrameNextNext = keyFrames[k];
+					keyFrameNextTransform = keyFrameNextNext.getJointKeyFrames().get(jointId);
+					k = (k + 1) % keyFrames.length;
+				} while (keyFrameNextTransform == null);
+				this.animationTime = keyFrameNext.getTimeStamp();
+				float progression = calculateProgression(keyFramePrevious, keyFrameNextNext);
+				JointTransform missingFrameTransform = JointTransform.interpolate(keyFramePreviousTransform, keyFrameNextTransform, progression);
+				keyFrameNext.getJointKeyFrames().put(jointId, missingFrameTransform);
+			}
+		}
+		animatedModel.getAnimation().setInitialized(true);
+		Log.i("Animator", "Initialized " + animatedModel.getId() + ". " + keyFrames.length + " key frames");
 	}
 
 	/**
