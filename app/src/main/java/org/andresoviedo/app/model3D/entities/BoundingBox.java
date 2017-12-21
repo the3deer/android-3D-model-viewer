@@ -1,116 +1,157 @@
 package org.andresoviedo.app.model3D.entities;
 
+import android.opengl.Matrix;
+
+import java.nio.FloatBuffer;
+
 /**
  * @author andresoviedo
  */
 
 public final class BoundingBox {
-	private final String id;
-	private float xMin = Float.MAX_VALUE;
-	private float xMax = Float.MIN_VALUE;
-	private float yMin = Float.MAX_VALUE;
-	private float yMax = Float.MIN_VALUE;
-	private float zMin = Float.MAX_VALUE;
-	private float zMax = Float.MIN_VALUE;
 
-	public BoundingBox(String id, float xMin, float xMax, float yMin, float yMax, float zMin, float zMax) {
-		this.id = id;
-		this.xMin = xMin;
-		this.xMax = xMax;
-		this.yMin = yMin;
-		this.yMax = yMax;
-		this.zMin = zMin;
-		this.zMax = zMax;
-	}
+    private final String id;
+    private final float xMin;
+    private final float xMax;
+    private final float yMin;
+    private final float yMax;
+    private final float zMin;
+    private final float zMax;
+    private final float[] min;
+    private final float[] max;
+    private final float[] modelMatrix;
 
-	public float getxMin() {
-		return xMin;
-	}
+    public static BoundingBox create(String id, FloatBuffer vertexBuffer, float[] modelMatrix) {
+        float xMin = Float.MAX_VALUE, xMax = Float.MIN_VALUE, yMin = Float.MAX_VALUE, yMax = Float.MIN_VALUE, zMin = Float.MAX_VALUE, zMax = Float.MIN_VALUE;
+        vertexBuffer = vertexBuffer.asReadOnlyBuffer();
+        vertexBuffer.position(0);
+        while (vertexBuffer.hasRemaining()) {
+            float vertexx = vertexBuffer.get();
+            float vertexy = vertexBuffer.get();
+            float vertexz = vertexBuffer.get();
+            if (vertexx < xMin) {
+                xMin = vertexx;
+            }
+            if (vertexx > xMax) {
+                xMax = vertexx;
+            }
+            if (vertexy < yMin) {
+                yMin = vertexy;
+            }
+            if (vertexy > yMax) {
+                yMax = vertexy;
+            }
+            if (vertexz < zMin) {
+                zMin = vertexz;
+            }
+            if (vertexz > zMax) {
+                zMax = vertexz;
+            }
+        }
+        return new BoundingBox(id, xMin, xMax, yMin, yMax, zMin, zMax, modelMatrix);
+    }
 
-	public void setxMin(float xMin) {
-		this.xMin = xMin;
-	}
+    public BoundingBox(String id, float xMin, float xMax, float yMin, float yMax, float zMin, float zMax, float[] modelMatrix) {
+        this.id = id;
+        this.xMin = xMin;
+        this.xMax = xMax;
+        this.yMin = yMin;
+        this.yMax = yMax;
+        this.zMin = zMin;
+        this.zMax = zMax;
+        this.min = new float[]{xMin, yMin, zMin, 1};
+        this.max = new float[]{xMax, yMax, zMax, 1};
+        this.modelMatrix = modelMatrix;
+    }
 
-	public float getxMax() {
-		return xMax;
-	}
+    public float[] getMin() {
+        return min;
+    }
 
-	public void setxMax(float xMax) {
-		this.xMax = xMax;
-	}
+    public float[] getCurrentMin(){
+        float[] ret = new float[4];
+        Matrix.multiplyMV(ret,0,getModelMatrix(),0,getMin(),0);
+        return ret;
+    }
 
-	public float getyMin() {
-		return yMin;
-	}
+    public float[] getCurrentMax(){
+        float[] ret = new float[4];
+        Matrix.multiplyMV(ret,0,getModelMatrix(),0,getMax(),0);
+        return ret;
+    }
 
-	public void setyMin(float yMin) {
-		this.yMin = yMin;
-	}
+    public float[] getMax() {
+        return max;
+    }
 
-	public float getyMax() {
-		return yMax;
-	}
+    public float getxMin() {
+        return xMin;
+    }
 
-	public void setyMax(float yMax) {
-		this.yMax = yMax;
-	}
+    public float getxMax() {
+        return xMax;
+    }
 
-	public float getzMin() {
-		return zMin;
-	}
+    public float getyMin() {
+        return yMin;
+    }
 
-	public void setzMin(float zMin) {
-		this.zMin = zMin;
-	}
+    public float getyMax() {
+        return yMax;
+    }
 
-	public float getzMax() {
-		return zMax;
-	}
+    public float getzMin() {
+        return zMin;
+    }
 
-	public void setzMax(float zMax) {
-		this.zMax = zMax;
-	}
+    public float getzMax() {
+        return zMax;
+    }
 
-	public float[] getCenter(){
-		return new float[]{(xMax+xMin)/2,(yMax+yMin)/2,(zMax+zMin)/2};
-	}
+    public float[] getModelMatrix(){
+        return modelMatrix;
+    }
 
-	public boolean insideBounds(float x, float y, float z){
-		return !outOfBound(x,y,z);
-	}
+    public float[] getCenter() {
+        return new float[]{(xMax + xMin) / 2, (yMax + yMin) / 2, (zMax + zMin) / 2};
+    }
 
-	public boolean outOfBound(float x, float y, float z) {
-		if (x > getxMax()) {
-			return true;
-		}
-		if (x < getxMin()) {
-			return true;
-		}
-		if (y < getyMin()) {
-			return true;
-		}
-		if (y > getyMax()){
-			return true;
-		}
-		if (z < getzMin()){
-			return true;
-		}
-		if (z > getzMax()){
-			return true;
-		}
-		return false;
-	}
+    public boolean insideBounds(float x, float y, float z) {
+        return !outOfBound(x, y, z);
+    }
 
-	@Override
-	public String toString() {
-		return "BoundingBox{" +
-				"id='" + id + '\'' +
-				", xMin=" + xMin +
-				", xMax=" + xMax +
-				", yMin=" + yMin +
-				", yMax=" + yMax +
-				", zMin=" + zMin +
-				", zMax=" + zMax +
-				'}';
-	}
+    public boolean outOfBound(float x, float y, float z) {
+        if (x > getxMax()) {
+            return true;
+        }
+        if (x < getxMin()) {
+            return true;
+        }
+        if (y < getyMin()) {
+            return true;
+        }
+        if (y > getyMax()) {
+            return true;
+        }
+        if (z < getzMin()) {
+            return true;
+        }
+        if (z > getzMax()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "BoundingBox{" +
+                "id='" + id + '\'' +
+                ", xMin=" + xMin +
+                ", xMax=" + xMax +
+                ", yMin=" + yMin +
+                ", yMax=" + yMax +
+                ", zMin=" + zMin +
+                ", zMax=" + zMax +
+                '}';
+    }
 }

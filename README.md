@@ -12,9 +12,10 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (17/12/2017)
+News (21/12/2017)
 =================
 
+* Improved collision detection algorithm (ray-aabb)
 * Support for collada files with skeletal animations :)
 * Fixed #28: Load texture feature is now available
 
@@ -121,6 +122,10 @@ ChangeLog
 =========
 
 (f) fixed, (i) improved, (n) new feature
+
+- 2.0.3 (21/12/2017)
+  - (i) Improved collision detection algorithm (ray-aabb) for selecting objects
+  - (i) BoundingBox code cleanup
 
 - 2.0.2 (17/12/2017)
   - (f) Collada XML parser is now android's XmlPullParser

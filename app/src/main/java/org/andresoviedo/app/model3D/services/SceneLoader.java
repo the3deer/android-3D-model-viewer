@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.andresoviedo.app.model3D.animation.Animator;
+import org.andresoviedo.app.model3D.collision.CollisionDetection;
 import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DBuilder.Callback;
 import org.andresoviedo.app.model3D.model.Object3DData;
@@ -315,6 +316,18 @@ public class SceneLoader {
 			obj.setTextureData(bos.toByteArray());
 		} catch (IOException ex) {
 			makeToastText("Problem loading texture: "+ex.getMessage(), Toast.LENGTH_SHORT);
+		}
+	}
+
+	public void processTouch(float x, float y) {
+		Object3DData objectToSelect = CollisionDetection.getIntersection(getObjects(), parent.getgLView().getModelRenderer(), x, y);
+		if (objectToSelect != null) {
+			Log.i("SceneLoader", "Selected object " + objectToSelect.getId());
+			if (getSelectedObject() == objectToSelect) {
+				setSelectedObject(null);
+			} else {
+				setSelectedObject(objectToSelect);
+			}
 		}
 	}
 

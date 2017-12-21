@@ -49,7 +49,7 @@ public class ModelActivity extends Activity {
 	 */
 	private float[] backgroundColor = new float[]{0.2f, 0.2f, 0.2f, 1.0f};
 
-	private GLSurfaceView gLView;
+	private ModelSurfaceView gLView;
 
 	private SceneLoader scene;
 
@@ -267,7 +267,7 @@ public class ModelActivity extends Activity {
 		return scene;
 	}
 
-	public GLSurfaceView getgLView() {
+	public ModelSurfaceView getgLView() {
 		return gLView;
 	}
 

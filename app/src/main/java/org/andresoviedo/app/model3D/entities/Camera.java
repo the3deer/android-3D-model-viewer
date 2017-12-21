@@ -38,7 +38,7 @@ public class Camera {
 	public float xUp, yUp, zUp; // Up direction.
 
 	private SceneLoader scene;
-	private final BoundingBox boundingBox = new BoundingBox("scene",-20,20,-20,20,-20,20);
+	private final BoundingBox boundingBox = new BoundingBox("scene",-20,20,-20,20,-20,20,null);
 
 	float xStrafe = 0, yStrafe = 0, zStrafe = 0; // Strafe direction.
 	float currentRotationAngle; // Keeps us from going too far up or down.

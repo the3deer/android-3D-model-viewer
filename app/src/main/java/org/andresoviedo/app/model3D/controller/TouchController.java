@@ -1,10 +1,11 @@
 package org.andresoviedo.app.model3D.controller;
 
+import org.andresoviedo.app.model3D.collision.CollisionDetection;
+import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.services.SceneLoader;
 import org.andresoviedo.app.model3D.view.ModelRenderer;
 import org.andresoviedo.app.model3D.view.ModelSurfaceView;
-import org.andresoviedo.app.util.math.Math3DUtils;
 
 import android.graphics.PointF;
 import android.opengl.GLU;
@@ -15,6 +16,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+
+import java.util.Arrays;
 
 public class TouchController {
 
@@ -181,11 +184,10 @@ public class TouchController {
 		}
 
 		if (pointerCount == 1 && simpleTouch) {
-			// calculate the world coordinates where the user is clicking (near plane and far plane)
-			float[] hit1 = unproject(x1, y1, 0);
-			float[] hit2 = unproject(x1, y1, 1);
-			// check if the ray intersect any of our objects and select the nearer
-			selectObjectImpl(hit1, hit2);
+            SceneLoader scene = view.getModelActivity().getScene();
+            if (scene != null) {
+                scene.processTouch(x1,y1);
+            }
 		}
 
 
@@ -299,59 +301,6 @@ public class TouchController {
 
 		return true;
 
-	}
-
-	/**
-	 * Get the nearest object intersecting the specified ray and selects it
-	 * 
-	 * @param nearPoint
-	 *            the near point in world coordinates
-	 * @param farPoint
-	 *            the far point in world coordinates
-	 */
-	private void selectObjectImpl(float[] nearPoint, float[] farPoint) {
-		SceneLoader scene = view.getModelActivity().getScene();
-		if (scene == null) {
-			return;
-		}
-		Object3DData objectToSelect = null;
-		float objectToSelectDistance = Integer.MAX_VALUE;
-		for (Object3DData obj : scene.getObjects()) {
-			Log.i(TAG, "Testing object " + obj.getId());
-			float distance = Math3DUtils.calculateDistanceOfIntersection(nearPoint, farPoint, obj.getBoundingBox().getCenter(), 1f);
-			if (distance != -1) {
-				Log.i(TAG, "Hit object " + obj.getId() + " at distance " + distance);
-				if (distance < objectToSelectDistance) {
-					objectToSelectDistance = distance;
-					objectToSelect = obj;
-				}
-			}
-		}
-		if (objectToSelect != null) {
-			Log.i(TAG, "Selected object " + objectToSelect.getId() + " at distance " + objectToSelectDistance);
-			if (scene.getSelectedObject() == objectToSelect) {
-				scene.setSelectedObject(null);
-			} else {
-				scene.setSelectedObject(objectToSelect);
-			}
-		}
-	}
-
-	public float[] unproject(float rx, float ry, float rz) {
-		float[] xyzw = { 0, 0, 0, 0 };
-
-		ry = (float) mRenderer.getHeight() - ry;
-
-		int[] viewport = { 0, 0, mRenderer.getWidth(), mRenderer.getHeight() };
-
-		GLU.gluUnProject(rx, ry, rz, mRenderer.getModelViewMatrix(), 0, mRenderer.getModelProjectionMatrix(), 0,
-				viewport, 0, xyzw, 0);
-
-		xyzw[0] /= xyzw[3];
-		xyzw[1] /= xyzw[3];
-		xyzw[2] /= xyzw[3];
-		xyzw[3] = 1;
-		return xyzw;
 	}
 }
 

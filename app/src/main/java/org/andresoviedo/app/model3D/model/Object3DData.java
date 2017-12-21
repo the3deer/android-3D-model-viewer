@@ -84,6 +84,10 @@ public class Object3DData {
 	protected float[] position = new float[] { 0f, 0f, 0f };
 	protected float[] rotation = new float[] { 0f, 0f, 0f };
 	protected float[] scale = new float[] { 1, 1, 1 };
+	protected float[] modelMatrix = new float[16];
+	{
+		Matrix.setIdentityM(modelMatrix,0);
+	}
 
 	// whether the object has changed
 	private boolean changed;
@@ -229,6 +233,7 @@ public class Object3DData {
 
 	public Object3DData setPosition(float[] position) {
 		this.position = position;
+		updateModelMatrix();
 		return this;
 	}
 
@@ -252,12 +257,21 @@ public class Object3DData {
 		return rotation;
 	}
 
+	public float getRotationX(){
+		return rotation[0];
+	}
+
+	public float getRotationY(){
+		return rotation[1];
+	}
+
 	public float getRotationZ() {
-		return rotation != null ? rotation[2] : 0;
+		return rotation[2];
 	}
 
 	public Object3DData setScale(float[] scale){
 		this.scale = scale;
+		updateModelMatrix();
 		return this;
 	}
 
@@ -279,12 +293,27 @@ public class Object3DData {
 
 	public Object3DData setRotation(float[] rotation) {
 		this.rotation = rotation;
+		updateModelMatrix();
 		return this;
 	}
 
 	public Object3DData setRotationY(float rotY) {
 		this.rotation[1] = rotY;
+		updateModelMatrix();
 		return this;
+	}
+
+	private void updateModelMatrix(){
+		Matrix.setIdentityM(modelMatrix,0);
+		Matrix.setRotateM(modelMatrix,0,getRotationX(),1,0,0);
+		Matrix.setRotateM(modelMatrix,0,getRotationY(),0,1,0);
+		Matrix.setRotateM(modelMatrix,0,getRotationY(),0,0,1);
+		Matrix.scaleM(modelMatrix,0,getScaleX(),getScaleY(),getScaleZ());
+		Matrix.translateM(modelMatrix,0,getPositionX(),getPositionY(),getPositionZ());
+	}
+
+	public float[] getModelMatrix(){
+		return modelMatrix;
 	}
 
 	public IntBuffer getDrawOrder() {
@@ -645,36 +674,12 @@ public class Object3DData {
 	}
 
 	public BoundingBox getBoundingBox() {
-		if (boundingBox == null && vertexBuffer != null) {
-			float xMin = Float.MAX_VALUE, xMax = Float.MIN_VALUE, yMin = Float.MAX_VALUE, yMax = Float.MIN_VALUE, zMin = Float.MAX_VALUE, zMax = Float.MIN_VALUE;
-			FloatBuffer vertexBuffer = getVertexBuffer().asReadOnlyBuffer();
-			vertexBuffer.position(0);
-			while (vertexBuffer.hasRemaining()) {
-				float vertexx = vertexBuffer.get();
-				float vertexy = vertexBuffer.get();
-				float vertexz = vertexBuffer.get();
-				if (vertexx < xMin) {
-					xMin = vertexx;
-				}
-				if (vertexx > xMax) {
-					xMax = vertexx;
-				}
-				if (vertexy < yMin) {
-					yMin = vertexy;
-				}
-				if (vertexy > yMax) {
-					yMax = vertexy;
-				}
-				if (vertexz < zMin) {
-					zMin = vertexz;
-				}
-				if (vertexz > zMax) {
-					zMax = vertexz;
-				}
-			}
-			boundingBox = new BoundingBox(getId(), (xMin+getPositionX())*getScaleX(), (xMax+getPositionX())*getScaleX()
-					, (yMin+getPositionY())*getScaleY(), (yMax+getPositionY())*getScaleY()
-					, (zMin+getPositionZ())*getScaleZ(), (zMax+getPositionZ())*getScaleZ());
+		FloatBuffer vertexBuffer = getVertexBuffer();
+		if (vertexBuffer == null){
+			vertexBuffer = getVertexArrayBuffer();
+		}
+		if (boundingBox == null) {
+			boundingBox = BoundingBox.create(getId()+"_BoundingBox", vertexBuffer, getModelMatrix());
 		}
 		return boundingBox;
 	}

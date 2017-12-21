@@ -331,13 +331,18 @@ public final class Object3DBuilder {
 
 	public static Object3DData buildPoint(float[] point) {
 		return new Object3DData(createNativeByteBuffer(point.length * 4).asFloatBuffer().put(point))
-				.setDrawMode(GLES20.GL_POINTS);
+				.setDrawMode(GLES20.GL_POINTS).setId("Point");
+	}
+
+	public static Object3DData buildLine(float[] line) {
+		return new Object3DData(createNativeByteBuffer(line.length * 4).asFloatBuffer().put(line))
+				.setDrawMode(GLES20.GL_LINES).setId("Line").setFaces(new Faces(0));
 	}
 
 	public static Object3DData buildAxis() {
 		return new Object3DData(
 				createNativeByteBuffer(axisVertexLinesData.length * 4).asFloatBuffer().put(axisVertexLinesData))
-				.setDrawMode(GLES20.GL_LINES);
+				.setDrawMode(GLES20.GL_LINES).setFaces(new Faces(0));
 	}
 
 	public static Object3DData buildCubeV1() {
@@ -702,8 +707,7 @@ public final class Object3DBuilder {
 	}
 
 	public static Object3DData buildBoundingBox(Object3DData obj) {
-		BoundingBox boundingBox = new BoundingBox(
-				obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer() : obj.getVertexBuffer(),
+		BoundingBox boundingBox = new BoundingBox(obj.getBoundingBox(),
 				obj.getColor());
 		return new Object3DData(boundingBox.getVertices()).setDrawModeList(boundingBox.getDrawModeList())
 				.setVertexColorsArrayBuffer(boundingBox.getColors()).setDrawOrder(boundingBox.getDrawOrder())
@@ -929,28 +933,15 @@ class BoundingBox {
 	protected static final int COORDS_PER_COLOR = 4;
 
 	public FloatBuffer vertices;
-	public FloatBuffer vertexArray;
 	public FloatBuffer colors;
 	public IntBuffer drawOrder;
-
-	public float xMin = Float.MAX_VALUE;
-	public float xMax = Float.MIN_VALUE;
-	public float yMin = Float.MAX_VALUE;
-	public float yMax = Float.MIN_VALUE;
-	public float zMin = Float.MAX_VALUE;
-	public float zMax = Float.MIN_VALUE;
-
-	public float[] center;
-	public float[] sizes;
-	public float radius;
 
 	/**
 	 * Build a bounding box for the specified 3D object vertex buffer.
 	 *
-	 * @param vertexBuffer the 3D object vertex buffer
 	 * @param color        the color of the bounding box
 	 */
-	public BoundingBox(FloatBuffer vertexBuffer, float[] color) {
+	public BoundingBox(org.andresoviedo.app.model3D.entities.BoundingBox box, float[] color) {
 		// initialize vertex byte buffer for shape coordinates
 		ByteBuffer bb = ByteBuffer.allocateDirect(
 				// (number of coordinate values * 4 bytes per float)
@@ -1016,7 +1007,7 @@ class BoundingBox {
 		drawOrder.put( 7);
 		drawOrder.put( 4);
 
-		recalculate(vertexBuffer);
+		calculateVertex(box);
 	}
 
 	public IntBuffer getDrawOrder() {
@@ -1045,91 +1036,17 @@ class BoundingBox {
 		return ret;
 	}
 
-	BoundingBox(FloatBuffer vertexBuffer, float xMin, float xMax, float yMin, float yMax, float zMin, float zMax) {
-		this.xMin = xMin;
-		this.xMax = xMax;
-		this.yMin = yMin;
-		this.yMax = yMax;
-		this.zMin = zMin;
-		this.zMax = zMax;
-		calculateVertex();
-		calculateOther(vertexBuffer);
-	}
-
-	public void recalculate(FloatBuffer vertexBuffer) {
-
-		calculateMins(vertexBuffer);
-		calculateVertex();
-		calculateOther(vertexBuffer);
-	}
-
-	/**
-	 * This works only when COORDS_PER_VERTEX = 3
-	 *
-	 * @param vertexBuffer
-	 */
-	private void calculateMins(FloatBuffer vertexBuffer) {
-		vertexBuffer.position(0);
-		while (vertexBuffer.hasRemaining()) {
-			float vertexx = vertexBuffer.get();
-			float vertexy = vertexBuffer.get();
-			float vertexz = vertexBuffer.get();
-			if (vertexx < xMin) {
-				xMin = vertexx;
-			}
-			if (vertexx > xMax) {
-				xMax = vertexx;
-			}
-			if (vertexy < yMin) {
-				yMin = vertexy;
-			}
-			if (vertexy > yMax) {
-				yMax = vertexy;
-			}
-			if (vertexz < zMin) {
-				zMin = vertexz;
-			}
-			if (vertexz > zMax) {
-				zMax = vertexz;
-			}
-		}
-	}
-
-	private void calculateVertex() {
-		vertices.position(0);
+	private void calculateVertex(org.andresoviedo.app.model3D.entities.BoundingBox box) {
 		//@formatter:off
-		vertices.put(xMin).put(yMin).put(zMin);  // down-left (far)
-		vertices.put(xMin).put(yMax).put(zMin);  // up-left (far)
-		vertices.put(xMax).put(yMax).put(zMin);  // up-right (far)
-		vertices.put(xMax).put(yMin).put(zMin);  // down-right  (far)
-		vertices.put(xMin).put(yMin).put(zMax);  // down-left (near)
-		vertices.put(xMin).put(yMax).put(zMax);  // up-left (near)
-		vertices.put(xMax).put(yMax).put(zMax);  // up-right (near)
-		vertices.put(xMax).put(yMin).put(zMax);  // down-right (near)
+		vertices.put(box.getxMin()).put(box.getyMin()).put(box.getzMin());  // down-left (far)
+		vertices.put(box.getxMin()).put(box.getyMax()).put(box.getzMin());  // up-left (far)
+		vertices.put(box.getxMax()).put(box.getyMax()).put(box.getzMin());  // up-right (far)
+		vertices.put(box.getxMax()).put(box.getyMin()).put(box.getzMin());  // down-right  (far)
+		vertices.put(box.getxMin()).put(box.getyMin()).put(box.getzMax());  // down-left (near)
+		vertices.put(box.getxMin()).put(box.getyMax()).put(box.getzMax());  // up-left (near)
+		vertices.put(box.getxMax()).put(box.getyMax()).put(box.getzMax());  // up-right (near)
+		vertices.put(box.getxMax()).put(box.getyMin()).put(box.getzMax());  // down-right (near)
 		//@formatter:on
-	}
-
-	private void calculateOther(FloatBuffer vertexBuffer) {
-		center = new float[]{(xMax + xMin) / 2, (yMax + yMin) / 2, (zMax + zMin) / 2};
-		sizes = new float[]{xMax - xMin, yMax - yMin, zMax - zMin};
-
-		vertexBuffer.position(0);
-
-		// calculated bounding sphere
-		double radius = 0;
-		double radiusTemp;
-		vertexBuffer.position(0);
-		while (vertexBuffer.hasRemaining()) {
-			float vertexx = vertexBuffer.get();
-			float vertexy = vertexBuffer.get();
-			float vertexz = vertexBuffer.get();
-			radiusTemp = Math.sqrt(Math.pow(vertexx - center[0], 2) + Math.pow(vertexy - center[1], 2)
-					+ Math.pow(vertexz - center[2], 2));
-			if (radiusTemp > radius) {
-				radius = radiusTemp;
-			}
-		}
-		this.radius = (float) radius;
 	}
 
 	public FloatBuffer getVertices() {
@@ -1151,37 +1068,6 @@ class BoundingBox {
 			ret.put(vertices.get(drawOrder.get(i) * 3 + 2)); // z
 		}
 		return ret;
-	}
-
-	public String sizeToString() {
-		return "x[" + sizes[0] + "],y[" + sizes[1] + "],z[" + sizes[2] + "]";
-	}
-
-	public String centerToString() {
-		return "x[" + center[0] + "],y[" + center[1] + "],z[" + center[2] + "]";
-	}
-
-	public String limitsToString() {
-		StringBuffer ret = new StringBuffer();
-		ret.append("xMin[" + xMin + "], xMax[" + xMax + "], yMin[" + yMin + "], yMax[" + yMax + "], zMin[" + zMin
-				+ "], zMax[" + zMax + "]");
-		return ret.toString();
-	}
-
-	public float[] getCenter() {
-		return center;
-	}
-
-	public void setCenter(float[] center) {
-		this.center = center;
-	}
-
-	public float getRadius() {
-		return radius;
-	}
-
-	public void setRadius(float radius) {
-		this.radius = radius;
 	}
 
 	public FloatBuffer getNormals() {
