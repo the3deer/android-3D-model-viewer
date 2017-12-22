@@ -320,15 +320,19 @@ public class SceneLoader {
 	}
 
 	public void processTouch(float x, float y) {
-		Object3DData objectToSelect = CollisionDetection.getIntersection(getObjects(), parent.getgLView().getModelRenderer(), x, y);
+		Object3DData objectToSelect = CollisionDetection.getBoxIntersection(getObjects(), parent.getgLView().getModelRenderer(), x, y);
 		if (objectToSelect != null) {
-			Log.i("SceneLoader", "Selected object " + objectToSelect.getId());
 			if (getSelectedObject() == objectToSelect) {
+				Log.i("SceneLoader", "Unselected object " + objectToSelect.getId());
 				setSelectedObject(null);
 			} else {
+				Log.i("SceneLoader", "Selected object " + objectToSelect.getId());
 				setSelectedObject(objectToSelect);
+			}
+			float[] point = CollisionDetection.getTriangleIntersection2(getObjects(), parent.getgLView().getModelRenderer(), x, y);
+			if (point != null) {
+				addObject(Object3DBuilder.buildPoint(point).setColor(new float[]{1.0f,0f,0f,1f}));
 			}
 		}
 	}
-
 }

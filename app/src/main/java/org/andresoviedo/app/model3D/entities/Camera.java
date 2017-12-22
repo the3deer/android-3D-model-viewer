@@ -38,7 +38,7 @@ public class Camera {
 	public float xUp, yUp, zUp; // Up direction.
 
 	private SceneLoader scene;
-	private final BoundingBox boundingBox = new BoundingBox("scene",-20,20,-20,20,-20,20,null);
+	private final BoundingBox boundingBox = new BoundingBox("scene",-20,20,-20,20,-20,20);
 
 	float xStrafe = 0, yStrafe = 0, zStrafe = 0; // Strafe direction.
 	float currentRotationAngle; // Keeps us from going too far up or down.
@@ -75,7 +75,7 @@ public class Camera {
 		this.scene = scene;
 	}
 
-	public void animate(){
+	public synchronized void animate(){
 		if (lastAction == null || animationCounter == 0){
 			lastAction = null;
 			animationCounter = 100;
@@ -142,7 +142,7 @@ public class Camera {
 		zUp = zArriba + zPos;
 	}
 
-	public void MoveCameraZ(float direction){
+	public synchronized void MoveCameraZ(float direction){
 		if (direction == 0) return;
 		MoveCameraZImpl(direction);
 		lastAction = new Object[]{"zoom",direction};
@@ -423,7 +423,7 @@ public class Camera {
 	 * @param dX the X component of the user 2D vector, that is, a value between [-1,1]
 	 * @param dY the Y component of the user 2D vector, that is, a value between [-1,1]
 	 */
-	public void translateCamera(float dX, float dY) {
+	public synchronized void translateCamera(float dX, float dY) {
 		Log.d("Camera","translate:"+dX+","+dY);
 		if (dX == 0 && dY == 0) return;
 		translateCameraImpl(dX, dY);
@@ -611,7 +611,7 @@ public class Camera {
 				+ ", zView=" + zView + ", xUp=" + xUp + ", yUp=" + yUp + ", zUp=" + zUp + "]";
 	}
 
-	public void Rotate(float rotViewerZ) {
+	public synchronized void Rotate(float rotViewerZ) {
 		if (rotViewerZ == 0) return;
 		RotateImpl(rotViewerZ);
 		lastAction = new Object[]{"rotate",rotViewerZ};

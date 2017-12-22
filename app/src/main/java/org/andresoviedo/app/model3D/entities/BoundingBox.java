@@ -19,7 +19,6 @@ public final class BoundingBox {
     private final float zMax;
     private final float[] min;
     private final float[] max;
-    private final float[] modelMatrix;
 
     public static BoundingBox create(String id, FloatBuffer vertexBuffer, float[] modelMatrix) {
         float xMin = Float.MAX_VALUE, xMax = Float.MIN_VALUE, yMin = Float.MAX_VALUE, yMax = Float.MIN_VALUE, zMin = Float.MAX_VALUE, zMax = Float.MIN_VALUE;
@@ -48,10 +47,14 @@ public final class BoundingBox {
                 zMax = vertexz;
             }
         }
-        return new BoundingBox(id, xMin, xMax, yMin, yMax, zMin, zMax, modelMatrix);
+        float[] min = new float[]{xMin, yMin, zMin, 1};
+        float[] max = new float[]{xMax, yMax, zMax, 1};
+        Matrix.multiplyMV(min,0,modelMatrix,0,min,0);
+        Matrix.multiplyMV(max,0,modelMatrix,0,max,0);
+        return new BoundingBox(id, min[0], max[0], min[1], max[1], min[2], max[2]);
     }
 
-    public BoundingBox(String id, float xMin, float xMax, float yMin, float yMax, float zMin, float zMax, float[] modelMatrix) {
+    public BoundingBox(String id, float xMin, float xMax, float yMin, float yMax, float zMin, float zMax) {
         this.id = id;
         this.xMin = xMin;
         this.xMax = xMax;
@@ -61,14 +64,13 @@ public final class BoundingBox {
         this.zMax = zMax;
         this.min = new float[]{xMin, yMin, zMin, 1};
         this.max = new float[]{xMax, yMax, zMax, 1};
-        this.modelMatrix = modelMatrix;
     }
 
     public float[] getMin() {
         return min;
     }
 
-    public float[] getCurrentMin(){
+    /*public float[] getCurrentMin(){
         float[] ret = new float[4];
         Matrix.multiplyMV(ret,0,getModelMatrix(),0,getMin(),0);
         return ret;
@@ -78,7 +80,7 @@ public final class BoundingBox {
         float[] ret = new float[4];
         Matrix.multiplyMV(ret,0,getModelMatrix(),0,getMax(),0);
         return ret;
-    }
+    }*/
 
     public float[] getMax() {
         return max;
@@ -106,10 +108,6 @@ public final class BoundingBox {
 
     public float getzMax() {
         return zMax;
-    }
-
-    public float[] getModelMatrix(){
-        return modelMatrix;
     }
 
     public float[] getCenter() {

@@ -10,6 +10,7 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andresoviedo.app.model3D.collision.Octree;
 import org.andresoviedo.app.model3D.entities.BoundingBox;
 import org.andresoviedo.app.model3D.services.WavefrontLoader;
 import org.andresoviedo.app.model3D.services.WavefrontLoader.FaceMaterials;
@@ -96,6 +97,9 @@ public class Object3DData {
 	private WavefrontLoader.ModelDimensions modelDimensions;
 	private WavefrontLoader loader;
 
+	// collision detection
+	private Octree octree = null;
+
 	public Object3DData(FloatBuffer vertexArrayBuffer) {
 		this.vertexArrayBuffer = vertexArrayBuffer;
 		this.version = 1;
@@ -149,6 +153,14 @@ public class Object3DData {
 
 	public WavefrontLoader.ModelDimensions getDimensions() {
 		return modelDimensions;
+	}
+
+	public void setOctree(Octree octree){
+		this.octree = octree;
+	}
+
+	public Octree getOctree(){
+		return octree;
 	}
 
 	/**
@@ -684,28 +696,17 @@ public class Object3DData {
 		return boundingBox;
 	}
 
-	public void centerAndScale(float newScale, float[] newPosition){
+	public void centerAndScale(float newScale, float[] newPosition) {
 		// calculate a scale factor
 		float scaleFactor = 1.0f;
 		float largest = modelDimensions.getLargest();
 		// System.out.println("Largest dimension: " + largest);
 		if (largest != 0.0f)
 			scaleFactor = (1.0f / largest);
-		scale[0] = scaleFactor * newScale;
-		scale[1] = scaleFactor * newScale;
-		scale[2] = scaleFactor * newScale;
+		setScale(new float[]{scaleFactor * newScale, scaleFactor * newScale, scaleFactor * newScale});
 
-		// get the model's center point
 		Tuple3 center = modelDimensions.getCenter();
-		position[0] = -center.getX() + newPosition[0];
-		position[1] = -center.getY() + newPosition[1];
-		position[2] = -center.getZ() + newPosition[2];
-
-		/*float[] ret = new float[16];
-		Matrix.setIdentityM(ret,0);
-		Matrix.translateM(ret,0,center.getX(),center.getY(),center.getZ());
-		Matrix.scaleM(ret,0,scaleFactor, scaleFactor, scaleFactor);
-		return ret;*/
+		setPosition(new float[]{-center.getX() + newPosition[0], -center.getY() + newPosition[1], -center.getZ() + newPosition[2]});
 	}
 
 	public static void centerAndScale(List<Object3DData> datas, float newScale, float[] newPosition){

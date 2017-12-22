@@ -132,6 +132,17 @@ public class Math3DUtils {
     }
 
     /**
+     * Divide vertex: a/b
+     *
+     * @param a
+     * @param b
+     * @return a/b
+     */
+    public static float[] divide(float[] a, float b) {
+        return new float[]{a[0] / b, a[1] / b, a[2] / b};
+    }
+
+    /**
      * Get the min of both vertex
      *
      * @param a
@@ -163,6 +174,30 @@ public class Math3DUtils {
         a[0] = a[0] / length;
         a[1] = a[1] / length;
         a[2] = a[2] / length;
+    }
+
+    public static float[] crossProduct(float[] a, float[] b){
+        // AxB = (AyBz − AzBy, AzBx − AxBz, AxBy − AyBx)
+        //(r)[0] = (a)[1] * (b)[2] - (b)[1] * (a)[2]; \
+        //(r)[1] = (a)[2] * (b)[0] - (b)[2] * (a)[0]; \
+        //(r)[2] = (a)[0] * (b)[1] - (b)[0] * (a)[1];
+        float x = a[1]*b[2] - a[2]*b[1];
+        float y = a[2]*b[0] - a[0]*b[2];
+        float z = a[0]*b[1] - a[1]*b[0];
+        return new float[]{x,y,z};
+    }
+
+    public static float dotProduct(float[] a, float[] b){
+        // a1b1+a2b2+a3b3
+        return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+    }
+
+    public static float[] multiply(float[] a, float t){
+        return new float[]{a[0]*t, a[1]*t, a[2]*t};
+    }
+
+    public static float[] add(float[] a, float[] b){
+        return new float[]{a[0]+b[0], a[1]+b[1], a[2]+b[2]};
     }
 
 }

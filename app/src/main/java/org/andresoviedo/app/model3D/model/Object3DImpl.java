@@ -371,38 +371,6 @@ public abstract class Object3DImpl implements Object3D {
 }
 
 /**
- * Draw a single point in space
- * 
- * @author andres
- *
- */
-class Object3DV0 extends Object3DImpl {
-	// @formatter:off
-    private static final String pointVertexShader =
-    	"uniform mat4 u_MVPMatrix;      \n"		
-      +	"attribute vec4 a_Position;     \n"		
-      + "void main()                    \n"
-      + "{                              \n"
-      + "   gl_Position = u_MVPMatrix  * a_Position;   \n"
-      + "   gl_PointSize = 20.0;         \n"
-      + "}                              \n";
-	 // @formatter:on
-
-	// @formatter:off
-    private static final String pointFragmentShader = 
-    	"precision mediump float;       \n"					          
-      + "void main()                    \n"
-      + "{                              \n"
-      + "   gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);             \n"
-      + "}                              \n";
-	// @formatter:on
-
-	public Object3DV0() {
-		super("V0", pointVertexShader, pointFragmentShader, "a_Position");
-	}
-}
-
-/**
  * Draw using single color
  * 
  * @author andresoviedo
@@ -416,7 +384,7 @@ class Object3DV1 extends Object3DImpl {
 		"attribute vec4 a_Position;" + 
 		"void main() {" +
 			"  gl_Position = u_MVPMatrix * a_Position;\n" +
-			"  gl_PointSize = 2.5;  \n"+
+			"  gl_PointSize = 20.0;  \n"+
 		"}";
 	// @formatter:on
 

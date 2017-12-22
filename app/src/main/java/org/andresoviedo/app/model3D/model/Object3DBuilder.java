@@ -311,7 +311,6 @@ public final class Object3DBuilder {
 			};
 	//@formatter:on
 
-	private Object3DV0 object3dv0;
 	private Object3DV1 object3dv1;
 	private Object3DV2 object3dv2;
 	private Object3DV3 object3dv3;
@@ -365,7 +364,7 @@ public final class Object3DBuilder {
 		IntBuffer drawBuffer = createNativeByteBuffer(squareDrawOrderData.length * 4).asIntBuffer().put(squareDrawOrderData);
 		FloatBuffer vertexBuffer = createNativeByteBuffer(squarePositionData.length * 4).asFloatBuffer().put(squarePositionData);
 		return new Object3DData(vertexBuffer,drawBuffer.asReadOnlyBuffer()).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV2")
-				.centerAndScale(1.0f).setFaces(new Faces(8)).setDrawOrder(drawBuffer);
+				.centerAndScale(1.0f).setFaces(new Faces(8)).setDrawOrder(drawBuffer).setVertexArrayBuffer(vertexBuffer);
 	}
 
 	public static Object3DData buildCubeV3(byte[] textureData) {
@@ -419,7 +418,7 @@ public final class Object3DBuilder {
 
 	public Object3D getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights) throws IOException {
 
-		if (object3dv1 == null) {
+		if (object3dv2 == null) {
 			object3dv1 = new Object3DV1();
 			object3dv2 = new Object3DV2();
 			object3dv3 = new Object3DV3();
@@ -700,10 +699,10 @@ public final class Object3DBuilder {
 	}
 
 	public Object3D getPointDrawer() {
-		if (object3dv0 == null) {
-			object3dv0 = new Object3DV0();
+		if (object3dv1 == null) {
+			object3dv1 = new Object3DV1();
 		}
-		return object3dv0;
+		return object3dv1;
 	}
 
 	public static Object3DData buildBoundingBox(Object3DData obj) {
@@ -712,7 +711,6 @@ public final class Object3DBuilder {
 		return new Object3DData(boundingBox.getVertices()).setDrawModeList(boundingBox.getDrawModeList())
 				.setVertexColorsArrayBuffer(boundingBox.getColors()).setDrawOrder(boundingBox.getDrawOrder())
 				.setDrawMode(boundingBox.getDrawMode())
-				.setPosition(obj.getPosition()).setRotation(obj.getRotation()).setScale(obj.getScale())
 				.setColor(obj.getColor()).setId(obj.getId() + "_boundingBox");
 	}
 
