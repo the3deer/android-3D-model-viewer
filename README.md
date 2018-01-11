@@ -23,7 +23,7 @@ News (22/12/2017)
 Android Market
 ==============
 
-https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" width="323" height="125">](https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2)
 
 
 About
@@ -117,6 +117,12 @@ Contact
 =======
 
 http://www.andresoviedo.org
+
+
+Donations
+=========
+
+[<img src="https://www.paypalobjects.com/webstatic/en_US/i/btn/png/btn_donate_92x26.png">](https://www.paypal.me/andresoviedo)
 
 
 ChangeLog
