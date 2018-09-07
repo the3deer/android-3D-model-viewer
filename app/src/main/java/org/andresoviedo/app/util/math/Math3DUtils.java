@@ -2,7 +2,7 @@ package org.andresoviedo.app.util.math;
 
 import android.opengl.Matrix;
 
-import org.andresoviedo.app.model3D.entities.BoundingBox;
+import java.util.Locale;
 
 /**
  * Utility class to calculate 3D stuff
@@ -176,28 +176,64 @@ public class Math3DUtils {
         a[2] = a[2] / length;
     }
 
-    public static float[] crossProduct(float[] a, float[] b){
+    public static float[] crossProduct(float[] a, float[] b) {
         // AxB = (AyBz − AzBy, AzBx − AxBz, AxBy − AyBx)
         //(r)[0] = (a)[1] * (b)[2] - (b)[1] * (a)[2]; \
         //(r)[1] = (a)[2] * (b)[0] - (b)[2] * (a)[0]; \
         //(r)[2] = (a)[0] * (b)[1] - (b)[0] * (a)[1];
-        float x = a[1]*b[2] - a[2]*b[1];
-        float y = a[2]*b[0] - a[0]*b[2];
-        float z = a[0]*b[1] - a[1]*b[0];
-        return new float[]{x,y,z};
+        float x = a[1] * b[2] - a[2] * b[1];
+        float y = a[2] * b[0] - a[0] * b[2];
+        float z = a[0] * b[1] - a[1] * b[0];
+        return new float[]{x, y, z};
     }
 
-    public static float dotProduct(float[] a, float[] b){
+    public static float dotProduct(float[] a, float[] b) {
         // a1b1+a2b2+a3b3
-        return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
     }
 
-    public static float[] multiply(float[] a, float t){
-        return new float[]{a[0]*t, a[1]*t, a[2]*t};
+    public static float[] multiply(float[] a, float t) {
+        return new float[]{a[0] * t, a[1] * t, a[2] * t};
     }
 
-    public static float[] add(float[] a, float[] b){
-        return new float[]{a[0]+b[0], a[1]+b[1], a[2]+b[2]};
+    public static float[] add(float[] a, float[] b) {
+        return new float[]{a[0] + b[0], a[1] + b[1], a[2] + b[2]};
     }
 
+    /**
+     * Matrices are 4 x 4 column-vector matrices stored in column-major order:
+     * m[offset +  0] m[offset +  4] m[offset +  8] m[offset + 12]
+     * m[offset +  1] m[offset +  5] m[offset +  9] m[offset + 13]
+     * m[offset +  2] m[offset +  6] m[offset + 10] m[offset + 14]
+     * m[offset +  3] m[offset +  7] m[offset + 11] m[offset + 15]
+     *
+     * @param matrix the matrix to stringify
+     * @param indent the spaces to add at beginning
+     * @return the string representation of the matrix
+     */
+    public static String toString(float[] matrix, int indent) {
+        StringBuilder ret = new StringBuilder();
+        for (int i = 0; i < 4; i++) {
+            ret.append("\n");
+            for (int k = 0; k < indent; k++) {
+                ret.append(" ");
+            }
+            for (int j = 0; j < 4; j++) {
+                if (matrix[j * 4 + i] >= 0) {
+                    ret.append("+");
+                }
+                ret.append(String.format(Locale.getDefault(), "%.3f", matrix[j * 4 + i]));
+                ret.append("  ");
+            }
+        }
+        return ret.toString();
+    }
+
+    public static float[] parseFloat(String[] rawData) {
+        float[] matrixData = new float[rawData.length];
+        for (int i = 0; i < rawData.length; i++) {
+            matrixData[i] = Float.parseFloat(rawData[i]);
+        }
+        return matrixData;
+    }
 }

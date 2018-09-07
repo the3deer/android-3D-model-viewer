@@ -1,18 +1,14 @@
 package org.andresoviedo.app.model3D.services.collada.loader;
 
 
-import android.app.Activity;
 import android.opengl.GLES20;
 import android.util.Log;
 
 import org.andresoviedo.app.model3D.animation.Animation;
 import org.andresoviedo.app.model3D.animation.JointTransform;
 import org.andresoviedo.app.model3D.animation.KeyFrame;
-import org.andresoviedo.app.model3D.controller.LoaderTask;
 import org.andresoviedo.app.model3D.model.AnimatedModel;
-import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DData;
-import org.andresoviedo.app.model3D.services.WavefrontLoader;
 import org.andresoviedo.app.model3D.services.collada.entities.AnimatedModelData;
 import org.andresoviedo.app.model3D.services.collada.entities.AnimationData;
 import org.andresoviedo.app.model3D.services.collada.entities.Joint;
@@ -22,8 +18,7 @@ import org.andresoviedo.app.model3D.services.collada.entities.KeyFrameData;
 import org.andresoviedo.app.model3D.services.collada.entities.MeshData;
 import org.andresoviedo.app.model3D.services.collada.entities.SkeletonData;
 import org.andresoviedo.app.model3D.services.collada.entities.SkinningData;
-import org.andresoviedo.app.model3D.services.collada.entities.Vector3f;
-import org.andresoviedo.app.util.math.Quaternion;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader;
 import org.andresoviedo.app.util.xml.XmlNode;
 import org.andresoviedo.app.util.xml.XmlParser;
 
@@ -35,7 +30,6 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,9 +44,11 @@ public class ColladaLoader {
 		return bb;
 	}
 
-	private static Object[] buildAnimatedModel(URL url) throws IOException {
-		List<AnimatedModel> ret = new ArrayList<AnimatedModel>();
-		AnimatedModelData modelData = loadColladaModel(url.openStream(),3);
+	public static Object[] buildAnimatedModel(URL url) throws IOException {
+		List<Object3DData> ret = new ArrayList<>();
+		InputStream is = url.openStream();
+		AnimatedModelData modelData = loadColladaModel(is,3);
+		is.close();
 		List<MeshData> meshDataList = modelData.getMeshData();
 		for (MeshData meshData : meshDataList) {
 			int totalVertex = meshData.getVertexCount();
@@ -100,8 +96,7 @@ public class ColladaLoader {
 		return new Object[]{modelData,ret};
 	}
 
-	private static void populateAnimatedModel(URL url, List<Object3DData> datas, AnimatedModelData modelData) throws IOException {
-		int counter = 0;
+	public static void populateAnimatedModel(URL url, List<Object3DData> datas, AnimatedModelData modelData){
 
 		for (int i=0; i<datas.size(); i++) {
 			Object3DData data = datas.get(i);
@@ -120,7 +115,7 @@ public class ColladaLoader {
 			MeshData meshData = modelData.getMeshData().get(i);
 
 			boolean first = true;
-			for (counter = 0; counter < meshData.getVertices().length - 3; counter += 3) {
+			for (int counter = 0; counter < meshData.getVertices().length - 3; counter += 3) {
 
 				// update model dimensions
 				if (first) {
@@ -147,14 +142,12 @@ public class ColladaLoader {
 				// load skeleton
 				SkeletonData skeletonData = modelData.getJointsData();
 				Joint headJoint = createJoints(skeletonData.headJoint);
-				data3D.setRootJoint(headJoint, skeletonData.jointCount);
+				data3D.setRootJoint(headJoint, skeletonData.jointCount, skeletonData.boneCount, false);
 
 				// load animation
 				Animation animation = loadAnimation(url.openStream());
 				data3D.doAnimation(animation);
-				Log.i("ColladaLoader", "Doing animation for mesh '"+meshData.getId()+"'");
 
-				data3D.getJointTransforms();
 			} catch (Exception e) {
 				Log.e("ColladaLoader", "Problem loading model animation' " + e.getMessage(), e);
 				data3D.doAnimation(null);
@@ -162,47 +155,7 @@ public class ColladaLoader {
 		}
 	}
 
-	public static Object3DData load(URL url) throws IOException {
-		Object[] ret = buildAnimatedModel(url);
-		populateAnimatedModel(url,(List<Object3DData>)ret[1],(AnimatedModelData) ret[0]);
-		return (Object3DData)ret[1];
-	}
-
-	public static void loadAsync(final Activity parent, URL url, final Object3DBuilder.Callback callback) {
-		new ColladaLoader.ColladaLoaderTask(parent,url,callback).execute();
-	}
-
-	private static class ColladaLoaderTask extends LoaderTask {
-
-		AnimatedModelData modelData;
-
-		ColladaLoaderTask(Activity parent, URL url, Object3DBuilder.Callback callback) {
-			super(parent, url, null, null, null, callback);
-		}
-
-		@Override
-		protected List<Object3DData> build() throws IOException {
-			// Parse STL
-			Object[] ret = buildAnimatedModel(url);
-			List<Object3DData> datas = (List<Object3DData>)ret[1];
-			modelData = (AnimatedModelData) ret[0];
-			return datas;
-		}
-
-		@Override
-		protected void build(List<Object3DData> datas) throws Exception
-		{
-			populateAnimatedModel(url, datas, modelData);
-			if (datas.size() == 1){
-				datas.get(0).centerAndScale(5, new float[]{0, 0, 0});
-			}else{
-				Object3DData.centerAndScale(datas,5, new float[]{0, 0, 0});
-			}
-		}
-	}
-
 	public static AnimatedModelData loadColladaModel(InputStream colladaFile, int maxWeights) {
-		//XmlNode node = XmlParser.loadXmlFile(colladaFile);
 		XmlNode node = null;
 		Map<String,SkinningData> skinningData = null;
 		SkeletonData jointsData = null;
@@ -213,15 +166,10 @@ public class ColladaLoader {
 			skinningData = skinLoader.extractSkinData();
 
 			if (!skinningData.isEmpty()) {
-				SkeletonLoader jointsLoader = new SkeletonLoader(node.getChild("library_visual_scenes"), skinningData.values().iterator().next().jointOrder);
+				SkeletonLoader jointsLoader = new SkeletonLoader(node.getChild("library_visual_scenes"), skinningData.values().iterator().next());
 				jointsData = jointsLoader.extractBoneData();
 			}
 
-			// TODO: test this
-			if (jointsData == null){
-				SkeletonLoader2 jointsLoader2 = new SkeletonLoader2(node.getChild("library_visual_scenes"));
-				jointsData = jointsLoader2.extractBoneData();
-			}
 		}catch(Exception ex){
 			Log.e("ColladaLoader","Problem loading skinning/skeleton data",ex);
 		}
@@ -242,7 +190,7 @@ public class ColladaLoader {
 	 * @return The created joint, with all its descendants added.
 	 */
 	private static Joint createJoints(JointData data) {
-		Joint joint = new Joint(data.index, data.nameId, data.bindLocalTransform);
+		Joint joint = new Joint(data.index, data.nameId, data.bindLocalTransform, data.inverseBindTransform);
 		for (JointData child : data.children) {
 			joint.addChild(createJoints(child));
 		}
@@ -285,26 +233,11 @@ public class ColladaLoader {
 	 * @return The keyframe.
 	 */
 	private static KeyFrame createKeyFrame(KeyFrameData data) {
-		Map<String, JointTransform> map = new HashMap<String, JointTransform>();
+		Map<String, JointTransform> map = new HashMap<>();
 		for (JointTransformData jointData : data.jointTransforms) {
-			JointTransform jointTransform = createTransform(jointData);
+			JointTransform jointTransform = new JointTransform(jointData.jointLocalTransform);
 			map.put(jointData.jointNameId, jointTransform);
 		}
 		return new KeyFrame(data.time, map);
 	}
-
-	/**
-	 * Creates a joint transform from the data extracted from the collada file.
-	 *
-	 * @param data
-	 *            - the data from the collada file.
-	 * @return The joint transform.
-	 */
-	private static JointTransform createTransform(JointTransformData data) {
-		float[] mat = data.jointLocalTransform;
-		Vector3f translation = new Vector3f(mat[12], mat[13], mat[14]);
-		Quaternion rotation = Quaternion.fromMatrix(mat);
-		return new JointTransform(translation, rotation);
-	}
-
 }

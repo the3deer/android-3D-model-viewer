@@ -1,21 +1,10 @@
 package org.andresoviedo.app.model3D.view;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.andresoviedo.app.model3D.services.ExampleSceneLoader;
-import org.andresoviedo.app.model3D.services.SceneLoader;
-import org.andresoviedo.app.util.Utils;
-import org.andresoviedo.app.util.content.ContentUtils;
-import org.andresoviedo.dddmodel2.R;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,6 +14,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import org.andresoviedo.app.model3D.services.ExampleSceneLoader;
+import org.andresoviedo.app.model3D.services.SceneLoader;
+import org.andresoviedo.app.util.android.ContentUtils;
+import org.andresoviedo.dddmodel2.R;
+
+import java.io.IOException;
+
 /**
  * This activity represents the container for our 3D viewer.
  * 
@@ -32,14 +28,16 @@ import android.widget.Toast;
  */
 public class ModelActivity extends Activity {
 
-	private static final int REQUEST_CODE_OPEN_FILE = 1000;
+	private static final int REQUEST_CODE_LOAD_TEXTURE = 1000;
 
-	private String paramAssetDir;
-	private String paramAssetFilename;
+    /**
+     * Type of model if file name has no extension (provided though content provider)
+     */
+	private int paramType;
 	/**
 	 * The file to load. Passed as input parameter
 	 */
-	private String paramFilename;
+	private Uri paramUri;
 	/**
 	 * Enter into Android Immersive mode so the renderer is full screen or not
 	 */
@@ -55,16 +53,17 @@ public class ModelActivity extends Activity {
 
 	private Handler handler;
 
-	@Override
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		// Try to get input parameters
 		Bundle b = getIntent().getExtras();
 		if (b != null) {
-			this.paramAssetDir = b.getString("assetDir");
-			this.paramAssetFilename = b.getString("assetFilename");
-			this.paramFilename = b.getString("uri");
+			if (b.getString("uri") != null) {
+				this.paramUri = Uri.parse(b.getString("uri"));
+			}
+            this.paramType = b.getString("type") != null? Integer.parseInt(b.getString("type")) : -1;
 			this.immersiveMode = "true".equalsIgnoreCase(b.getString("immersiveMode"));
 			try{
 				String[] backgroundColors = b.getString("backgroundColor").split(" ");
@@ -76,30 +75,28 @@ public class ModelActivity extends Activity {
 				// Assuming default background color
 			}
 		}
-		Log.i("Renderer", "Params: assetDir '" + paramAssetDir + "', assetFilename '" + paramAssetFilename + "', uri '"
-				+ paramFilename + "'");
+		Log.i("Renderer", "Params: uri '"	+ paramUri + "'");
 
 		handler = new Handler(getMainLooper());
 
-		// Create a GLSurfaceView instance and set it
-		// as the ContentView for this Activity.
-		gLView = new ModelSurfaceView(this);
-		setContentView(gLView);
-
 		// Create our 3D sceneario
-		if (paramFilename == null && paramAssetFilename == null) {
+		if (paramUri == null) {
 			scene = new ExampleSceneLoader(this);
 		} else {
 			scene = new SceneLoader(this);
 		}
 		scene.init();
 
+		// Create a GLSurfaceView instance and set it
+		// as the ContentView for this Activity.
+		gLView = new ModelSurfaceView(this);
+		setContentView(gLView);
+
 		// Show the Up button in the action bar.
 		setupActionBar();
 
-		// TODO: Alert user when there is no multitouch support (2 fingers). He won't be able to rotate or zoom for
-		// example
-		Utils.printTouchCapabilities(getPackageManager());
+		// TODO: Alert user when there is no multitouch support (2 fingers). He won't be able to rotate or zoom
+		ContentUtils.printTouchCapabilities(getPackageManager());
 
 		setupOnSystemVisibilityChangeListener();
 	}
@@ -121,30 +118,19 @@ public class ModelActivity extends Activity {
 		return true;
 	}
 
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	private void setupOnSystemVisibilityChangeListener() {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
 			return;
 		}
-		getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-			@Override
-			public void onSystemUiVisibilityChange(int visibility) {
-				// Note that system bars will only be "visible" if none of the
-				// LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
-				if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-					// TODO: The system bars are visible. Make any desired
-					// adjustments to your UI, such as showing the action bar or
-					// other navigational controls.
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-						hideSystemUIDelayed(3000);
-					}
-				} else {
-					// TODO: The system bars are NOT visible. Make any desired
-					// adjustments to your UI, such as hiding the action bar or
-					// other navigational controls.
-				}
-			}
-		});
+		getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(visibility -> {
+            // Note that system bars will only be "visible" if none of the
+            // LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
+            if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                // The system bars are visible. Make any desired
+                if (immersiveMode) hideSystemUIDelayed(5000);
+            }
+        });
 	}
 
 	@Override
@@ -169,31 +155,30 @@ public class ModelActivity extends Activity {
 		case R.id.model_toggle_textures:
 			scene.toggleTextures();
 			break;
+		case R.id.model_toggle_animation:
+                scene.toggleAnimation();
+                break;
+			/*case R.id.model_toggle_skeleton:
+				scene.toggleSkeleton();
+				break;*/
 		case R.id.model_toggle_lights:
 			scene.toggleLighting();
 			break;
 		case R.id.model_load_texture:
-			Intent target = Utils.createGetContentIntent();
-			Intent intent = Intent.createChooser(target, "Select a file");
-			try {
-				startActivityForResult(intent, REQUEST_CODE_OPEN_FILE);
-			} catch (ActivityNotFoundException e) {
-				// The reason for the existence of aFileChooser
-			}
+            Intent target = ContentUtils.createGetContentIntent("image/*");
+            Intent intent = Intent.createChooser(target, "Select a file");
+            try {
+                startActivityForResult(intent, REQUEST_CODE_LOAD_TEXTURE);
+            } catch (ActivityNotFoundException e) {
+                // The reason for the existence of aFileChooser
+            }
 			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
 	private void hideSystemUIDelayed(long millis) {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-			return;
-		}
-		handler.postDelayed(new Runnable() {
-			public void run() {
-				hideSystemUI();
-			}
-		}, millis);
+		handler.postDelayed(this::hideSystemUI, millis);
 	}
 
 	private void hideSystemUI() {
@@ -207,9 +192,6 @@ public class ModelActivity extends Activity {
 	// This snippet hides the system bars.
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void hideSystemUIKitKat() {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-			return;
-		}
 		// Set the IMMERSIVE flag.
 		// Set the content to appear under the system bars so that the content
 		// doesn't resize when the system bars hide and show.
@@ -222,9 +204,6 @@ public class ModelActivity extends Activity {
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	private void hideSystemUIJellyBean() {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-			return;
-		}
 		final View decorView = getWindow().getDecorView();
 		decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
 				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -243,23 +222,15 @@ public class ModelActivity extends Activity {
 				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 	}
 
-	public File getParamFile() {
-		return getParamFilename() != null ? new File(getParamFilename()) : null;
+	public Uri getParamUri() {
+		return paramUri;
 	}
 
-	public String getParamAssetDir() {
-		return paramAssetDir;
-	}
+    public int getParamType() {
+        return paramType;
+    }
 
-	public String getParamAssetFilename() {
-		return paramAssetFilename;
-	}
-
-	public String getParamFilename() {
-		return paramFilename;
-	}
-
-	public float[] getBackgroundColor(){
+    public float[] getBackgroundColor(){
 		return backgroundColor;
 	}
 
@@ -267,36 +238,32 @@ public class ModelActivity extends Activity {
 		return scene;
 	}
 
-	public ModelSurfaceView getgLView() {
+	public ModelSurfaceView getGLView() {
 		return gLView;
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		switch (requestCode) {
-			case REQUEST_CODE_OPEN_FILE:
-				if (resultCode == RESULT_OK) {
-					// The URI of the selected file
-					final Uri uri = data.getData();
-					Log.i("Menu", "Loading '" + uri.toString() + "'");
-					if (uri != null) {
-						final String path = ContentUtils.getPath(getApplicationContext(), uri);
-						if (path != null) {
-							try {
-								scene.loadTexture(null, new URL("file://"+path));
-							} catch (MalformedURLException e) {
-								Toast.makeText(getApplicationContext(), "Problem loading texture '" + uri.toString() + "'",
-										Toast.LENGTH_SHORT).show();
-							}
-						} else {
-							Toast.makeText(getApplicationContext(), "Problem loading texture '" + uri.toString() + "'",
-									Toast.LENGTH_SHORT).show();
-						}
-					}
-				} else {
-					Toast.makeText(getApplicationContext(), "Result when loading texture was '" + resultCode + "'",
-							Toast.LENGTH_SHORT).show();
-				}
-		}
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+        switch (requestCode) {
+            case REQUEST_CODE_LOAD_TEXTURE:
+                // The URI of the selected file
+                final Uri uri = data.getData();
+                if (uri != null) {
+                    Log.i("ModelActivity", "Loading texture '" + uri + "'");
+                    try {
+                        ContentUtils.setThreadActivity(this);
+                        scene.loadTexture(null, uri);
+                    } catch (IOException ex) {
+                        Log.e("ModelActivity","Error loading texture: "+ex.getMessage(), ex);
+                        Toast.makeText(this, "Error loading texture '" + uri + "'. "+ex
+                                .getMessage(), Toast.LENGTH_LONG).show();
+                    } finally {
+                        ContentUtils.setThreadActivity(null);
+                    }
+                }
+        }
 	}
 }

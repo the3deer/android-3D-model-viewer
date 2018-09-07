@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 27
 
     defaultConfig {
         applicationId "org.andresoviedo.dddmodel2"
         minSdkVersion 8
-        targetSdkVersion 19
+        targetSdkVersion 27
     }
 
     signingConfigs {
@@ -26,9 +25,12 @@ android {
             signingConfig signingConfigs.release
         }
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:19.1.0'
-    compile 'commons-io:commons-io:2.5'
+    implementation 'com.android.support:support-compat:27.1.1'
 }

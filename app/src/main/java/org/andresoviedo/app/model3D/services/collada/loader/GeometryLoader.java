@@ -1,15 +1,7 @@
 package org.andresoviedo.app.model3D.services.collada.loader;
 
 import android.opengl.Matrix;
-import android.renderscript.Matrix4f;
 import android.util.Log;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import org.andresoviedo.app.model3D.services.collada.entities.JointData;
 import org.andresoviedo.app.model3D.services.collada.entities.MeshData;
@@ -22,18 +14,19 @@ import org.andresoviedo.app.model3D.services.collada.entities.Vertex;
 import org.andresoviedo.app.model3D.services.collada.entities.VertexSkinData;
 import org.andresoviedo.app.util.xml.XmlNode;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Loads the mesh data for a model from a collada XML file.
  * @author Karl
  *
  */
 public class GeometryLoader {
-
-	private static final float[] CORRECTION = new float[16];
-	static{
-		Matrix.setIdentityM(CORRECTION,0);
-		Matrix.rotateM(CORRECTION,0,CORRECTION,0,-90, 1, 0, 0);
-	}
 	
 	private final XmlNode geometryNode;
 	private final XmlNode materialsData;
@@ -50,11 +43,11 @@ public class GeometryLoader {
 	private float[] weightsArray;
 	private FloatBuffer colorsBuffer;
 
-	List<Vertex> vertices = new ArrayList<Vertex>();
-	List<Vector2f> textures = new ArrayList<Vector2f>();
-	List<Vector3f> normals = new ArrayList<Vector3f>();
-	List<Integer> indices = new ArrayList<Integer>();
-	List<float[]> colors = new ArrayList<float[]>();
+	List<Vertex> vertices = new ArrayList<>();
+	List<Vector2f> textures = new ArrayList<>();
+	List<Vector3f> normals = new ArrayList<>();
+	List<Integer> indices = new ArrayList<>();
+	List<float[]> colors = new ArrayList<>();
 	
 	public GeometryLoader(XmlNode geometryNode, XmlNode materialsNode, XmlNode effectsNode, XmlNode imagesNode, Map<String,SkinningData> skinningData, SkeletonData skeletonData) {
 		this.skinningDataMap = skinningData;
@@ -112,14 +105,17 @@ public class GeometryLoader {
 				texCoordsId = childWithAttribute.getAttribute("source").substring(1);
 			}
 		} else if (triangles != null){
-			normalsId = triangles.getChildWithAttribute("input", "semantic", "NORMAL")
-					.getAttribute("source").substring(1);
+			XmlNode normals = triangles.getChildWithAttribute("input", "semantic", "NORMAL");
+			if (normals != null) {
+				normalsId = normals.getAttribute("source").substring(1);
+			}
 			XmlNode childWithAttribute = triangles.getChildWithAttribute("input", "semantic", "TEXCOORD");
-			if (childWithAttribute != null){
+			if (childWithAttribute != null) {
 				texCoordsId = childWithAttribute.getAttribute("source").substring(1);
 			}
 		}
-		readNormals(meshData, normalsId);
+		if (normalsId != null)
+			readNormals(meshData, normalsId);
 		if (texCoordsId != null){
 			readTextureCoords(meshData, texCoordsId);
 		}
@@ -148,13 +144,22 @@ public class GeometryLoader {
 			float x = Float.parseFloat(posData[i * 3]);
 			float y = Float.parseFloat(posData[i * 3 + 1]);
 			float z = Float.parseFloat(posData[i * 3 + 2]);
-			Vector4f position = new Vector4f(x, y, z, 1);
-			float[] positionV = new float[4];
-			Matrix.multiplyMV(positionV, 0, CORRECTION, 0, position.toArray(), 0);
-			position = new Vector4f(positionV);
+
+			float[] positionV = new float[]{x,y,z,1};
+
+			// skinning data
 			VertexSkinData weightsData = skinningDataMap != null && skinningDataMap.containsKey(geometryId) ?
 					skinningDataMap.get(geometryId).verticesSkinData.get(vertices.size()) : null;
 
+			// transform vertex according to bind_shape_matrix
+			if (skinningDataMap.containsKey(geometryId)){
+				float[] bindShapeMatrix = skinningDataMap.get(geometryId).bindShapeMatrix;
+				float[] bindShaped = new float[16];
+				Matrix.multiplyMV(bindShaped,0,bindShapeMatrix,0,positionV,0);
+				positionV = bindShaped;
+			}
+
+			// TODO: review this. meshId is never set on skeleton data so this will probably never work
 			if (weightsData == null && skeletonData != null){
 				JointData jointData = getJointData(skeletonData.headJoint, geometryId);
 				if (jointData != null) {
@@ -164,7 +169,7 @@ public class GeometryLoader {
 				}
 			}
 
-			vertices.add(new Vertex(vertices.size(), new Vector3f(position.x, position.y, position.z),
+            vertices.add(vertices.size(), new Vertex(vertices.size(), new Vector3f(positionV[0],positionV[1],positionV[2]),
 					weightsData));
 		}
 		Log.i("GeometryLoader", "Vertex count: " + vertices.size());
@@ -180,9 +185,7 @@ public class GeometryLoader {
 			float y = Float.parseFloat(normData[i * 3 + 1]);
 			float z = Float.parseFloat(normData[i * 3 + 2]);
 			Vector4f norm = new Vector4f(x, y, z, 0f);
-			float[] normV = new float[4];
-			Matrix.multiplyMV(normV, 0, CORRECTION, 0, norm.toArray(), 0);
-			norm = new Vector4f(normV);
+			norm = new Vector4f(norm.toArray());
 			normals.add(new Vector3f(norm.x, norm.y, norm.z));
 		}
 	}
@@ -280,11 +283,16 @@ public class GeometryLoader {
 			if (textureNode != null){
 				String texture = textureNode.getAttribute("texture");
 				XmlNode newParamNode = profile_common.getChildWithAttribute("newparam","sid",texture);
-				String surface = newParamNode.getChild("sampler2D").getChild("source").getData();
-				newParamNode = profile_common.getChildWithAttribute("newparam","sid",surface);
-				String imageRef = newParamNode.getChildWithAttribute("surface","type","2D").getChild("init_from").getData();
-				String image = imagesNode.getChildWithAttribute("image","id",imageRef).getChild("init_from").getData();
-				return image;
+				if (newParamNode != null) {
+					String surface = newParamNode.getChild("sampler2D").getChild("source").getData();
+					newParamNode = profile_common.getChildWithAttribute("newparam", "sid", surface);
+					String imageRef = newParamNode.getChildWithAttribute("surface", "type", "2D").getChild("init_from").getData();
+					String image = imagesNode.getChildWithAttribute("image", "id", imageRef).getChild("init_from").getData();
+					return image;
+				} else {
+                    String image = imagesNode.getChildWithAttribute("image", "id", texture).getChild("init_from").getData();
+                    return image;
+				}
 			}
 			return null;
 		} catch (Exception ex) {
@@ -303,6 +311,7 @@ public class GeometryLoader {
 
 	private float convertDataToArrays() {
 		float furthestPoint = 0;
+		int gw = 0, gj = 0; // global weights, global joints
 		for (int i = 0; i < vertices.size(); i++) {
 			Vertex currentVertex = vertices.get(i);
 			if (currentVertex.getLength() > furthestPoint) {
@@ -314,22 +323,24 @@ public class GeometryLoader {
 				texturesArray[i * 2] = textureCoord.x;
 				texturesArray[i * 2 + 1] = 1 - textureCoord.y;
 			}
-			Vector3f normalVector = normals.get(currentVertex.getNormalIndex());
 			verticesArray[i * 3] = position.x;
 			verticesArray[i * 3 + 1] = position.y;
 			verticesArray[i * 3 + 2] = position.z;
 
-			normalsArray[i * 3] = normalVector.x;
-			normalsArray[i * 3 + 1] = normalVector.y;
-			normalsArray[i * 3 + 2] = normalVector.z;
+			if (normals != null && !normals.isEmpty()) {
+                Vector3f normalVector = normals.get(currentVertex.getNormalIndex());
+                normalsArray[i * 3] = normalVector.x;
+                normalsArray[i * 3 + 1] = normalVector.y;
+                normalsArray[i * 3 + 2] = normalVector.z;
+            }
 			VertexSkinData weights = currentVertex.getWeightsData();
 			if (weights != null) {
-				jointIdsArray[i * 3] = weights.jointIds.get(0);
-				jointIdsArray[i * 3 + 1] = weights.jointIds.get(1);
-				jointIdsArray[i * 3 + 2] = weights.jointIds.get(2);
-				weightsArray[i * 3] = weights.weights.get(0);
-				weightsArray[i * 3 + 1] = weights.weights.get(1);
-				weightsArray[i * 3 + 2] = weights.weights.get(2);
+			    for (int j=0; j<weights.jointIds.size(); j++) {
+                    jointIdsArray[gj++] = weights.jointIds.get(j);
+                }
+                for (int w=0; w<weights.weights.size(); w++) {
+                    weightsArray[gw++] = weights.weights.get(w);
+                }
 			}
 		}
 		for (float[] color : colors){
@@ -367,8 +378,8 @@ public class GeometryLoader {
 		}
 		this.normalsArray = new float[vertices.size() * 3];
 		if (skinningDataMap != null && skinningDataMap.containsKey(geometryId) || vertices.get(0).getWeightsData() != null) {
-			this.jointIdsArray = new int[vertices.size() * 3];
-			this.weightsArray = new float[vertices.size() * 3];
+			this.jointIdsArray = new int[vertices.size() * vertices.get(0).getWeightsData().jointIds.size()];
+			this.weightsArray = new float[vertices.size() * vertices.get(0).getWeightsData().weights.size()];
 		}
 		if (!colors.isEmpty())
 			this.colorsBuffer = createNativeByteBuffer(colors.size()*4*4).asFloatBuffer();

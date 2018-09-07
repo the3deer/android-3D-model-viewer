@@ -1,5 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
+
+    <item
+        android:id="@+id/model_load_texture"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:orderInCategory="501"
+        android:showAsAction="ifRoom"
+        android:title="@string/load_texture"/>
     <item
         android:id="@+id/model_toggle_wireframe"
         android:icon="@android:drawable/ic_menu_sort_by_size"
@@ -19,16 +26,23 @@
         android:showAsAction="ifRoom"
         android:title="@string/toggle_textures"/>
     <item
+        android:id="@+id/model_toggle_animation"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:orderInCategory="400"
+        android:showAsAction="ifRoom"
+        android:title="@string/toggle_animation"/>
+   <!-- <item
+        android:id="@+id/model_toggle_skeleton"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:orderInCategory="400"
+        android:showAsAction="ifRoom"
+        android:title="@string/toggle_skeleton"/>-->
+    <item
         android:id="@+id/model_toggle_boundingbox"
         android:icon="@android:drawable/ic_menu_crop"
         android:orderInCategory="500"
         android:showAsAction="ifRoom"
         android:title="@string/toggle_boundingbox"/>
-    <item
-        android:id="@+id/model_load_texture"
-        android:icon="@android:drawable/ic_menu_gallery"
-        android:orderInCategory="501"
-        android:title="@string/load_texture"/>
     <!--
     <item
         android:id="@+id/action_settings"

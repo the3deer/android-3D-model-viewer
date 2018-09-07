@@ -8,6 +8,7 @@ import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.util.math.Math3DUtils;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -18,22 +19,30 @@ import java.util.List;
 
 public class Octree {
     final BoundingBox boundingBox;
-    final List<float[]> pending = new ArrayList<float[]>();
-    final List<float[]> triangles = new ArrayList<float[]>();
-    final Octree[] children = new Octree[8];
+    private final List<float[]> pending = new ArrayList<>();
+    private final List<float[]> triangles = new ArrayList<>();
+    private final Octree[] children = new Octree[8];
 
-    Octree(BoundingBox box){
+    private Octree(BoundingBox box){
         this.boundingBox = box;
     }
 
-    void addChild(int octant, BoundingBox boundingBox, float[] triangle){
+    private void addChild(int octant, BoundingBox boundingBox, float[] triangle){
         if (children[octant] == null){
             children[octant] = new Octree(boundingBox);
         }
         children[octant].pending.add(triangle);
     }
 
-    void subdivide(){
+    public Octree[] getChildren(){
+        return children;
+    }
+
+    public List<float[]> getTriangles(){
+        return triangles;
+    }
+
+    private void subdivide(){
         for (Octree child : children){
             if (child != null){
                 subdivide(child);
@@ -43,26 +52,47 @@ public class Octree {
 
     static Octree build(Object3DData object){
         Log.i("Octree", "Building octree for "+object.getId());
-        Octree ret = new Octree(object.getBoundingBox());
-        FloatBuffer buffer = object.getVertexArrayBuffer().asReadOnlyBuffer();
-        List<float[]> triangles = new ArrayList<float[]>(buffer.capacity()/3*4);
-        float[] modelMatrix = object.getModelMatrix();
-        for (int i=0; i<buffer.capacity(); i+=9){
-            float[] triangle = new float[]{buffer.get(), buffer.get(), buffer.get(), 1,
-                    buffer.get(), buffer.get(), buffer.get(), 1,
-                    buffer.get(), buffer.get(), buffer.get(), 1
-            };
-            Matrix.multiplyMV(triangle, 0, modelMatrix, 0, triangle, 0);
-            Matrix.multiplyMV(triangle, 4, modelMatrix, 0, triangle, 4);
-            Matrix.multiplyMV(triangle, 8, modelMatrix, 0, triangle, 8);
-            triangles.add(triangle);
+        final Octree ret = new Octree(object.getBoundingBox());
+        if (object.getDrawOrder() == null) {
+            // vertex array contains vertex in sequence
+            final FloatBuffer buffer = object.getVertexArrayBuffer().asReadOnlyBuffer();
+            final List<float[]> triangles = new ArrayList<>(buffer.capacity() / 3 * 4);
+            final float[] modelMatrix = object.getModelMatrix();
+            for (int i = 0; i < buffer.capacity(); i += 9) {
+                float[] triangle = new float[]{buffer.get(), buffer.get(), buffer.get(), 1,
+                        buffer.get(), buffer.get(), buffer.get(), 1,
+                        buffer.get(), buffer.get(), buffer.get(), 1
+                };
+                Matrix.multiplyMV(triangle, 0, modelMatrix, 0, triangle, 0);
+                Matrix.multiplyMV(triangle, 4, modelMatrix, 0, triangle, 4);
+                Matrix.multiplyMV(triangle, 8, modelMatrix, 0, triangle, 8);
+                triangles.add(triangle);
+            }
+            ret.pending.addAll(triangles);
+        } else {
+            // faces are built
+            final IntBuffer drawOrder = object.getDrawOrder().asReadOnlyBuffer();
+            final FloatBuffer buffer = object.getVertexBuffer().asReadOnlyBuffer();
+            final List<float[]> triangles = new ArrayList<>(drawOrder.capacity() / 3 * 4);
+            final float[] modelMatrix = object.getModelMatrix();
+            for (int i = 0; i < drawOrder.capacity(); i += 3) {
+                float[] triangle = new float[]{
+                        buffer.get(drawOrder.get(i)), buffer.get(drawOrder.get(i)+1), buffer.get(drawOrder.get(i)+2), 1,
+                        buffer.get(drawOrder.get(i+1)), buffer.get(drawOrder.get(i+1)+1), buffer.get(drawOrder.get(i+1)+2), 1,
+                        buffer.get(drawOrder.get(i+2)), buffer.get(drawOrder.get(i+2)+1), buffer.get(drawOrder.get(i+2)+2), 1,
+                };
+                Matrix.multiplyMV(triangle, 0, modelMatrix, 0, triangle, 0);
+                Matrix.multiplyMV(triangle, 4, modelMatrix, 0, triangle, 4);
+                Matrix.multiplyMV(triangle, 8, modelMatrix, 0, triangle, 8);
+                triangles.add(triangle);
+            }
+            ret.pending.addAll(triangles);
         }
-        ret.pending.addAll(triangles);
         subdivide(ret);
         return ret;
     }
 
-    static void subdivide(Octree octree){
+    private static void subdivide(Octree octree){
         Log.d("Octree", "Subdividing octree ("+octree.boundingBox+"): "+octree.pending.size());
         float[] min = octree.boundingBox.getMin();
         float[] max = octree.boundingBox.getMax();
@@ -93,27 +123,26 @@ public class Octree {
         xMin = mid[0]; yMin = mid[1]; zMin = mid[2];
         xMax = max[0]; yMax = max[1]; zMax = max[2];
         octant[7] = new BoundingBox("octree7",xMin,xMax,yMin,yMax,zMin,zMax);
-        boolean anyInoctant = false;
+        boolean anyInOctant = false;
         for (Iterator<float[]> it = octree.pending.iterator(); it.hasNext(); ) {
             float[] triangle = it.next();
-            boolean inoctant = false;
+            boolean inOctant = false;
             for (int i = 0; i < 8; i++) {
                 int inside = octant[i].insideBounds(triangle[0], triangle[1], triangle[2]) ? 1 : 0;
                 inside += octant[i].insideBounds(triangle[4], triangle[5], triangle[6]) ? 1 : 0;
                 inside += octant[i].insideBounds(triangle[8], triangle[9], triangle[10]) ? 1 : 0;
                 if (inside == 3) {
-                    inoctant = true;
+                    inOctant = true;
                     octree.addChild(i, octant[i], triangle);
-                    anyInoctant = true;
-                    continue;
+                    anyInOctant = true;
                 }
             }
-            if (!inoctant){
+            if (!inOctant){
                 octree.triangles.add(triangle);
             }
             it.remove();
         }
-        if (anyInoctant){
+        if (anyInOctant){
             // subdivide if big enough (>=0.02)
             if ((mid[0]+min[0])/2 > 0.01 && (mid[1]+min[1])/2 > 0.01 && (mid[2]+min[2])/2 > 0.01) {
                 octree.subdivide();

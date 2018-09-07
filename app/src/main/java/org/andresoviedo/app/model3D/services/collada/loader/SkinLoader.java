@@ -1,12 +1,15 @@
 package org.andresoviedo.app.model3D.services.collada.loader;
 
+import android.opengl.Matrix;
 import android.util.Log;
 
 import org.andresoviedo.app.model3D.services.collada.entities.SkinningData;
 import org.andresoviedo.app.model3D.services.collada.entities.VertexSkinData;
+import org.andresoviedo.app.util.math.Math3DUtils;
 import org.andresoviedo.app.util.xml.XmlNode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +32,41 @@ public class SkinLoader {
 			XmlNode skinningDataNode = controller.getChild("skin");
 			this.skinningData = skinningDataNode;
 			String source = skinningData.getAttribute("source").substring(1);
-			List<String> jointsList = loadJointsList();
+
+			// bind shape matrix
+            float[] bindShapeMatrix = new float[16];
+            Matrix.setIdentityM(bindShapeMatrix,0);
+            XmlNode bindShapeMatrixNode = skinningData.getChild("bind_shape_matrix");
+            if (bindShapeMatrixNode != null) {
+                float[] temp = Math3DUtils.parseFloat(bindShapeMatrixNode.getData().trim().split("\\s+"));
+                Matrix.transposeM(bindShapeMatrix, 0, temp, 0);
+                Log.i("SkinLoader","Bind shape matrix set");
+            }
+
+            // Ordered joint list
+            List<String> jointsList = loadJointsList();
+
+            // Vertex weights
 			float[] weights = loadWeights();
 			XmlNode weightsDataNode = skinningData.getChild("vertex_weights");
 			int[] effectorJointCounts = getEffectiveJointsCounts(weightsDataNode);
 			List<VertexSkinData> vertexWeights = getSkinData(weightsDataNode, effectorJointCounts, weights);
-			ret.put(source,new SkinningData(jointsList, vertexWeights));
+
+			// inverse bind matrix
+			float[] inverseBindMatrix = null;
+			try {
+				XmlNode joints = skinningData.getChild("joints");
+				XmlNode inverseBindMatrixNode = joints.getChildWithAttribute("input","semantic","INV_BIND_MATRIX");
+				String invMatrixString = skinningData.getChildWithAttribute("source",
+						"id",inverseBindMatrixNode.getAttribute("source").substring(1))
+						.getChild("float_array").getData();
+				Log.i("SkinLoader","invMatrix: "+invMatrixString.trim());
+				inverseBindMatrix = Math3DUtils.parseFloat(invMatrixString.trim().split("\\s+"));
+                Log.i("SkinLoader","Inverse bind matrix available");
+			} catch (Exception e) {
+				Log.i("SkinLoader","No inverse bind matrix available");
+			}
+			ret.put(source,new SkinningData(bindShapeMatrix, jointsList, vertexWeights, inverseBindMatrix));
 		}
 		Log.d("SkinLoader","Skinning datas '"+ret.keySet()+"'");
 		return ret;
@@ -46,10 +78,8 @@ public class SkinLoader {
 				.substring(1);
 		XmlNode jointsNode = skinningData.getChildWithAttribute("source", "id", jointDataId).getChild("Name_array");
 		String[] names = jointsNode.getData().trim().split("\\s+");
-		List<String> jointsList = new ArrayList<String>();
-		for (String name : names) {
-			jointsList.add(name);
-		}
+		List<String> jointsList = new ArrayList<>();
+        Collections.addAll(jointsList, names);
 		return jointsList;
 	}
 
@@ -91,5 +121,4 @@ public class SkinLoader {
 		}
 		return skinningData;
 	}
-
 }

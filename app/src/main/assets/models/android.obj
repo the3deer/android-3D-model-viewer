@@ -1,6 +1,6 @@
 # Blender v2.60 (sub 0) OBJ File: ''
 # www.blender.org
-mtllib android_decimated.mtl
+# mtllib android_decimated.mtl
 o Mesh.001_Sphere09
 v -3.805100 126.309898 -11.050879
 v -4.468300 126.554802 -8.403679

@@ -1,23 +1,17 @@
 package org.andresoviedo.app.model3D.controller;
 
-import org.andresoviedo.app.model3D.collision.CollisionDetection;
-import org.andresoviedo.app.model3D.model.Object3DBuilder;
-import org.andresoviedo.app.model3D.model.Object3DData;
-import org.andresoviedo.app.model3D.services.SceneLoader;
-import org.andresoviedo.app.model3D.view.ModelRenderer;
-import org.andresoviedo.app.model3D.view.ModelSurfaceView;
-
 import android.graphics.PointF;
-import android.opengl.GLU;
 import android.opengl.Matrix;
 import android.os.SystemClock;
-import android.util.FloatMath;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import java.util.Arrays;
+import org.andresoviedo.app.model3D.entities.Camera;
+import org.andresoviedo.app.model3D.services.SceneLoader;
+import org.andresoviedo.app.model3D.view.ModelRenderer;
+import org.andresoviedo.app.model3D.view.ModelSurfaceView;
 
 public class TouchController {
 
@@ -30,29 +24,29 @@ public class TouchController {
 	private final ModelSurfaceView view;
 	private final ModelRenderer mRenderer;
 
-	int pointerCount = 0;
-	float x1 = Float.MIN_VALUE;
-	float y1 = Float.MIN_VALUE;
-	float x2 = Float.MIN_VALUE;
-	float y2 = Float.MIN_VALUE;
-	float dx1 = Float.MIN_VALUE;
-	float dy1 = Float.MIN_VALUE;
-	float dx2 = Float.MIN_VALUE;
-	float dy2 = Float.MIN_VALUE;
+	private int pointerCount = 0;
+    private float x1 = Float.MIN_VALUE;
+    private float y1 = Float.MIN_VALUE;
+    private float x2 = Float.MIN_VALUE;
+    private float y2 = Float.MIN_VALUE;
+    private float dx1 = Float.MIN_VALUE;
+    private float dy1 = Float.MIN_VALUE;
+    private float dx2 = Float.MIN_VALUE;
+    private float dy2 = Float.MIN_VALUE;
 
-	float length = Float.MIN_VALUE;
-	float previousLength = Float.MIN_VALUE;
-	float currentPress1 = Float.MIN_VALUE;
-	float currentPress2 = Float.MIN_VALUE;
+    private float length = Float.MIN_VALUE;
+    private float previousLength = Float.MIN_VALUE;
+    private float currentPress1 = Float.MIN_VALUE;
+    private float currentPress2 = Float.MIN_VALUE;
 
-	float rotation = 0;
-	int currentSquare = Integer.MIN_VALUE;
+    private float rotation = 0;
+    private int currentSquare = Integer.MIN_VALUE;
 
-	boolean isOneFixedAndOneMoving = false;
-	boolean fingersAreClosing = false;
-	boolean isRotating = false;
+    private boolean isOneFixedAndOneMoving = false;
+    private boolean fingersAreClosing = false;
+    private boolean isRotating = false;
 
-	boolean gestureChanged = false;
+    private boolean gestureChanged = false;
 	private boolean moving = false;
 	private boolean simpleTouch = false;
 	private long lastActionTime;
@@ -63,9 +57,9 @@ public class TouchController {
 	private float previousY1;
 	private float previousX2;
 	private float previousY2;
-	float[] previousVector = new float[4];
-	float[] vector = new float[4];
-	float[] rotationVector = new float[4];
+    private float[] previousVector = new float[4];
+    private float[] vector = new float[4];
+    private float[] rotationVector = new float[4];
 	private float previousRotationSquare;
 
 	public TouchController(ModelSurfaceView view, ModelRenderer renderer) {
@@ -185,38 +179,38 @@ public class TouchController {
 
 		if (pointerCount == 1 && simpleTouch) {
             SceneLoader scene = view.getModelActivity().getScene();
-            if (scene != null) {
-                scene.processTouch(x1,y1);
-            }
+            scene.processTouch(x1,y1);
 		}
-
 
 		int max = Math.max(mRenderer.getWidth(), mRenderer.getHeight());
 		if (touchDelay > 1) {
-			// INFO: Procesar gesto
+			// INFO: Process gesture
+            SceneLoader scene = view.getModelActivity().getScene();
+            scene.processMove(dx1, dy1);
+			Camera camera = scene.getCamera();
 			if (pointerCount == 1 && currentPress1 > 4.0f) {
 			} else if (pointerCount == 1) {
 				touchStatus = TOUCH_STATUS_MOVING_WORLD;
 				// Log.d(TAG, "Translating camera (dx,dy) '" + dx1 + "','" + dy1 + "'...");
 				dx1 = (float)(dx1 / max * Math.PI * 2);
 				dy1 = (float)(dy1 / max * Math.PI * 2);
-				mRenderer.getCamera().translateCamera(dx1,dy1);
+				camera.translateCamera(dx1,dy1);
 			} else if (pointerCount == 2) {
 				if (fingersAreClosing) {
 					touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
 					float zoomFactor = (length - previousLength) / max * mRenderer.getFar();
 					Log.i(TAG, "Zooming '" + zoomFactor + "'...");
-					mRenderer.getCamera().MoveCameraZ(zoomFactor);
+					camera.MoveCameraZ(zoomFactor);
 				}
 				if (isRotating) {
 					touchStatus = TOUCH_STATUS_ROTATING_CAMERA;
 					Log.i(TAG, "Rotating camera '" + Math.signum(rotationVector[2]) + "'...");
-					mRenderer.getCamera().Rotate((float) (Math.signum(rotationVector[2]) / Math.PI) / 4);
+					camera.Rotate((float) (Math.signum(rotationVector[2]) / Math.PI) / 4);
 				}
 			}
 
 			// INFO: Realizamos la acci�n
-			switch (touchStatus) {
+			// switch (touchStatus) {
 			// case TOUCH_STATUS_ROTATING_OBJECT:
 			// // reverse direction of rotation above the mid-line
 			// if (y > getHeight() / 2) {
@@ -279,8 +273,7 @@ public class TouchController {
 			// // 0);
 			//
 			// break;
-
-			}
+			//}
 		}
 
 		previousX1 = x1;
@@ -390,7 +383,7 @@ class TouchScreen {
 	private float spacing(MotionEvent event) {
 		float x = event.getX(0) - event.getX(1);
 		float y = event.getY(0) - event.getY(1);
-		return FloatMath.sqrt(x * x + y * y);
+		return (float)Math.sqrt(x * x + y * y);
 	}
 
 	/**

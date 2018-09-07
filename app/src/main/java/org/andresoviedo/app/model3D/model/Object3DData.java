@@ -1,7 +1,19 @@
 package org.andresoviedo.app.model3D.model;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
+import android.net.Uri;
+import android.opengl.GLES20;
+import android.opengl.Matrix;
+import android.util.Log;
+
+import org.andresoviedo.app.model3D.collision.Octree;
+import org.andresoviedo.app.model3D.entities.BoundingBox;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.FaceMaterials;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Faces;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Materials;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Tuple3;
+import org.andresoviedo.app.util.math.Math3DUtils;
+
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -9,19 +21,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.andresoviedo.app.model3D.collision.Octree;
-import org.andresoviedo.app.model3D.entities.BoundingBox;
-import org.andresoviedo.app.model3D.services.WavefrontLoader;
-import org.andresoviedo.app.model3D.services.WavefrontLoader.FaceMaterials;
-import org.andresoviedo.app.model3D.services.WavefrontLoader.Faces;
-import org.andresoviedo.app.model3D.services.WavefrontLoader.Materials;
-import org.andresoviedo.app.model3D.services.WavefrontLoader.Tuple3;
-import org.andresoviedo.app.util.math.Math3DUtils;
-
-import android.opengl.GLES20;
-import android.opengl.Matrix;
-import android.util.Log;
 
 /**
  * This is the basic 3D data necessary to build the 3D object
@@ -37,12 +36,12 @@ public class Object3DData {
 	 * The directory where the files reside so we can build referenced files in the model like material and textures
 	 * files
 	 */
-	private File currentDir;
+	private Uri uri;
 	/**
 	 * The assets directory where the files reside so we can build referenced files in the model like material and
 	 * textures files
 	 */
-	private String assetsDir;
+	// private String assetsDir;
 	private String id;
 	private boolean drawUsingArrays = false;
 	private boolean flipTextCoords = true;
@@ -99,6 +98,9 @@ public class Object3DData {
 
 	// collision detection
 	private Octree octree = null;
+
+	// errors detected
+	private List<String> errors = new ArrayList<>();
 
 	public Object3DData(FloatBuffer vertexArrayBuffer) {
 		this.vertexArrayBuffer = vertexArrayBuffer;
@@ -337,20 +339,20 @@ public class Object3DData {
 		return this;
 	}
 
-	public File getCurrentDir() {
+	/*public File getCurrentDir() {
 		return currentDir;
 	}
 
 	public void setCurrentDir(File currentDir) {
 		this.currentDir = currentDir;
+	}*/
+
+	public void setUri(Uri uri) {
+		this.uri = uri;
 	}
 
-	public void setAssetsDir(String assetsDir) {
-		this.assetsDir = assetsDir;
-	}
-
-	public String getAssetsDir() {
-		return assetsDir;
+	public Uri getUri() {
+		return this.uri;
 	}
 
 	public boolean isDrawUsingArrays() {
@@ -465,24 +467,6 @@ public class Object3DData {
 
 	public String getTextureFile(){
 		return textureFile;
-	}
-
-	public InputStream getTextureStream0() {
-		if (textureData != null) {
-			return new ByteArrayInputStream(textureData);
-		}
-		if (textureStreams == null) {
-			return null;
-		}
-		return textureStreams.get(0);
-	}
-
-	public List<InputStream> getTextureStreams() {
-		return textureStreams;
-	}
-
-	public void setTextureStreams(List<InputStream> textureStreams) {
-		this.textureStreams = textureStreams;
 	}
 
 	public Object3DData centerAndScale(float maxSize) {
@@ -696,6 +680,12 @@ public class Object3DData {
 		return boundingBox;
 	}
 
+	public void center(float[] newPosition) {
+		// calculate a scale factor
+		Tuple3 center = modelDimensions.getCenter();
+		setPosition(new float[]{-center.getX() + newPosition[0], -center.getY() + newPosition[1], -center.getZ() + newPosition[2]});
+	}
+
 	public void centerAndScale(float newScale, float[] newPosition) {
 		// calculate a scale factor
 		float scaleFactor = 1.0f;
@@ -791,4 +781,11 @@ public class Object3DData {
 		}
 	} // end of centerScale()
 
+    public void addError(String error) {
+		errors.add(error);
+    }
+
+    public List<String> getErrors(){
+		return errors;
+	}
 }

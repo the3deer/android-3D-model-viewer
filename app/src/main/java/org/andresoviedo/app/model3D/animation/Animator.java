@@ -1,17 +1,15 @@
 package org.andresoviedo.app.model3D.animation;
 
-import android.animation.Keyframe;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.andresoviedo.app.model3D.model.AnimatedModel;
 import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.services.collada.entities.Joint;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -40,7 +38,15 @@ public class Animator {
 
 	private float animationTime = 0;
 
-	public Animator() {
+    private final float IDENTITY_MATRIX[] = new float[16];
+
+    // TODO: implement slower/faster speed
+    private float speed = 1f;
+
+    private final Map<String,float[]> cache = new HashMap<>();
+
+    public Animator() {
+        Matrix.setIdentityM(IDENTITY_MATRIX,0);
 	}
 
 	/**
@@ -58,13 +64,15 @@ public class Animator {
 		AnimatedModel animatedModel = (AnimatedModel)obj;
 		if (animatedModel.getAnimation() == null) return;
 
+		// add missing key transformations
 		initAnimation(animatedModel);
 
+		// increase time to progress animation
 		increaseAnimationTime((AnimatedModel)obj);
+
 		Map<String, float[]> currentPose = calculateCurrentAnimationPose(animatedModel);
-		float parentTransform[] = new float[16];
-		Matrix.setIdentityM(parentTransform,0);
-		applyPoseToJoints(currentPose, (animatedModel).getRootJoint(), parentTransform);
+
+		applyPoseToJoints(currentPose, (animatedModel).getRootJoint(), IDENTITY_MATRIX, 0);
 	}
 
 	private void initAnimation(AnimatedModel animatedModel) {
@@ -84,8 +92,8 @@ public class Animator {
 					continue;
 				}
 				JointTransform keyFramePreviousTransform = keyFramePrevious.getJointKeyFrames().get(jointId);
-				JointTransform keyFrameNextTransform = null;
-				KeyFrame keyFrameNextNext = null;
+				JointTransform keyFrameNextTransform;
+				KeyFrame keyFrameNextNext;
 				int k = (j + 1) % keyFrames.length;
 				do {
 					keyFrameNextNext = keyFrames[k];
@@ -96,6 +104,7 @@ public class Animator {
 				float progression = calculateProgression(keyFramePrevious, keyFrameNextNext);
 				JointTransform missingFrameTransform = JointTransform.interpolate(keyFramePreviousTransform, keyFrameNextTransform, progression);
 				keyFrameNext.getJointKeyFrames().put(jointId, missingFrameTransform);
+				Log.i("Animator","Added missing key transform for "+jointId);
 			}
 		}
 		animatedModel.getAnimation().setInitialized(true);
@@ -108,10 +117,8 @@ public class Animator {
 	 * reset, causing the animation to loop.
 	 */
 	private void increaseAnimationTime(AnimatedModel obj) {
-		animationTime += 0.01;
-		if (animationTime > obj.getAnimation().getLength()) {
-			this.animationTime %= obj.getAnimation().getLength();
-		}
+		this.animationTime = SystemClock.uptimeMillis() / 1000f * speed;
+		this.animationTime %= obj.getAnimation().getLength();
 	}
 
 	/**
@@ -172,20 +179,37 @@ public class Animator {
 	 *            - the desired model-space transform of the parent joint for
 	 *            the pose.
 	 */
-	private void applyPoseToJoints(Map<String, float[]> currentPose, Joint joint, float[] parentTransform) {
-		float[] currentLocalTransform = currentPose.get(joint.name);
-		float[] currentTransform = new float[16];
-		if (currentLocalTransform == null) {
-			currentLocalTransform = new float[16];
-			Matrix.setIdentityM(currentLocalTransform,0);
+	private void applyPoseToJoints(Map<String, float[]> currentPose, Joint joint, float[] parentTransform, int limit) {
+
+	    float[] currentTransform = cache.get(joint.getName());
+	    if (currentTransform == null){
+	        currentTransform = new float[16];
+	        cache.put(joint.getName(), currentTransform);
+        }
+
+        // TODO: implement bind pose
+        if (limit <= 0){
+			if (currentPose.get(joint.getName()) != null) {
+				Matrix.multiplyMM(currentTransform, 0, parentTransform, 0, currentPose.get(joint.getName()), 0);
+			} else {
+				Matrix.multiplyMM(currentTransform, 0, parentTransform, 0, joint.getBindLocalTransform(), 0);
+			}
+        } else{
+            Matrix.multiplyMM(currentTransform, 0, parentTransform, 0, joint.getBindLocalTransform(), 0);
+        }
+
+        // calculate animation only if its used by vertices
+        //joint.calcInverseBindTransform2(parentTransform);
+        if (joint.getIndex() >= 0) {
+            Matrix.multiplyMM(joint.getAnimatedTransform(), 0, currentTransform, 0,
+                    joint.getInverseBindTransform(), 0);
+        }
+
+		// transform children
+		for (int i=0; i<joint.getChildren().size(); i++) {
+            Joint childJoint = joint.getChildren().get(i);
+			applyPoseToJoints(currentPose, childJoint, currentTransform, limit-1);
 		}
-		Matrix.multiplyMM(currentTransform, 0, parentTransform, 0, currentLocalTransform, 0);
-		for (Joint childJoint : joint.children) {
-			applyPoseToJoints(currentPose, childJoint, currentTransform);
-		}
-		float[] animationTransform = new float[16];
-		Matrix.multiplyMM(animationTransform, 0, currentTransform, 0, joint.getInverseBindTransform(),0);
-		joint.setAnimationTransform(animationTransform);
 	}
 
 	/**
@@ -227,6 +251,8 @@ public class Animator {
 	private float calculateProgression(KeyFrame previousFrame, KeyFrame nextFrame) {
 		float totalTime = nextFrame.getTimeStamp() - previousFrame.getTimeStamp();
 		float currentTime = animationTime - previousFrame.getTimeStamp();
+        // TODO: implement key frame display
+        //return 0;
 		return currentTime / totalTime;
 	}
 
@@ -247,14 +273,32 @@ public class Animator {
 	 *         the joint to which they should be applied.
 	 */
 	private Map<String, float[]> interpolatePoses(KeyFrame previousFrame, KeyFrame nextFrame, float progression) {
-		Map<String, float[]> currentPose = new HashMap<String, float[]>();
+	    // TODO: optimize this (memory allocation)
+		Map<String, float[]> currentPose = new HashMap<>();
 		for (String jointName : previousFrame.getJointKeyFrames().keySet()) {
 			JointTransform previousTransform = previousFrame.getJointKeyFrames().get(jointName);
-			JointTransform nextTransform = nextFrame.getJointKeyFrames().get(jointName);
-			JointTransform currentTransform = JointTransform.interpolate(previousTransform, nextTransform, progression);
-			currentPose.put(jointName, currentTransform.getLocalTransform());
+			if (Math.signum(progression) == 0){
+                currentPose.put(jointName, previousTransform.getLocalTransform());
+            } else {
+			    // memory optimization
+                float[] jointPose = cache.get(jointName);
+                if (jointPose == null){
+                    jointPose = new float[16];
+                    cache.put(jointName, jointPose);
+                }
+                float[] jointPoseRot = cache.get("___rotation___interpolation___");
+                if (jointPoseRot == null){
+                    jointPoseRot = new float[16];
+                    cache.put("___rotation___interpolation___", jointPoseRot);
+                }
+                // calculate interpolation
+                JointTransform nextTransform = nextFrame.getJointKeyFrames().get(jointName);
+                JointTransform.interpolate(previousTransform, nextTransform, progression, jointPose, jointPoseRot);
+                currentPose.put(jointName, jointPose);
+            }
 		}
 		return currentPose;
 	}
 
 }
+

@@ -1,7 +1,5 @@
 package org.andresoviedo.app.model3D.services.collada.entities;
 
-import android.opengl.Matrix;
-
 /**
  * Created by andres on 18/11/17.
  */

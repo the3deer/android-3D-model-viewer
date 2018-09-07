@@ -1,338 +1,389 @@
 package org.andresoviedo.app.model3D.services;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.andresoviedo.app.model3D.animation.Animator;
-import org.andresoviedo.app.model3D.collision.CollisionDetection;
-import org.andresoviedo.app.model3D.model.Object3DBuilder;
-import org.andresoviedo.app.model3D.model.Object3DBuilder.Callback;
-import org.andresoviedo.app.model3D.model.Object3DData;
-import org.andresoviedo.app.model3D.view.ModelActivity;
-import org.andresoviedo.app.util.url.android.Handler;
-import org.apache.commons.io.IOUtils;
-
+import android.net.Uri;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.andresoviedo.app.model3D.animation.Animator;
+import org.andresoviedo.app.model3D.collision.CollisionDetection;
+import org.andresoviedo.app.model3D.entities.Camera;
+import org.andresoviedo.app.model3D.model.Object3DBuilder;
+import org.andresoviedo.app.model3D.model.Object3DData;
+import org.andresoviedo.app.model3D.services.collada.ColladaLoaderTask;
+import org.andresoviedo.app.model3D.services.stl.STLLoaderTask;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoaderTask;
+import org.andresoviedo.app.model3D.view.ModelActivity;
+import org.andresoviedo.app.util.android.ContentUtils;
+import org.andresoviedo.app.util.io.IOUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * This class loads a 3D scena as an example of what can be done with the app
- * 
- * @author andresoviedo
  *
+ * @author andresoviedo
  */
-public class SceneLoader {
+public class SceneLoader implements LoaderTask.Callback {
 
-	/**
-	 * Default model color: yellow
-	 */
-	private static float[] DEFAULT_COLOR = {1.0f, 1.0f, 0, 1.0f};
-	/**
-	 * Parent component
-	 */
-	protected final ModelActivity parent;
-	/**
-	 * List of data objects containing info for building the opengl objects
-	 */
-	private List<Object3DData> objects = new ArrayList<Object3DData>();
-	/**
-	 * Whether to draw objects as wireframes
-	 */
-	private boolean drawWireframe = false;
-	/**
-	 * Whether to draw using points
-	 */
-	private boolean drawingPoints = false;
-	/**
-	 * Whether to draw bounding boxes around objects
-	 */
-	private boolean drawBoundingBox = false;
-	/**
-	 * Whether to draw face normals. Normally used to debug models
-	 */
-	private boolean drawNormals = false;
-	/**
-	 * Whether to draw using textures
-	 */
-	private boolean drawTextures = true;
-	/**
-	 * Light toggle feature: we have 3 states: no light, light, light + rotation
-	 */
-	private boolean rotatingLight = true;
-	/**
-	 * Light toggle feature: whether to draw using lights
-	 */
-	private boolean drawLighting = true;
-	/**
-	 * Object selected by the user
-	 */
-	private Object3DData selectedObject = null;
-	/**
-	 * Initial light position
-	 */
-	private final float[] lightPosition = new float[]{0, 0, 6, 1};
-	/**
-	 * Light bulb 3d data
-	 */
-	private final Object3DData lightPoint = Object3DBuilder.buildPoint(lightPosition).setId("light");
-	/**
-	 * Animator
-	 */
-	private Animator animator = new Animator();
+    /**
+     * Default model color: yellow
+     */
+    private static float[] DEFAULT_COLOR = {1.0f, 1.0f, 0, 1.0f};
+    /**
+     * Parent component
+     */
+    protected final ModelActivity parent;
+    /**
+     * List of data objects containing info for building the opengl objects
+     */
+    private List<Object3DData> objects = new ArrayList<Object3DData>();
+    /**
+     * Point of view camera
+     */
+    private Camera camera;
+    /**
+     * Whether to draw objects as wireframes
+     */
+    private boolean drawWireframe = false;
+    /**
+     * Whether to draw using points
+     */
+    private boolean drawingPoints = false;
+    /**
+     * Whether to draw bounding boxes around objects
+     */
+    private boolean drawBoundingBox = false;
+    /**
+     * Whether to draw face normals. Normally used to debug models
+     */
+    private boolean drawNormals = false;
+    /**
+     * Whether to draw using textures
+     */
+    private boolean drawTextures = true;
+    /**
+     * Light toggle feature: we have 3 states: no light, light, light + rotation
+     */
+    private boolean rotatingLight = true;
+    /**
+     * Light toggle feature: whether to draw using lights
+     */
+    private boolean drawLighting = true;
+    /**
+     * Animate model (dae only) or not
+     */
+    private boolean animateModel = true;
+    /**
+     * Draw skeleton or not
+     */
+    private boolean drawSkeleton = false;
+    /**
+     * Object selected by the user
+     */
+    private Object3DData selectedObject = null;
+    /**
+     * Initial light position
+     */
+    private final float[] lightPosition = new float[]{0, 0, 6, 1};
+    /**
+     * Light bulb 3d data
+     */
+    private final Object3DData lightPoint = Object3DBuilder.buildPoint(lightPosition).setId("light");
+    /**
+     * Animator
+     */
+    private Animator animator = new Animator();
+    /**
+     * Did the user touched the model for the first time?
+     */
+    private boolean userHasInteracted;
+    /**
+     * time when model loading has started (for stats)
+     */
+    private long startTime;
 
-	public SceneLoader(ModelActivity main) {
-		this.parent = main;
-	}
+    public SceneLoader(ModelActivity main) {
+        this.parent = main;
+    }
 
-	public void init() {
+    public void init() {
 
-		// Load object
-		if (parent.getParamFile() != null || parent.getParamAssetDir() != null) {
+        // Camera to show a point of view
+        camera = new Camera();
+        // camera should know about objects that collision with it
+        camera.setScene(this);
 
-			// Initialize assets url handler
-			Handler.assets = parent.getAssets();
-			// Handler.classLoader = parent.getClassLoader(); (optional)
-			// Handler.androidResources = parent.getResources(); (optional)
+        if (parent.getParamUri() == null){
+            return;
+        }
 
-			// Create asset url
-			final URL url;
-			try {
-				if (parent.getParamFile() != null) {
-					url = parent.getParamFile().toURI().toURL();
-				} else {
-					url = new URL("android://org.andresoviedo.dddmodel2/assets/" + parent.getParamAssetDir() + File.separator + parent.getParamAssetFilename());
+        startTime = SystemClock.uptimeMillis();
+        Uri uri = parent.getParamUri();
+        Log.i("Object3DBuilder", "Loading model " + uri + ". async and parallel..");
+        if (uri.toString().toLowerCase().endsWith(".obj") || parent.getParamType() == 0) {
+            new WavefrontLoaderTask(parent, uri, this).execute();
+        } else if (uri.toString().toLowerCase().endsWith(".stl") || parent.getParamType() == 1) {
+            Log.i("Object3DBuilder", "Loading STL object from: "+uri);
+            new STLLoaderTask(parent, uri, this).execute();
+        } else if (uri.toString().toLowerCase().endsWith(".dae") || parent.getParamType() == 2) {
+            Log.i("Object3DBuilder", "Loading Collada object from: "+uri);
+            new ColladaLoaderTask(parent, uri, this).execute();
+        }
+    }
 
-				}
-			} catch (MalformedURLException e) {
-				Log.e("SceneLoader", e.getMessage(), e);
-				throw new RuntimeException(e);
-			}
+    public Camera getCamera() {
+        return camera;
+    }
 
-			Object3DBuilder.loadV6AsyncParallel(parent, url, parent.getParamFile(), parent.getParamAssetDir(),
-					parent.getParamAssetFilename(), new Callback() {
+    private void makeToastText(final String text, final int toastDuration) {
+        parent.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(parent.getApplicationContext(), text, toastDuration).show();
+            }
+        });
+    }
 
-						long startTime = SystemClock.uptimeMillis();
+    public Object3DData getLightBulb() {
+        return lightPoint;
+    }
 
-						@Override
-						public void onBuildComplete(List<Object3DData> datas) {
-							for (Object3DData data : datas) {
-								loadTexture(data, parent.getParamFile(), parent.getParamAssetDir());
-							}
-							final String elapsed = (SystemClock.uptimeMillis() - startTime)/1000+" secs";
-							makeToastText("Load complete ("+elapsed+")", Toast.LENGTH_LONG);
-						}
+    public float[] getLightPosition() {
+        return lightPosition;
+    }
 
-						@Override
-						public void onLoadComplete(List<Object3DData> datas) {
-							for (Object3DData data : datas) {
-								addObject(data);
-							}
-						}
+    /**
+     * Hook for animating the objects before the rendering
+     */
+    public void onDrawFrame() {
 
-						@Override
-						public void onLoadError(Exception ex) {
-							Log.e("SceneLoader",ex.getMessage(),ex);
-							Toast.makeText(parent.getApplicationContext(),
-									"There was a problem building the model: " + ex.getMessage(), Toast.LENGTH_LONG)
-									.show();
-						}
-					});
-		}
-	}
+        animateLight();
 
-	private void makeToastText(final String text, final int toastDuration) {
-		parent.runOnUiThread(new Runnable() {
-			public void run() {
-				Toast.makeText(parent.getApplicationContext(), text, toastDuration).show();
-			}
-		});
-	}
+        // smooth camera transition
+        camera.animate();
 
-	public Object3DData getLightBulb() {
-		return lightPoint;
-	}
+        // initial camera animation. animate if user didn't touch the screen
+        if (!userHasInteracted) {
+            animateCamera();
+        }
 
-	public float[] getLightPosition(){
-		return lightPosition;
-	}
+        if (objects.isEmpty()) return;
 
-	/**
-	 * Hook for animating the objects before the rendering
-	 */
-	public void onDrawFrame(){
+        if (animateModel) {
+            for (int i=0; i<objects.size(); i++) {
+                Object3DData obj = objects.get(i);
+                animator.update(obj);
+            }
+        }
+    }
 
-		animateLight();
+    private void animateLight() {
+        if (!rotatingLight) return;
 
-		if (objects.isEmpty()) return;
+        // animate light - Do a complete rotation every 5 seconds.
+        long time = SystemClock.uptimeMillis() % 5000L;
+        float angleInDegrees = (360.0f / 5000.0f) * ((int) time);
+        lightPoint.setRotationY(angleInDegrees);
+    }
 
-		for (Object3DData obj : objects) {
-			animator.update(obj);
-		}
-	}
+    private void animateCamera(){
+        camera.translateCamera(0.0025f, 0f);
+    }
 
-	private void animateLight() {
-		if (!rotatingLight) return;
+    synchronized void addObject(Object3DData obj) {
+        List<Object3DData> newList = new ArrayList<Object3DData>(objects);
+        newList.add(obj);
+        this.objects = newList;
+        requestRender();
+    }
 
-		// animate light - Do a complete rotation every 5 seconds.
-		long time = SystemClock.uptimeMillis() % 5000L;
-		float angleInDegrees = (360.0f / 5000.0f) * ((int) time);
-		lightPoint.setRotationY(angleInDegrees);
-	}
+    private void requestRender() {
+        // request render only if GL view is already initialized
+        if (parent.getGLView() != null) {
+            parent.getGLView().requestRender();
+        }
+    }
 
-	protected synchronized void addObject(Object3DData obj) {
-		List<Object3DData> newList = new ArrayList<Object3DData>(objects);
-		newList.add(obj);
-		this.objects = newList;
-		requestRender();
-	}
+    public synchronized List<Object3DData> getObjects() {
+        return objects;
+    }
 
-	private void requestRender() {
-		parent.getgLView().requestRender();
-	}
+    public void toggleWireframe() {
+        if (this.drawWireframe && !this.drawingPoints) {
+            this.drawWireframe = false;
+            this.drawingPoints = true;
+            makeToastText("Points", Toast.LENGTH_SHORT);
+        } else if (this.drawingPoints) {
+            this.drawingPoints = false;
+            makeToastText("Faces", Toast.LENGTH_SHORT);
+        } else {
+            makeToastText("Wireframe", Toast.LENGTH_SHORT);
+            this.drawWireframe = true;
+        }
+        requestRender();
+    }
 
-	public synchronized List<Object3DData> getObjects() {
-		return objects;
-	}
+    public boolean isDrawWireframe() {
+        return this.drawWireframe;
+    }
 
-	public void toggleWireframe() {
-		if (this.drawWireframe && !this.drawingPoints) {
-			this.drawWireframe = false;
-			this.drawingPoints = true;
-			makeToastText("Points", Toast.LENGTH_SHORT);
-		}
-		else if (this.drawingPoints){
-			this.drawingPoints = false;
-			makeToastText("Faces", Toast.LENGTH_SHORT);
-		}
-		else {
-			makeToastText("Wireframe", Toast.LENGTH_SHORT);
-			this.drawWireframe = true;
-		}
-		requestRender();
-	}
+    public boolean isDrawPoints() {
+        return this.drawingPoints;
+    }
 
-	public boolean isDrawWireframe() {
-		return this.drawWireframe;
-	}
+    public void toggleBoundingBox() {
+        this.drawBoundingBox = !drawBoundingBox;
+        requestRender();
+    }
 
-	public boolean isDrawPoints() {
-		return this.drawingPoints;
-	}
+    public boolean isDrawBoundingBox() {
+        return drawBoundingBox;
+    }
 
-	public void toggleBoundingBox() {
-		this.drawBoundingBox = !drawBoundingBox;
-		requestRender();
-	}
+    public boolean isDrawNormals() {
+        return drawNormals;
+    }
 
-	public boolean isDrawBoundingBox() {
-		return drawBoundingBox;
-	}
+    public void toggleTextures() {
+        this.drawTextures = !drawTextures;
+        makeToastText("Textures "+this.drawTextures, Toast.LENGTH_SHORT);
+    }
 
-	public boolean isDrawNormals() {
-		return drawNormals;
-	}
+    public void toggleLighting() {
+        if (this.drawLighting && this.rotatingLight) {
+            this.rotatingLight = false;
+            makeToastText("Light stopped", Toast.LENGTH_SHORT);
+        } else if (this.drawLighting && !this.rotatingLight) {
+            this.drawLighting = false;
+            makeToastText("Lights off", Toast.LENGTH_SHORT);
+        } else {
+            this.drawLighting = true;
+            this.rotatingLight = true;
+            makeToastText("Light on", Toast.LENGTH_SHORT);
+        }
+        requestRender();
+    }
 
-	public void toggleTextures() {
-		this.drawTextures = !drawTextures;
-	}
+    public void toggleAnimation() {
+        if (animateModel && !drawSkeleton){
+            this.drawSkeleton = true;
+            makeToastText("Skeleton on", Toast.LENGTH_SHORT);
+        } else if (animateModel){
+            this.drawSkeleton = false;
+            this.animateModel = false;
+            makeToastText("Animation off", Toast.LENGTH_SHORT);
+        } else {
+            animateModel = true;
+            makeToastText("Animation on", Toast.LENGTH_SHORT);
+        }
+    }
 
-	public void toggleLighting() {
-		if (this.drawLighting && this.rotatingLight){
-			this.rotatingLight = false;
-			makeToastText("Light stopped", Toast.LENGTH_SHORT);
-		}
-		else if (this.drawLighting && !this.rotatingLight){
-			this.drawLighting = false;
-			makeToastText("Lights off", Toast.LENGTH_SHORT);
-		}
-		else {
-			this.drawLighting = true;
-			this.rotatingLight = true;
-			makeToastText("Light on", Toast.LENGTH_SHORT);
-		}
-		requestRender();
-	}
+    public boolean isDrawAnimation() {
+        return animateModel;
+    }
 
-	public boolean isDrawTextures() {
-		return drawTextures;
-	}
+    public void toggleSkeleton() {
+        this.drawSkeleton = !drawSkeleton;
+    }
 
-	public boolean isDrawLighting() {
-		return drawLighting;
-	}
+    public boolean isDrawTextures() {
+        return drawTextures;
+    }
 
-	public Object3DData getSelectedObject() {
-		return selectedObject;
-	}
+    public boolean isDrawLighting() {
+        return drawLighting;
+    }
 
-	public void setSelectedObject(Object3DData selectedObject) {
-		this.selectedObject = selectedObject;
-	}
+    public boolean isDrawSkeleton() {
+        return drawSkeleton;
+    }
 
-	public void loadTexture(Object3DData data, File file, String parentAssetsDir){
-		if (data.getTextureData() == null && data.getTextureFile() != null){
-			try {
-				Log.i("SceneLoader","Loading texture '"+data.getTextureFile()+"'...");
-				InputStream stream = null;
-				if (file != null){
-					File textureFile = new File(file.getParent(),data.getTextureFile());
-					stream = new FileInputStream(textureFile);
-				}
-				else{
-					stream = parent.getAssets().open(parentAssetsDir + "/" + data.getTextureFile());
-				}
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				IOUtils.copy(stream,bos);
-				stream.close();
+    @Override
+    public void onStart(){
+        ContentUtils.setThreadActivity(parent);
+    }
 
-				data.setTextureData(bos.toByteArray());
-			} catch (IOException ex) {
-				makeToastText("Problem loading texture "+data.getTextureFile(), Toast.LENGTH_SHORT);
-			}
-		}
-	}
+    @Override
+    public void onBuildComplete(List<Object3DData> datas) {
+        for (Object3DData data : datas) {
+            if (data.getTextureData() == null && data.getTextureFile() != null) {
+                try (InputStream stream = ContentUtils.getInputStream(data.getTextureFile())){
+                    if (stream != null) {
+                        data.setTextureData(IOUtils.read(stream));
+                    }
+                } catch (IOException ex) {
+                    makeToastText("Problem loading texture " + data.getTextureFile(), Toast.LENGTH_SHORT);
+                }
+            }
+        }
+        final String elapsed = (SystemClock.uptimeMillis() - startTime) / 1000 + " secs";
+        makeToastText("Build complete (" + elapsed + ")", Toast.LENGTH_LONG);
+    }
 
-	public void loadTexture(Object3DData obj, URL path){
-		if (obj == null && objects.size() != 1) {
-			makeToastText("Unavailable", Toast.LENGTH_SHORT);
-			return;
-		}
+    @Override
+    public void onLoadComplete(List<Object3DData> datas) {
+        List<String> allErrors = new ArrayList<>();
+        for (Object3DData data : datas) {
+            addObject(data);
+            allErrors.addAll(data.getErrors());
+        }
+        if (!allErrors.isEmpty()){
+            makeToastText(allErrors.toString(), Toast.LENGTH_LONG);
+        }
+    }
 
-		try {
-			InputStream is = path.openStream();
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			IOUtils.copy(is,bos);
-			is.close();
+    @Override
+    public void onLoadError(Exception ex) {
+        Log.e("SceneLoader", ex.getMessage(), ex);
+        Toast.makeText(parent.getApplicationContext(),
+                "There was a problem building the model: " + ex.getMessage(), Toast.LENGTH_LONG)
+                .show();
+        ContentUtils.setThreadActivity(null);
+    }
 
-			obj = obj != null? obj : objects.get(0);
-			obj.setTextureData(bos.toByteArray());
-		} catch (IOException ex) {
-			makeToastText("Problem loading texture: "+ex.getMessage(), Toast.LENGTH_SHORT);
-		}
-	}
+    public Object3DData getSelectedObject() {
+        return selectedObject;
+    }
 
-	public void processTouch(float x, float y) {
-		Object3DData objectToSelect = CollisionDetection.getBoxIntersection(getObjects(), parent.getgLView().getModelRenderer(), x, y);
-		if (objectToSelect != null) {
-			if (getSelectedObject() == objectToSelect) {
-				Log.i("SceneLoader", "Unselected object " + objectToSelect.getId());
-				setSelectedObject(null);
-			} else {
-				Log.i("SceneLoader", "Selected object " + objectToSelect.getId());
-				setSelectedObject(objectToSelect);
-			}
-			float[] point = CollisionDetection.getTriangleIntersection2(getObjects(), parent.getgLView().getModelRenderer(), x, y);
-			if (point != null) {
-				addObject(Object3DBuilder.buildPoint(point).setColor(new float[]{1.0f,0f,0f,1f}));
-			}
-		}
-	}
+    private void setSelectedObject(Object3DData selectedObject) {
+        this.selectedObject = selectedObject;
+    }
+
+    public void loadTexture(Object3DData obj, Uri uri) throws IOException {
+        if (obj == null && objects.size() != 1) {
+            makeToastText("Unavailable", Toast.LENGTH_SHORT);
+            return;
+        }
+        obj = obj != null ? obj : objects.get(0);
+        obj.setTextureData(IOUtils.read(ContentUtils.getInputStream(uri)));
+        this.drawTextures = true;
+    }
+
+    public void processTouch(float x, float y) {
+        Object3DData objectToSelect = CollisionDetection.getBoxIntersection(getObjects(), parent.getGLView().getModelRenderer(), x, y);
+        if (objectToSelect != null) {
+            if (getSelectedObject() == objectToSelect) {
+                Log.i("SceneLoader", "Unselected object " + objectToSelect.getId());
+                setSelectedObject(null);
+            } else {
+                Log.i("SceneLoader", "Selected object " + objectToSelect.getId());
+                setSelectedObject(objectToSelect);
+            }
+            float[] point = CollisionDetection.getTriangleIntersection(getObjects(), parent.getGLView().getModelRenderer(), x, y);
+            if (point != null) {
+                Log.i("SceneLoader","Drawing intersection point: "+ Arrays.toString(point));
+                addObject(Object3DBuilder.buildPoint(point).setColor(new float[]{1.0f, 0f, 0f, 1f}));
+            }
+        }
+    }
+
+    public void processMove(float dx1, float dy1) {
+        userHasInteracted = true;
+    }
+
+
 }

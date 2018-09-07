@@ -6,7 +6,6 @@ import org.andresoviedo.app.model3D.animation.Animation;
 import org.andresoviedo.app.model3D.services.collada.entities.Joint;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 /**
  * 
@@ -14,7 +13,7 @@ import java.nio.IntBuffer;
  * contains the model's VAO which contains the mesh data, the texture, and the
  * root joint of the joint hierarchy, or "skeleton". It also holds an int which
  * represents the number of joints that the model's skeleton contains, and has
- * its own {@link Animator} instance which can be used to apply animations to
+ * its own {@link org.andresoviedo.app.model3D.animation.Animator} instance which can be used to apply animations to
  * this entity.
  * 
  * @author Karl
@@ -25,9 +24,13 @@ public class AnimatedModel extends Object3DData {
 	// skeleton
 	private Joint rootJoint;
 	private int jointCount;
+	private int boneCount;
 	private FloatBuffer jointIds;
 	private FloatBuffer vertexWeigths;
 	private Animation animation;
+
+	// cache
+	private float[][] jointMatrices;
 
 	public AnimatedModel(FloatBuffer vertexArrayBuffer){
 		super(vertexArrayBuffer);
@@ -48,17 +51,24 @@ public class AnimatedModel extends Object3DData {
 	 *            this entity.
 	 * 
 	 */
-	public AnimatedModel setRootJoint(Joint rootJoint, int jointCount) {
+	public AnimatedModel setRootJoint(Joint rootJoint, int jointCount, int boneCount, boolean
+									  recalculateInverseBindTransforms) {
 		this.rootJoint = rootJoint;
 		this.jointCount = jointCount;
-		float[] parentTransform = new float[16];
-		Matrix.setIdentityM(parentTransform,0);
-		rootJoint.calcInverseBindTransform(parentTransform);
+		this.boneCount = boneCount;
+        float[] parentTransform = new float[16];
+        Matrix.setIdentityM(parentTransform,0);
+        rootJoint.calcInverseBindTransform(parentTransform, recalculateInverseBindTransforms);
+        this.jointMatrices = new float[boneCount][16];
 		return this;
 	}
 
 	public int getJointCount(){
 		return jointCount;
+	}
+
+	public int getBoneCount() {
+		return boneCount;
 	}
 
 	public AnimatedModel setJointCount(int jointCount){
@@ -112,10 +122,6 @@ public class AnimatedModel extends Object3DData {
 	 *         animation pose.
 	 */
 	public float[][] getJointTransforms() {
-		float[][] jointMatrices = new float[jointCount][16];
-		for (int i=0; i<jointMatrices.length;i++){
-			Matrix.setIdentityM(jointMatrices[i],0);
-		}
 		addJointsToArray(rootJoint, jointMatrices);
 		return jointMatrices;
 	}
@@ -132,10 +138,12 @@ public class AnimatedModel extends Object3DData {
 	 *            - the array of joint transforms that is being filled.
 	 */
 	private void addJointsToArray(Joint headJoint, float [][] jointMatrices) {
-		jointMatrices[headJoint.index] = headJoint.getAnimatedTransform();
-		for (Joint childJoint : headJoint.children) {
+		if (headJoint.getIndex() >= 0) {
+			jointMatrices[headJoint.getIndex()] = headJoint.getAnimatedTransform();
+		}
+		for (int i=0; i<headJoint.getChildren().size(); i++) {
+			Joint childJoint = headJoint.getChildren().get(i);
 			addJointsToArray(childJoint, jointMatrices);
 		}
 	}
-
 }

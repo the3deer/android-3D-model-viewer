@@ -17,7 +17,8 @@
 
 package org.andresoviedo.app.model3D.services.stl;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Utility to convert little endain data to big endian data.

@@ -1,13 +1,7 @@
+/*
 package org.andresoviedo.app.model3D.view;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.andresoviedo.dddmodel2.R;
-
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -17,16 +11,19 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager.LayoutParams;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.andresoviedo.app.util.android.ContentUtils;
+import org.andresoviedo.dddmodel2.R;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DemoActivity extends ListActivity {
 
@@ -69,12 +66,10 @@ public class DemoActivity extends ListActivity {
 	}
 
 	private void loadDemo(final String selectedItem) {
+		ContentUtils.addModelsUris(this);
 		Intent intent = new Intent(DemoActivity.this.getApplicationContext(), ModelActivity.class);
-		Bundle b = new Bundle();
-		b.putString("assetDir", "models");
-		b.putString("assetFilename", selectedItem);
-		b.putString("immersiveMode", "true");
-		intent.putExtras(b);
+		intent.putExtra("uri", "assets://assets/models/"+selectedItem);
+		intent.putExtra("immersiveMode", "true");
 		DemoActivity.this.startActivity(intent);
 	}
 
@@ -83,11 +78,8 @@ public class DemoActivity extends ListActivity {
 		final RowItem selectedItem = (RowItem) getListView().getItemAtPosition(position);
 		loadDemo(selectedItem.name);
 
-		// TODO: enable this when we have something to do with the dialog
-		if (true)
-			return;
-
-		try {
+		*/
+/*try {
 			// custom dialog
 			final Dialog dialog = new Dialog(DemoActivity.this);
 			dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -122,23 +114,30 @@ public class DemoActivity extends ListActivity {
 
 		} catch (Exception ex) {
 			Toast.makeText(getApplicationContext(), ex.getMessage(), Toast.LENGTH_LONG).show();
-		}
+		}*//*
+
 
 	}
 }
 
 class RowItem {
-	/**
+	*/
+/**
 	 * Image of the 3D object (snapshot of what the model looks like)
-	 */
+	 *//*
+
 	String image;
-	/**
+	*/
+/**
 	 * Logical name of the 3D model that the user selected
-	 */
+	 *//*
+
 	String name;
-	/**
+	*/
+/**
 	 * Assets path from where to build the .obj file
-	 */
+	 *//*
+
 	String path;
 
 	public RowItem(String path, String name, String image) {
@@ -157,7 +156,9 @@ class CustomListViewAdapter extends ArrayAdapter<RowItem> {
 		this.context = context;
 	}
 
-	/* private view holder class */
+	*/
+/* private view holder class *//*
+
 	private class ViewHolder {
 		ImageView imageView;
 		TextView txtTitle;
@@ -190,4 +191,4 @@ class CustomListViewAdapter extends ArrayAdapter<RowItem> {
 
 		return convertView;
 	}
-}
+}*/

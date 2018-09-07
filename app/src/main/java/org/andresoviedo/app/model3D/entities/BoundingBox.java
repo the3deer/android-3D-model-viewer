@@ -21,7 +21,8 @@ public final class BoundingBox {
     private final float[] max;
 
     public static BoundingBox create(String id, FloatBuffer vertexBuffer, float[] modelMatrix) {
-        float xMin = Float.MAX_VALUE, xMax = Float.MIN_VALUE, yMin = Float.MAX_VALUE, yMax = Float.MIN_VALUE, zMin = Float.MAX_VALUE, zMax = Float.MIN_VALUE;
+        float xMin = Float.MAX_VALUE, xMax = -Float.MAX_VALUE, yMin = Float.MAX_VALUE, yMax = -Float.MAX_VALUE, zMin =
+                Float.MAX_VALUE, zMax = -Float.MAX_VALUE;
         vertexBuffer = vertexBuffer.asReadOnlyBuffer();
         vertexBuffer.position(0);
         while (vertexBuffer.hasRemaining()) {

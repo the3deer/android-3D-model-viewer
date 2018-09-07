@@ -1,27 +1,26 @@
 package org.andresoviedo.app.model3D.model;
 
 import android.app.Activity;
-import android.content.res.AssetManager;
+import android.net.Uri;
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import android.util.Log;
 
-import org.andresoviedo.app.model3D.services.WavefrontLoader;
-import org.andresoviedo.app.model3D.services.WavefrontLoader.FaceMaterials;
-import org.andresoviedo.app.model3D.services.WavefrontLoader.Faces;
-import org.andresoviedo.app.model3D.services.WavefrontLoader.Material;
-import org.andresoviedo.app.model3D.services.WavefrontLoader.Materials;
-import org.andresoviedo.app.model3D.services.WavefrontLoader.Tuple3;
-import org.andresoviedo.app.model3D.services.collada.loader.ColladaLoader;
-import org.andresoviedo.app.model3D.services.stl.STLLoader;
-import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader2;
+import org.andresoviedo.app.model3D.services.collada.entities.Joint;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.FaceMaterials;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Faces;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Material;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Materials;
+import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Tuple3;
+import org.andresoviedo.app.util.android.ContentUtils;
+import org.andresoviedo.app.util.io.IOUtils;
 import org.andresoviedo.app.util.math.Math3DUtils;
-import org.apache.commons.io.IOUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -32,15 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class Object3DBuilder {
-
-
-	public static interface Callback {
-		public void onLoadError(Exception ex);
-
-		public void onLoadComplete(List<Object3DData> data);
-
-		public void onBuildComplete(List<Object3DData> data);
-	}
 
 	private static final int COORDS_PER_VERTEX = 3;
 	/**
@@ -311,22 +301,19 @@ public final class Object3DBuilder {
 			};
 	//@formatter:on
 
-	private Object3DV1 object3dv1;
-	private Object3DV2 object3dv2;
-	private Object3DV3 object3dv3;
-	private Object3DV4 object3dv4;
-	private Object3DV5 object3dv5;
-	private Object3DV6 object3dv6;
-	private Object3DV7 object3dv7;
-	private Object3DV8 object3dv8;
-	private Object3DV9 object3dv9;
-	private Object3DV10 object3dv10;
-	private Object3DV11 object3dv11;
-
-	static {
-		System.setProperty("java.protocol.handler.pkgs", "org.andresoviedo.app.util.url|"+System.getProperty("java.protocol.handler.pkgs"));
-		Log.i("Object3DBuilder", "java.protocol.handler.pkgs=" + System.getProperty("java.protocol.handler.pkgs"));
-	}
+	private Object3D object3dv1;
+	private Object3D object3dv2;
+	private Object3D object3dv3;
+	private Object3D object3dv4;
+	private Object3D object3dv5;
+	private Object3D object3dv6;
+	private Object3D object3dv7;
+	private Object3D object3dv8;
+	private Object3D object3dv9;
+    private Object3D object3dv91;
+	private Object3D object3dv10;
+	private Object3D object3dv11;
+    private Object3D object3dv12;
 
 	public static Object3DData buildPoint(float[] point) {
 		return new Object3DData(createNativeByteBuffer(point.length * 4).asFloatBuffer().put(point))
@@ -384,31 +371,32 @@ public final class Object3DBuilder {
 				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV4").centerAndScale(1.0f).setFaces(new Faces(8));
 	}
 
-	public static Object3DData loadV5(AssetManager assets, String assetDir, String assetFilename) {
+	public static Object3DData loadV5(Activity activity, Uri modelUri) {
 		try {
-			final String modelId = assetDir + "/" + assetFilename;
+			//final String modelId = assetDir + "/" + assetFilename;
 
-			InputStream is = assets.open(modelId);
-			WavefrontLoader wfl = new WavefrontLoader(assetFilename);
+			InputStream is = new URL(modelUri.toString()).openStream();
+			WavefrontLoader wfl = new WavefrontLoader(modelUri.toString());
 			wfl.analyzeModel(is);
 			is.close();
 
 			wfl.allocateBuffers();
 
-			is = assets.open(modelId);
+			is = new URL(modelUri.toString()).openStream();
 			wfl.loadModel(is);
 			is.close();
 
 			Object3DData data3D = new Object3DData(wfl.getVerts(), wfl.getNormals(), wfl.getTexCoords(), wfl.getFaces(),
 					wfl.getFaceMats(), wfl.getMaterials());
-			data3D.setId(assetFilename);
-			data3D.setAssetsDir(assetDir);
+			data3D.setId(modelUri.toString());
+			data3D.setUri(modelUri);
+			// data3D.setAssetsDir(assetDir);
 			data3D.setDimensions(wfl.getDimensions());
 			//data3D.centerAndScale(5,new float[]{0,0,0});
 			data3D.centerScale();
 
 			data3D.setDrawMode(GLES20.GL_TRIANGLES);
-			generateArrays(assets, data3D);
+			generateArrays(data3D);
 
 			return data3D;
 		} catch (IOException ex) {
@@ -416,58 +404,102 @@ public final class Object3DBuilder {
 		}
 	}
 
-	public Object3D getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights) throws IOException {
+	public Object3D getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights, boolean usingAnimation) throws IOException {
 
 		if (object3dv2 == null) {
-			object3dv1 = new Object3DV1();
-			object3dv2 = new Object3DV2();
-			object3dv3 = new Object3DV3();
-			object3dv4 = new Object3DV4();
-			object3dv5 = new Object3DV5();
-			object3dv6 = new Object3DV6();
-			object3dv7 = new Object3DV7();
-			object3dv8 = new Object3DV8();
-			object3dv9 = new Object3DV9();
-			object3dv10 = new Object3DV10();
-			object3dv11 = new Object3DV11();
-		}
+            try {
+                getPointDrawer();
+                object3dv2 = new Object3DV2();
+                object3dv3 = new Object3DV3();
+                object3dv4 = new Object3DV4();
+                object3dv5 = new Object3DV5();
+                object3dv6 = new Object3DV6();
+                object3dv7 = new Object3DV7();
+                object3dv8 = new Object3DV8();
+                object3dv9 = new Object3DV9();
+                object3dv91 = new Object3DV91();
+                object3dv10 = new Object3DV10();
+                object3dv11 = new Object3DV11();
+                object3dv12 = new Object3DV12();
+            } catch (Exception e) {
+                Log.e("Object3DBuilder","Error creating drawer: "+e.getMessage(), e);
+            }
+        }
 
-		if (obj instanceof AnimatedModel && ((AnimatedModel)obj).getAnimation() != null && obj.getTextureData() != null){
-			return object3dv9;
-		}
-		else if (obj instanceof AnimatedModel && ((AnimatedModel)obj).getAnimation() != null && obj.getVertexColorsArrayBuffer() != null){
-			return object3dv11;
-		}
-		else if (obj instanceof AnimatedModel && ((AnimatedModel)obj).getAnimation() != null){
-			return object3dv10;
-		}
-		else if (usingTextures && usingLights && obj.getVertexColorsArrayBuffer() != null && obj.getTextureData() != null
-				&& obj.getTextureCoordsArrayBuffer() != null && obj.getVertexNormalsArrayBuffer() != null
-				&& obj.getVertexNormalsArrayBuffer() != null) {
-			return object3dv6;
-		} else if (usingTextures && usingLights && obj.getVertexColorsArrayBuffer() == null && obj.getTextureData() != null
-				&& obj.getTextureCoordsArrayBuffer() != null && obj.getVertexNormalsArrayBuffer() != null
-				&& obj.getVertexNormalsArrayBuffer() != null) {
-			return object3dv8;
-		} else if (usingLights && obj.getVertexColorsArrayBuffer() != null
-				&& obj.getVertexNormalsArrayBuffer() != null) {
-			return object3dv5;
-		} else if (usingLights && (obj.getNormals() != null || obj.getVertexNormalsArrayBuffer() != null)) {
-			return object3dv7;
-		} else if (usingTextures && obj.getVertexColorsArrayBuffer() != null && obj.getTextureData() != null
-				&& obj.getTextureCoordsArrayBuffer() != null) {
-			return object3dv4;
-		} else if (usingTextures && obj.getVertexColorsArrayBuffer() == null && obj.getTextureData() != null
-				&& obj.getTextureCoordsArrayBuffer() != null) {
-			return object3dv3;
-		} else if (obj.getVertexColorsArrayBuffer() != null) {
-			return object3dv2;
-		} else {
-			return object3dv1;
-		}
+        boolean isAnimated = usingAnimation && obj instanceof AnimatedModel && ((AnimatedModel) obj).getAnimation() != null;
+        boolean isUsingLights = usingLights && (obj.getNormals() != null || obj.getVertexNormalsArrayBuffer() != null);
+        boolean isTextured = usingTextures && obj.getTextureData() != null && obj.getTextureCoordsArrayBuffer() != null;
+        boolean isColoured = obj.getVertexColorsArrayBuffer() != null;
+
+        if (isAnimated) {
+            if (isUsingLights){
+                if (isTextured) {
+                    if (!isColoured) {
+                        return object3dv9;
+                    } else {
+                        Log.w("Object3DBuilder", "No drawer for this object");
+                        return null;
+                    }
+                } else{
+                    if (isColoured) {
+                        return object3dv11;
+                    } else {
+                        return object3dv10;
+                    }
+                }
+            } else {
+                if (isTextured){
+                    if (!isColoured) {
+                        return object3dv91;
+                    } else {
+                        Log.w("Object3DBuilder", "No drawer for this object");
+                        return null;
+                    }
+                } else {
+                    if (!isColoured) {
+                        return object3dv12;
+                    } else {
+                        Log.w("Object3DBuilder", "No drawer for this object");
+                        return null;
+                    }
+                }
+            }
+        } else {
+            if (isUsingLights){
+                if (isTextured){
+                    if (isColoured) {
+                        return object3dv6;
+                    } else {
+                        return object3dv8;
+                    }
+                } else {
+                    if (isColoured) {
+                        return object3dv5;
+                    } else {
+                        return object3dv7;
+                    }
+                }
+            } else {
+                if (isTextured){
+                    if (isColoured) {
+                        return object3dv4;
+                    } else {
+                        return object3dv3;
+                    }
+                } else {
+                    if (isColoured) {
+                        return object3dv2;
+                    } else {
+                        return object3dv1;
+                    }
+                }
+            }
+        }
 	}
 
-	public static Object3DData generateArrays(AssetManager assets, Object3DData obj) throws IOException {
+	public static Object3DData generateArrays(Object3DData obj) throws IOException {
+
+	    Log.i("Object3DBuilder","Generating arrays for "+obj.getId());
 
 		Faces faces = obj.getFaces(); // model faces
 		FaceMaterials faceMats = obj.getFaceMats();
@@ -540,7 +572,7 @@ public final class Object3DBuilder {
 					vertexNormalsArrayBuffer.put(i*3+7,normal[1]);
 					vertexNormalsArrayBuffer.put(i*3+8,normal[2]);
 				} catch (BufferOverflowException ex) {
-					throw new RuntimeException("Error calculating mormal for face ["+i/3+"]");
+					throw new RuntimeException("Error calculating normal for face ["+i/3+"]");
 				}
 			}
 		}
@@ -549,7 +581,14 @@ public final class Object3DBuilder {
 		FloatBuffer colorArrayBuffer = null;
 		if (materials != null) {
 			Log.i("Object3DBuilder", "Reading materials...");
-			materials.readMaterials(obj.getCurrentDir(), obj.getAssetsDir(), assets);
+			try(InputStream inputStream = ContentUtils.getInputStream(materials.mfnm)) {
+				BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+				materials.readMaterials(br);
+				br.close();
+			} catch (Exception ex){
+			    Log.e("Object3DBuilder","Couldn't load material file "+materials.mfnm+". "+ex.getMessage(), ex);
+			    obj.addError(materials.mfnm+":"+ex.getMessage());
+            }
 		}
 
 		if (materials != null && !faceMats.isEmpty()) {
@@ -590,25 +629,14 @@ public final class Object3DBuilder {
 				}
 			}
 			if (texture != null) {
-				if (obj.getCurrentDir() != null) {
-					File file = new File(obj.getCurrentDir(), texture);
-					Log.i("Object3DBuilder", "Loading texture '" + file + "'...");
-					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					FileInputStream fis = new FileInputStream(file);
-					IOUtils.copy(fis, bos);
-					fis.close();
-					textureData = bos.toByteArray();
-					bos.close();
-				} else {
-					String assetResourceName = obj.getAssetsDir() + "/" + texture;
-					Log.i("Object3DBuilder", "Loading texture '" + assetResourceName + "'...");
-					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					InputStream fis = assets.open(assetResourceName);
-					IOUtils.copy(fis, bos);
-					fis.close();
-					textureData = bos.toByteArray();
-					bos.close();
-				}
+			    Log.i("Object3DBuilder","Loading texture "+texture);
+			    InputStream is = ContentUtils.getInputStream(texture);
+			    if (is != null) {
+                    textureData = IOUtils.read(is);
+                    is.close();
+                } else {
+			        obj.addError("Texture '"+texture+"' not found in provided files");
+                }
 			} else {
 				Log.i("Object3DBuilder", "Found material(s) but no texture");
 			}
@@ -659,9 +687,15 @@ public final class Object3DBuilder {
 						int[] text = faces.facesTexIdxs.get(i);
 						for (int j = 0; j < text.length; j++) {
 							if (textureData == null || textureOk) {
-								anyTextureOk = true;
-								textureCoordsArraysBuffer.put(counter++, textureCoordsBuffer.get(text[j] * 2));
-								textureCoordsArraysBuffer.put(counter++, textureCoordsBuffer.get(text[j] * 2 + 1));
+								if (text[j] * 2 >= 0 && text[j] * 2 < textureCoordsBuffer.limit()) {
+									anyTextureOk = true;
+									textureCoordsArraysBuffer.put(counter++, textureCoordsBuffer.get(text[j] * 2));
+									textureCoordsArraysBuffer.put(counter++, textureCoordsBuffer.get(text[j] * 2 + 1));
+								} else{
+									Log.v("Object3DBuilder","Wrong texture for face "+i);
+									textureCoordsArraysBuffer.put(counter++, 0f);
+									textureCoordsArraysBuffer.put(counter++, 0f);
+								}
 							} else {
 								textureCoordsArraysBuffer.put(counter++, 0f);
 								textureCoordsArraysBuffer.put(counter++, 0f);
@@ -753,7 +787,8 @@ public final class Object3DBuilder {
 							.setDrawMode(GLES20.GL_LINES).setDrawUsingArrays(false);
 					object3DData.setVertexWeights(((AnimatedModel) objData).getVertexWeights());
 					object3DData.setJointIds(((AnimatedModel) objData).getJointIds());
-					object3DData.setRootJoint(((AnimatedModel) objData).getRootJoint(), ((AnimatedModel) objData).getJointCount());
+					object3DData.setRootJoint(((AnimatedModel) objData).getRootJoint(), ((AnimatedModel) objData)
+							.getJointCount(), ((AnimatedModel) objData).getBoneCount(), false);
 					object3DData.doAnimation(((AnimatedModel) objData).getAnimation());
 					return object3DData;
 				}
@@ -885,41 +920,86 @@ public final class Object3DBuilder {
 				.setPosition(obj.getPosition()).setVersion(1);
 	}
 
+	public static AnimatedModel buildSkeleton(AnimatedModel animatedModel){
+        float[] identity = new float[16];
+        Matrix.setIdentityM(identity,0);
+
+        AnimatedModel skeleton = new AnimatedModel(createNativeByteBuffer(animatedModel.getJointCount()*3*3*4)
+                .asFloatBuffer());
+        skeleton.setVertexNormalsArrayBuffer(createNativeByteBuffer(animatedModel.getJointCount()*3*3*4)
+                .asFloatBuffer());
+        skeleton.setDrawMode(GLES20.GL_TRIANGLES);
+        skeleton.setRootJoint(animatedModel.getRootJoint().clone(), animatedModel.getJointCount(), animatedModel
+                .getBoneCount(), true);
+        skeleton.setJointIds(createNativeByteBuffer(skeleton.getJointCount()*3*3*4).asFloatBuffer());
+        skeleton.doAnimation(animatedModel.getAnimation());
+        skeleton.setVertexWeights(createNativeByteBuffer(skeleton.getJointCount()*3*3*4).asFloatBuffer());
+        skeleton.setPosition(animatedModel.getPosition());
+        skeleton.setScale(animatedModel.getScale());
+
+        Log.i("Object3DBuilder","Building "+skeleton.getJointCount()+" bones...");
+        buildBones(skeleton, skeleton.getRootJoint(), identity, new float[]{0,0,0}, -1, animatedModel.getVertexBuffer());
+
+        skeleton.setId(animatedModel.getId()+"-skeleton");
+
+        return skeleton;
+    }
+
+    private static void buildBones(AnimatedModel animatedModel, Joint joint, float[] parentTransform, float[]
+            parentPoint, int parentJoinIndex, FloatBuffer vertexBuffer){
+
+        float[] point = new float[4];
+        float[] transform = new float[16];
+        Matrix.multiplyMM(transform,0,parentTransform,0,joint.getBindLocalTransform(),0);
+        Matrix.multiplyMV(point,0,transform,0,new float[]{0,0,0,1},0);
+
+        float[] v = Math3DUtils.substract(point,parentPoint);
+        float[] point1 = new float[]{point[0],point[1],point[2]-Matrix.length(v[0],v[1],v[2])*0.05f};
+        float[] point2 = new float[]{point[0],point[1],point[2]+Matrix.length(v[0],v[1],v[2])*0.05f};
+
+        float[] normal = Math3DUtils.calculateFaceNormal2(parentPoint, point1, point2);
+
+        // TODO: remove this
+        /*parentPoint = new float[]{vertexBuffer.get((int)(100* Math.random())),vertexBuffer.get((int)(100* Math.random
+                ())),vertexBuffer.get((int)(100* Math.random()))};*/
+
+        animatedModel.getVertexArrayBuffer().put(parentPoint[0]);
+        animatedModel.getVertexArrayBuffer().put(parentPoint[1]);
+        animatedModel.getVertexArrayBuffer().put(parentPoint[2]);
+        animatedModel.getVertexArrayBuffer().put(point1[0]);
+        animatedModel.getVertexArrayBuffer().put(point1[1]);
+        animatedModel.getVertexArrayBuffer().put(point1[2]);
+        animatedModel.getVertexArrayBuffer().put(point2[0]);
+        animatedModel.getVertexArrayBuffer().put(point2[1]);
+        animatedModel.getVertexArrayBuffer().put(point2[2]);
+
+        animatedModel.getVertexNormalsArrayBuffer().put(normal);
+        animatedModel.getVertexNormalsArrayBuffer().put(normal);
+        animatedModel.getVertexNormalsArrayBuffer().put(normal);
+
+        animatedModel.getJointIds().put(parentJoinIndex);
+        animatedModel.getJointIds().put(parentJoinIndex);
+        animatedModel.getJointIds().put(parentJoinIndex);
+        for (int i=3; i<9; i++) {
+            animatedModel.getJointIds().put(joint.getIndex());
+        }
+        for (int i=0; i<9; i+=3) {
+            animatedModel.getVertexWeights().put(parentJoinIndex >= 0?1:0);
+            animatedModel.getVertexWeights().put(0);
+            animatedModel.getVertexWeights().put(0);
+        }
+
+        for (Joint child : joint.getChildren()){
+            buildBones(animatedModel,child,transform, point, joint.getIndex(), vertexBuffer);
+        }
+    }
+
 	private static ByteBuffer createNativeByteBuffer(int length) {
 		// initialize vertex byte buffer for shape coordinates
 		ByteBuffer bb = ByteBuffer.allocateDirect(length);
 		// use the device hardware's native byte order
 		bb.order(ByteOrder.nativeOrder());
 		return bb;
-	}
-
-	public static void loadV6AsyncParallel(final Activity parent, final URL url, final File file, final String assetsDir, final String assetName,
-										   final Callback callback) {
-
-		final String modelId = file != null ? file.getName() : assetName;
-
-		Log.i("Object3DBuilder", "Loading model " + modelId + ". async and parallel..");
-		if (modelId.toLowerCase().endsWith(".obj")) {
-			loadV6AsyncParallel_Obj(parent, file, assetsDir, assetName, callback);
-		} else if (modelId.toLowerCase().endsWith(".stl")) {
-			Log.i("Object3DBuilder", "Loading STL object from: "+url);
-			STLLoader.loadSTLAsync(parent, url, callback);
-		} else if (modelId.toLowerCase().endsWith(".dae")) {
-			Log.i("Object3DBuilder", "Loading Collada object from: "+url);
-			ColladaLoader.loadAsync(parent, url, callback);
-		}
-	}
-
-
-
-	public static void loadV6AsyncParallel_Obj(final Activity parent, final File file, final String assetsDir, final String assetName,
-										   final Callback callback) {
-
-		final String modelId = file != null ? file.getName() : assetName;
-		final File currentDir = file != null ? file.getParentFile() : null;
-
-		Log.i("Object3DBuilder", "Loading model "+modelId+". async and parallel..");
-		WavefrontLoader2.loadAsync(parent, null, currentDir, assetsDir, modelId, callback);
 	}
 }
 

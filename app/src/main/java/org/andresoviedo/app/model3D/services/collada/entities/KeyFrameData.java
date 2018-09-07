@@ -6,7 +6,7 @@ import java.util.List;
 public class KeyFrameData {
 
 	public final float time;
-	public final List<JointTransformData> jointTransforms = new ArrayList<JointTransformData>();
+	public final List<JointTransformData> jointTransforms = new ArrayList<>();
 	
 	public KeyFrameData(float time){
 		this.time = time;

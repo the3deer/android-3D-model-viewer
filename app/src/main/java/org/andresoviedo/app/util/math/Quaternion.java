@@ -64,8 +64,7 @@ public class Quaternion {
 	 * @return The rotation matrix which represents the exact same rotation as
 	 *         this quaternion.
 	 */
-	public float[] toRotationMatrix() {
-		float[] matrix = new float[16];
+	public float[] toRotationMatrix(float[] matrix) {
 		final float xy = x * y;
 		final float xz = x * z;
 		final float xw = x * w;
@@ -154,6 +153,7 @@ public class Quaternion {
 	 * @return The resulting interpolated rotation in quaternion format.
 	 */
 	public static Quaternion interpolate(Quaternion a, Quaternion b, float blend) {
+        // TODO: optimize this (memory allocation)
 		Quaternion result = new Quaternion(0, 0, 0, 1);
 		float dot = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
 		float blendI = 1f - blend;
@@ -172,4 +172,32 @@ public class Quaternion {
 		return result;
 	}
 
+    public static void interpolate(Quaternion a, Quaternion b, float blend, float[] output) {
+        Quaternion result = new Quaternion(0, 0, 0, 1);
+        float dot = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
+        float blendI = 1f - blend;
+        if (dot < 0) {
+            result.w = blendI * a.w + blend * -b.w;
+            result.x = blendI * a.x + blend * -b.x;
+            result.y = blendI * a.y + blend * -b.y;
+            result.z = blendI * a.z + blend * -b.z;
+        } else {
+            result.w = blendI * a.w + blend * b.w;
+            result.x = blendI * a.x + blend * b.x;
+            result.y = blendI * a.y + blend * b.y;
+            result.z = blendI * a.z + blend * b.z;
+        }
+        result.normalize();
+        result.toRotationMatrix(output);
+    }
+
+    @Override
+    public String toString() {
+        return "Quaternion{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                ", w=" + w +
+                '}';
+    }
 }

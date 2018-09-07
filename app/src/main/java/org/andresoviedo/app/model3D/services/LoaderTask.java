@@ -1,18 +1,12 @@
-package org.andresoviedo.app.model3D.controller;
+package org.andresoviedo.app.model3D.services;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Log;
 
-import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DData;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.List;
 
 /**
@@ -25,59 +19,32 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 	/**
 	 * URL to the 3D model
 	 */
-	protected final URL url;
+	protected final Uri uri;
 	/**
 	 * Callback to notify of events
 	 */
-	protected final Object3DBuilder.Callback callback;
+	private final Callback callback;
 	/**
 	 * The dialog that will show the progress of the loading
 	 */
-	protected final ProgressDialog dialog;
-	/**
-	 * The parent activity
-	 */
-	private final Activity parent;
-	/**
-	 * Directory where the model is located (null when its loaded from asset)
-	 */
-	private final File currentDir;
-	/**
-	 * Asset directory where the model is loaded (null when its loaded from the filesystem)
-	 */
-	private final String assetsDir;
-	/**
-	 * Id of the data being loaded
-	 */
-	private final String modelId;
-	/**
-	 * Exception when loading data (if any)
-	 */
-	protected Exception error;
+	private final ProgressDialog dialog;
 
 	/**
 	 * Build a new progress dialog for loading the data model asynchronously
-	 *
-	 * @param url        the URL pointing to the 3d model
-	 * @param currentDir the directory where the model is located (null when the model is an asset)
-	 * @param modelId    the id the data being loaded
+     * @param uri        the URL pointing to the 3d model
+     *
 	 */
-	public LoaderTask(Activity parent, URL url, File currentDir, String assetsDir, String modelId, Object3DBuilder.Callback callback) {
-		this.parent = parent;
-		this.url = url;
-		this.currentDir = currentDir;
-		this.assetsDir = assetsDir;
-		this.modelId = modelId;
+	public LoaderTask(Activity parent, Uri uri, Callback callback) {
+		this.uri = uri;
+		// this.dialog = ProgressDialog.show(this.parent, "Please wait ...", "Loading model data...", true);
+		// this.dialog.setTitle(modelId);
 		this.dialog = new ProgressDialog(parent);
-		this.callback = callback;
-	}
+		this.callback = callback; }
 
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		// this.dialog = ProgressDialog.show(this.parent, "Please wait ...", "Loading model data...", true);
-		// this.dialog.setTitle(modelId);
 		this.dialog.setMessage("Loading...");
 		this.dialog.setCancelable(false);
 		this.dialog.show();
@@ -88,12 +55,14 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 	@Override
 	protected List<Object3DData> doInBackground(Void... params) {
 		try {
+		    callback.onStart();
 			List<Object3DData> data = build();
-			callback.onLoadComplete(data);
 			build(data);
+			callback.onLoadComplete(data);
+            callback.onBuildComplete(data);
 			return  data;
 		} catch (Exception ex) {
-			error = ex;
+            callback.onLoadError(ex);
 			return null;
 		}
 	}
@@ -133,12 +102,17 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 		if (dialog.isShowing()) {
 			dialog.dismiss();
 		}
-		if (error != null) {
-			callback.onLoadError(error);
-		} else {
-			callback.onBuildComplete(data);
-		}
 	}
 
 
+    public interface Callback {
+
+        void onStart();
+
+        void onLoadError(Exception ex);
+
+        void onLoadComplete(List<Object3DData> data);
+
+        void onBuildComplete(List<Object3DData> data);
+    }
 }

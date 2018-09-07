@@ -1,82 +1,84 @@
 package org.andresoviedo.app.model3D.services.collada.loader;
 
 import android.opengl.Matrix;
-import android.renderscript.Matrix4f;
 import android.util.Log;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.List;
 
 import org.andresoviedo.app.model3D.services.collada.entities.JointData;
 import org.andresoviedo.app.model3D.services.collada.entities.SkeletonData;
+import org.andresoviedo.app.model3D.services.collada.entities.SkinningData;
+import org.andresoviedo.app.util.math.Math3DUtils;
 import org.andresoviedo.app.util.xml.XmlNode;
+
+import java.util.List;
 
 
 public class SkeletonLoader {
 
-	private XmlNode armatureData;
-	
+	private final XmlNode visualScene;
+
+	private final SkinningData skinningData;
+
 	private List<String> boneOrder;
-	
+
 	private int jointCount = 0;
 
-	private static final float[] CORRECTION = new float[16];
-	static{
-		Matrix.setIdentityM(CORRECTION,0);
-		Matrix.rotateM(CORRECTION,0,CORRECTION,0,-90, 1, 0, 0);
-	}
-
-	public SkeletonLoader(XmlNode visualSceneNode, List<String> boneOrder) {
-		this.armatureData = visualSceneNode.getChild("visual_scene").getChildWithAttribute("node", "id", "Armature");
-		this.boneOrder = boneOrder;
+	public SkeletonLoader(XmlNode visualSceneNode, SkinningData skinningData) {
+		this.visualScene = visualSceneNode.getChild("visual_scene");
+		this.skinningData = skinningData;
+		this.boneOrder = skinningData.jointOrder;
 	}
 	
 	public SkeletonData extractBoneData(){
-		XmlNode headNode = armatureData.getChildWithAttribute("node","type","JOINT");
-		JointData headJoint = loadJointData(headNode, true);
-		if (jointCount != boneOrder.size()){
-			Log.e("SkeletonLoader","jointCount != boneOrder: "+jointCount+" != "+boneOrder.size());
-			jointCount = boneOrder.size();
+        XmlNode headNode = visualScene.getChildWithAttribute("node","type","JOINT");
+		if (headNode == null){
+	        // Why storm-trooper and cowboy has a "Armature" instead of "JOINT"?
+        	headNode = visualScene.getChildWithAttribute("node", "id", "Armature");
 		}
-		return new SkeletonData(jointCount, headJoint);
+		JointData headJoint = loadJointData(headNode);
+		if (jointCount != boneOrder.size()) {
+			Log.i("SkeletonLoader", "jointCount != boneOrder: " + jointCount + " != " + boneOrder.size());
+		}
+		return new SkeletonData(jointCount, boneOrder.size(), headJoint);
 	}
 	
-	private JointData loadJointData(XmlNode jointNode, boolean isRoot){
-		JointData joint = extractMainJointData(jointNode, isRoot);
+	private JointData loadJointData(XmlNode jointNode){
+		JointData joint = extractMainJointData(jointNode);
 		for(XmlNode childNode : jointNode.getChildren("node")){
-			joint.addChild(loadJointData(childNode, false));
+			joint.addChild(loadJointData(childNode));
 		}
 		return joint;
 	}
 	
-	private JointData extractMainJointData(XmlNode jointNode, boolean isRoot){
+	private JointData extractMainJointData(XmlNode jointNode){
 		String nameId = jointNode.getAttribute("id");
 		int index = boneOrder.indexOf(nameId);
-		if (index == -1){
-			Log.e("SkeletonLoader","Joint not found in order: "+nameId);
-			boneOrder.add(nameId);
-			index = boneOrder.indexOf(nameId);
-		}
-		String[] matrixData = jointNode.getChild("matrix").getData().trim().split("\\s+");
-		Matrix4f matrix = new Matrix4f(convertData(matrixData));
-		matrix.transpose();
-		if(isRoot){
-			//because in Blender z is up, but in our game y is up.
-			Matrix4f correction = new Matrix4f(CORRECTION);
-			correction.multiply(matrix);
-			matrix = correction;
-		}
-		jointCount++;
-		return new JointData(index, nameId, matrix.getArray());
-	}
-	
-	private float[] convertData(String[] rawData){
-		float[] matrixData = new float[16];
-		for(int i=0;i<matrixData.length;i++){
-			matrixData[i] = Float.parseFloat(rawData[i]);
-		}
-		return matrixData;
+		XmlNode jointMatrix = jointNode.getChild("matrix");
+        float[] matrix = new float[16];
+
+		if (jointMatrix != null) {
+            float[] matrix1 = Math3DUtils.parseFloat(jointMatrix.getData().trim().split("\\s+"));
+            Matrix.transposeM(matrix, 0, matrix1, 0);
+        } else {
+            Matrix.setIdentityM(matrix,0);
+            XmlNode translateNode = jointNode.getChild("translate");
+            float[] translate = Math3DUtils.parseFloat(translateNode.getData().trim().split("\\s+"));
+            Matrix.translateM(matrix,0,translate[0],translate[1],translate[2]);
+            for (XmlNode rotateNode : jointNode.getChildren("rotate")){
+                float[] rotate = Math3DUtils.parseFloat(rotateNode.getData().trim().split("\\s+"));
+                Matrix.rotateM(matrix,0, rotate[3],rotate[0],rotate[1],rotate[2]);
+            }
+            XmlNode scaleNode = jointNode.getChild("scale");
+            float[] scale = Math3DUtils.parseFloat(scaleNode.getData().trim().split("\\s+"));
+            Matrix.scaleM(matrix,0,scale[0], scale[1], scale[2]);
+        }
+
+        jointCount++;
+
+        float[] inverseBindMatrix = null;
+        if (index >= 0 && skinningData.inverseBindMatrix != null) {
+            inverseBindMatrix = new float[16];
+            Matrix.transposeM(inverseBindMatrix, 0, skinningData.inverseBindMatrix, index * 16);
+        }
+        return new JointData(index, nameId, matrix, inverseBindMatrix);
 	}
 }

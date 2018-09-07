@@ -12,9 +12,12 @@
 package org.andresoviedo.app.model3D.services.stl;
 
 // External imports
+
 import org.andresoviedo.app.util.io.ProgressMonitorInputStream;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -24,7 +27,7 @@ import java.util.ArrayList;
 /**
  * Class to parse STL (stereolithography) files in binary format.<p>
  * @see STLFileReader
- * @see STLLoader
+ * @see STLLoaderTask
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
  * @version $Revision: 1.3 $

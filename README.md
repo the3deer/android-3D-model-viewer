@@ -12,18 +12,27 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (22/12/2017)
+News (07/09/2018)
 =================
 
-* Implemented collision detection algorithm: ray-aabb + ray-triangle + octree
-* Support for collada files with skeletal animations :)
-* Fixed #28: Load texture feature is now available
+* New: Skeleton Animation
+* New: File chooser to load files from any where
+* Fix: Collada Animator Performance improved
+* Fix: Refactoring
+* Fix: Several bugs fixed
 
 
 Android Market
 ==============
 
 [<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" width="323" height="125">](https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2)
+
+
+Notice
+======
+
+Collada support is limited. Collada renderer currently supports a maximum of 60 bones.
+If you have any issue in general,please open an issue and attach model if possible, specifying Android version and Device model.
 
 
 About
@@ -39,22 +48,23 @@ As this is my first android app and Im still learning the OpenGL 2.0 language, i
 but I will try to continue improving the app and adding more features. So please send me your comments, suggestions or
 complains by opening an [issue](https://github.com/andresoviedo/android-3D-model-viewer/issues) or email me to andresoviedo@gmail.com.
 
-The app comes with some included 3D models that were taken for free from Internet (http://www.turbosquid.com).
+The app comes with some included 3D models that were taken for free from Internet.
 
 
 Whats next
 ==========
 
 * Stabilize app performance
+* Collada:  Show bind pose, key frames and variate speed
 * Code refactoring
-* Carboard support?
-* Chromecast support?
-* ...
+* Carboard support
+* Chromecast support
 
 
 Features
 ========
 
+  - Supports >= Android 2.2 (Froyo - API Level 8)
   - OpenGL ES 2.0 API
   - Formats: OBJ (wavefront), STL (STereoLithography) & DAE (Collada-BETA)
   - calculation of normals
@@ -65,7 +75,7 @@ Features
   - wireframe & points mode
   - bounding box drawing
   - object selection
-  - camera support!
+  - camera support
     - tap to select object
     - drag to move camera
     - rotate with 2 fingers to rotate camera
@@ -88,8 +98,8 @@ Try it
     adb shell am start -n org.andresoviedo.dddmodel2/org.andresoviedo.app.model3D.MainActivity
 ```
 
-* Open the application. You should see a menu. From there you can load some demos or load your own model
-* Once the scenario is loaded, pinch and rotate to see the 3D scene from another perspective.
+* Open the application. You should see a menu. From there you can load models
+* Once the model is rendered, pinch and rotate to see the 3D scene from another perspective.
 
 
 Screenshot
@@ -104,6 +114,18 @@ Screenshot
 ![Screenshot7](screenshots/screenshot7.png)
 ![cowboy.gif](screenshots/cowboy.gif)
 ![stormtrooper.gif](screenshots/stormtrooper.gif)
+
+
+Emulator
+========
+
+You can run application in an emulator
+
+    // install some file provider (i.e. es file explorer)
+    adb devices -l
+    adb -s emulator-5554 install .\com.estrongs.android.pop_4.0.3.4-250_minAPI8(armeabi,x86)(nodpi).apk
+    // push some files to test file loading
+    adb -s emulator-5554 push .\app\src\main\assets\models /sdcard/download
 
 
 Final Notes
@@ -130,6 +152,13 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 2.1.0 (07/09/2018)
+  - (n) Skeleton Animation
+  - (n) File chooser to load files from any where
+  - (f) Collada Animator fixed (INV_BIND_MATRIX, bind_shape_matrix)
+  - (f) Collada Animator Performance improved
+  - (f) Application refactoring (ContentUtils, Loaders, etc)
+  - (f) Several bugs fixed
 - 2.0.4 (22/12/2017)
   - (n) Implemented face collision detection algorithm: ray-triangle + octree
 - 2.0.3 (21/12/2017)

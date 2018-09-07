@@ -12,8 +12,9 @@
 package org.andresoviedo.app.model3D.services.stl;
 
 // External imports
-import java.net.URL;
+
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 // Local imports

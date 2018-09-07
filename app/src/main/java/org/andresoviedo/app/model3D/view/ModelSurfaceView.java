@@ -1,9 +1,9 @@
 package org.andresoviedo.app.model3D.view;
 
-import org.andresoviedo.app.model3D.controller.TouchController;
-
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
+
+import org.andresoviedo.app.model3D.controller.TouchController;
 
 /**
  * This is the actual opengl view. From here we can detect touch gestures for example
@@ -31,7 +31,7 @@ public class ModelSurfaceView extends GLSurfaceView {
 		setRenderer(mRenderer);
 
 		// Render the view only when there is a change in the drawing data
-		// TODO: enable this again
+		// TODO: enable this?
 		// setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
 		touchHandler = new TouchController(this, mRenderer);

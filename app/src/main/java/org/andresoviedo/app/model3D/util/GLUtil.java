@@ -1,12 +1,12 @@
 package org.andresoviedo.app.model3D.util;
 
-import java.io.InputStream;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
+
+import java.io.InputStream;
 
 public final class GLUtil {
 
@@ -93,9 +93,10 @@ public final class GLUtil {
 
 		int[] compiled = new int[1];
 		GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
+		Log.i("GLUtil", "Shader compilation info: " + GLES20.glGetShaderInfoLog(shader));
 		if (compiled[0] == 0) {
+			Log.e("GLUtil", "Shader error: " + GLES20.glGetShaderInfoLog(shader) + "\n" + shaderCode);
 			GLES20.glDeleteShader(shader);
-			Log.e("GLUtil", "Could not compile program: " + GLES20.glGetShaderInfoLog(shader) + " | " + shaderCode);
 		}
 
 		return shader;

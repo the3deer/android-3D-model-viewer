@@ -31,6 +31,7 @@ public class Camera {
 	public static final float STRAFE_RIGHT = 0.5f; // Right straft speed.
 
 	public static final int AIM = 10;
+	public static final int CAMERA_MAX_ZOOM = 40;
 
 	public float xPos, yPos; // Camera position.
 	public float zPos;
@@ -38,7 +39,7 @@ public class Camera {
 	public float xUp, yUp, zUp; // Up direction.
 
 	private SceneLoader scene;
-	private final BoundingBox boundingBox = new BoundingBox("scene",-20,20,-20,20,-20,20);
+	private final BoundingBox boundingBox = new BoundingBox("scene",-CAMERA_MAX_ZOOM,CAMERA_MAX_ZOOM,-CAMERA_MAX_ZOOM,CAMERA_MAX_ZOOM,-CAMERA_MAX_ZOOM,CAMERA_MAX_ZOOM);
 
 	float xStrafe = 0, yStrafe = 0, zStrafe = 0; // Strafe direction.
 	float currentRotationAngle; // Keeps us from going too far up or down.
@@ -424,7 +425,7 @@ public class Camera {
 	 * @param dY the Y component of the user 2D vector, that is, a value between [-1,1]
 	 */
 	public synchronized void translateCamera(float dX, float dY) {
-		Log.d("Camera","translate:"+dX+","+dY);
+		//Log.v("Camera","translate:"+dX+","+dY);
 		if (dX == 0 && dY == 0) return;
 		translateCameraImpl(dX, dY);
 		lastAction = new Object[]{"translate",dX, dY};

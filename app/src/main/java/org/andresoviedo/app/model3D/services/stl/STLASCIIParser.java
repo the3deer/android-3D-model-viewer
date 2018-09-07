@@ -12,15 +12,17 @@
 package org.andresoviedo.app.model3D.services.stl;
 
 // External imports
-import android.content.res.Resources;
 
 import org.andresoviedo.app.util.io.ProgressMonitorInputStream;
 
-import java.io.*;
-import java.util.*;
-
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.net.URL;
-import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 // Internal imports
 
@@ -38,7 +40,7 @@ import java.net.URLConnection;
  * </ul>
  *
  * @see STLFileReader
- * @see STLLoader
+ * @see STLLoaderTask
  * @author  Dipl. Ing. Paul Szawlowski -
  *          University of Vienna, Dept of Medical Computer Sciences
  * @version $Revision: 2.0 $

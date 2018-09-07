@@ -1,7 +1,6 @@
 package org.andresoviedo.app.model3D.collision;
 
 import android.opengl.GLU;
-import android.opengl.Matrix;
 import android.util.Log;
 
 import org.andresoviedo.app.model3D.entities.BoundingBox;
@@ -9,7 +8,6 @@ import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.view.ModelRenderer;
 import org.andresoviedo.app.util.math.Math3DUtils;
 
-import java.nio.FloatBuffer;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,14 +22,14 @@ public class CollisionDetection {
      * Get the nearest object intersected by the specified window coordinates
      *
      * @param objects   the list of objects to test
-     * @param mRenderer the model renderer to unproject window coordinates to world coordinates
+     * @param mRenderer the model renderer to unProject window coordinates to world coordinates
      * @param windowX   the window x coordinate
      * @param windowY   the window y coordinate
      * @return the nearest object intersected by the specified coordinates or null
      */
     public static Object3DData getBoxIntersection(List<Object3DData> objects, ModelRenderer mRenderer, float windowX, float windowY) {
-        float[] nearHit = unproject(mRenderer, windowX, windowY, 0);
-        float[] farHit = unproject(mRenderer, windowX, windowY, 1);
+        float[] nearHit = unProject(mRenderer, windowX, windowY, 0);
+        float[] farHit = unProject(mRenderer, windowX, windowY, 1);
         float[] direction = Math3DUtils.substract(farHit, nearHit);
         Math3DUtils.normalize(direction);
         return getBoxIntersection(objects, nearHit, direction);
@@ -45,11 +43,11 @@ public class CollisionDetection {
      * @param direction the ray direction
      * @return the object intersected by the specified ray
      */
-    public static Object3DData getBoxIntersection(List<Object3DData> objects, float[] p1, float[] direction) {
+    private static Object3DData getBoxIntersection(List<Object3DData> objects, float[] p1, float[] direction) {
         float min = Float.MAX_VALUE;
         Object3DData ret = null;
         for (Object3DData obj : objects) {
-            if (obj.getId().equals("Point") || obj.getId().equals("Line")) {
+            if ("Point".equals(obj.getId()) || "Line".equals(obj.getId())) {
                 continue;
             }
             BoundingBox box = obj.getBoundingBox();
@@ -65,7 +63,7 @@ public class CollisionDetection {
         return ret;
     }
 
-    /**
+    /*
      * Get the entry and exit point of the ray intersecting the nearest object or null if no object is intersected
      *
      * @param objects list of objects to test
@@ -73,7 +71,7 @@ public class CollisionDetection {
      * @param p2      ray end point
      * @return the entry and exit point of the ray intersecting the nearest object
      */
-    public static float[] getBoxIntersectionPoint(List<Object3DData> objects, float[] p1, float[] p2) {
+    /*public static float[] getBoxIntersectionPoint(List<Object3DData> objects, float[] p1, float[] p2) {
         float[] direction = Math3DUtils.substract(p2, p1);
         Math3DUtils.normalize(direction);
         float min = Float.MAX_VALUE;
@@ -93,7 +91,7 @@ public class CollisionDetection {
             return new float[]{p1[0] + direction[0] * min, p1[1] + direction[1] * min, p1[2] + direction[2] * min};
         }
         return null;
-    }
+    }*/
 
     /**
      * Return true if the specified ray intersects the bounding box
@@ -103,7 +101,7 @@ public class CollisionDetection {
      * @param b      bounding box
      * @return true if the specified ray intersects the bounding box, false otherwise
      */
-    public static boolean isBoxIntersection(float[] origin, float[] dir, BoundingBox b) {
+    private static boolean isBoxIntersection(float[] origin, float[] dir, BoundingBox b) {
         float[] intersection = getBoxIntersection(origin, dir, b);
         return intersection[0] > 0 && intersection[0] < intersection[1];
     }
@@ -116,7 +114,7 @@ public class CollisionDetection {
      * @param b      the bounding box
      * @return the intersection points of the near and far plane
      */
-    public static float[] getBoxIntersection(float[] origin, float[] dir, BoundingBox b) {
+    private static float[] getBoxIntersection(float[] origin, float[] dir, BoundingBox b) {
         float[] tMin = Math3DUtils.divide(Math3DUtils.substract(b.getMin(), origin), dir);
         float[] tMax = Math3DUtils.divide(Math3DUtils.substract(b.getMax(), origin), dir);
         float[] t1 = Math3DUtils.min(tMin, tMax);
@@ -127,15 +125,15 @@ public class CollisionDetection {
     }
 
     /**
-     * Get the corresponding near and far vertex for the specified window coordinates
+     * Map window coordinates to object coordinates.
      *
-     * @param mRenderer
-     * @param rx
-     * @param ry
-     * @param rz
+     * @param mRenderer renderer to get openGl viewport dimensions
+     * @param rx x point
+     * @param ry y point
+     * @param rz z point
      * @return the corresponding near and far vertex for the specified window coordinates
      */
-    public static float[] unproject(ModelRenderer mRenderer, float rx, float ry, float rz) {
+    private static float[] unProject(ModelRenderer mRenderer, float rx, float ry, float rz) {
         float[] xyzw = {0, 0, 0, 0};
         ry = (float) mRenderer.getHeight() - ry;
         int[] viewport = {0, 0, mRenderer.getWidth(), mRenderer.getHeight()};
@@ -148,9 +146,10 @@ public class CollisionDetection {
         return xyzw;
     }
 
-    public static float[] getTriangleIntersection(List<Object3DData> objects, ModelRenderer mRenderer, float windowX, float windowY) {
-        float[] nearHit = unproject(mRenderer, windowX, windowY, 0);
-        float[] farHit = unproject(mRenderer, windowX, windowY, 1);
+    /*public static float[] getTriangleIntersection(List<Object3DData> objects, ModelRenderer mRenderer, float
+            windowX, float windowY) {
+        float[] nearHit = unProject(mRenderer, windowX, windowY, 0);
+        float[] farHit = unProject(mRenderer, windowX, windowY, 1);
         float[] direction = Math3DUtils.substract(farHit, nearHit);
         Math3DUtils.normalize(direction);
         Object3DData intersected = getBoxIntersection(objects, nearHit, direction);
@@ -184,17 +183,17 @@ public class CollisionDetection {
             }
         }
         return null;
-    }
+    }*/
 
-    public static float[] getTriangleIntersection2(List<Object3DData> objects, ModelRenderer mRenderer, float windowX, float windowY) {
-        float[] nearHit = unproject(mRenderer, windowX, windowY, 0);
-        float[] farHit = unproject(mRenderer, windowX, windowY, 1);
+    public static float[] getTriangleIntersection(List<Object3DData> objects, ModelRenderer mRenderer, float windowX, float windowY) {
+        float[] nearHit = unProject(mRenderer, windowX, windowY, 0);
+        float[] farHit = unProject(mRenderer, windowX, windowY, 1);
         float[] direction = Math3DUtils.substract(farHit, nearHit);
         Math3DUtils.normalize(direction);
         Object3DData intersected = getBoxIntersection(objects, nearHit, direction);
         if (intersected != null) {
-            Log.d("CollisionDetection", "intersected 2:"+intersected.getId());
-            Octree octree = null;
+            Log.d("CollisionDetection", "intersected: "+intersected.getId());
+            Octree octree;
             synchronized (intersected) {
                 octree = intersected.getOctree();
                 if (octree == null) {
@@ -202,9 +201,11 @@ public class CollisionDetection {
                     intersected.setOctree(octree);
                 }
             }
-            float intersection = getTriangleIntersection2_Impl(octree, nearHit, direction);
+            float intersection = getTriangleIntersectionForOctree(octree, nearHit, direction);
             if (intersection != -1) {
-                return Math3DUtils.add(nearHit, Math3DUtils.multiply(direction, intersection));
+                float[] intersectionPoint = Math3DUtils.add(nearHit, Math3DUtils.multiply(direction, intersection));
+                Log.d("CollisionDetection","Interaction point: "+Arrays.toString(intersectionPoint));
+                return intersectionPoint;
             }
             else {
                 return null;
@@ -213,25 +214,27 @@ public class CollisionDetection {
         return null;
     }
 
-    private static float getTriangleIntersection2_Impl(Octree octree, float[] rayOrigin, float[] rayDirection){
+    private static float getTriangleIntersectionForOctree(Octree octree, float[] rayOrigin, float[] rayDirection){
         //Log.v("CollisionDetection","Testing octree "+octree);
         if (!isBoxIntersection(rayOrigin, rayDirection, octree.boundingBox)) {
+            Log.d("CollisionDetection","No octree intersection");
             return -1;
         }
         Octree selected = null;
         float min = Float.MAX_VALUE;
-        for (Octree child : octree.children) {
+        for (Octree child : octree.getChildren()) {
             if (child == null) {
                 continue;
             }
-            float intersection = getTriangleIntersection2_Impl(child, rayOrigin, rayDirection);
+            float intersection = getTriangleIntersectionForOctree(child, rayOrigin, rayDirection);
             if (intersection != -1 && intersection < min){
+                Log.d("CollisionDetection","Octree intersection: "+intersection);
                 min = intersection;
                 selected = child;
             }
         }
         float[] selectedTriangle = null;
-        for (float[] triangle : octree.triangles){
+        for (float[] triangle : octree.getTriangles()){
             float[] vertex0 = new float[]{triangle[0], triangle[1], triangle[2]};
             float[] vertex1 = new float[]{triangle[4], triangle[5], triangle[6]};
             float[] vertex2 = new float[]{triangle[8], triangle[9], triangle[10]};
@@ -240,17 +243,21 @@ public class CollisionDetection {
                 min = intersection;
                 selectedTriangle = triangle;
                 selected = octree;
+
             }
         }
         if (min != Float.MAX_VALUE){
+            Log.d("CollisionDetection","Intersection at distance: "+min);
+            Log.d("CollisionDetection","Intersection at triangle: "+ Arrays.toString(selectedTriangle));
+            Log.d("CollisionDetection","Intersection at octree: "+ selected);
             return min;
         }
         return -1;
     }
 
-    public static float getTriangleIntersection(float[] rayOrigin,
-                                                float[] rayVector,
-                                                float[] vertex0, float[] vertex1, float[] vertex2) {
+    private static float getTriangleIntersection(float[] rayOrigin,
+                                                 float[] rayVector,
+                                                 float[] vertex0, float[] vertex1, float[] vertex2) {
         float EPSILON = 0.0000001f;
         float[] edge1, edge2, h, s, q;
         float a, f, u, v;

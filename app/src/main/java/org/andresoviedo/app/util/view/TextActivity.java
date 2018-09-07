@@ -1,11 +1,11 @@
 package org.andresoviedo.app.util.view;
 
-import org.andresoviedo.dddmodel2.R;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
+
+import org.andresoviedo.dddmodel2.R;
 
 public class TextActivity extends Activity {
 
