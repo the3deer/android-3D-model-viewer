@@ -88,7 +88,7 @@ Try it
 ======
 
   * Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2
-  * APK: [app-release.apk](app/build/outputs/apk/app-release.apk)
+  * APK: [app-release.apk](app/build/outputs/apk/release/app-release.apk)
   * Source code: clone the repository, compile with gradle and install with adb
 
 ```

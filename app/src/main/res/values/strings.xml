@@ -18,7 +18,7 @@
         <item>Demo</item>
         <item>Help</item>
         <item>About</item>
-        <item>GitHub</item>
+        <!--<item>GitHub</item>-->
         <item>Exit</item>
     </string-array>
 
