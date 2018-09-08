@@ -21,6 +21,10 @@ News (07/09/2018)
 * Fix: Refactoring
 * Fix: Several bugs fixed
 
+Demo
+====
+
+Checkout this to see the features of the application: https://www.youtube.com/watch?v=PV92DKohXXk
 
 Android Market
 ==============
@@ -87,6 +91,8 @@ Features
 Try it
 ======
 
+You can install the application in either of these ways:
+
   * Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2
   * APK: [app-release.apk](app/build/outputs/apk/release/app-release.apk)
   * Source code: clone the repository, compile with gradle and install with adb
@@ -98,8 +104,8 @@ Try it
     adb shell am start -n org.andresoviedo.dddmodel2/org.andresoviedo.app.model3D.MainActivity
 ```
 
-* Open the application. You should see a menu. From there you can load models
-* Once the model is rendered, pinch and rotate to see the 3D scene from another perspective.
+Open the application. You should see a menu. From there you can load models
+Once the model is rendered, pinch and rotate to see the 3D scene from another perspective.
 
 
 Screenshot
@@ -110,8 +116,6 @@ Screenshot
 ![Screenshot3](screenshots/screenshot3.png)
 ![Screenshot4](screenshots/screenshot4.png)
 ![Screenshot5](screenshots/screenshot5.png)
-![Screenshot6](screenshots/screenshot6.png)
-![Screenshot7](screenshots/screenshot7.png)
 ![cowboy.gif](screenshots/cowboy.gif)
 ![stormtrooper.gif](screenshots/stormtrooper.gif)
 
