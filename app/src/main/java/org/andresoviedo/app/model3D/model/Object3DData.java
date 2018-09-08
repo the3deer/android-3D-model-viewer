@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +63,7 @@ public class Object3DData {
 	private FloatBuffer vertexBuffer = null;
 	private FloatBuffer vertexNormalsBuffer = null;
 	private IntBuffer drawOrderBuffer = null;
+	private ShortBuffer shortDrawOrderBuffer = null;  // in case system doesn't support ints
 	private ArrayList<Tuple3> texCoords;
 	private Faces faces;
 	private FaceMaterials faceMats;
@@ -85,6 +87,7 @@ public class Object3DData {
 	protected float[] rotation = new float[] { 0f, 0f, 0f };
 	protected float[] scale = new float[] { 1, 1, 1 };
 	protected float[] modelMatrix = new float[16];
+
 	{
 		Matrix.setIdentityM(modelMatrix,0);
 	}
@@ -332,6 +335,20 @@ public class Object3DData {
 
 	public IntBuffer getDrawOrder() {
 		return drawOrderBuffer;
+	}
+
+    /**
+     * In case OpenGL doesn't support using GL_UNSIGNED_INT for glDrawElements(), then use this buffer
+     * @return the draw buffer as short
+     */
+	public ShortBuffer getDrawOrderAsShort() {
+		if (shortDrawOrderBuffer == null) {
+			shortDrawOrderBuffer = createNativeByteBuffer(drawOrderBuffer.capacity() * 2).asShortBuffer();
+			for (int i=0; i<drawOrderBuffer.capacity(); i++){
+			    shortDrawOrderBuffer.put((short)drawOrderBuffer.get(i));
+            }
+		}
+		return shortDrawOrderBuffer;
 	}
 
 	public Object3DData setDrawOrder(IntBuffer drawBuffer) {

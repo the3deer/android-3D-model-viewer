@@ -156,11 +156,14 @@ public final class GLUtil {
 	 * @param glOperation
 	 *            - Name of the OpenGL call to check.
 	 */
-	public static void checkGlError(String glOperation) {
-		int error;
-		while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-			// Log.e(TAG, glOperation + ": glError " + error);
+	public static boolean checkGlError(String glOperation) {
+		int glError;
+		boolean error = false;
+		while ((glError = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+			Log.e(TAG, glOperation + ": glError " + glError);
+			error = true;
 			// throw new RuntimeException(glOperation + ": glError " + error);
 		}
+		return error;
 	}
 }

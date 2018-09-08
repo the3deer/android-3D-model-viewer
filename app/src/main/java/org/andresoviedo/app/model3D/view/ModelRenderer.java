@@ -197,8 +197,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 						Object3DData wireframe = wireframes.get(objData);
 						if (wireframe == null || changed) {
 							Log.i("ModelRenderer","Generating wireframe model...");
-//							wireframe = Object3DBuilder.buildWireframe4(objData);
-//							wireframe.centerAndScale(5.0f);
 							wireframe = Object3DBuilder.buildWireframe(objData);
 							wireframes.put(objData, wireframe);
 						}
@@ -219,7 +217,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 						this.skeleton.put(objData, skeleton);
 					}
 					animator.update(skeleton);
-					drawerObject = drawer.getDrawer(skeleton, scene.isDrawTextures(), scene.isDrawLighting(), scene
+					drawerObject = drawer.getDrawer(skeleton, false, scene.isDrawLighting(), scene
                             .isDrawAnimation());
 					drawerObject.draw(skeleton, modelProjectionMatrix, modelViewMatrix,-1, lightPosInEyeSpace);
 				} else {

@@ -76,8 +76,7 @@ public final class STLLoaderTask extends LoaderTask {
 
             int totalFaces = stlFileReader.getNumOfFacets()[0];
             boolean first = true;
-            while (stlFileReader.getNextFacet(normal, vertices) && counter < totalFaces) {
-                Log.d("STLLoaderTask", "Loading facet " + counter++ + "");
+            while (stlFileReader.getNextFacet(normal, vertices) && counter++ < totalFaces) {
                 normalsBuffer.put(normalCounter++, (float) normal[0]);
                 normalsBuffer.put(normalCounter++, (float) normal[1]);
                 normalsBuffer.put(normalCounter++, (float) normal[2]);

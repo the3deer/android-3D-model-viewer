@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Draw using single color, texture and skeleton and texture and no light
+ * Draw using single color, texture and skeleton and no light
  *
  * @author andresoviedo
  *
@@ -29,27 +29,30 @@ class Object3DV91 extends Object3DImpl {
                     // texture variables
                     + "attribute vec2 a_TexCoordinate;\n"
                     + "varying vec2 v_TexCoordinate;\n"
-                    + "void main(){             \n"
+                    + "void main()                    \n"
+                    + "{                              \n"
+                    + "  vec4 totalLocalPos = vec4(0.0);\n"
 
-		/*+ "  for(int i=0;i<MAX_WEIGHTS;i++){\n"
-		+ "    mat4 jointTransform = jointTransforms[in_jointIndices[i]];\n"
-		+ "    vec4 posePosition = jointTransform * a_Position;\n"
-		+ "    totalLocalPos += posePosition * in_weights[i];\n"
-		+ "  }\n"*/
+                    /*+ "  for(int i=0;i<MAX_WEIGHTS;i++){\n"
+                    + "    mat4 jointTransform = jointTransforms[in_jointIndices[i]];\n"
+                    + "    vec4 posePosition = jointTransform * a_Position;\n"
+                    + "    totalLocalPos += posePosition * in_weights[i];\n"
+                    + "  }\n"*/
 
                     + "    mat4 jointTransform = jointTransforms[int(in_jointIndices[0])];\n"
                     + "    vec4 posePosition = jointTransform * a_Position;\n"
-                    + "    vec4 totalLocalPos = posePosition * in_weights[0];\n"
+		            + "    totalLocalPos += posePosition * in_weights[0];\n"
 
                     + "    jointTransform = jointTransforms[int(in_jointIndices[1])];\n"
-                    + "    vec4 posePosition2 = jointTransform * a_Position;\n"
-                    + "    totalLocalPos += posePosition2 * in_weights[1];\n"
+                    + "    posePosition = jointTransform * a_Position;\n"
+                    + "    totalLocalPos += posePosition * in_weights[1];\n"
 
                     + "    jointTransform = jointTransforms[int(in_jointIndices[2])];\n"
-                    + "    vec4 posePosition3 = jointTransform * a_Position;\n"
-                    + "    totalLocalPos += posePosition3 * in_weights[2];\n"
+                    + "    posePosition = jointTransform * a_Position;\n"
+                    + "    totalLocalPos += posePosition * in_weights[2];\n"
 
-                    + "  gl_Position = u_MVPMatrix * totalLocalPos;\n" // * totalLocalPos
+
+		            + "  gl_Position = u_MVPMatrix * totalLocalPos;\n"
                     + "  gl_PointSize = 2.5;         \n"
 
                     +"   v_Color = vColor;\n"
@@ -72,7 +75,7 @@ class Object3DV91 extends Object3DImpl {
 
     public Object3DV91() {
         super("V91", vertexShaderCode, fragmentShaderCode, "a_Position" , "in_jointIndices", "in_weights",
-                "jointTransforms", "vColor", "a_TexCoordinate");
+                "a_TexCoordinate");
     }
 
     @Override
@@ -135,11 +138,6 @@ class Object3DV91 extends Object3DImpl {
         /*for (int i:handles) {
             GLES20.glDisableVertexAttribArray(i);
         }*/
-    }
-
-    @Override
-    protected boolean supportsMvMatrix() {
-        return true;
     }
 
     @Override
