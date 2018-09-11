@@ -1,0 +1,13 @@
+newmtl cube1_auv
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd ship.bmp
+newmtl _Anna_V_1stwire_13400
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd ship.jpg
+Ni 1.00
