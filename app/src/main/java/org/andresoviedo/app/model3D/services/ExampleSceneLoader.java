@@ -79,7 +79,7 @@ public class ExampleSceneLoader extends SceneLoader {
                     ContentUtils.provideAssets(parent);
 
                     // test loading object
-                    try {
+                    /*try {
                         // this has no color array
                         Object3DData android = Object3DBuilder.loadV5(parent, Uri.parse("assets://assets/models/android.obj"));
                         android.setPosition(new float[] { 0f, 0f, 0f });
@@ -87,7 +87,7 @@ public class ExampleSceneLoader extends SceneLoader {
                         addObject(android);
                     } catch (Exception ex) {
                         errors.add(ex);
-                    }
+                    }*/
 
                     // test cube made of indices
                     Object3DData obj20 = Object3DBuilder.buildSquareV2();
@@ -155,15 +155,14 @@ public class ExampleSceneLoader extends SceneLoader {
                     }
 
                     // test loading object without normals
-                    try {
-                        // this has heterogeneous faces
+                    /*try {
                         Object3DData obj = Object3DBuilder.loadV5(parent, Uri.parse("assets://assets/models/cube4.obj"));
                         obj.setPosition(new float[] { 0f, 2f, -2f });
                         obj.setColor(new float[] { 0.3f, 0.52f, 1f, 1.0f });
                         addObject(obj);
                     } catch (Exception ex) {
                         errors.add(ex);
-                    }
+                    }*/
 
                     /*// test loading collada object
 					try {
@@ -189,7 +188,7 @@ public class ExampleSceneLoader extends SceneLoader {
                             }
 
                             @Override
-                            public void onBuildComplete(List<Object3DData> data) {
+                            public void onLoadComplete(List<Object3DData> data) {
                                 for (Object3DData d : data) {
                                     d.centerAndScale(4, new float[]{0, 0, -2});
                                     addObject(d);

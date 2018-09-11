@@ -63,7 +63,7 @@ public class GeometryLoader {
 		for (XmlNode geometry : geometryNode.getChildren("geometry")) {
 			vertices.clear(); normals.clear(); textures.clear(); indices.clear(); colors.clear();
 			String geometryId = geometry.getAttribute("id");
-			Log.d("GeometryLoader","Loading geometry '"+geometryId+"'");
+			Log.i("GeometryLoader","Loading geometry '"+geometryId+"'");
 			XmlNode meshData = geometry.getChild("mesh");
 			readRawData(meshData, geometryId);
 			List<XmlNode> polys = meshData.getChildren("polylist");
@@ -81,6 +81,7 @@ public class GeometryLoader {
 				texture = color == null? getTexture(material) : null;
 				assembleVertices(triangles, color);
 			}
+			Log.i("GeometryLoader","Texture '"+texture+"'");
 			removeUnusedVertices();
 			initArrays(geometryId);
 			convertDataToArrays();

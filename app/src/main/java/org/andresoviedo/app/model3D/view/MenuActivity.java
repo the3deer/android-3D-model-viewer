@@ -1,10 +1,13 @@
 package org.andresoviedo.app.model3D.view;
 
+import android.Manifest;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -22,12 +25,15 @@ import org.andresoviedo.dddmodel2.R;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 public class MenuActivity extends ListActivity {
 
+    private static final String REPO_URL = "https://github.com/andresoviedo/android-3D-model-viewer/raw/master/models/index";
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1000;
+    private static final int REQUEST_INTERNET_ACCESS = 1001;
     private static final int REQUEST_CODE_OPEN_FILE = 1101;
     private static final int REQUEST_CODE_OPEN_MATERIAL = 1102;
     private static final int REQUEST_CODE_OPEN_TEXTURE = 1103;
@@ -105,11 +111,13 @@ public class MenuActivity extends ListActivity {
     }
 
     private void loadModel() {
-        ContentUtils.showListDialog(this, "File Provider", new String[]{"Embedded Models", "External Storage ",
-                "Content Provider"}, (DialogInterface dialog, int which) -> {
+        ContentUtils.showListDialog(this, "File Provider", new String[]{"Embedded Models", "App Repository",
+                "External Storage ", "Content Provider"}, (DialogInterface dialog, int which) -> {
             if (which == 0) {
                 loadModelFromAssets();
             } else if (which == 1) {
+                loadModelFromRepository();
+            } else if (which == 2) {
                 loadModelFromSdCard();
             } else {
                 loadModelFromContentProvider();
@@ -128,9 +136,56 @@ public class MenuActivity extends ListActivity {
                 });
     }
 
+    private void loadModelFromRepository() {
+        if (!AndroidUtils.checkPermission(this, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
+            return;
+        }
+        new LoadRepoIndexTask().execute();
+    }
+
+    class LoadRepoIndexTask extends AsyncTask<Void, Integer, List<String>> {
+
+        private final ProgressDialog dialog;
+
+        public LoadRepoIndexTask() {
+            this.dialog = new ProgressDialog(MenuActivity.this);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            this.dialog.setMessage("Loading...");
+            this.dialog.setCancelable(false);
+            this.dialog.show();
+        }
+
+        @Override
+        protected List<String> doInBackground(Void... voids) {
+            return ContentUtils.getIndex(REPO_URL);
+        }
+
+        @Override
+        protected void onPostExecute(List<String> strings) {
+            if (dialog.isShowing()){
+                dialog.dismiss();
+            }
+            if (strings == null){
+                Toast.makeText(MenuActivity.this, "Couldn't load repo index", Toast.LENGTH_LONG).show();
+                return;
+            }
+            ContentUtils.createChooserDialog(MenuActivity.this, "Select file", null,
+                    strings, SUPPORTED_FILE_TYPES_REGEX,
+                    (String file) -> {
+                        if (file != null) {
+                            launchModelRendererActivity(Uri.parse(file));
+                        }
+                    });
+        }
+    }
+
     private void loadModelFromSdCard() {
         // check permission starting from android API 23 - Marshmallow
-        if (!FileUtils.checkReadExternalStoragePermissionOrRequest(this, REQUEST_READ_EXTERNAL_STORAGE)) {
+        if (!AndroidUtils.checkPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE, REQUEST_READ_EXTERNAL_STORAGE)) {
             return;
         }
         FileUtils.createChooserDialog(this, "Select file", null, null, SUPPORTED_FILE_TYPES_REGEX,
@@ -163,7 +218,10 @@ public class MenuActivity extends ListActivity {
         ContentUtils.setThreadActivity(this);
         switch (requestCode) {
             case REQUEST_READ_EXTERNAL_STORAGE:
-                loadModelFromSdCard();
+                runOnUiThread(this::loadModelFromSdCard);
+                break;
+            case REQUEST_INTERNET_ACCESS:
+                runOnUiThread(this::loadModelFromRepository);
                 break;
             case REQUEST_CODE_OPEN_FILE:
                 if (resultCode != RESULT_OK) {

@@ -31,12 +31,12 @@
         android:orderInCategory="400"
         android:showAsAction="ifRoom"
         android:title="@string/toggle_animation"/>
-   <!-- <item
-        android:id="@+id/model_toggle_skeleton"
+   <item
+        android:id="@+id/model_toggle_collision"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="400"
         android:showAsAction="ifRoom"
-        android:title="@string/toggle_skeleton"/>-->
+        android:title="Toggle Collision"/>
     <item
         android:id="@+id/model_toggle_boundingbox"
         android:icon="@android:drawable/ic_menu_crop"

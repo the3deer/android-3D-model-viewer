@@ -584,6 +584,7 @@ public final class Object3DBuilder {
 			try(InputStream inputStream = ContentUtils.getInputStream(materials.mfnm)) {
 				BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 				materials.readMaterials(br);
+				materials.showMaterials();
 				br.close();
 			} catch (Exception ex){
 			    Log.e("Object3DBuilder","Couldn't load material file "+materials.mfnm+". "+ex.getMessage(), ex);
@@ -649,7 +650,7 @@ public final class Object3DBuilder {
 			ArrayList<Tuple3> texCoords = obj.getTexCoords();
 			if (texCoords != null && texCoords.size() > 0) {
 
-				Log.i("Object3DBuilder", "Allocating/populating texture buffer...");
+				Log.i("Object3DBuilder", "Allocating/populating texture buffer (flipTexCoord:"+obj.isFlipTextCoords()+")...");
 				FloatBuffer textureCoordsBuffer = createNativeByteBuffer(texCoords.size() * 2 * 4).asFloatBuffer();
 				for (Tuple3 texCor : texCoords) {
 					textureCoordsBuffer.put(texCor.getX());

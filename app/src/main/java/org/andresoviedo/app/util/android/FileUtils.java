@@ -1,16 +1,10 @@
 package org.andresoviedo.app.util.android;
 
-import android.Manifest;
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import java.io.File;
@@ -28,29 +22,6 @@ public class FileUtils {
     @FunctionalInterface
     public interface Callback {
         void onClick(File file);
-    }
-
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public static boolean checkReadExternalStoragePermissionOrRequest(Activity context, int callback) {
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-            return true;
-        }
-        String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
-        if (checkPermission(context, permission)) {
-            return true;
-        }
-        requestPermission(context, permission, callback);
-        return false;
-
-    }
-
-    public static boolean checkPermission(Activity context, String permission) {
-        int permissionCheck = ContextCompat.checkSelfPermission(context, permission);
-        return permissionCheck == PackageManager.PERMISSION_GRANTED;
-    }
-
-    public static void requestPermission(Activity context, String permission, int callback) {
-        ActivityCompat.requestPermissions(context, new String[]{permission}, callback);
     }
 
     /* Checks if external storage is available for read and write */

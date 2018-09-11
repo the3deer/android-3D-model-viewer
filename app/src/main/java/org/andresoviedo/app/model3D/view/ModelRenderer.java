@@ -57,6 +57,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 	// light position required to render with lighting
 	private final float[] lightPosInEyeSpace = new float[4];
+	/**
+	 * Whether the info of the model has been written to console log
+	 */
+	private boolean infoLogged = false;
 
 	/**
 	 * Skeleton Animator
@@ -174,6 +178,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 				Object3D drawerObject = drawer.getDrawer(objData, scene.isDrawTextures(), scene.isDrawLighting(),
                         scene.isDrawAnimation());
+
+				if (!infoLogged) {
+					Log.i("ModelRenderer","Using drawer "+drawerObject.getClass());
+					infoLogged = true;
+				}
 
 				Integer textureId = textures.get(objData.getTextureData());
 				if (textureId == null && objData.getTextureData() != null) {

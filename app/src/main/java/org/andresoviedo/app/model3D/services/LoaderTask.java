@@ -58,8 +58,7 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 		    callback.onStart();
 			List<Object3DData> data = build();
 			build(data);
-			callback.onLoadComplete(data);
-            callback.onBuildComplete(data);
+            callback.onLoadComplete(data);
 			return  data;
 		} catch (Exception ex) {
             callback.onLoadError(ex);
@@ -112,7 +111,5 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
         void onLoadError(Exception ex);
 
         void onLoadComplete(List<Object3DData> data);
-
-        void onBuildComplete(List<Object3DData> data);
     }
 }

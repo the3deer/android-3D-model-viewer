@@ -432,7 +432,7 @@ public class WavefrontLoader {
 	public void reportOnModel() {
 		Log.i("WavefrontLoader","No. of vertices: " + vertsBuffer.capacity()/3);
 		Log.i("WavefrontLoader","No. of normal coords: " + numNormals);
-		Log.i("WavefrontLoader","No. of tex coords: " + texCoords.size());
+		Log.i("WavefrontLoader","No. of tex coords: " + numTextures);
 		Log.i("WavefrontLoader","No. of faces: " + numFaces);
 
 		modelDims.reportDimensions();
@@ -679,13 +679,14 @@ public class WavefrontLoader {
 			return null; // means an error occurred
 		} // end of readTuple3()
 
-		public void showMaterials()
 		// list all the Material objects
-		{
+		public void showMaterials(){
+			if (materials == null || materials.isEmpty()){
+				Log.i("WavefrontLoader","No materials available");
+				return;
+			}
 			Log.i("WavefrontLoader","No. of materials: " + materials.size());
-			Material m;
-			for (int i = 0; i < materials.size(); i++) {
-				m = (Material) materials.get(i);
+			for (Material m : materials.values()) {
 				m.showMaterial();
 				// System.out.println();
 			}
@@ -894,12 +895,15 @@ public class WavefrontLoader {
 			try {
 				line = line.substring(2); // skip the "f "
 				String[] tokens = null;
+
+				// cpu optimization
 				if (line.contains("  ")){
 					tokens = line.split(" +");
 				}
 				else{
 					tokens = line.split(" ");
 				}
+
 				int numTokens = tokens.length; // number of v/vt/vn tokens
 				// create arrays to hold the v, vt, vn indicies
 

@@ -174,6 +174,7 @@ public class ColladaLoader {
 			Log.e("ColladaLoader","Problem loading skinning/skeleton data",ex);
 		}
 
+		Log.i("ColladaLoader","Extracting geometry...");
 		GeometryLoader g = new GeometryLoader(node.getChild("library_geometries"), node.getChild("library_materials"),
 				node.getChild("library_effects"), node.getChild("library_images"), skinningData, jointsData);
 		List<MeshData> meshData = g.extractModelData();

@@ -83,6 +83,10 @@ public class SceneLoader implements LoaderTask.Callback {
      */
     private boolean drawSkeleton = false;
     /**
+     * Toggle collision detection
+     */
+    private boolean isCollision = false;
+    /**
      * Object selected by the user
      */
     private Object3DData selectedObject = null;
@@ -141,11 +145,7 @@ public class SceneLoader implements LoaderTask.Callback {
     }
 
     private void makeToastText(final String text, final int toastDuration) {
-        parent.runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(parent.getApplicationContext(), text, toastDuration).show();
-            }
-        });
+        parent.runOnUiThread(() -> Toast.makeText(parent.getApplicationContext(), text, toastDuration).show());
     }
 
     public Object3DData getLightBulb() {
@@ -286,8 +286,9 @@ public class SceneLoader implements LoaderTask.Callback {
         return animateModel;
     }
 
-    public void toggleSkeleton() {
-        this.drawSkeleton = !drawSkeleton;
+    public void toggleCollision() {
+        this.isCollision = !isCollision;
+        makeToastText("Collisions: "+isCollision, Toast.LENGTH_SHORT);
     }
 
     public boolean isDrawTextures() {
@@ -302,30 +303,31 @@ public class SceneLoader implements LoaderTask.Callback {
         return drawSkeleton;
     }
 
+    public boolean isCollision() {
+        return isCollision;
+    }
+
     @Override
     public void onStart(){
         ContentUtils.setThreadActivity(parent);
     }
 
     @Override
-    public void onBuildComplete(List<Object3DData> datas) {
+    public void onLoadComplete(List<Object3DData> datas) {
+        // TODO: move texture load to LoaderTask
         for (Object3DData data : datas) {
             if (data.getTextureData() == null && data.getTextureFile() != null) {
+                Log.i("LoaderTask","Loading texture... "+data.getTextureFile());
                 try (InputStream stream = ContentUtils.getInputStream(data.getTextureFile())){
                     if (stream != null) {
                         data.setTextureData(IOUtils.read(stream));
                     }
                 } catch (IOException ex) {
-                    makeToastText("Problem loading texture " + data.getTextureFile(), Toast.LENGTH_SHORT);
+                    data.addError("Problem loading texture " + data.getTextureFile());
                 }
             }
         }
-        final String elapsed = (SystemClock.uptimeMillis() - startTime) / 1000 + " secs";
-        makeToastText("Build complete (" + elapsed + ")", Toast.LENGTH_LONG);
-    }
-
-    @Override
-    public void onLoadComplete(List<Object3DData> datas) {
+        // TODO: move error alert to LoaderTask
         List<String> allErrors = new ArrayList<>();
         for (Object3DData data : datas) {
             addObject(data);
@@ -334,14 +336,15 @@ public class SceneLoader implements LoaderTask.Callback {
         if (!allErrors.isEmpty()){
             makeToastText(allErrors.toString(), Toast.LENGTH_LONG);
         }
+        final String elapsed = (SystemClock.uptimeMillis() - startTime) / 1000 + " secs";
+        makeToastText("Build complete (" + elapsed + ")", Toast.LENGTH_LONG);
+        ContentUtils.setThreadActivity(null);
     }
 
     @Override
     public void onLoadError(Exception ex) {
         Log.e("SceneLoader", ex.getMessage(), ex);
-        Toast.makeText(parent.getApplicationContext(),
-                "There was a problem building the model: " + ex.getMessage(), Toast.LENGTH_LONG)
-                .show();
+        makeToastText("There was a problem building the model: " + ex.getMessage(), Toast.LENGTH_LONG);
         ContentUtils.setThreadActivity(null);
     }
 
@@ -373,10 +376,13 @@ public class SceneLoader implements LoaderTask.Callback {
                 Log.i("SceneLoader", "Selected object " + objectToSelect.getId());
                 setSelectedObject(objectToSelect);
             }
-            float[] point = CollisionDetection.getTriangleIntersection(getObjects(), parent.getGLView().getModelRenderer(), x, y);
-            if (point != null) {
-                Log.i("SceneLoader","Drawing intersection point: "+ Arrays.toString(point));
-                addObject(Object3DBuilder.buildPoint(point).setColor(new float[]{1.0f, 0f, 0f, 1f}));
+            if (isCollision()) {
+                Log.d("SceneLoader", "Detecting collision...");
+                float[] point = CollisionDetection.getTriangleIntersection(getObjects(), parent.getGLView().getModelRenderer(), x, y);
+                if (point != null) {
+                    Log.i("SceneLoader", "Drawing intersection point: " + Arrays.toString(point));
+                    addObject(Object3DBuilder.buildPoint(point).setColor(new float[]{1.0f, 0f, 0f, 1f}));
+                }
             }
         }
     }
