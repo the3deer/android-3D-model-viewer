@@ -12,11 +12,13 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (07/09/2018)
+News (11/09/2018)
 =================
 
+* New: Reduced app size to only 1 Mbyte
 * New: Skeleton Animation
 * New: File chooser to load files from any where
+* New: Load models from app repository
 * Fix: Collada Animator Performance improved
 * Fix: Refactoring
 * Fix: Several bugs fixed
@@ -156,6 +158,9 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 2.2.0 (11/09/2018)
+  - (n) Load models from app repository
+  - (i) Reduced app size to only 1 Megabyte
 - 2.1.0 (07/09/2018)
   - (n) Skeleton Animation
   - (n) File chooser to load files from any where
