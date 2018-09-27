@@ -14,8 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import org.andresoviedo.android_3d_model_engine.services.ExampleSceneLoader;
-import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
+import org.andresoviedo.app.model3D.demo.ExampleSceneLoader;
+import org.andresoviedo.app.model3D.demo.SceneLoader;
 import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.dddmodel2.R;
 

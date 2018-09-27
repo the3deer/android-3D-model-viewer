@@ -1,4 +1,4 @@
-package org.andresoviedo.android_3d_model_engine.services;
+package org.andresoviedo.app.model3D.demo;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
@@ -7,7 +7,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.andresoviedo.android_3d_model_engine.model.Object3DBuilder;
+import org.andresoviedo.android_3d_model_engine.services.Object3DBuilder;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.app.model3D.view.ModelActivity;
 import org.andresoviedo.util.android.ContentUtils;

@@ -1,11 +1,14 @@
-package org.andresoviedo.android_3d_model_engine.model;
+package org.andresoviedo.android_3d_model_engine.drawer;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
 
-import org.andresoviedo.android_3d_model_engine.util.GLUtil;
+import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
+import org.andresoviedo.android_3d_model_engine.model.Object3D;
+import org.andresoviedo.android_3d_model_engine.model.Object3DData;
+import org.andresoviedo.util.android.GLUtil;
 
 import java.nio.Buffer;
 import java.nio.FloatBuffer;

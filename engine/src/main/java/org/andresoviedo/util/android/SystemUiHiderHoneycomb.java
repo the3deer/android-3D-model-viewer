@@ -1,4 +1,4 @@
-package org.andresoviedo.android_3d_model_engine.util;
+package org.andresoviedo.util.android;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

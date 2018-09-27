@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
-import org.andresoviedo.android_3d_model_engine.R;
+import org.andresoviedo.dddmodel2.R;
 
 
 public class TextActivity extends Activity {

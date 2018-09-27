@@ -1,4 +1,4 @@
-package org.andresoviedo.android_3d_model_engine.entities;
+package org.andresoviedo.android_3d_model_engine.model;
 
 import android.opengl.Matrix;
 
@@ -143,7 +143,7 @@ public final class BoundingBox {
 
     @Override
     public String toString() {
-        return "BoundingBox{" +
+        return "BoundingBoxBuilder{" +
                 "id='" + id + '\'' +
                 ", xMin=" + xMin +
                 ", xMax=" + xMax +

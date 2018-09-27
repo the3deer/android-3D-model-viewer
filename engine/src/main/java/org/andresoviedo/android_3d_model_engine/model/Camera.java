@@ -1,11 +1,9 @@
-package org.andresoviedo.android_3d_model_engine.entities;
+package org.andresoviedo.android_3d_model_engine.model;
 
 // http://stackoverflow.com/questions/14607640/rotating-a-vector-in-3d-space
 
 import android.opengl.Matrix;
 import android.util.Log;
-
-import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
 
 /*
  Class Name:
@@ -38,7 +36,6 @@ public class Camera {
 	public float xView, yView, zView; // Look at position.
 	public float xUp, yUp, zUp; // Up direction.
 
-	private SceneLoader scene;
 	private final BoundingBox boundingBox = new BoundingBox("scene",-CAMERA_MAX_ZOOM,CAMERA_MAX_ZOOM,-CAMERA_MAX_ZOOM,CAMERA_MAX_ZOOM,-CAMERA_MAX_ZOOM,CAMERA_MAX_ZOOM);
 
 	float xStrafe = 0, yStrafe = 0, zStrafe = 0; // Strafe direction.
@@ -70,10 +67,6 @@ public class Camera {
 		this.xUp = xUp;
 		this.yUp = yUp;
 		this.zUp = zUp;
-	}
-
-	public void setScene(SceneLoader scene) {
-		this.scene = scene;
 	}
 
 	public synchronized void animate(){
@@ -212,8 +205,8 @@ public class Camera {
 		}
 		/*List<Object3DData> objects = scene.getObjects();
 		for (int i = 0; objects != null && i < objects.size(); i++) {
-			BoundingBox boundingBox = objects.get(i).getBoundingBox();
-			// Log.d("Camera","BoundingBox? "+boundingBox);
+			BoundingBoxBuilder boundingBox = objects.get(i).getBoundingBox();
+			// Log.d("Camera","BoundingBoxBuilder? "+boundingBox);
 			if (boundingBox != null && boundingBox.insideBounds(
 					buffer[0] / buffer[3]
 					, buffer[1] / buffer[3]

@@ -12,13 +12,15 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (11/09/2018)
+News (27/09/2018)
 =================
 
 * New: Reduced app size to only 1 Mbyte
 * New: Skeleton Animation
 * New: File chooser to load files from any where
 * New: Load models from app repository
+* New: Externalized 3d engine
+* New: Wiki: https://github.com/andresoviedo/android-3D-model-viewer/wiki/Documentation
 * Fix: Collada Animator Performance improved
 * Fix: Refactoring
 * Fix: Several bugs fixed
@@ -27,6 +29,7 @@ Demo
 ====
 
 Checkout this to see the features of the application: https://www.youtube.com/watch?v=PV92DKohXXk
+
 
 Android Market
 ==============
@@ -62,7 +65,7 @@ Whats next
 
 * Stabilize app performance
 * Collada:  Show bind pose, key frames and variate speed
-* Code refactoring
+* Anaglyph support
 * Carboard support
 * Chromecast support
 
@@ -134,6 +137,12 @@ You can run application in an emulator
     adb -s emulator-5554 push .\app\src\main\assets\models /sdcard/download
 
 
+Documentation
+=============
+
+https://github.com/andresoviedo/android-3D-model-viewer/wiki/Documentation
+
+
 Final Notes
 ===========
 
@@ -158,6 +167,9 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 2.3.0 (27/09/2018)
+  - (n) Externalized 3d engine into android library module
+  - (n) Wiki initial documentation
 - 2.2.0 (11/09/2018)
   - (n) Load models from app repository
   - (i) Reduced app size to only 1 Megabyte

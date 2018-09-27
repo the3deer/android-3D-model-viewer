@@ -1,4 +1,4 @@
-package org.andresoviedo.android_3d_model_engine.model;
+package org.andresoviedo.android_3d_model_engine.drawer;
 
 /**
  * Drawer using color, textures & lights

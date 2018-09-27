@@ -6,14 +6,15 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.animation.Animator;
-import org.andresoviedo.android_3d_model_engine.entities.Camera;
+import org.andresoviedo.android_3d_model_engine.drawer.DrawerFactory;
+import org.andresoviedo.android_3d_model_engine.model.Camera;
 import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Object3D;
-import org.andresoviedo.android_3d_model_engine.model.Object3DBuilder;
+import org.andresoviedo.android_3d_model_engine.services.Object3DBuilder;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
-import org.andresoviedo.android_3d_model_engine.model.Object3DImpl;
-import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
-import org.andresoviedo.android_3d_model_engine.util.GLUtil;
+import org.andresoviedo.android_3d_model_engine.drawer.Object3DImpl;
+import org.andresoviedo.app.model3D.demo.SceneLoader;
+import org.andresoviedo.util.android.GLUtil;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
@@ -38,7 +39,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	// frustrum - fartest pixel
 	private static final float far = 100f;
 
-	private Object3DBuilder drawer;
+	private DrawerFactory drawer;
 	// The wireframe associated shape (it should be made of lines only)
 	private Map<Object3DData, Object3DData> wireframes = new HashMap<Object3DData, Object3DData>();
 	// The loaded textures
@@ -103,7 +104,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 		GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
 		// This component will draw the actual models using OpenGL
-		drawer = new Object3DBuilder();
+		drawer = new DrawerFactory();
 	}
 
 	@Override

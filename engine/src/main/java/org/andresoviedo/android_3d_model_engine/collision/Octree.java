@@ -3,7 +3,7 @@ package org.andresoviedo.android_3d_model_engine.collision;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import org.andresoviedo.android_3d_model_engine.entities.BoundingBox;
+import org.andresoviedo.android_3d_model_engine.model.BoundingBox;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.util.math.Math3DUtils;
 

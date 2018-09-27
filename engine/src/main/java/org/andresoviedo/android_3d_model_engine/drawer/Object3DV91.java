@@ -1,8 +1,10 @@
-package org.andresoviedo.android_3d_model_engine.model;
+package org.andresoviedo.android_3d_model_engine.drawer;
 
 import android.opengl.GLES20;
 
-import org.andresoviedo.android_3d_model_engine.util.GLUtil;
+import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
+import org.andresoviedo.android_3d_model_engine.model.Object3DData;
+import org.andresoviedo.util.android.GLUtil;
 
 import java.util.ArrayList;
 import java.util.List;

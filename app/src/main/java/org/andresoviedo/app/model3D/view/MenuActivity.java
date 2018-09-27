@@ -218,10 +218,10 @@ public class MenuActivity extends ListActivity {
         ContentUtils.setThreadActivity(this);
         switch (requestCode) {
             case REQUEST_READ_EXTERNAL_STORAGE:
-                runOnUiThread(this::loadModelFromSdCard);
+                loadModelFromSdCard();
                 break;
             case REQUEST_INTERNET_ACCESS:
-                runOnUiThread(this::loadModelFromRepository);
+                loadModelFromRepository();
                 break;
             case REQUEST_CODE_OPEN_FILE:
                 if (resultCode != RESULT_OK) {
