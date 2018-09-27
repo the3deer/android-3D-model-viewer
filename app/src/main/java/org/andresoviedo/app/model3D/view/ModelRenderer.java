@@ -5,15 +5,15 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import org.andresoviedo.app.model3D.animation.Animator;
-import org.andresoviedo.app.model3D.entities.Camera;
-import org.andresoviedo.app.model3D.model.AnimatedModel;
-import org.andresoviedo.app.model3D.model.Object3D;
-import org.andresoviedo.app.model3D.model.Object3DBuilder;
-import org.andresoviedo.app.model3D.model.Object3DData;
-import org.andresoviedo.app.model3D.model.Object3DImpl;
-import org.andresoviedo.app.model3D.services.SceneLoader;
-import org.andresoviedo.app.model3D.util.GLUtil;
+import org.andresoviedo.android_3d_model_engine.animation.Animator;
+import org.andresoviedo.android_3d_model_engine.entities.Camera;
+import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
+import org.andresoviedo.android_3d_model_engine.model.Object3D;
+import org.andresoviedo.android_3d_model_engine.model.Object3DBuilder;
+import org.andresoviedo.android_3d_model_engine.model.Object3DData;
+import org.andresoviedo.android_3d_model_engine.model.Object3DImpl;
+import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
+import org.andresoviedo.android_3d_model_engine.util.GLUtil;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;

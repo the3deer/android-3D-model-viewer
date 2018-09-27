@@ -8,8 +8,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import org.andresoviedo.app.model3D.entities.Camera;
-import org.andresoviedo.app.model3D.services.SceneLoader;
+import org.andresoviedo.android_3d_model_engine.entities.Camera;
+import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
 import org.andresoviedo.app.model3D.view.ModelRenderer;
 import org.andresoviedo.app.model3D.view.ModelSurfaceView;
 
