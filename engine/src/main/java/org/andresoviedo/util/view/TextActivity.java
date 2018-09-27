@@ -5,7 +5,8 @@ import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
-import org.andresoviedo.dddmodel2.R;
+import org.andresoviedo.android_3d_model_engine.R;
+
 
 public class TextActivity extends Activity {
 
@@ -21,7 +22,7 @@ public class TextActivity extends Activity {
 		setTitle(title);
 		
 		String value = b.getString("text");
-		text = (TextView) findViewById(R.id.text_activity_text);
+		text = findViewById(R.id.text_activity_text);
 		text.setMovementMethod(LinkMovementMethod.getInstance());
 		text.setText(value);
 	}
