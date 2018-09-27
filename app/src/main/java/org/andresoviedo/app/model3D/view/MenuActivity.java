@@ -16,11 +16,11 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader;
-import org.andresoviedo.app.util.android.AndroidUtils;
-import org.andresoviedo.app.util.android.AssetUtils;
-import org.andresoviedo.app.util.android.ContentUtils;
-import org.andresoviedo.app.util.android.FileUtils;
-import org.andresoviedo.app.util.view.TextActivity;
+import org.andresoviedo.util.android.AndroidUtils;
+import org.andresoviedo.util.android.AssetUtils;
+import org.andresoviedo.util.android.ContentUtils;
+import org.andresoviedo.util.android.FileUtils;
+import org.andresoviedo.util.view.TextActivity;
 import org.andresoviedo.dddmodel2.R;
 
 import java.io.File;

@@ -14,8 +14,8 @@ import org.andresoviedo.app.model3D.services.collada.ColladaLoaderTask;
 import org.andresoviedo.app.model3D.services.stl.STLLoaderTask;
 import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoaderTask;
 import org.andresoviedo.app.model3D.view.ModelActivity;
-import org.andresoviedo.app.util.android.ContentUtils;
-import org.andresoviedo.app.util.io.IOUtils;
+import org.andresoviedo.util.android.ContentUtils;
+import org.andresoviedo.util.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,6 +86,10 @@ public class SceneLoader implements LoaderTask.Callback {
      * Toggle collision detection
      */
     private boolean isCollision = false;
+    /**
+     * Toggle 3d anaglyph
+     */
+    private boolean isAnaglyph = false;
     /**
      * Object selected by the user
      */
@@ -305,6 +309,10 @@ public class SceneLoader implements LoaderTask.Callback {
 
     public boolean isCollision() {
         return isCollision;
+    }
+
+    public boolean isAnaglyph() {
+        return isAnaglyph;
     }
 
     @Override

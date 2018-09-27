@@ -6,8 +6,8 @@ import android.util.Log;
 import org.andresoviedo.app.model3D.services.collada.entities.JointData;
 import org.andresoviedo.app.model3D.services.collada.entities.SkeletonData;
 import org.andresoviedo.app.model3D.services.collada.entities.SkinningData;
-import org.andresoviedo.app.util.math.Math3DUtils;
-import org.andresoviedo.app.util.xml.XmlNode;
+import org.andresoviedo.util.math.Math3DUtils;
+import org.andresoviedo.util.xml.XmlNode;
 
 import java.util.List;
 

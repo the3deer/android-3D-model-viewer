@@ -10,8 +10,8 @@ import android.widget.Toast;
 import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.view.ModelActivity;
-import org.andresoviedo.app.util.android.ContentUtils;
-import org.andresoviedo.app.util.io.IOUtils;
+import org.andresoviedo.util.android.ContentUtils;
+import org.andresoviedo.util.io.IOUtils;
 
 import java.io.InputStream;
 import java.util.ArrayList;

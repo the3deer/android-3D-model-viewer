@@ -196,8 +196,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				if (objData.getDrawMode() == GLES20.GL_POINTS){
 					Object3DImpl lightBulbDrawer = (Object3DImpl) drawer.getPointDrawer();
 					lightBulbDrawer.draw(objData,modelProjectionMatrix, modelViewMatrix, GLES20.GL_POINTS,lightPosInEyeSpace);
-				}
-				else if (scene.isDrawWireframe() && objData.getDrawMode() != GLES20.GL_POINTS
+				} else if (scene.isAnaglyph()){
+				// TODO: implement anaglyph
+				} else if (scene.isDrawWireframe() && objData.getDrawMode() != GLES20.GL_POINTS
 						&& objData.getDrawMode() != GLES20.GL_LINES && objData.getDrawMode() != GLES20.GL_LINE_STRIP
 						&& objData.getDrawMode() != GLES20.GL_LINE_LOOP) {
 					// Log.d("ModelRenderer","Drawing wireframe model...");

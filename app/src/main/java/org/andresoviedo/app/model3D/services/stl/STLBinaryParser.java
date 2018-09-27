@@ -13,7 +13,7 @@ package org.andresoviedo.app.model3D.services.stl;
 
 // External imports
 
-import org.andresoviedo.app.util.io.ProgressMonitorInputStream;
+import org.andresoviedo.util.io.ProgressMonitorInputStream;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

@@ -18,7 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.andresoviedo.app.util.android.ContentUtils;
+import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.dddmodel2.R;
 
 import java.io.IOException;

@@ -12,7 +12,7 @@ import org.andresoviedo.app.model3D.services.collada.entities.Vector3f;
 import org.andresoviedo.app.model3D.services.collada.entities.Vector4f;
 import org.andresoviedo.app.model3D.services.collada.entities.Vertex;
 import org.andresoviedo.app.model3D.services.collada.entities.VertexSkinData;
-import org.andresoviedo.app.util.xml.XmlNode;
+import org.andresoviedo.util.xml.XmlNode;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

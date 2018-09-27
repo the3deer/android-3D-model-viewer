@@ -8,7 +8,7 @@ import android.util.Log;
 import org.andresoviedo.app.model3D.model.Object3DBuilder;
 import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.services.LoaderTask;
-import org.andresoviedo.app.util.android.ContentUtils;
+import org.andresoviedo.util.android.ContentUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -19,8 +19,8 @@ import org.andresoviedo.app.model3D.services.collada.entities.MeshData;
 import org.andresoviedo.app.model3D.services.collada.entities.SkeletonData;
 import org.andresoviedo.app.model3D.services.collada.entities.SkinningData;
 import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader;
-import org.andresoviedo.app.util.xml.XmlNode;
-import org.andresoviedo.app.util.xml.XmlParser;
+import org.andresoviedo.util.xml.XmlNode;
+import org.andresoviedo.util.xml.XmlParser;
 
 import java.io.IOException;
 import java.io.InputStream;

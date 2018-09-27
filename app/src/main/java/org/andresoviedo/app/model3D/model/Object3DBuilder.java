@@ -13,9 +13,9 @@ import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Faces;
 import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Material;
 import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Materials;
 import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Tuple3;
-import org.andresoviedo.app.util.android.ContentUtils;
-import org.andresoviedo.app.util.io.IOUtils;
-import org.andresoviedo.app.util.math.Math3DUtils;
+import org.andresoviedo.util.android.ContentUtils;
+import org.andresoviedo.util.io.IOUtils;
+import org.andresoviedo.util.math.Math3DUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;

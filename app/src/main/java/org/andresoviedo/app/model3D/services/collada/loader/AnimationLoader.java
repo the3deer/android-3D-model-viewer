@@ -6,7 +6,7 @@ import android.util.Log;
 import org.andresoviedo.app.model3D.services.collada.entities.AnimationData;
 import org.andresoviedo.app.model3D.services.collada.entities.JointTransformData;
 import org.andresoviedo.app.model3D.services.collada.entities.KeyFrameData;
-import org.andresoviedo.app.util.xml.XmlNode;
+import org.andresoviedo.util.xml.XmlNode;
 
 import java.util.ArrayList;
 import java.util.List;

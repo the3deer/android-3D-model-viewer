@@ -3,7 +3,7 @@ package org.andresoviedo.app.model3D.animation;
 import android.opengl.Matrix;
 
 import org.andresoviedo.app.model3D.services.collada.entities.Vector3f;
-import org.andresoviedo.app.util.math.Quaternion;
+import org.andresoviedo.util.math.Quaternion;
 
 /**
  * 

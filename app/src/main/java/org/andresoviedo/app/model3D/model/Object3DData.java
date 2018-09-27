@@ -12,7 +12,7 @@ import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.FaceMater
 import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Faces;
 import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Materials;
 import org.andresoviedo.app.model3D.services.wavefront.WavefrontLoader.Tuple3;
-import org.andresoviedo.app.util.math.Math3DUtils;
+import org.andresoviedo.util.math.Math3DUtils;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;

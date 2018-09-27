@@ -37,7 +37,7 @@
             android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
         </activity>
         <activity
-            android:name="org.andresoviedo.app.util.view.TextActivity"
+            android:name="org.andresoviedo.util.view.TextActivity"
             android:label="@string/title_activity_text"
             android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
         </activity>

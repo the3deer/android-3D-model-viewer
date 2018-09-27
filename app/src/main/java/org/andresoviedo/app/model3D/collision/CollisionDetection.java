@@ -6,7 +6,7 @@ import android.util.Log;
 import org.andresoviedo.app.model3D.entities.BoundingBox;
 import org.andresoviedo.app.model3D.model.Object3DData;
 import org.andresoviedo.app.model3D.view.ModelRenderer;
-import org.andresoviedo.app.util.math.Math3DUtils;
+import org.andresoviedo.util.math.Math3DUtils;
 
 import java.util.Arrays;
 import java.util.List;

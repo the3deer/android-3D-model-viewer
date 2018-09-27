@@ -34,7 +34,7 @@ import android.opengl.GLES20;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import org.andresoviedo.app.util.android.ContentUtils;
+import org.andresoviedo.util.android.ContentUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
