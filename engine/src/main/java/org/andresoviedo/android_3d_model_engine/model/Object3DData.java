@@ -82,7 +82,8 @@ public class Object3DData {
 	private BoundingBox boundingBox;
 
 	// Transformation data
-	protected float[] position = new float[] { 0f, 0f, 0f };
+	protected float[] globalPosition = new float[] { 0f, 0f, 0f };
+	protected float[] localPosition  = new float[] { 0f, 0f, 0f };
 	protected float[] rotation = new float[] { 0f, 0f, 0f };
 	protected float[] scale = new float[] { 1, 1, 1 };
 	protected float[] modelMatrix = new float[16];
@@ -247,26 +248,59 @@ public class Object3DData {
 		this.textureData = textureData;
 	}
 
-	public Object3DData setPosition(float[] position) {
-		this.position = position;
-		updateModelMatrix();
+	public Object3DData setGlobalPosition ( float x, float y, float z )  {
+		globalPosition[0] = x;
+		globalPosition[1] = y;
+		globalPosition[2] = z;
+		return this;
+	}
+
+	public float[] getGlobalPosition ( )  {
+		return globalPosition;
+	}
+
+	public float getGlobalPositionX ( )  {
+		return globalPosition[0];
+	}
+
+	public float getGlobalPositionY ( )  {
+		return globalPosition[1];
+	}
+
+	public float getGlobalPositionZ ( )  {
+		return globalPosition[2];
+	}
+
+	public Object3DData setPosition ( float x, float y, float z ) {
+		localPosition[0] = x;
+		localPosition[1] = y;
+		localPosition[2] = z;
+		updateModelMatrix ( );
+		return this;
+	}
+
+	public Object3DData setPosition ( float[] position )  {
+		if ( position == null )
+			return this;
+		localPosition = position;
+		updateModelMatrix ( );
 		return this;
 	}
 
 	public float[] getPosition() {
-		return position;
+		return localPosition;
 	}
 
 	public float getPositionX() {
-		return position != null ? position[0] : 0;
+		return localPosition != null ? localPosition[0] : 0;
 	}
 
 	public float getPositionY() {
-		return position != null ? position[1] : 0;
+		return localPosition != null ? localPosition[1] : 0;
 	}
 
 	public float getPositionZ() {
-		return position != null ? position[2] : 0;
+		return localPosition != null ? localPosition[2] : 0;
 	}
 
 	public float[] getRotation() {
@@ -319,13 +353,13 @@ public class Object3DData {
 		return this;
 	}
 
-	private void updateModelMatrix(){
-		Matrix.setIdentityM(modelMatrix,0);
-		Matrix.setRotateM(modelMatrix,0,getRotationX(),1,0,0);
-		Matrix.setRotateM(modelMatrix,0,getRotationY(),0,1,0);
-		Matrix.setRotateM(modelMatrix,0,getRotationY(),0,0,1);
-		Matrix.scaleM(modelMatrix,0,getScaleX(),getScaleY(),getScaleZ());
-		Matrix.translateM(modelMatrix,0,getPositionX(),getPositionY(),getPositionZ());
+	private void updateModelMatrix ( )  {
+		Matrix.setIdentityM ( modelMatrix,0 );
+		Matrix.setRotateM   ( modelMatrix,0, getRotationX ( ),1,0,0 );
+		Matrix.setRotateM   ( modelMatrix,0, getRotationY ( ),0,1,0 );
+		Matrix.setRotateM   ( modelMatrix,0, getRotationZ ( ),0,0,1 );
+        Matrix.translateM   ( modelMatrix,0,  getPositionX ( ), getPositionY ( ), getPositionZ ( ) );
+		Matrix.scaleM       ( modelMatrix,0, getScaleX ( ), getScaleY ( ), getScaleZ ( ) );
 	}
 
 	public float[] getModelMatrix(){

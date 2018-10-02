@@ -5,14 +5,9 @@
     android:versionCode="18"
     android:versionName="2.2.0" >
 
-    <uses-sdk
-        android:minSdkVersion=""
-        android:targetSdkVersion="27"
-        tools:overrideLibrary="android.support.compat, android.arch.lifecycle" />
+    <uses-sdk tools:overrideLibrary="android.support.compat, android.arch.lifecycle" />
 
-    <uses-feature
-        android:glEsVersion="0x00020000"
-        android:required="true" />
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET" />

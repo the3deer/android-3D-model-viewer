@@ -882,5 +882,3 @@ public final class Object3DBuilder {
 		return bb;
 	}
 }
-
-

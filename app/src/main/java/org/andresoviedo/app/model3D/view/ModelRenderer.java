@@ -161,7 +161,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 			Object3DImpl lightBulbDrawer = (Object3DImpl) drawer.getPointDrawer();
 
-			float[] lightModelViewMatrix = lightBulbDrawer.getMvMatrix(lightBulbDrawer.getMMatrix(scene.getLightBulb()),modelViewMatrix);
+            float[] lightModelViewMatrix = lightBulbDrawer.getMvMatrix(scene.getLightBulb().getModelMatrix(),modelViewMatrix);
 
 			// Calculate position of the light in eye space to support lighting
 			Matrix.multiplyMV(lightPosInEyeSpace, 0, lightModelViewMatrix, 0, scene.getLightPosition(), 0);
@@ -282,7 +282,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 		return modelProjectionMatrix;
 	}
 
-	public float[] getModelViewMatrix() {
+	public float[]  getModelViewMatrix() {
 		return modelViewMatrix;
 	}
 }

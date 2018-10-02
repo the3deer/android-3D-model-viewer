@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "org.andresoviedo.dddmodel2"
         minSdkVersion 8
-        targetSdkVersion 27
+        targetSdkVersion 28
     }
 
     signingConfigs {
@@ -30,7 +30,7 @@ android {
         sourceCompatibility 1.8
     }
 }
-
+//
 dependencies {
     implementation 'com.android.support:support-compat:27.1.1'
     implementation project(':engine')

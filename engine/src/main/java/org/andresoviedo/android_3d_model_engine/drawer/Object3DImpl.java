@@ -28,7 +28,6 @@ public abstract class Object3DImpl implements Object3D {
 
     private final String id;
     // Transformations
-    private final float[] mMatrix = new float[16];
     // mvp matrix
     private final float[] mvMatrix = new float[16];
     private final float[] mvpMatrix = new float[16];
@@ -69,9 +68,15 @@ public abstract class Object3DImpl implements Object3D {
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
 
-        float[] mMatrix = getMMatrix(obj);
-        float[] mvMatrix = getMvMatrix(mMatrix, vMatrix);
-        float[] mvpMatrix = getMvpMatrix(mvMatrix, pMatrix);
+        float[] viewMatrix = new float[16];
+        System.arraycopy ( vMatrix, 0, viewMatrix, 0, 16 );
+        float[] mMatrix   = obj.getModelMatrix ( ); //getMMatrix(obj);
+        float[] globalPos = obj.getGlobalPosition ( );
+        if ( globalPos[0] != 0f || globalPos[1] != 0f || globalPos[2] != 0f )  {
+            Matrix.translateM ( viewMatrix, 0, globalPos[0], globalPos[1], globalPos[2] );
+        }
+        float[] mvMatrix  = getMvMatrix (  mMatrix, viewMatrix );
+        float[] mvpMatrix = getMvpMatrix( mvMatrix, pMatrix );
 
         setMvpMatrix(mvpMatrix);
 
@@ -127,25 +132,7 @@ public abstract class Object3DImpl implements Object3D {
         }
     }
 
-    public float[] getMMatrix(Object3DData obj) {
-
-        // calculate object transformation
-        Matrix.setIdentityM(mMatrix, 0);
-        if (obj.getRotation() != null) {
-            Matrix.rotateM(mMatrix, 0, obj.getRotation()[0], 1f, 0f, 0f);
-            Matrix.rotateM(mMatrix, 0, obj.getRotation()[1], 0, 1f, 0f);
-            Matrix.rotateM(mMatrix, 0, obj.getRotationZ(), 0, 0, 1f);
-        }
-        if (obj.getScale() != null) {
-            Matrix.scaleM(mMatrix, 0, obj.getScaleX(), obj.getScaleY(), obj.getScaleZ());
-        }
-        if (obj.getPosition() != null) {
-            Matrix.translateM(mMatrix, 0, obj.getPositionX(), obj.getPositionY(), obj.getPositionZ());
-        }
-        return mMatrix;
-    }
-
-    public float[] getMvMatrix(float[] mMatrix, float[] vMatrix) {
+    public float[] getMvMatrix ( float[] mMatrix, float[] vMatrix )  {
         Matrix.multiplyMM(mvMatrix, 0, vMatrix, 0, mMatrix, 0);
         return mvMatrix;
     }
