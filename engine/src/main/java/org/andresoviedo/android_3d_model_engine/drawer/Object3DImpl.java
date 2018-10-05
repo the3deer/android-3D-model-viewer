@@ -60,7 +60,7 @@ public abstract class Object3DImpl implements Object3D {
     }
 
     @Override
-    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
+    public void draw ( Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
                      float[] lightPos) {
 
         // Log.d("Object3DImpl", "Drawing '" + obj.getId() + "' using shader '" + id + "'...");
@@ -83,10 +83,11 @@ public abstract class Object3DImpl implements Object3D {
         int mPositionHandle = setPosition(obj);
 
         int mColorHandle = -1;
-        if (supportsColors()) {
-            mColorHandle = setColors(obj);
-        } else {
-            setColor(obj);
+        if ( supportsColors ( ) )  {
+            mColorHandle = setColors ( obj );
+        }
+        else {
+            setColor ( obj );
         }
 
         int mTextureHandle = -1;
@@ -112,8 +113,10 @@ public abstract class Object3DImpl implements Object3D {
             // Matrix.multiplyMM(mvpMatrixLight, 0, pMatrix, 0, mvMatrixLight, 0);
             setLightPos(lightPos);
         }
-
-        drawShape(obj, drawMode, drawSize);
+        if ( obj.getLineWidth ( ) > 0.0f )
+            GLES20.glLineWidth( obj.getLineWidth ( ) );
+//        if ( obj.getLineWidth ( ) != 0.0f )
+            drawShape(obj, drawMode, drawSize);
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);

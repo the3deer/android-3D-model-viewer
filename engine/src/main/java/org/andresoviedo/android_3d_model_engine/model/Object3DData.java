@@ -32,7 +32,9 @@ public class Object3DData {
 
 	// opengl version to use to draw this object
 	private int version = 5;
-	/**
+    public static final float PI = 3.14159265358979323846f;
+
+    /**
 	 * The directory where the files reside so we can build referenced files in the model like material and textures
 	 * files
 	 */
@@ -56,7 +58,8 @@ public class Object3DData {
 	 * This drawing mode uses the vertexBuffer
 	 */
 	private int drawMode = GLES20.GL_POINTS;
-	private int drawSize;
+	private int drawSize = 0;
+	private float lineWidth = -1.0f; // -1.0f ==> Leave unchanged
 
 	// Model data
 	private FloatBuffer vertexBuffer = null;
@@ -87,8 +90,10 @@ public class Object3DData {
 	protected float[] rotation = new float[] { 0f, 0f, 0f };
 	protected float[] scale = new float[] { 1, 1, 1 };
 	protected float[] modelMatrix = new float[16];
+    private   float[] dummyMatrix = new float[16]; // required to properly rotate
 
-	{
+
+    {
 		Matrix.setIdentityM(modelMatrix,0);
 	}
 
@@ -234,11 +239,19 @@ public class Object3DData {
 		return this;
 	}
 
-	public int getDrawSize() {
-		return drawSize;
-	}
+    public int getDrawSize() {
+        return drawSize;
+    }
 
-	// -----------
+    public void setLineWidth ( float w )  {
+        lineWidth = w;
+    }
+
+    public float getLineWidth ( )  {
+        return lineWidth;
+    }
+
+    // -----------
 
 	public byte[] getTextureData() {
 		return textureData;
@@ -341,25 +354,71 @@ public class Object3DData {
 		return getScale()[2];
 	}
 
-	public Object3DData setRotation(float[] rotation) {
-		this.rotation = rotation;
+	private float limitTo ( float f, float min, float max )  {
+	    while ( f > max )
+            f -= max;
+	    while ( f < min )
+            f += max;
+	    return f;
+    }
+
+	public Object3DData setRotation ( float x, float y, float z ) {
+        x = limitTo ( x, 0.0f, 360.0f );
+        y = limitTo ( y, 0.0f, 360.0f );
+        z = limitTo ( z, 0.0f, 360.0f );
+		this.rotation[0] = x;
+		this.rotation[1] = y;
+		this.rotation[2] = z;
 		updateModelMatrix();
 		return this;
 	}
 
-	public Object3DData setRotationY(float rotY) {
+	public Object3DData setRotation ( float[] rotation )  {
+        rotation[0] = limitTo ( rotation[0], 0.0f, 360.0f );
+        rotation[1] = limitTo ( rotation[1], 0.0f, 360.0f );
+        rotation[2] = limitTo ( rotation[2], 0.0f, 360.0f );
+        this.rotation = rotation;
+		updateModelMatrix();
+		return this;
+	}
+
+	public Object3DData setRotationX ( float rotX )  {
+        rotX = limitTo ( rotX, 0.0f, 360.0f );
+		this.rotation[0] = rotX;
+		updateModelMatrix();
+		return this;
+	}
+
+	public Object3DData setRotationY ( float rotY )  {
+        rotY = limitTo ( rotY, 0.0f, 360.0f );
 		this.rotation[1] = rotY;
+		updateModelMatrix();
+		return this;
+	}
+
+	public Object3DData setRotationZ ( float rotZ )  {
+        rotZ = limitTo ( rotZ, 0.0f, 360.0f );
+		this.rotation[2] = rotZ;
 		updateModelMatrix();
 		return this;
 	}
 
 	private void updateModelMatrix ( )  {
 		Matrix.setIdentityM ( modelMatrix,0 );
-		Matrix.setRotateM   ( modelMatrix,0, getRotationX ( ),1,0,0 );
-		Matrix.setRotateM   ( modelMatrix,0, getRotationY ( ),0,1,0 );
-		Matrix.setRotateM   ( modelMatrix,0, getRotationZ ( ),0,0,1 );
-        Matrix.translateM   ( modelMatrix,0,  getPositionX ( ), getPositionY ( ), getPositionZ ( ) );
-		Matrix.scaleM       ( modelMatrix,0, getScaleX ( ), getScaleY ( ), getScaleZ ( ) );
+        if ( rotation[0] != 0.0f )  {
+		    Matrix.setRotateM ( dummyMatrix, 0, rotation[0],1f,0f,0f );
+            Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
+        }
+        if ( rotation[1] != 0.0f )  {
+		    Matrix.setRotateM ( dummyMatrix, 0, rotation[1],0f,1f,0f );
+            Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
+        }
+        if ( rotation[2] != 0.0f )  {
+    		Matrix.setRotateM ( dummyMatrix, 0, rotation[2],0f,0f,1f );
+            Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
+        }
+		Matrix.scaleM     ( modelMatrix,0, getScaleX ( ), getScaleY ( ), getScaleZ ( ) );
+        Matrix.translateM ( modelMatrix,0,  getPositionX ( ), getPositionY ( ), getPositionZ ( ) );
 	}
 
 	public float[] getModelMatrix(){
