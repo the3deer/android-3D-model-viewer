@@ -1,5 +1,6 @@
 package org.andresoviedo.android_3d_model_engine.model;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
@@ -78,7 +79,9 @@ public class Object3DData {
 	private FloatBuffer vertexNormalsArrayBuffer = null;
 	private FloatBuffer textureCoordsArrayBuffer = null;
 	private List<int[]> drawModeList = null;
-	private byte[] textureData = null;
+//    private byte[] textureData = null;
+    private Bitmap mBMTexture  = null;
+    private int mTextureID     = -1; // set after OpenGL created a Texture buffer.
 	private List<InputStream> textureStreams = null;
 
 	// derived data
@@ -121,19 +124,19 @@ public class Object3DData {
 		this.version = 2;
 	}
 
-	public Object3DData(FloatBuffer vertexArrayBuffer, FloatBuffer textureCoordsArrayBuffer, byte[] texData) {
+	public Object3DData(FloatBuffer vertexArrayBuffer, FloatBuffer textureCoordsArrayBuffer, Bitmap bm ) {
 		this.vertexArrayBuffer = vertexArrayBuffer;
 		this.textureCoordsArrayBuffer = textureCoordsArrayBuffer;
-		this.textureData = texData;
+		this.mBMTexture = bm;
 		this.version = 3;
 	}
 
 	public Object3DData(FloatBuffer vertexArrayBuffer, FloatBuffer vertexColorsArrayBuffer,
-			FloatBuffer textureCoordsArrayBuffer, byte[] texData) {
+			FloatBuffer textureCoordsArrayBuffer, Bitmap bm ) {
 		this.vertexArrayBuffer = vertexArrayBuffer;
 		this.vertexColorsArrayBuffer = vertexColorsArrayBuffer;
 		this.textureCoordsArrayBuffer = textureCoordsArrayBuffer;
-		this.textureData = texData;
+		this.mBMTexture = bm;
 		this.version = 4;
 	}
 
@@ -253,12 +256,19 @@ public class Object3DData {
 
     // -----------
 
-	public byte[] getTextureData() {
-		return textureData;
-	}
+    public void setTextureID ( int id )  {
+        mTextureID = id;
+    }
+    public int getTextureID ( )  {
+        return mTextureID;
+    }
 
-	public void setTextureData(byte[] textureData) {
-		this.textureData = textureData;
+    public Bitmap getTexture ( )  {
+        return mBMTexture;
+    }
+
+	public void setTexture ( Bitmap bm ) {
+		this.mBMTexture = bm;
 	}
 
 	public Object3DData setGlobalPosition ( float x, float y, float z )  {
@@ -332,9 +342,16 @@ public class Object3DData {
 		return rotation[2];
 	}
 
-	public Object3DData setScale(float[] scale){
+    public void setScale ( float x, float y, float z )  {
+        scale[0] = x;
+        scale[1] = y;
+        scale[2] = z;
+        updateModelMatrix ( );
+    }
+
+    public Object3DData setScale ( float[] scale )  {
 		this.scale = scale;
-		updateModelMatrix();
+		updateModelMatrix ( );
 		return this;
 	}
 

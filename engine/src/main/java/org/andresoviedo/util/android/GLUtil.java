@@ -1,7 +1,9 @@
 package org.andresoviedo.util.android;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
@@ -102,45 +104,51 @@ public final class GLUtil {
 		return shader;
 	}
 
-	public static int loadTexture(final InputStream is) {
+	public static Bitmap loadBitmap ( final InputStream is )  {
 		Log.v("GLUtil", "Loading texture '" + is + "' from stream...");
+		final BitmapFactory.Options options = new BitmapFactory.Options ( );
+		// By default, Android applies pre-scaling to bitmaps depending on the resolution of your device and which
+		// resource folder you placed the image in. We don’t want Android to scale our bitmap at all, so to be sure,
+		// we set inScaled to false.
+		options.inScaled = false;
+		// Read in the resource
+		final Bitmap bitmap = BitmapFactory.decodeStream ( is, null, options );
+		if ( bitmap == null )  {
+			throw new RuntimeException("couldnt load bitmap");
+		}
+		return bitmap;
+	}
 
+	public static int loadTexture ( final Bitmap bitmap ) {
 		final int[] textureHandle = new int[1];
 
-		GLES20.glGenTextures(1, textureHandle, 0);
-		GLUtil.checkGlError("glGenTextures");
+		GLES20.glGenTextures (1, textureHandle, 0 );
+		GLUtil.checkGlError  ("glGenTextures" );
 
-		if (textureHandle[0] != 0) {
-			Log.i("GLUtil", "Handler: " + textureHandle[0]);
-
-			final BitmapFactory.Options options = new BitmapFactory.Options();
-			// By default, Android applies pre-scaling to bitmaps depending on the resolution of your device and which
-			// resource folder you placed the image in. We don’t want Android to scale our bitmap at all, so to be sure,
-			// we set inScaled to false.
-			options.inScaled = false;
-
-			// Read in the resource
-			final Bitmap bitmap = BitmapFactory.decodeStream(is, null, options);
-			if (bitmap == null) {
-				throw new RuntimeException("couldnt load bitmap");
-			}
-
+		if ( textureHandle[0] != 0 )  {
+			Log.i("GLUtil", "Handler: " + textureHandle[0] );
 			// Bind to the texture in OpenGL
-			GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
-			GLUtil.checkGlError("glBindTexture");
-			GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-			GLUtil.checkGlError("texImage2D");
-			bitmap.recycle();
-			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+			GLES20.glBindTexture ( GLES20.GL_TEXTURE_2D, textureHandle[0] );
+			GLUtil.checkGlError  ("glBindTexture" );
+			GLUtils.texImage2D   ( GLES20.GL_TEXTURE_2D, 0, bitmap, 0 );
+			GLUtil.checkGlError  ("texImage2D" );
+			//bitmap.recycle ( );
+			GLES20.glTexParameteri ( GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST );
+			GLES20.glTexParameteri ( GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST );
 
 		}
 
-		if (textureHandle[0] == 0) {
-			throw new RuntimeException("Error loading texture.");
+		if ( textureHandle[0] == 0 )  {
+			throw new RuntimeException( "Error loading texture." );
 		}
-
 		return textureHandle[0];
+	}
+
+	public static Bitmap loadBitmap ( final Context ctx, int id )  {
+		final BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inScaled = false;   // No pre-scaling
+		final Bitmap bm = BitmapFactory.decodeResource ( ctx.getResources ( ), id, options );
+		return bm;
 	}
 
 	/**

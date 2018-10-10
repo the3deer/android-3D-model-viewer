@@ -63,7 +63,7 @@ public class DrawerFactory {
 
         boolean isAnimated = usingAnimation && obj instanceof AnimatedModel && ((AnimatedModel) obj).getAnimation() != null;
         boolean isUsingLights = usingLights && (obj.getNormals() != null || obj.getVertexNormalsArrayBuffer() != null);
-        boolean isTextured = usingTextures && obj.getTextureData() != null && obj.getTextureCoordsArrayBuffer() != null;
+        boolean isTextured = usingTextures && obj.getTexture () != null && obj.getTextureCoordsArrayBuffer() != null;
         boolean isColoured = obj.getVertexColorsArrayBuffer() != null;
 
         if (isAnimated) {

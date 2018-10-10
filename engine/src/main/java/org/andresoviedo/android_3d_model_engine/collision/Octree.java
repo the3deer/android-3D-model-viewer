@@ -50,7 +50,7 @@ public class Octree {
         }
     }
 
-    static Octree build(Object3DData object){
+    static Octree build ( Object3DData object )  {
         Log.i("Octree", "Building octree for "+object.getId());
         final Octree ret = new Octree(object.getBoundingBox());
         if (object.getDrawOrder() == null) {

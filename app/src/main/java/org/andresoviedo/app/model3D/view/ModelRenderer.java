@@ -185,14 +185,12 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 					infoLogged = true;
 				}
 
-				Integer textureId = textures.get(objData.getTextureData());
-				if (textureId == null && objData.getTextureData() != null) {
-					Log.i("ModelRenderer","Loading GL Texture...");
-					ByteArrayInputStream textureIs = new ByteArrayInputStream(objData.getTextureData());
-					textureId = GLUtil.loadTexture(textureIs);
-					textureIs.close();
-					textures.put(objData.getTextureData(), textureId);
-				}
+                Integer textureId = objData.getTextureID ( );
+                if ( textureId <= 0 && objData.getTexture ( ) != null )  {  // not yet converted
+                    Log.i("ModelRenderer", "Loading GL Texture...");
+                    textureId = GLUtil.loadTexture ( objData.getTexture ( ) );
+                    objData.setTextureID ( textureId );
+                }
 
 				if (objData.getDrawMode() == GLES20.GL_POINTS){
 					Object3DImpl lightBulbDrawer = (Object3DImpl) drawer.getPointDrawer();

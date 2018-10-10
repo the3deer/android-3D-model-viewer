@@ -1,8 +1,10 @@
 package org.andresoviedo.android_3d_model_engine.services;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.opengl.GLES20;
+import android.opengl.GLU;
 import android.opengl.Matrix;
 import android.util.Log;
 
@@ -16,6 +18,7 @@ import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoad
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoader.Materials;
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoader.Tuple3;
 import org.andresoviedo.util.android.ContentUtils;
+import org.andresoviedo.util.android.GLUtil;
 import org.andresoviedo.util.io.IOUtils;
 import org.andresoviedo.util.math.Math3DUtils;
 
@@ -61,11 +64,7 @@ public final class Object3DBuilder {
 	};
 
 	final static float[] squarePositionData = new float[]{
-			// @formatter:off
-			-0.5f, 0.5f, 0.5f, // top left front
-			-0.5f, -0.5f, 0.5f, // bottom left front
-			0.5f, -0.5f, 0.5f, // bottom right front
-			0.5f, 0.5f, 0.5f, // upper right front
+
 			-0.5f, 0.5f, -0.5f, // top left back
 			-0.5f, -0.5f, -0.5f, // bottom left back
 			0.5f, -0.5f, -0.5f, // bottom right back
@@ -341,7 +340,7 @@ public final class Object3DBuilder {
 				.centerAndScale(1.0f).setFaces(new Faces(8)).setDrawOrder(drawBuffer).setVertexArrayBuffer(vertexBuffer);
 	}
 
-	public static Object3DData buildCubeV3(byte[] textureData) {
+	public static Object3DData buildCubeV3 ( Bitmap textureData) {
 		return new Object3DData(
 				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData),
 				createNativeByteBuffer(cubeTextureCoordinateData.length * 4).asFloatBuffer()
@@ -349,7 +348,7 @@ public final class Object3DBuilder {
 				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV3").centerAndScale(1.0f).setFaces(new Faces(8));
 	}
 
-	public static Object3DData buildCubeV4(byte[] textureData) {
+	public static Object3DData buildCubeV4 ( Bitmap textureData )  {
 		return new Object3DData(
 				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData),
 				createNativeByteBuffer(cubeColorData.length * 4).asFloatBuffer().put(cubeColorData).asReadOnlyBuffer(),
@@ -513,7 +512,7 @@ public final class Object3DBuilder {
 
 
 		String texture = null;
-		byte[] textureData = null;
+		Bitmap textureData = null;
 		if (materials != null && !materials.materials.isEmpty()) {
 
 			// TODO: process all textures
@@ -527,7 +526,7 @@ public final class Object3DBuilder {
 			    Log.i("Object3DBuilder","Loading texture "+texture);
 			    InputStream is = ContentUtils.getInputStream(texture);
 			    if (is != null) {
-                    textureData = IOUtils.read(is);
+                    textureData = GLUtil.loadBitmap ( is ); // IOUtils.read(is);
                     is.close();
                 } else {
 			        obj.addError("Texture '"+texture+"' not found in provided files");
@@ -614,7 +613,7 @@ public final class Object3DBuilder {
 				}
 			}
 		//}
-		obj.setTextureData(textureData);
+		obj.setTexture ( textureData );
 
 		return obj;
 	}

@@ -3,6 +3,7 @@ package org.andresoviedo.app.model3D.demo;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.net.Uri;
+import android.opengl.GLU;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -11,6 +12,7 @@ import org.andresoviedo.android_3d_model_engine.services.Object3DBuilder;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.app.model3D.view.ModelActivity;
 import org.andresoviedo.util.android.ContentUtils;
+import org.andresoviedo.util.android.GLUtil;
 import org.andresoviedo.util.io.IOUtils;
 
 import java.io.InputStream;
@@ -98,10 +100,10 @@ public class ExampleSceneLoader extends SceneLoader {
                     // test cube with texture
                     try {
                         InputStream open = ContentUtils.getInputStream(Uri.parse("assets://assets/models/penguin.bmp"));
-                        Object3DData obj3 = Object3DBuilder.buildCubeV3(IOUtils.read(open));
-                        open.close();
-                        obj3.setColor(new float[] { 1f, 1f, 1f, 1f });
-                        obj3.setPosition(new float[] { -2f, -2f, 0f });
+                        Object3DData obj3 = Object3DBuilder.buildCubeV3 ( GLUtil.loadBitmap ( open ) );
+                        open.close ( );
+                        obj3.setColor   ( new float[] { 1f, 1f, 1f, 1f } );
+                        obj3.setPosition( new float[] {-2f,-2f, 0f } );
                         addObject(obj3);
                     } catch (Exception ex) {
                         errors.add(ex);
@@ -110,7 +112,7 @@ public class ExampleSceneLoader extends SceneLoader {
                     // test cube with texture & colors
                     try {
                         InputStream open =  ContentUtils.getInputStream(Uri.parse("assets://assets/models/cube.bmp"));
-                        Object3DData obj4 = Object3DBuilder.buildCubeV4(IOUtils.read(open));
+                        Object3DData obj4 = Object3DBuilder.buildCubeV4( GLUtil.loadBitmap ( open ) );
                         open.close();
                         obj4.setColor(new float[] { 1f, 1f, 1f, 1f });
                         obj4.setPosition(new float[] { 0f, -2f, 0f });

@@ -17,6 +17,7 @@ import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoad
 import org.andresoviedo.app.model3D.view.ModelActivity;
 import org.andresoviedo.app.model3D.view.ModelRenderer;
 import org.andresoviedo.util.android.ContentUtils;
+import org.andresoviedo.util.android.GLUtil;
 import org.andresoviedo.util.io.IOUtils;
 
 import java.io.IOException;
@@ -323,12 +324,12 @@ public class SceneLoader implements LoaderTask.Callback {
     @Override
     public void onLoadComplete(List<Object3DData> datas) {
         // TODO: move texture load to LoaderTask
-        for (Object3DData data : datas) {
-            if (data.getTextureData() == null && data.getTextureFile() != null) {
-                Log.i("LoaderTask","Loading texture... "+data.getTextureFile());
-                try (InputStream stream = ContentUtils.getInputStream(data.getTextureFile())){
+        for ( Object3DData data : datas )  {
+            if (data.getTexture ( ) == null && data.getTextureFile() != null )  {
+                Log.i ( "LoaderTask","Loading texture... "+data.getTextureFile ( ) );
+                try ( InputStream stream = ContentUtils.getInputStream ( data.getTextureFile ( ) ) )  {
                     if (stream != null) {
-                        data.setTextureData(IOUtils.read(stream));
+                        data.setTexture ( GLUtil.loadBitmap ( stream ) );
                     }
                 } catch (IOException ex) {
                     data.addError("Problem loading texture " + data.getTextureFile());
@@ -370,7 +371,7 @@ public class SceneLoader implements LoaderTask.Callback {
             return;
         }
         obj = obj != null ? obj : objects.get(0);
-        obj.setTextureData(IOUtils.read(ContentUtils.getInputStream(uri)));
+        obj.setTexture ( GLUtil.loadBitmap ( ContentUtils.getInputStream ( uri ) ) );
         this.drawTextures = true;
     }
 
