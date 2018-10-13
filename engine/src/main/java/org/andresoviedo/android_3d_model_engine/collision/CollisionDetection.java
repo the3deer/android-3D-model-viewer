@@ -29,12 +29,13 @@ public class CollisionDetection {
      * @param windowY               the window y coordinate
      * @return the nearest object intersected by the specified coordinates or null
      */
-    public static Object3DData getBoxIntersection(List<Object3DData> objects, int width, int height, float[] modelViewMatrix, float[] modelProjectionMatrix, float windowX, float windowY) {
-        float[] nearHit = unProject(width, height, modelViewMatrix, modelProjectionMatrix, windowX, windowY, 0);
-        float[] farHit = unProject(width, height, modelViewMatrix, modelProjectionMatrix, windowX, windowY, 1);
-        float[] direction = Math3DUtils.substract(farHit, nearHit);
-        Math3DUtils.normalize(direction);
-        return getBoxIntersection(objects, nearHit, direction);
+    public static Object3DData getBoxIntersection(List<Object3DData> objects, int width, int height,
+        float[] modelViewMatrix, float[] modelProjectionMatrix, float windowX, float windowY )  {
+            float[] nearHit = unProject ( width, height, modelViewMatrix, modelProjectionMatrix, windowX, windowY, 0 );
+            float[] farHit  = unProject ( width, height, modelViewMatrix, modelProjectionMatrix, windowX, windowY, 1 );
+            float[] direction = Math3DUtils.substract ( farHit, nearHit );
+            Math3DUtils.normalize ( direction );
+            return getBoxIntersection ( objects, nearHit, direction);
     }
 
     /**
@@ -45,16 +46,16 @@ public class CollisionDetection {
      * @param direction the ray direction
      * @return the object intersected by the specified ray
      */
-    private static Object3DData getBoxIntersection(List<Object3DData> objects, float[] p1, float[] direction) {
+    private static Object3DData getBoxIntersection ( List<Object3DData> objects, float[] p1, float[] direction )  {
         float min = Float.MAX_VALUE;
         Object3DData ret = null;
-        for (Object3DData obj : objects) {
-            if ("Point".equals(obj.getId()) || "Line".equals(obj.getId())) {
+        for ( Object3DData obj : objects )  {
+            if ( "Point".equals ( obj.getId ( ) ) || "Line".equals ( obj.getId ( ) ) ) {
                 continue;
             }
-            BoundingBox box = obj.getBoundingBox();
-            float[] intersection = getBoxIntersection(p1, direction, box);
-            if (intersection[0] > 0 && intersection[0] <= intersection[1] && intersection[0] < min) {
+            BoundingBox box = obj.getBoundingBox ( );
+            float[] intersection = getBoxIntersection ( p1, direction, box );
+            if ( intersection[0] > 0f && intersection[0] <= intersection[1] && intersection[0] < min )  {
                 min = intersection[0];
                 ret = obj;
             }
@@ -119,10 +120,10 @@ public class CollisionDetection {
     private static float[] getBoxIntersection(float[] origin, float[] dir, BoundingBox b) {
         float[] tMin = Math3DUtils.divide(Math3DUtils.substract(b.getMin(), origin), dir);
         float[] tMax = Math3DUtils.divide(Math3DUtils.substract(b.getMax(), origin), dir);
-        float[] t1 = Math3DUtils.min(tMin, tMax);
-        float[] t2 = Math3DUtils.max(tMin, tMax);
-        float tNear = Math.max(Math.max(t1[0], t1[1]), t1[2]);
-        float tFar = Math.min(Math.min(t2[0], t2[1]), t2[2]);
+        float[] t1   = Math3DUtils.min(tMin, tMax);
+        float[] t2   = Math3DUtils.max(tMin, tMax);
+        float tNear  = Math.max(Math.max(t1[0], t1[1]), t1[2]);
+        float tFar   = Math.min(Math.min(t2[0], t2[1]), t2[2]);
         return new float[]{tNear, tFar};
     }
 

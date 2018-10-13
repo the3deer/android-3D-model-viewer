@@ -23,6 +23,7 @@ class Object3DV9 extends Object3DImpl {
 		+ "const int MAX_WEIGHTS = 3;\n"
 		+ "uniform mat4 u_MVPMatrix;      \n"
 		+ "attribute vec4 a_Position;     \n"
+		+ "uniform  float u_PointSize;   \n"
 		+ "attribute vec3 in_jointIndices;\n"
 		+ "attribute vec3 in_weights;\n"
 		+ "uniform mat4 jointTransforms[MAX_JOINTS];\n"
@@ -59,7 +60,7 @@ class Object3DV9 extends Object3DImpl {
 
 
 		+ "  gl_Position = u_MVPMatrix * totalLocalPos;\n"
-		+ "  gl_PointSize = 2.5;         \n"
+		+ "  gl_PointSize = u_PointSize;               \n"
 
 		+ "   vec3 modelViewVertex = vec3(u_MVMatrix * a_Position);\n          "+
 				// Get a lighting direction vector from the light to the vertex.
@@ -96,7 +97,7 @@ class Object3DV9 extends Object3DImpl {
 	// @formatter:on
 
 	public Object3DV9() {
-		super("V9", vertexShaderCode, fragmentShaderCode, "a_Position" , "in_jointIndices", "in_weights",
+		super("V9", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "in_jointIndices", "in_weights",
 				"a_Normal", "a_TexCoordinate");
 	}
 

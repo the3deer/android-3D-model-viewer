@@ -11,6 +11,8 @@ import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.util.android.GLUtil;
 
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,9 +50,9 @@ public abstract class Object3DImpl implements Object3D {
         this.id = id;
         Log.i("Object3DImpl", "Compiling 3D Drawer... " + id);
         // prepare shaders and OpenGL program
-        int vertexShader = GLUtil.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
-        int fragmentShader = GLUtil.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
-        mProgram = GLUtil.createAndLinkProgram(vertexShader, fragmentShader, variables);
+        int vertexShader   = GLUtil.loadShader ( GLES20.GL_VERTEX_SHADER,   vertexShaderCode   );
+        int fragmentShader = GLUtil.loadShader ( GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode );
+        mProgram = GLUtil.createAndLinkProgram ( vertexShader, fragmentShader, variables  );
         Log.i("Object3DImpl", "Compiled 3D Drawer (" + id + ") with id " + mProgram);
     }
 
@@ -80,7 +82,8 @@ public abstract class Object3DImpl implements Object3D {
 
         setMvpMatrix(mvpMatrix);
 
-        int mPositionHandle = setPosition(obj);
+        int mPositionHandle  = setPosition  ( obj );
+        int mPointSizeHandle = setPointSize ( obj );
 
         int mColorHandle = -1;
         if ( supportsColors ( ) )  {
@@ -91,16 +94,16 @@ public abstract class Object3DImpl implements Object3D {
         }
 
         int mTextureHandle = -1;
-        if (textureId != -1 && supportsTextures()) {
+        if ( textureId != -1 && supportsTextures ( ) ) {
             setTexture(obj, textureId);
         }
 
         int mNormalHandle = -1;
-        if (supportsNormals()) {
+        if ( supportsNormals ( ) )  {
             mNormalHandle = setNormals(obj);
         }
 
-        if (supportsMvMatrix()) {
+        if ( supportsMvMatrix ( ) ) {
             setMvMatrix(mvMatrix);
         }
 
@@ -116,10 +119,11 @@ public abstract class Object3DImpl implements Object3D {
         if ( obj.getLineWidth ( ) > 0.0f )
             GLES20.glLineWidth( obj.getLineWidth ( ) );
 //        if ( obj.getLineWidth ( ) != 0.0f )
-            drawShape(obj, drawMode, drawSize);
+        drawShape(obj, drawMode, drawSize);
 
         // Disable vertex array
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
+        GLES20.glDisableVertexAttribArray ( mPositionHandle  );
+//        GLES20.glDisableVertexAttribArray ( mPointSizeHandle );
 
         if (mColorHandle != -1) {
             GLES20.glDisableVertexAttribArray(mColorHandle);
@@ -189,7 +193,7 @@ public abstract class Object3DImpl implements Object3D {
         return mColorHandle;
     }
 
-    protected int setPosition(Object3DData obj) {
+    protected int setPosition ( Object3DData obj )  {
 
         // get handle to vertex shader's a_Position member
         int mPositionHandle = GLES20.glGetAttribLocation(mProgram, "a_Position");
@@ -205,11 +209,19 @@ public abstract class Object3DImpl implements Object3D {
         GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, VERTEX_STRIDE,
                 vertexBuffer);
         GLUtil.checkGlError("glVertexAttribPointer");
-
         return mPositionHandle;
     }
 
-    protected boolean supportsNormals() {
+    protected int setPointSize ( Object3DData obj )  {
+        float pointSize = obj.getPointSize ( ) < 0.0 ? 2.5f : obj.getPointSize ( );
+        int mLightPosHandle = GLES20.glGetUniformLocation ( mProgram, "u_PointSize");
+        GLUtil.checkGlError("glGetUniformLocation");
+        // Pass in the light position in eye space.
+        GLES20.glUniform1f ( mLightPosHandle, pointSize );
+        return mLightPosHandle;
+    }
+
+    protected boolean supportsNormals ( )  {
         return false;
     }
 
@@ -386,7 +398,7 @@ public abstract class Object3DImpl implements Object3D {
 
 /**
  * Draw using single color
- *
+ * default PointSize = 20.0;
  * @author andresoviedo
  */
 class Object3DV1 extends Object3DImpl {
@@ -395,9 +407,10 @@ class Object3DV1 extends Object3DImpl {
     private final static String vertexShaderCode =
             "uniform mat4 u_MVPMatrix;" +
                     "attribute vec4 a_Position;" +
+                    "uniform  float u_PointSize;" +
                     "void main() {" +
-                    "  gl_Position = u_MVPMatrix * a_Position;\n" +
-                    "  gl_PointSize = 20.0;  \n" +
+                    "  gl_Position  = u_MVPMatrix * a_Position;\n" +
+                    "  gl_PointSize = u_PointSize;  \n" +
                     "}";
     // @formatter:on
 
@@ -411,7 +424,7 @@ class Object3DV1 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV1() {
-        super("V1", vertexShaderCode, fragmentShaderCode, "a_Position");
+        super("V1", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize" );
     }
 
     @Override
@@ -422,7 +435,7 @@ class Object3DV1 extends Object3DImpl {
 
 /**
  * Drawer using multiple colors & !light & !texture
- *
+ * default point size 2.5
  * @author andresoviedo
  */
 class Object3DV2 extends Object3DImpl {
@@ -430,12 +443,13 @@ class Object3DV2 extends Object3DImpl {
     private final static String vertexShaderCode =
             "uniform mat4 u_MVPMatrix;" +
                     "attribute vec4 a_Position;" +
+                    "uniform  float u_PointSize;" +
                     "attribute vec4 a_Color;" +
                     "varying vec4 vColor;" +
                     "void main() {" +
                     "  vColor = a_Color;" +
-                    "  gl_Position = u_MVPMatrix * a_Position;" +
-                    "  gl_PointSize = 2.5;  \n" +
+                    "  gl_Position  = u_MVPMatrix * a_Position;" +
+                    "  gl_PointSize = u_PointSize;  \n" +
                     "}";
     // @formatter:on
 
@@ -449,7 +463,7 @@ class Object3DV2 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV2() {
-        super("V2", vertexShaderCode, fragmentShaderCode, "a_Position", "a_Color");
+        super("V2", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "a_Color");
     }
 
     @Override
@@ -468,12 +482,13 @@ class Object3DV3 extends Object3DImpl {
     private final static String vertexShaderCode =
             "uniform mat4 u_MVPMatrix;" +
                     "attribute vec4 a_Position;" +
+                    "uniform  float u_PointSize;" +
                     "attribute vec2 a_TexCoordinate;" + // Per-vertex texture coordinate information we will pass in.
                     "varying vec2 v_TexCoordinate;" +   // This will be passed into the fragment shader.
                     "void main() {" +
                     "  v_TexCoordinate = a_TexCoordinate;" +
-                    "  gl_Position = u_MVPMatrix * a_Position;" +
-                    "  gl_PointSize = 2.5;  \n" +
+                    "  gl_Position  = u_MVPMatrix * a_Position;" +
+                    "  gl_PointSize = u_PointSize;  \n" +
                     "}";
     // @formatter:on
 
@@ -489,7 +504,7 @@ class Object3DV3 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV3() {
-        super("V3", vertexShaderCode, fragmentShaderCode, "a_Position", "a_TexCoordinate");
+        super("V3", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "a_TexCoordinate");
     }
 
     @Override
@@ -508,6 +523,7 @@ class Object3DV4 extends Object3DImpl {
     protected final static String vertexShaderCode =
             "uniform mat4 u_MVPMatrix;" +
                     "attribute vec4 a_Position;" +
+                    "uniform  float u_PointSize;" +
                     "attribute vec4 a_Color;" +
                     "varying vec4 vColor;" +
                     "attribute vec2 a_TexCoordinate;" +
@@ -532,7 +548,7 @@ class Object3DV4 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV4() {
-        super("V4", vertexShaderCode, fragmentShaderCode, "a_Position", "a_Color", "a_TexCoordinate");
+        super("V4", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "a_Color", "a_TexCoordinate");
     }
 
     @Override
@@ -557,6 +573,7 @@ class Object3DV5 extends Object3DImpl {
     private final static String vertexShaderCode =
             "uniform mat4 u_MVPMatrix;\n" +
                     "attribute vec4 a_Position;\n" +
+                    "uniform  float u_PointSize;" +
                     // light variables
                     "uniform mat4 u_MVMatrix;\n" +
                     "uniform vec3 u_LightPos;\n" +
@@ -583,7 +600,7 @@ class Object3DV5 extends Object3DImpl {
                     "   v_Color = a_Color * diffuse;\n" +
                     "   v_Color[3] = a_Color[3];" + // correct alpha
                     "  gl_Position = u_MVPMatrix * a_Position;\n" +
-                    "  gl_PointSize = 2.5;  \n" +
+                    "  gl_PointSize = u_PointSize;  \n" +
                     "}";
     // @formatter:on
 
@@ -597,7 +614,7 @@ class Object3DV5 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV5() {
-        super("V5", vertexShaderCode, fragmentShaderCode, "a_Position", "a_Color", "a_Normal");
+        super("V5", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "a_Color", "a_Normal");
     }
 
     @Override
@@ -632,9 +649,10 @@ class Object3DV6 extends Object3DImpl {
     private final static String vertexShaderCode =
             "uniform mat4 u_MVPMatrix;\n" +
                     "attribute vec4 a_Position;\n" +
+                    "uniform  float u_PointSize;\n" +
                     // texture variables
-                    "attribute vec2 a_TexCoordinate;" +
-                    "varying vec2 v_TexCoordinate;" +
+                    "attribute vec2 a_TexCoordinate;\n" +
+                    "varying vec2 v_TexCoordinate;\n" +
                     // light variables
                     "uniform mat4 u_MVMatrix;\n" +
                     "uniform vec3 u_LightPos;\n" +
@@ -663,7 +681,7 @@ class Object3DV6 extends Object3DImpl {
                     "   v_Color = a_Color * diffuse;\n" +
                     "   v_Color[3] = a_Color[3];" + // correct alpha
                     "  gl_Position = u_MVPMatrix * a_Position;\n" +
-                    "  gl_PointSize = 2.5;  \n" +
+                    "  gl_PointSize = u_PointSize;  \n" +
                     "}";
     // @formatter:on
 
@@ -681,7 +699,7 @@ class Object3DV6 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV6() {
-        super("V6", vertexShaderCode, fragmentShaderCode, "a_Position", "a_Color", "a_TexCoordinate", "a_Normal");
+        super("V6", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "a_Color", "a_TexCoordinate", "a_Normal");
     }
 
     @Override
@@ -721,6 +739,7 @@ class Object3DV7 extends Object3DImpl {
     private final static String vertexShaderCode =
             "uniform mat4 u_MVPMatrix;\n" +
                     "attribute vec4 a_Position;\n" +
+                    "uniform  float u_PointSize;" +
                     // color
                     "uniform vec4 vColor;\n" +
                     // light variables
@@ -748,7 +767,7 @@ class Object3DV7 extends Object3DImpl {
                     "   v_Color = vColor * diffuse;\n" +
                     "   v_Color[3] = vColor[3];" + // correct alpha
                     "  gl_Position = u_MVPMatrix * a_Position;\n" +
-                    "  gl_PointSize = 2.5;  \n" +
+                    "  gl_PointSize = u_PointSize;  \n" +
                     "}";
     // @formatter:on
 
@@ -763,7 +782,7 @@ class Object3DV7 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV7() {
-        super("V7", vertexShaderCode, fragmentShaderCode, "a_Position", "a_Normal");
+        super("V7", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "a_Normal");
     }
 
     @Override
@@ -801,6 +820,7 @@ class Object3DV10 extends Object3DImpl {
                     + "const int MAX_WEIGHTS = 3;\n"
                     + "uniform mat4 u_MVPMatrix;      \n"
                     + "attribute vec4 a_Position;     \n"
+                    + "uniform  float u_PointSize;   \n"
                     + "attribute vec3 in_jointIndices;\n"
                     + "attribute vec3 in_weights;\n"
                     + "uniform mat4 jointTransforms[MAX_JOINTS];\n"
@@ -835,7 +855,7 @@ class Object3DV10 extends Object3DImpl {
 
 
                     + "  gl_Position = u_MVPMatrix * totalLocalPos;\n"
-                    + "  gl_PointSize = 2.5;         \n"
+                    + "  gl_PointSize = u_PointSize;         \n"
 
                     + "   vec3 modelViewVertex = vec3(u_MVMatrix * a_Position);\n          " +
                     // Get a lighting direction vector from the light to the vertex.
@@ -866,7 +886,7 @@ class Object3DV10 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV10() {
-        super("V10", vertexShaderCode, fragmentShaderCode, "a_Position", "in_jointIndices", "in_weights",
+        super("V10", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "in_jointIndices", "in_weights",
                 "jointTransforms", "a_Normal", "vColor");
     }
 
@@ -955,8 +975,9 @@ class Object3DV11 extends Object3DImpl {
                     + "const int MAX_WEIGHTS = 3;\n"
                     + "uniform mat4 u_MVPMatrix;      \n"
                     + "attribute vec4 a_Position;     \n"
+                    + "uniform  float u_PointSize;   \n"
                     + "attribute vec3 in_jointIndices;\n"
-                    + "attribute vec3 in_weights;\n"
+                    + "attribute vec3 in_weights;     \n"
                     + "uniform mat4 jointTransforms[MAX_JOINTS];\n"
                     // light variables
                     + "uniform mat4 u_MVMatrix;\n"
@@ -989,7 +1010,7 @@ class Object3DV11 extends Object3DImpl {
 
 
                     + "  gl_Position = u_MVPMatrix * totalLocalPos;\n"
-                    + "  gl_PointSize = 2.5;         \n"
+                    + "  gl_PointSize = u_PointSize;               \n"
 
                     + "   vec3 modelViewVertex = vec3(u_MVMatrix * a_Position);\n          " +
                     // Get a lighting direction vector from the light to the vertex.
@@ -1020,7 +1041,7 @@ class Object3DV11 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV11() {
-        super("V11", vertexShaderCode, fragmentShaderCode, "a_Position", "in_jointIndices", "in_weights",
+        super("V11", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "in_jointIndices", "in_weights",
                 "jointTransforms", "a_Normal", "a_Color");
     }
 
@@ -1114,6 +1135,7 @@ class Object3DV12 extends Object3DImpl {
                     + "const int MAX_WEIGHTS = 3;\n"
                     + "uniform mat4 u_MVPMatrix;      \n"
                     + "attribute vec4 a_Position;     \n"
+                    + "uniform  float u_PointSize;   \n"
                     + "attribute vec3 in_jointIndices;\n"
                     + "attribute vec3 in_weights;\n"
                     + "uniform mat4 jointTransforms[MAX_JOINTS];\n"
@@ -1145,7 +1167,7 @@ class Object3DV12 extends Object3DImpl {
 
 
                     + "  gl_Position = u_MVPMatrix * totalLocalPos;\n"
-                    + "  gl_PointSize = 2.5;         \n" +
+                    + "  gl_PointSize = u_PointSize;               \n" +
 
                     "   v_Color = vColor;\n" +
                     "   v_Color[3] = vColor[3];" // correct alpha
@@ -1162,7 +1184,7 @@ class Object3DV12 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV12() {
-        super("V12", vertexShaderCode, fragmentShaderCode, "a_Position", "in_jointIndices", "in_weights",
+        super("V12", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "in_jointIndices", "in_weights",
                 "jointTransforms", "vColor");
     }
 

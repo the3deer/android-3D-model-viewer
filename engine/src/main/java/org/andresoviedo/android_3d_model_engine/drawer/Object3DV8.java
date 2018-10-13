@@ -10,6 +10,7 @@ class Object3DV8 extends Object3DImpl {
     private final static String vertexShaderCode =
             "uniform mat4 u_MVPMatrix;\n" +
                     "attribute vec4 a_Position;\n" +
+                    "uniform  float u_PointSize;\n" +
                     // color
                     "uniform vec4 vColor;\n" +
                     // texture variables
@@ -42,7 +43,7 @@ class Object3DV8 extends Object3DImpl {
                     "   v_Color = vColor * diffuse;\n" +
                     "   v_Color[3] = vColor[3];" + // correct alpha
                     "  gl_Position = u_MVPMatrix * a_Position;\n" +
-                    "  gl_PointSize = 2.5;  \n" +
+                    "  gl_PointSize = u_PointSize;  \n" +
                     "}";
     // @formatter:on
 
@@ -60,7 +61,7 @@ class Object3DV8 extends Object3DImpl {
     // @formatter:on
 
     public Object3DV8() {
-        super("V8", vertexShaderCode, fragmentShaderCode, "vColor", "a_Position", "a_TexCoordinate", "a_Normal");
+        super("V8", vertexShaderCode, fragmentShaderCode, "vColor", "a_Position", "u_PointSize", "a_TexCoordinate", "a_Normal");
     }
 
     @Override

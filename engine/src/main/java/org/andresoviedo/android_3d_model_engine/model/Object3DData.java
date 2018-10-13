@@ -53,7 +53,7 @@ public class Object3DData {
 
 	private boolean isVisible = true;
 
-	private float[] color;
+	private float[] color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	/**
 	 * The minimum thing we can draw in space is a vertex (or point).
 	 * This drawing mode uses the vertexBuffer
@@ -61,6 +61,7 @@ public class Object3DData {
 	private int drawMode = GLES20.GL_POINTS;
 	private int drawSize = 0;
 	private float lineWidth = -1.0f; // -1.0f ==> Leave unchanged
+	private float pointSize = -1.0f; // -1.0f ==> Leave unchanged
 
 	// Model data
 	private FloatBuffer vertexBuffer = null;
@@ -151,7 +152,7 @@ public class Object3DData {
 		this.materials = materials;
 	}
 
-	public void setLoader(WavefrontLoader loader) {
+	public void setLoader ( WavefrontLoader loader) {
 		this.loader = loader;
 	}
 
@@ -176,11 +177,33 @@ public class Object3DData {
 		return octree;
 	}
 
-	/**
-	 * Can be called when the faces were loaded asynchronously
-	 *
-	 * @param faces 3d faces
-	 */
+	private List<Object3DData.OnClickListener> mClickCallbacks = null;
+    public interface OnClickListener {
+        void onClickListener ( Object3DData me, float[] pos );
+    }
+
+    public void setOnClickListener ( Object3DData.OnClickListener listener )  {
+        if ( mClickCallbacks == null )  {
+             mClickCallbacks = new ArrayList<OnClickListener> ( );
+        }
+        mClickCallbacks.add ( listener );
+    }
+
+    public void click ( float[] xyz )  {
+    	if ( mClickCallbacks == null )
+    		return;
+        // x, y, z
+        float[] pos = { 1.0f, 1.2f, 1.3f };
+        for ( Object3DData.OnClickListener listener : mClickCallbacks )  {
+            listener.onClickListener ( this, xyz ); //pos );
+        }
+    }
+
+    /**
+     * Can be called when the faces were loaded asynchronously
+     *
+     * @param faces 3d faces
+     */
 	public Object3DData setFaces(Faces faces) {
 		this.faces = faces;
 		this.drawOrderBuffer = faces.getIndexBuffer();
@@ -228,12 +251,20 @@ public class Object3DData {
 		return new float[] { 1 - getColor()[0], 1 - getColor()[1], 1 - getColor()[2], 1 };
 	}
 
-	public Object3DData setColor(float[] color) {
-		this.color = color;
-		return this;
-	}
+    public Object3DData setColor ( float r, float g, float b, float a ) {
+        this.color[0] = r;
+        this.color[1] = g;
+        this.color[2] = b;
+        this.color[3] = a;
+        return this;
+    }
 
-	public int getDrawMode() {
+    public Object3DData setColor(float[] color) {
+        this.color = color;
+        return this;
+    }
+
+    public int getDrawMode() {
 		return drawMode;
 	}
 
@@ -246,13 +277,21 @@ public class Object3DData {
         return drawSize;
     }
 
-    public void setLineWidth ( float w )  {
-        lineWidth = w;
-    }
+	public void setLineWidth ( float w )  {
+		lineWidth = w;
+	}
 
-    public float getLineWidth ( )  {
-        return lineWidth;
-    }
+	public float getLineWidth ( )  {
+		return lineWidth;
+	}
+
+	public void setPointSize ( float ps )  {
+		pointSize = ps;
+	}
+
+	public float getPointSize ( )  {
+		return pointSize;
+	}
 
     // -----------
 

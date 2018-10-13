@@ -21,8 +21,9 @@ class Object3DV91 extends Object3DImpl {
     private final static String vertexShaderCode =
             "const int MAX_JOINTS = 60;\n"
                     //+ "const int MAX_WEIGHTS = 3;\n"
-                    +"uniform mat4 u_MVPMatrix;      \n"
+                    +"uniform mat4 u_MVPMatrix;       \n"
                     + "attribute vec4 a_Position;     \n"
+                    + "uniform  float u_PointSize;    \n"
                     + "attribute vec3 in_jointIndices;\n"
                     + "attribute vec3 in_weights;\n"
                     + "uniform mat4 jointTransforms[MAX_JOINTS];\n"
@@ -55,7 +56,7 @@ class Object3DV91 extends Object3DImpl {
 
 
 		            + "  gl_Position = u_MVPMatrix * totalLocalPos;\n"
-                    + "  gl_PointSize = 2.5;         \n"
+                    + "  gl_PointSize = u_PointSize;         \n"
 
                     +"   v_Color = vColor;\n"
                     +"   v_Color[3] = vColor[3];\n" // correct alpha
@@ -76,7 +77,7 @@ class Object3DV91 extends Object3DImpl {
 	// @formatter:on
 
     public Object3DV91() {
-        super("V91", vertexShaderCode, fragmentShaderCode, "a_Position" , "in_jointIndices", "in_weights",
+        super("V91", vertexShaderCode, fragmentShaderCode, "a_Position", "u_PointSize", "in_jointIndices", "in_weights",
                 "a_TexCoordinate");
     }
 

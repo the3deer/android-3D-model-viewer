@@ -56,9 +56,11 @@ public class Octree {
         if (object.getDrawOrder() == null) {
             // vertex array contains vertex in sequence
             final FloatBuffer buffer = object.getVertexArrayBuffer().asReadOnlyBuffer();
+            if ( buffer.capacity ( ) < 9 )
+                return ret;
             final List<float[]> triangles = new ArrayList<>(buffer.capacity() / 3 * 4);
             final float[] modelMatrix = object.getModelMatrix();
-            for (int i = 0; i < buffer.capacity(); i += 9) {
+            for (int i = 0; i < buffer.capacity()-8; i += 9) {
                 float[] triangle = new float[]{buffer.get(), buffer.get(), buffer.get(), 1,
                         buffer.get(), buffer.get(), buffer.get(), 1,
                         buffer.get(), buffer.get(), buffer.get(), 1
@@ -73,9 +75,11 @@ public class Octree {
             // faces are built
             final IntBuffer drawOrder = object.getDrawOrder().asReadOnlyBuffer();
             final FloatBuffer buffer = object.getVertexBuffer().asReadOnlyBuffer();
+            if ( buffer.capacity ( ) < 9 )
+                return ret;
             final List<float[]> triangles = new ArrayList<>(drawOrder.capacity() / 3 * 4);
             final float[] modelMatrix = object.getModelMatrix();
-            for (int i = 0; i < drawOrder.capacity(); i += 3) {
+            for (int i = 0; i < drawOrder.capacity()-8; i += 3) {
                 float[] triangle = new float[]{
                         buffer.get(drawOrder.get(i)), buffer.get(drawOrder.get(i)+1), buffer.get(drawOrder.get(i)+2), 1,
                         buffer.get(drawOrder.get(i+1)), buffer.get(drawOrder.get(i+1)+1), buffer.get(drawOrder.get(i+1)+2), 1,
