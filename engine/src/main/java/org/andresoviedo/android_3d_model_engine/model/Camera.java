@@ -43,7 +43,7 @@ public class Camera {
 
 	float[] matrix = new float[16];
 	float[] buffer = new float[12 + 12 + 16 + 16];
-	private long animationCounter;
+	private long animationCounter = 0;
 	private Object[] lastAction;
 	private boolean changed = false;
 
@@ -87,7 +87,7 @@ public class Camera {
 		animationCounter--;
 	}
 
-	private void normalize() {
+	public void normalize() {
 		float xLook = 0, yLook = 0, zLook = 0;
 		float xRight = 0, yRight = 0, zRight = 0;
 		float xArriba = 0, yArriba = 0, zArriba = 0;
@@ -162,7 +162,7 @@ public class Camera {
 		UpdateCamera(xLookDirection, yLookDirection, zLookDirection, direction);
 	}
 
-	void UpdateCamera(float xDir, float yDir, float zDir, float dir) {
+	public void UpdateCamera(float xDir, float yDir, float zDir, float dir) {
 
 		Matrix.setIdentityM(matrix, 0);
 		Matrix.translateM(matrix, 0, xDir * dir, yDir * dir, zDir * dir);
@@ -417,8 +417,15 @@ public class Camera {
 	 * @param dX the X component of the user 2D vector, that is, a value between [-1,1]
 	 * @param dY the Y component of the user 2D vector, that is, a value between [-1,1]
 	 */
+	public synchronized void translateCameraNoAnim ( float dX, float dY )  {
+		if ( dX == 0 && dY == 0 )
+			return;
+
+        lastAction = null;
+		translateCameraImpl ( dX, dY );
+	}
+
 	public synchronized void translateCamera(float dX, float dY) {
-		//Log.v("Camera","translate:"+dX+","+dY);
 		if (dX == 0 && dY == 0) return;
 		translateCameraImpl(dX, dY);
 		lastAction = new Object[]{"translate",dX, dY};

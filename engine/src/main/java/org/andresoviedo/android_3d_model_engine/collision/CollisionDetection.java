@@ -34,8 +34,8 @@ public class CollisionDetection {
             float[] nearHit = unProject ( width, height, modelViewMatrix, modelProjectionMatrix, windowX, windowY, 0 );
             float[] farHit  = unProject ( width, height, modelViewMatrix, modelProjectionMatrix, windowX, windowY, 1 );
             float[] direction = Math3DUtils.substract ( farHit, nearHit );
-            Math3DUtils.normalize ( direction );
-            return getBoxIntersection ( objects, nearHit, direction);
+            Math3DUtils.normalize ( direction ); // unit directional vector
+            return getBoxIntersection ( objects, nearHit, direction );
     }
 
     /**
@@ -53,8 +53,13 @@ public class CollisionDetection {
             if ( "Point".equals ( obj.getId ( ) ) || "Line".equals ( obj.getId ( ) ) ) {
                 continue;
             }
+            if ( ! obj.getClickable ( ) )
+                continue;
             BoundingBox box = obj.getBoundingBox ( );
-            float[] intersection = getBoxIntersection ( p1, direction, box );
+            float[] global  = obj.getGlobalPosition ( );
+            float[] minA = new float[]{ box.getxMin ( )+global[0], box.getyMin ( )+global[1], box.getzMin ( )+global[2], 1.0F };
+            float[] maxA = new float[]{ box.getxMax ( )+global[0], box.getyMax ( )+global[1], box.getzMax ( )+global[2], 1.0F };
+            float[] intersection = getBoxIntersection ( p1, direction, minA, maxA );
             if ( intersection[0] > 0f && intersection[0] <= intersection[1] && intersection[0] < min )  {
                 min = intersection[0];
                 ret = obj;
@@ -101,11 +106,12 @@ public class CollisionDetection {
      *
      * @param origin origin of the ray
      * @param dir    direction of the ray
-     * @param b      bounding box
+     * @param min    bounding box min
+     * @param max    bounding box max
      * @return true if the specified ray intersects the bounding box, false otherwise
      */
-    private static boolean isBoxIntersection(float[] origin, float[] dir, BoundingBox b) {
-        float[] intersection = getBoxIntersection(origin, dir, b);
+    private static boolean isBoxIntersection ( float[] origin, float[] dir, float[] min, float[] max  )  {
+        float[] intersection = getBoxIntersection ( origin, dir, min, max );
         return intersection[0] > 0 && intersection[0] < intersection[1];
     }
 
@@ -114,17 +120,18 @@ public class CollisionDetection {
      *
      * @param origin the ray origin
      * @param dir    the ray direction
-     * @param b      the bounding box
+     * @param min    bounding box min
+     * @param max    bounding box max
      * @return the intersection points of the near and far plane
      */
-    private static float[] getBoxIntersection(float[] origin, float[] dir, BoundingBox b) {
-        float[] tMin = Math3DUtils.divide(Math3DUtils.substract(b.getMin(), origin), dir);
-        float[] tMax = Math3DUtils.divide(Math3DUtils.substract(b.getMax(), origin), dir);
-        float[] t1   = Math3DUtils.min(tMin, tMax);
-        float[] t2   = Math3DUtils.max(tMin, tMax);
-        float tNear  = Math.max(Math.max(t1[0], t1[1]), t1[2]);
-        float tFar   = Math.min(Math.min(t2[0], t2[1]), t2[2]);
-        return new float[]{tNear, tFar};
+    private static float[] getBoxIntersection(float[] origin, float[] dir, float[] min, float[] max  )  {
+        float[] tMin = Math3DUtils.divide ( Math3DUtils.substract ( min, origin ), dir );
+        float[] tMax = Math3DUtils.divide ( Math3DUtils.substract ( max, origin ), dir );
+        float[] t1   = Math3DUtils.min ( tMin, tMax );
+        float[] t2   = Math3DUtils.max ( tMin, tMax );
+        float tNear  = Math.max ( Math.max ( t1[0], t1[1] ), t1[2] );
+        float tFar   = Math.min ( Math.min ( t2[0], t2[1] ), t2[2] );
+        return new float[] { tNear, tFar };
     }
 
     /**
@@ -222,7 +229,7 @@ public class CollisionDetection {
 
     private static float getTriangleIntersectionForOctree(Octree octree, float[] rayOrigin, float[] rayDirection) {
         //Log.v("CollisionDetection","Testing octree "+octree);
-        if (!isBoxIntersection(rayOrigin, rayDirection, octree.boundingBox)) {
+        if (!isBoxIntersection(rayOrigin, rayDirection, octree.boundingBox.getMin(), octree.boundingBox.getMax())) {
             Log.d("CollisionDetection", "No octree intersection");
             return -1;
         }

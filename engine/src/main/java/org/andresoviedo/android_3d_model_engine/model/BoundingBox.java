@@ -8,27 +8,27 @@ import java.nio.FloatBuffer;
  * @author andresoviedo
  */
 
-public final class BoundingBox {
-
-    private final String id;
-    private final float xMin;
-    private final float xMax;
-    private final float yMin;
-    private final float yMax;
-    private final float zMin;
-    private final float zMax;
-    private final float[] min;
-    private final float[] max;
+public final class BoundingBox
+{
+    private String   id;
+    private float  xMin;
+    private float  xMax;
+    private float  yMin;
+    private float  yMax;
+    private float  zMin;
+    private float  zMax;
+    private float[] min;
+    private float[] max;
 
     public static BoundingBox create(String id, FloatBuffer vertexBuffer, float[] modelMatrix) {
         float xMin = Float.MAX_VALUE, xMax = -Float.MAX_VALUE, yMin = Float.MAX_VALUE, yMax = -Float.MAX_VALUE, zMin =
                 Float.MAX_VALUE, zMax = -Float.MAX_VALUE;
-        vertexBuffer = vertexBuffer.asReadOnlyBuffer();
+        //vertexBuffer = vertexBuffer.asReadOnlyBuffer();
         vertexBuffer.position(0);
-        while (vertexBuffer.hasRemaining()) {
-            float vertexx = vertexBuffer.get();
-            float vertexy = vertexBuffer.get();
-            float vertexz = vertexBuffer.get();
+        while ( vertexBuffer.remaining ( ) > 3 ) {
+            float vertexx = vertexBuffer.get ( );
+            float vertexy = vertexBuffer.get ( );
+            float vertexz = vertexBuffer.get ( );
             if (vertexx < xMin) {
                 xMin = vertexx;
             }
@@ -143,14 +143,9 @@ public final class BoundingBox {
 
     @Override
     public String toString() {
-        return "BoundingBoxBuilder{" +
-                "id='" + id + '\'' +
-                ", xMin=" + xMin +
-                ", xMax=" + xMax +
-                ", yMin=" + yMin +
-                ", yMax=" + yMax +
-                ", zMin=" + zMin +
-                ", zMax=" + zMax +
-                '}';
+        String str;
+        str = String.format ( "BoundingBoxBuilder{ id='%s', xMin=%f, xMax=%f, yMin=%f, yMax=%f, zMin=%f, zMax=%f }",
+           this.id, this.xMin, this.xMax, this.yMin, this.yMax, this.zMin, this.zMax );
+        return str;
     }
 }

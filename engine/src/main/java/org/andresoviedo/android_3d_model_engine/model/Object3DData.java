@@ -47,7 +47,8 @@ public class Object3DData {
 	// private String assetsDir;
 	private String id;
 	private boolean drawUsingArrays = false;
-	private boolean flipTextCoords = true;
+    private boolean flipTextCoords = true;
+    private boolean mClickable = true;
 
 	// Model data for the simplest object
 
@@ -91,10 +92,10 @@ public class Object3DData {
 	// Transformation data
 	protected float[] globalPosition = new float[] { 0f, 0f, 0f };
 	protected float[] localPosition  = new float[] { 0f, 0f, 0f };
-	protected float[] rotation = new float[] { 0f, 0f, 0f };
-	protected float[] scale = new float[] { 1, 1, 1 };
-	protected float[] modelMatrix = new float[16];
-    private   float[] dummyMatrix = new float[16]; // required to properly rotate
+	protected float[] rotation       = new float[] { 0f, 0f, 0f };
+	protected float[] scale          = new float[] { 1f, 1f, 1f };
+	protected float[] modelMatrix    = new float[16];
+    private   float[] dummyMatrix    = new float[16]; // required to properly rotate
 
 
     {
@@ -173,10 +174,16 @@ public class Object3DData {
 		this.octree = octree;
 	}
 
-	public Octree getOctree(){
+	public Octree getOctree ( ) {
 		return octree;
 	}
 
+    public void setClickable ( boolean b )  {
+        mClickable = b;
+    }
+    public boolean getClickable ( )  {
+        return mClickable;
+    }
 	private List<Object3DData.OnClickListener> mClickCallbacks = null;
     public interface OnClickListener {
         void onClickListener ( Object3DData me, float[] pos );
@@ -425,56 +432,52 @@ public class Object3DData {
 		this.rotation[0] = x;
 		this.rotation[1] = y;
 		this.rotation[2] = z;
-		updateModelMatrix();
+		updateModelMatrix ( );
 		return this;
 	}
 
 	public Object3DData setRotation ( float[] rotation )  {
-        rotation[0] = limitTo ( rotation[0], 0.0f, 360.0f );
-        rotation[1] = limitTo ( rotation[1], 0.0f, 360.0f );
-        rotation[2] = limitTo ( rotation[2], 0.0f, 360.0f );
-        this.rotation = rotation;
-		updateModelMatrix();
+        this.rotation[0] = limitTo ( rotation[0], 0.0f, 360.0f );
+        this.rotation[1] = limitTo ( rotation[1], 0.0f, 360.0f );
+        this.rotation[2] = limitTo ( rotation[2], 0.0f, 360.0f );
+		updateModelMatrix ( );
 		return this;
 	}
 
 	public Object3DData setRotationX ( float rotX )  {
-        rotX = limitTo ( rotX, 0.0f, 360.0f );
-		this.rotation[0] = rotX;
-		updateModelMatrix();
+		this.rotation[0] = limitTo ( rotX, 0.0f, 360.0f );
+		updateModelMatrix ( );
 		return this;
 	}
 
 	public Object3DData setRotationY ( float rotY )  {
-        rotY = limitTo ( rotY, 0.0f, 360.0f );
-		this.rotation[1] = rotY;
-		updateModelMatrix();
+		this.rotation[1] = limitTo ( rotY, 0.0f, 360.0f );
+		updateModelMatrix ( );
 		return this;
 	}
 
 	public Object3DData setRotationZ ( float rotZ )  {
-        rotZ = limitTo ( rotZ, 0.0f, 360.0f );
-		this.rotation[2] = rotZ;
-		updateModelMatrix();
+		this.rotation[2] = limitTo ( rotZ, 0.0f, 360.0f );
+		updateModelMatrix ( );
 		return this;
 	}
 
 	private void updateModelMatrix ( )  {
-		Matrix.setIdentityM ( modelMatrix,0 );
-        if ( rotation[0] != 0.0f )  {
-		    Matrix.setRotateM ( dummyMatrix, 0, rotation[0],1f,0f,0f );
-            Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
-        }
-        if ( rotation[1] != 0.0f )  {
-		    Matrix.setRotateM ( dummyMatrix, 0, rotation[1],0f,1f,0f );
-            Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
-        }
-        if ( rotation[2] != 0.0f )  {
-    		Matrix.setRotateM ( dummyMatrix, 0, rotation[2],0f,0f,1f );
-            Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
-        }
-		Matrix.scaleM     ( modelMatrix,0, getScaleX ( ), getScaleY ( ), getScaleZ ( ) );
-        Matrix.translateM ( modelMatrix,0,  getPositionX ( ), getPositionY ( ), getPositionZ ( ) );
+		Matrix.setIdentityM ( modelMatrix, 0 );
+		if ( rotation[0] != 0.0f )  {
+			Matrix.setRotateM ( dummyMatrix, 0, rotation[0],1f,0f,0f );
+			Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
+		}
+		if ( rotation[1] != 0.0f )  {
+			Matrix.setRotateM ( dummyMatrix, 0, rotation[1],0f,1f,0f );
+			Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
+		}
+		if ( rotation[2] != 0.0f )  {
+			Matrix.setRotateM ( dummyMatrix, 0, rotation[2],0f,0f,1f );
+			Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
+		}
+		Matrix.scaleM     ( modelMatrix,0, getScaleX    ( ), getScaleY    ( ), getScaleZ    ( ) );
+		Matrix.translateM ( modelMatrix,0, getPositionX ( ), getPositionY ( ), getPositionZ ( ) );
 	}
 
 	public float[] getModelMatrix(){
