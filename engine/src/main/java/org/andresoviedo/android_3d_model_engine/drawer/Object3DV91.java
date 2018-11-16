@@ -84,7 +84,8 @@ class Object3DV91 extends Object3DImpl {
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
                      float[] lightPos) {
-
+        if ( obj.isVisible ( ) == false )
+            return;
 
         AnimatedModel animatedModel = (AnimatedModel) obj;
 

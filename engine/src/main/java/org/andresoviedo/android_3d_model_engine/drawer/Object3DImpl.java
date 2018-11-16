@@ -57,14 +57,15 @@ public abstract class Object3DImpl implements Object3D {
     }
 
     @Override
-    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPos) {
+    public void draw ( Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPos) {
         this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPos);
     }
 
     @Override
     public void draw ( Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
                      float[] lightPos) {
-
+        if ( obj.isVisible ( ) == false )
+            return;
         // Log.d("Object3DImpl", "Drawing '" + obj.getId() + "' using shader '" + id + "'...");
 
         // Add program to OpenGL environment
@@ -72,7 +73,7 @@ public abstract class Object3DImpl implements Object3D {
 
         float[] viewMatrix = new float[16];
         System.arraycopy ( vMatrix, 0, viewMatrix, 0, 16 );
-        float[] mMatrix   = obj.getModelMatrix ( ); //getMMatrix(obj);
+        float[] mMatrix   = obj.getModelMatrix ( );
         float[] globalPos = obj.getGlobalPosition ( );
         if ( globalPos[0] != 0f || globalPos[1] != 0f || globalPos[2] != 0f )  {
             Matrix.translateM ( viewMatrix, 0, globalPos[0], globalPos[1], globalPos[2] );
@@ -80,8 +81,9 @@ public abstract class Object3DImpl implements Object3D {
         float[] mvMatrix  = getMvMatrix (  mMatrix, viewMatrix );
         float[] mvpMatrix = getMvpMatrix( mvMatrix, pMatrix );
 
-        setMvpMatrix(mvpMatrix);
+        setMvpMatrix ( mvpMatrix );
 
+        setCustomValues ( obj );
         int mPositionHandle  = setPosition  ( obj );
         int mPointSizeHandle = setPointSize ( obj );
 
@@ -137,7 +139,12 @@ public abstract class Object3DImpl implements Object3D {
         if (mNormalHandle != -1) {
             GLES20.glDisableVertexAttribArray(mNormalHandle);
         }
+        unsetCustomValues ( obj );
     }
+
+    // Overrideables
+    public void setCustomValues   ( Object3DData obj ) { };
+    public void unsetCustomValues ( Object3DData obj ) { };
 
     public float[] getMvMatrix ( float[] mMatrix, float[] vMatrix )  {
         Matrix.multiplyMM(mvMatrix, 0, vMatrix, 0, mMatrix, 0);
@@ -340,7 +347,7 @@ public abstract class Object3DImpl implements Object3D {
                 for (int i = 0; i < drawModeList.size(); i++) {
                     int[] drawPart = drawModeList.get(i);
                     int drawModePolygon = drawPart[0];
-                    int vertexPos = drawPart[1];
+                    int vertexPos       = drawPart[1];
                     int drawSizePolygon = drawPart[2];
                     drawOrderBuffer.position(vertexPos);
                     GLES20.glDrawElements(drawModePolygon, drawSizePolygon, drawBufferType, drawOrderBuffer);
@@ -893,7 +900,8 @@ class Object3DV10 extends Object3DImpl {
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
                      float[] lightPos) {
-
+        if ( obj.isVisible ( ) == false )
+            return;
 
         AnimatedModel animatedModel = (AnimatedModel) obj;
 
@@ -1048,7 +1056,8 @@ class Object3DV11 extends Object3DImpl {
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
                      float[] lightPos) {
-
+        if ( obj.isVisible ( ) == false )
+            return;
 
         AnimatedModel animatedModel = (AnimatedModel) obj;
 
@@ -1191,7 +1200,8 @@ class Object3DV12 extends Object3DImpl {
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
                      float[] lightPos) {
-
+        if ( obj.isVisible( ) == false )
+            return;
 
         AnimatedModel animatedModel = (AnimatedModel) obj;
 

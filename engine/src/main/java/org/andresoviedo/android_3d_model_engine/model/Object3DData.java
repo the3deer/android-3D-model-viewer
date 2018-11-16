@@ -74,6 +74,7 @@ public class Object3DData {
 	private FaceMaterials faceMats;
 	private Materials materials;
 	private String textureFile;
+	private Object3D mDrawerObject = null;
 
 	// Processed arrays
 	private FloatBuffer vertexArrayBuffer = null;
@@ -157,6 +158,12 @@ public class Object3DData {
 		this.loader = loader;
 	}
 
+	public void setDrawer ( Object3D obj )  {
+		mDrawerObject = obj;
+	}
+	public Object3D getDrawer ( )  {
+		return mDrawerObject;
+	}
 
 	public WavefrontLoader getLoader() {
 		return loader;
