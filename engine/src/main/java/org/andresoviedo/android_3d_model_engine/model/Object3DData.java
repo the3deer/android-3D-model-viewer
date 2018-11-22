@@ -97,6 +97,7 @@ public class Object3DData {
 	protected float[] scale          = new float[] { 1f, 1f, 1f };
 	protected float[] modelMatrix    = new float[16];
     private   float[] dummyMatrix    = new float[16]; // required to properly rotate
+    private   float[] tempMatrix     = new float[16]; // required to properly rotate
 
 
     {
@@ -472,16 +473,22 @@ public class Object3DData {
 	private void updateModelMatrix ( )  {
 		Matrix.setIdentityM ( modelMatrix, 0 );
 		if ( rotation[0] != 0.0f )  {
-			Matrix.setRotateM ( dummyMatrix, 0, rotation[0],1f,0f,0f );
-			Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
+			Matrix.setIdentityM( dummyMatrix, 0 );
+			Matrix.setRotateM  ( dummyMatrix, 0, rotation[0],1f,0f,0f );
+            System.arraycopy   ( modelMatrix, 0, tempMatrix, 0, 16 );
+			Matrix.multiplyMM  ( modelMatrix, 0, tempMatrix, 0, dummyMatrix, 0 );
 		}
 		if ( rotation[1] != 0.0f )  {
-			Matrix.setRotateM ( dummyMatrix, 0, rotation[1],0f,1f,0f );
-			Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
+			Matrix.setIdentityM( dummyMatrix, 0 );
+			Matrix.setRotateM  ( dummyMatrix, 0, rotation[1],0f,1f,0f );
+            System.arraycopy   ( modelMatrix, 0, tempMatrix, 0, 16 );
+			Matrix.multiplyMM  ( modelMatrix, 0, tempMatrix, 0, dummyMatrix, 0 );
 		}
 		if ( rotation[2] != 0.0f )  {
-			Matrix.setRotateM ( dummyMatrix, 0, rotation[2],0f,0f,1f );
-			Matrix.multiplyMM ( modelMatrix, 0, modelMatrix, 0, dummyMatrix, 0 );
+			Matrix.setIdentityM( dummyMatrix, 0 );
+			Matrix.setRotateM  ( dummyMatrix, 0, rotation[2],0f,0f,1f );
+            System.arraycopy   ( modelMatrix, 0, tempMatrix, 0, 16 );
+			Matrix.multiplyMM  ( modelMatrix, 0, tempMatrix, 0, dummyMatrix, 0 );
 		}
 		Matrix.scaleM     ( modelMatrix,0, getScaleX    ( ), getScaleY    ( ), getScaleZ    ( ) );
 		Matrix.translateM ( modelMatrix,0, getPositionX ( ), getPositionY ( ), getPositionZ ( ) );
