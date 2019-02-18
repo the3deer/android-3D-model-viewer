@@ -851,7 +851,12 @@ public class Object3DData {
 		return bb;
 	}
 
-	public BoundingBox getBoundingBox() {
+	public BoundingBox recreateBoundingBox ( )  {
+		boundingBox = null;
+		return getBoundingBox ( );
+	}
+
+	public BoundingBox getBoundingBox ( )  {
 		FloatBuffer vertexBuffer = getVertexBuffer();
 		if (vertexBuffer == null){
 			vertexBuffer = getVertexArrayBuffer();

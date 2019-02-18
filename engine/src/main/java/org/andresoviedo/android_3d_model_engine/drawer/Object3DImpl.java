@@ -69,7 +69,7 @@ public abstract class Object3DImpl implements Object3D {
         // Log.d("Object3DImpl", "Drawing '" + obj.getId() + "' using shader '" + id + "'...");
 
         // Add program to OpenGL environment
-        GLES20.glUseProgram(mProgram);
+        GLES20.glUseProgram ( mProgram );
 
         float[] viewMatrix = new float[16];
         System.arraycopy ( vMatrix, 0, viewMatrix, 0, 16 );
