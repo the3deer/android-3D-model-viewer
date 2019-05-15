@@ -6,24 +6,27 @@ Android 3D Model Viewer
 This is a demo of OpenGL ES 2.0.
 It is basically an android application with a 3D engine that can load Wavefront OBJ, STL & DAE files.
 The purpose of this application is to learn and share how to draw using OpenGL language.
+The application does not use any third party library.
 
 * Wafefront format (OBJ): https://en.wikipedia.org/wiki/Wavefront_.obj_file
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (27/09/2018)
+News (16/05/2019)
 =================
 
-* New: Reduced app size to only 1 Mbyte
-* New: Skeleton Animation
-* New: File chooser to load files from any where
-* New: Load models from app repository
-* New: Externalized 3d engine
-* New: Wiki: https://github.com/andresoviedo/android-3D-model-viewer/wiki
-* Fix: Collada Animator Performance improved
-* Fix: Refactoring
-* Fix: Several bugs fixed
+* New: Stereoscopic rendering: anaglyph (red-green glasses) & VR glasses (cardboard)
+* Fix: some bugs fixed
+
+
+[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/glasses-3d.png">]
+(https://amzn.to/2E8LhxC)
+[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/cardboard-3d.png">]
+(https://amzn.to/2E8M1Tq)
+
+(*) Buying 3D glasses on Amazon with previous links will support my job
+ 
 
 Demo
 ====
@@ -40,8 +43,9 @@ Android Market
 Notice
 ======
 
-Collada support is limited. Collada renderer currently supports a maximum of 60 bones.
-If you have any issue in general,please open an issue and attach model if possible, specifying Android version and Device model.
+* Collada support is limited. Collada renderer currently supports a maximum of 60 bones.
+* In order to see models in 3D virtual reality, you need red-cyan and/or VR glasses
+* If you have any issue in general,please open an issue and attach model if possible, specifying Android version and Device model.  
 
 
 About
@@ -63,11 +67,10 @@ The app comes with some included 3D models that were taken for free from Interne
 Whats next
 ==========
 
-* Stabilize app performance
-* Collada:  Show bind pose, key frames and variate speed
-* Anaglyph support
-* Carboard support
 * Chromecast support
+* 3D without glasses
+* Augmented reality
+* Collada:  Show bind pose, key frames and variate speed
 
 
 Features
@@ -91,6 +94,10 @@ Features
     - pinch & spread to zoom in/out the camera
   - skeletal animations
   - ray collision detection
+  - stereoscopic 3D
+  - other:
+    - texture loader
+    - lightweight: only 1 Megabyte
 
 
 Try it
@@ -113,8 +120,8 @@ Open the application. You should see a menu. From there you can load models
 Once the model is rendered, pinch and rotate to see the 3D scene from another perspective.
 
 
-Screenshot
-==========
+Screenshots
+===========
 
 ![Screenshot1](screenshots/screenshot1.png)
 ![Screenshot2](screenshots/screenshot2.png)
@@ -123,6 +130,7 @@ Screenshot
 ![Screenshot5](screenshots/screenshot5.png)
 ![cowboy.gif](screenshots/cowboy.gif)
 ![stormtrooper.gif](screenshots/stormtrooper.gif)
+![Screenshot6](screenshots/screenshot6-3d.png)
 
 
 Emulator
@@ -160,6 +168,19 @@ Donations
 =========
 
 [<img src="https://www.paypalobjects.com/webstatic/en_US/i/btn/png/btn_donate_92x26.png">](https://www.paypal.me/andresoviedo)
+
+
+Marketing
+=========
+
+If you want to buy 3D glasses on Amazon, thank you for clicking on following links as it may help supporting 
+this project:
+
+[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/glasses-3d.png">]
+(https://amzn.to/2E8LhxC)
+[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/cardboard-3d.png">]
+(https://amzn.to/2E8M1Tq)
+
 
 
 ChangeLog

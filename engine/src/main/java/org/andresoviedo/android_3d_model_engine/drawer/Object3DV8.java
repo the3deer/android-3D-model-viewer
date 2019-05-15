@@ -49,13 +49,14 @@ class Object3DV8 extends Object3DImpl {
     // @formatter:off
     private final static String fragmentShaderCode =
             "precision mediump float;\n" +
+                    "uniform vec4 vColorMask;\n" +
                     "varying vec4 v_Color;\n" +
                     // textures
                     "uniform sampler2D u_Texture;" +
                     "varying vec2 v_TexCoordinate;" +
                     //
                     "void main() {\n" +
-                    "  gl_FragColor = v_Color * texture2D(u_Texture, v_TexCoordinate);" +
+                    "  gl_FragColor = v_Color * texture2D(u_Texture, v_TexCoordinate) * vColorMask;" +
                     "}";
     // @formatter:on
 

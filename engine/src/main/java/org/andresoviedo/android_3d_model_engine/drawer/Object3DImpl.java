@@ -57,12 +57,23 @@ public abstract class Object3DImpl implements Object3D {
 
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPos) {
-        this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPos);
+        this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPos, null);
+    }
+
+    @Override
+    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPos, float[] colorMask) {
+        this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPos, colorMask);
     }
 
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
                      float[] lightPos) {
+        this.draw(obj, pMatrix, vMatrix, drawMode, drawSize, textureId, lightPos, null);
+    }
+
+    @Override
+    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
+                     float[] lightPos, float[] colorMask) {
 
         // Log.d("Object3DImpl", "Drawing '" + obj.getId() + "' using shader '" + id + "'...");
 
@@ -82,6 +93,10 @@ public abstract class Object3DImpl implements Object3D {
             mColorHandle = setColors(obj);
         } else {
             setColor(obj);
+        }
+
+        if (supportsColorMask()){
+            setColorMask(colorMask);
         }
 
         int mTextureHandle = -1;
@@ -265,6 +280,24 @@ public abstract class Object3DImpl implements Object3D {
         return false;
     }
 
+    protected boolean supportsColorMask() {
+        return false;
+    }
+
+    protected int setColorMask(float[] colorMask) {
+
+        // get handle to fragment shader's vColor member
+        int vColorMaskHandle = GLES20.glGetUniformLocation(mProgram, "vColorMask");
+        GLUtil.checkGlError("glGetUniformLocation");
+
+        // Set color for drawing the triangle
+        float[] color = colorMask != null? colorMask : NO_COLOR_MASK;
+        GLES20.glUniform4fv(vColorMaskHandle, 1, color, 0);
+        GLUtil.checkGlError("glUniform4fv");
+
+        return vColorMaskHandle;
+    }
+
     protected int setTexture(Object3DData obj, int textureId) {
         int mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, "u_Texture");
         GLUtil.checkGlError("glGetUniformLocation");
@@ -415,8 +448,9 @@ class Object3DV1 extends Object3DImpl {
     private final static String fragmentShaderCode =
             "precision mediump float;" +
                     "uniform vec4 vColor;" +
+                    "uniform vec4 vColorMask;\n" +
                     "void main() {" +
-                    "  gl_FragColor = vColor;" +
+                    "  gl_FragColor = vColor * vColorMask;\n" +
                     "}";
     // @formatter:on
 
@@ -424,10 +458,15 @@ class Object3DV1 extends Object3DImpl {
         super("V1", vertexShaderCode, fragmentShaderCode, "a_Position");
     }
 
+
+
     @Override
     protected boolean supportsColors() {
         return false;
     }
+
+    @Override
+    protected boolean supportsColorMask() {return true; }
 }
 
 /**
@@ -452,9 +491,10 @@ class Object3DV2 extends Object3DImpl {
     // @formatter:off
     private final static String fragmentShaderCode =
             "precision mediump float;" +
+                    "uniform vec4 vColorMask;\n" +
                     "varying vec4 vColor;" +
                     "void main() {" +
-                    "  gl_FragColor = vColor;" +
+                    "  gl_FragColor = vColor * vColorMask;" +
                     "}";
     // @formatter:on
 
@@ -466,6 +506,9 @@ class Object3DV2 extends Object3DImpl {
     protected boolean supportsColors() {
         return true;
     }
+
+    @Override
+    protected boolean supportsColorMask() {return true; }
 }
 
 /**
@@ -491,10 +534,11 @@ class Object3DV3 extends Object3DImpl {
     private final static String fragmentShaderCode =
             "precision mediump float;" +
                     "uniform vec4 vColor;" +
+                    "uniform vec4 vColorMask;\n" +
                     "uniform sampler2D u_Texture;" +
                     "varying vec2 v_TexCoordinate;" +
                     "void main() {" +
-                    "  gl_FragColor = vColor * texture2D(u_Texture, v_TexCoordinate);" +
+                    "  gl_FragColor = vColor * texture2D(u_Texture, v_TexCoordinate) * vColorMask;" +
                     "}";
     // @formatter:on
 
@@ -506,6 +550,9 @@ class Object3DV3 extends Object3DImpl {
     protected boolean supportsTextures() {
         return true;
     }
+
+    @Override
+    protected boolean supportsColorMask() {return true; }
 }
 
 /**
@@ -533,11 +580,12 @@ class Object3DV4 extends Object3DImpl {
     // @formatter:off
     protected final static String fragmentShaderCode =
             "precision mediump float;" +
+                    "uniform vec4 vColorMask;\n" +
                     "varying vec4 vColor;" +
                     "uniform sampler2D u_Texture;" +
                     "varying vec2 v_TexCoordinate;" +
                     "void main() {" +
-                    "  gl_FragColor = vColor * texture2D(u_Texture, v_TexCoordinate);" +
+                    "  gl_FragColor = vColor * texture2D(u_Texture, v_TexCoordinate) * vColorMask;" +
                     "}";
     // @formatter:on
 
@@ -554,6 +602,9 @@ class Object3DV4 extends Object3DImpl {
     protected boolean supportsTextures() {
         return true;
     }
+
+    @Override
+    protected boolean supportsColorMask() {return true; }
 
 }
 
@@ -600,9 +651,10 @@ class Object3DV5 extends Object3DImpl {
     // @formatter:off
     private final static String fragmentShaderCode =
             "precision mediump float;\n" +
+                    "uniform vec4 vColorMask;\n" +
                     "varying vec4 v_Color;\n" +
                     "void main() {\n" +
-                    "  gl_FragColor = v_Color;\n" +
+                    "  gl_FragColor = v_Color * vColorMask;\n" +
                     "}";
     // @formatter:on
 
@@ -630,6 +682,10 @@ class Object3DV5 extends Object3DImpl {
         return true;
     }
 
+    @Override
+    protected boolean supportsColorMask() {
+        return true;
+    }
 }
 
 /**
@@ -648,6 +704,7 @@ class Object3DV6 extends Object3DImpl {
                     // light variables
                     "uniform mat4 u_MVMatrix;\n" +
                     "uniform vec3 u_LightPos;\n" +
+
                     "attribute vec4 a_Color;\n" +
                     "attribute vec3 a_Normal;\n" +
                     // calculated color
@@ -680,13 +737,14 @@ class Object3DV6 extends Object3DImpl {
     // @formatter:off
     private final static String fragmentShaderCode =
             "precision mediump float;\n" +
+                    "uniform vec4 vColorMask;\n" +
                     "varying vec4 v_Color;\n" +
                     // textures
                     "uniform sampler2D u_Texture;" +
                     "varying vec2 v_TexCoordinate;" +
                     //
                     "void main() {\n" +
-                    "  gl_FragColor = v_Color * texture2D(u_Texture, v_TexCoordinate);" +
+                    "  gl_FragColor = v_Color * texture2D(u_Texture, v_TexCoordinate) * vColorMask;" +
                     "}";
     // @formatter:on
 
@@ -719,6 +777,8 @@ class Object3DV6 extends Object3DImpl {
         return true;
     }
 
+    @Override
+    protected boolean supportsColorMask() {return true; }
 }
 
 /**
@@ -765,10 +825,11 @@ class Object3DV7 extends Object3DImpl {
     // @formatter:off
     private final static String fragmentShaderCode =
             "precision mediump float;\n" +
+                    "uniform vec4 vColorMask;\n" +
                     // calculated color
                     "varying vec4 v_Color;\n" +
                     "void main() {\n" +
-                    "  gl_FragColor = v_Color;\n" +
+                    "  gl_FragColor = v_Color * vColorMask;\n" +
                     "}";
     // @formatter:on
 
@@ -796,6 +857,10 @@ class Object3DV7 extends Object3DImpl {
         return true;
     }
 
+    @Override
+    protected boolean supportsColorMask() {
+        return true;
+    }
 }
 
 /**
@@ -869,9 +934,10 @@ class Object3DV10 extends Object3DImpl {
     // @formatter:off
     private final static String fragmentShaderCode =
             "precision mediump float;\n" +
+                    "uniform vec4 vColorMask;\n" +
                     "varying vec4 v_Color;\n" +
                     "void main() {\n" +
-                    "  gl_FragColor = v_Color;\n" +
+                    "  gl_FragColor = v_Color * vColorMask;\n" +
                     "}";
     // @formatter:on
 
@@ -882,7 +948,7 @@ class Object3DV10 extends Object3DImpl {
 
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
-                     float[] lightPos) {
+                     float[] lightPos, float[] colorMask) {
 
 
         AnimatedModel animatedModel = (AnimatedModel) obj;
@@ -927,7 +993,7 @@ class Object3DV10 extends Object3DImpl {
             handles.add(jointTransformsHandle);
         }
 
-        super.draw(obj, pMatrix, vMatrix, drawMode, drawSize, textureId, lightPos);
+        super.draw(obj, pMatrix, vMatrix, drawMode, drawSize, textureId, lightPos, colorMask);
 
         GLES20.glDisableVertexAttribArray(in_weightsHandle);
         GLES20.glDisableVertexAttribArray(in_jointIndicesHandle);
@@ -948,6 +1014,11 @@ class Object3DV10 extends Object3DImpl {
 
     @Override
     protected boolean supportsMvMatrix() {
+        return true;
+    }
+
+    @Override
+    protected boolean supportsColorMask() {
         return true;
     }
 }
@@ -1023,9 +1094,10 @@ class Object3DV11 extends Object3DImpl {
     // @formatter:off
     private final static String fragmentShaderCode =
             "precision mediump float;\n" +
+                    "uniform vec4 vColorMask;\n" +
                     "varying vec4 v_Color;\n" +
                     "void main() {\n" +
-                    "  gl_FragColor = v_Color;\n" +
+                    "  gl_FragColor = v_Color * vColorMask;\n" +
                     "}";
     // @formatter:on
 
@@ -1036,7 +1108,7 @@ class Object3DV11 extends Object3DImpl {
 
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
-                     float[] lightPos) {
+                     float[] lightPos, float[] colorMask) {
 
 
         AnimatedModel animatedModel = (AnimatedModel) obj;
@@ -1081,7 +1153,7 @@ class Object3DV11 extends Object3DImpl {
             handles.add(jointTransformsHandle);
         }
 
-        super.draw(obj, pMatrix, vMatrix, drawMode, drawSize, textureId, lightPos);
+        super.draw(obj, pMatrix, vMatrix, drawMode, drawSize, textureId, lightPos, colorMask);
 
         GLES20.glDisableVertexAttribArray(in_weightsHandle);
         GLES20.glDisableVertexAttribArray(in_jointIndicesHandle);
@@ -1107,6 +1179,11 @@ class Object3DV11 extends Object3DImpl {
 
     @Override
     protected boolean supportsMvMatrix() {
+        return true;
+    }
+
+    @Override
+    protected boolean supportsColorMask() {
         return true;
     }
 }
@@ -1165,9 +1242,10 @@ class Object3DV12 extends Object3DImpl {
     // @formatter:off
     private final static String fragmentShaderCode =
             "precision mediump float;\n" +
+                    "uniform vec4 vColorMask;\n" +
                     "varying vec4 v_Color;\n" +
                     "void main() {\n" +
-                    "  gl_FragColor = v_Color;\n" +
+                    "  gl_FragColor = v_Color * vColorMask;\n" +
                     "}";
     // @formatter:on
 
@@ -1178,7 +1256,7 @@ class Object3DV12 extends Object3DImpl {
 
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
-                     float[] lightPos) {
+                     float[] lightPos, float[] colorMask) {
 
 
         AnimatedModel animatedModel = (AnimatedModel) obj;
@@ -1223,12 +1301,17 @@ class Object3DV12 extends Object3DImpl {
             handles.add(jointTransformsHandle);
         }
 
-        super.draw(obj, pMatrix, vMatrix, drawMode, drawSize, textureId, lightPos);
+        super.draw(obj, pMatrix, vMatrix, drawMode, drawSize, textureId, lightPos, colorMask);
 
         GLES20.glDisableVertexAttribArray(in_weightsHandle);
         GLES20.glDisableVertexAttribArray(in_jointIndicesHandle);
         for (int i : handles) {
             //GLES20.glDisableVertexAttribArray(i);
         }
+    }
+
+    @Override
+    protected boolean supportsColorMask() {
+        return true;
     }
 }

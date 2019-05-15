@@ -43,7 +43,11 @@ public class SceneLoader implements LoaderTask.Callback {
     /**
      * List of data objects containing info for building the opengl objects
      */
-    private List<Object3DData> objects = new ArrayList<Object3DData>();
+    private List<Object3DData> objects = new ArrayList<>();
+    /**
+     * Show axis or not
+     */
+    private boolean drawAxis = false;
     /**
      * Point of view camera
      */
@@ -89,9 +93,17 @@ public class SceneLoader implements LoaderTask.Callback {
      */
     private boolean isCollision = false;
     /**
-     * Toggle 3d anaglyph
+     * Toggle 3d
+     */
+    private boolean isStereoscopic = false;
+    /**
+     * Toggle 3d anaglyph (red, blue glasses)
      */
     private boolean isAnaglyph = false;
+    /**
+     * Toggle 3d VR glasses
+     */
+    private boolean isVRGlasses = false;
     /**
      * Object selected by the user
      */
@@ -142,6 +154,14 @@ public class SceneLoader implements LoaderTask.Callback {
             Log.i("Object3DBuilder", "Loading Collada object from: "+uri);
             new ColladaLoaderTask(parent, uri, this).execute();
         }
+    }
+
+    public boolean isDrawAxis(){
+        return drawAxis;
+    }
+
+    public void setDrawAxis(boolean drawAxis) {
+        this.drawAxis = drawAxis;
     }
 
     public Camera getCamera() {
@@ -295,6 +315,32 @@ public class SceneLoader implements LoaderTask.Callback {
         makeToastText("Collisions: "+isCollision, Toast.LENGTH_SHORT);
     }
 
+    public void toggleStereoscopic() {
+        if (!this.isStereoscopic){
+            this.isStereoscopic = true;
+            this.isAnaglyph = true;
+            this.isVRGlasses = false;
+            makeToastText("Stereoscopic Anaplygh", Toast.LENGTH_SHORT);
+        } else if (this.isAnaglyph){
+            this.isAnaglyph = false;
+            this.isVRGlasses = true;
+            // move object automatically cause with VR glasses we still have no way of moving object
+            this.userHasInteracted = false;
+            makeToastText("Stereoscopic VR Glasses", Toast.LENGTH_SHORT);
+        } else {
+            this.isStereoscopic = false;
+            this.isAnaglyph = false;
+            this.isVRGlasses = false;
+            makeToastText("Stereoscopic disabled", Toast.LENGTH_SHORT);
+        }
+        // recalculate camera
+        this.camera.setChanged(true);
+    }
+
+    public boolean isVRGlasses() {
+        return isVRGlasses;
+    }
+
     public boolean isDrawTextures() {
         return drawTextures;
     }
@@ -309,6 +355,10 @@ public class SceneLoader implements LoaderTask.Callback {
 
     public boolean isCollision() {
         return isCollision;
+    }
+
+    public boolean isStereoscopic() {
+        return isStereoscopic;
     }
 
     public boolean isAnaglyph() {
@@ -402,6 +452,4 @@ public class SceneLoader implements LoaderTask.Callback {
     public void processMove(float dx1, float dy1) {
         userHasInteracted = true;
     }
-
-
 }

@@ -25,7 +25,7 @@ public class DrawerFactory {
     private Object3D object3dv12;
 
     public Object3D getBoundingBoxDrawer() {
-        return object3dv2;
+        return object3dv1;
     }
 
     public Object3D getFaceNormalsDrawer() {
@@ -39,7 +39,7 @@ public class DrawerFactory {
         return object3dv1;
     }
 
-    public Object3D getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights, boolean usingAnimation) throws IOException {
+    public Object3D getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights, boolean usingAnimation) {
 
         if (object3dv2 == null) {
             try {

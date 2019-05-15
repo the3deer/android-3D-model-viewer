@@ -86,12 +86,13 @@ class Object3DV9 extends Object3DImpl {
 	// @formatter:off
 	private final static String fragmentShaderCode =
 			"precision mediump float;\n"+
+					"uniform vec4 vColorMask;\n" +
 			"varying vec4 v_Color;\n"+
 					// textures
 			"uniform sampler2D u_Texture;\n"+
 			"varying vec2 v_TexCoordinate;\n"+
 			"void main() {\n"+
-			"  gl_FragColor = v_Color * texture2D(u_Texture, v_TexCoordinate);\n" +
+			"  gl_FragColor = v_Color * texture2D(u_Texture, v_TexCoordinate) * vColorMask;\n" +
 			"}";
 	// @formatter:on
 
@@ -102,7 +103,7 @@ class Object3DV9 extends Object3DImpl {
 
 	@Override
 	public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
-					 float[] lightPos) {
+					 float[] lightPos, float[] colorMask) {
 
 
 		AnimatedModel animatedModel = (AnimatedModel) obj;
@@ -147,7 +148,7 @@ class Object3DV9 extends Object3DImpl {
 			handles.add(jointTransformsHandle);
 		}
 
-		super.draw(obj, pMatrix, vMatrix, drawMode, drawSize, textureId, lightPos);
+		super.draw(obj, pMatrix, vMatrix, drawMode, drawSize, textureId, lightPos, colorMask);
 
 		GLES20.glDisableVertexAttribArray(in_weightsHandle);
 		GLES20.glDisableVertexAttribArray(in_jointIndicesHandle);
@@ -173,6 +174,11 @@ class Object3DV9 extends Object3DImpl {
 
 	@Override
 	protected boolean supportsTextures() {
+		return true;
+	}
+
+	@Override
+	protected boolean supportsColorMask() {
 		return true;
 	}
 }

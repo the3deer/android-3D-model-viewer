@@ -187,6 +187,17 @@ public class Math3DUtils {
         return new float[]{x, y, z};
     }
 
+    public static float[] crossProduct(float ax, float ay, float az, float bx, float by, float bz) {
+        // AxB = (AyBz − AzBy, AzBx − AxBz, AxBy − AyBx)
+        //(r)[0] = (a)[1] * (b)[2] - (b)[1] * (a)[2]; \
+        //(r)[1] = (a)[2] * (b)[0] - (b)[2] * (a)[0]; \
+        //(r)[2] = (a)[0] * (b)[1] - (b)[0] * (a)[1];
+        float x = ay * bz - az * by;
+        float y = az * bx - ax * bz;
+        float z = ax * by - ay * bx;
+        return new float[]{x, y, z};
+    }
+
     public static float dotProduct(float[] a, float[] b) {
         // a1b1+a2b2+a3b3
         return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];

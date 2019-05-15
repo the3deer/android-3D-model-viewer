@@ -29,6 +29,7 @@ import java.io.IOException;
 public class ModelActivity extends Activity {
 
     private static final int REQUEST_CODE_LOAD_TEXTURE = 1000;
+    private static final int FULLSCREEN_DELAY = 10000;
 
     /**
      * Type of model if file name has no extension (provided though content provider)
@@ -45,7 +46,7 @@ public class ModelActivity extends Activity {
     /**
      * Background GL clear color. Default is light gray
      */
-    private float[] backgroundColor = new float[]{0.2f, 0.2f, 0.2f, 1.0f};
+    private float[] backgroundColor = new float[]{0f, 0f, 0f, 1.0f};
 
     private ModelSurfaceView gLView;
 
@@ -128,7 +129,7 @@ public class ModelActivity extends Activity {
             // LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
             if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
                 // The system bars are visible. Make any desired
-                if (immersiveMode) hideSystemUIDelayed(5000);
+                hideSystemUIDelayed();
             }
         });
     }
@@ -137,9 +138,7 @@ public class ModelActivity extends Activity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                if (immersiveMode) hideSystemUIDelayed(5000);
-            }
+            hideSystemUIDelayed();
         }
     }
 
@@ -164,6 +163,12 @@ public class ModelActivity extends Activity {
             case R.id.model_toggle_lights:
                 scene.toggleLighting();
                 break;
+            case R.id.model_toggle_stereoscopic:
+                scene.toggleStereoscopic();
+                break;
+            case R.id.model_toggle_immersive:
+                toggleImmersive();
+                break;
             case R.id.model_load_texture:
                 Intent target = ContentUtils.createGetContentIntent("image/*");
                 Intent intent = Intent.createChooser(target, "Select a file");
@@ -174,14 +179,37 @@ public class ModelActivity extends Activity {
                 }
                 break;
         }
+
+        hideSystemUIDelayed();
         return super.onOptionsItemSelected(item);
     }
 
-    private void hideSystemUIDelayed(long millis) {
-        handler.postDelayed(this::hideSystemUI, millis);
+    private void toggleImmersive() {
+        this.immersiveMode = !this.immersiveMode;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            return;
+        }
+        if (this.immersiveMode) {
+            hideSystemUI();
+        } else {
+            showSystemUI();
+        }
+        Toast.makeText(this, "Fullscreen " +this.immersiveMode, Toast.LENGTH_SHORT).show();
+    }
+
+    private void hideSystemUIDelayed() {
+        if (!this.immersiveMode) {
+            return;
+        }
+        handler.removeCallbacksAndMessages(null);
+        handler.postDelayed(this::hideSystemUI, FULLSCREEN_DELAY);
+
     }
 
     private void hideSystemUI() {
+        if (!this.immersiveMode) {
+            return;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             hideSystemUIKitKat();
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -214,12 +242,9 @@ public class ModelActivity extends Activity {
     // except for the ones that make the content appear under the system bars.
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void showSystemUI() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            return;
-        }
+        handler.removeCallbacksAndMessages(null);
         final View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
 
     public Uri getParamUri() {

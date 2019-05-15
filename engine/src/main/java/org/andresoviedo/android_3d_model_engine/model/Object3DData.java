@@ -220,7 +220,12 @@ public class Object3DData {
 	}
 
 	public Object3DData setColor(float[] color) {
+	    // color variable when using single color
 		this.color = color;
+
+		// color buffer when using multiple colors
+		this.vertexColorsArrayBuffer = null;
+
 		return this;
 	}
 
@@ -341,7 +346,7 @@ public class Object3DData {
      * @return the draw buffer as short
      */
 	public ShortBuffer getDrawOrderAsShort() {
-		if (shortDrawOrderBuffer == null) {
+		if (shortDrawOrderBuffer == null && drawOrderBuffer != null){
 			shortDrawOrderBuffer = createNativeByteBuffer(drawOrderBuffer.capacity() * 2).asShortBuffer();
 			for (int i=0; i<drawOrderBuffer.capacity(); i++){
 			    shortDrawOrderBuffer.put((short)drawOrderBuffer.get(i));

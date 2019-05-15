@@ -38,11 +38,23 @@
         android:showAsAction="ifRoom"
         android:title="Toggle Collision"/>
     <item
+        android:id="@+id/model_toggle_stereoscopic"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:orderInCategory="400"
+        android:showAsAction="ifRoom"
+        android:title="Toggle Stereoscopic"/>
+    <item
         android:id="@+id/model_toggle_boundingbox"
         android:icon="@android:drawable/ic_menu_crop"
         android:orderInCategory="500"
         android:showAsAction="ifRoom"
         android:title="@string/toggle_boundingbox"/>
+    <item
+        android:id="@+id/model_toggle_immersive"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:orderInCategory="500"
+        android:showAsAction="ifRoom"
+        android:title="Toggle Immersive"/>
     <!--
     <item
         android:id="@+id/action_settings"

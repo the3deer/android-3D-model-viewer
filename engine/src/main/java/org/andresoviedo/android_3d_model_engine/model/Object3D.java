@@ -8,7 +8,14 @@ public interface Object3D {
 
 	float[] DEFAULT_COLOR = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+	float[] NO_COLOR_MASK = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 	void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPosInEyeSpace);
 
+	void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPosInEyeSpace, float[] colorMask);
+
 	void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawType, int drawSize, int textureId, float[] lightPosInEyeSpace);
+
+	void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawType, int drawSize, int textureId, float[]
+			lightPosInEyeSpace, float[] colorMask);
 }

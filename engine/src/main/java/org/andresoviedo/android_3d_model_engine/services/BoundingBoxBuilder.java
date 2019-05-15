@@ -15,10 +15,8 @@ public class BoundingBoxBuilder {
 
 	// number of coordinates per vertex in this array
 	protected static final int COORDS_PER_VERTEX = 3;
-	protected static final int COORDS_PER_COLOR = 4;
 
 	public FloatBuffer vertices;
-	public FloatBuffer colors;
 	public IntBuffer drawOrder;
 
 	/**
@@ -41,20 +39,6 @@ public class BoundingBoxBuilder {
 		// use the device hardware's native byte order
 		bb2.order(ByteOrder.nativeOrder());
 		drawOrder = bb2.asIntBuffer();
-
-		// vertex colors
-		ByteBuffer bb3 = ByteBuffer.allocateDirect(24 * COORDS_PER_COLOR * 4);
-		// use the device hardware's native byte order
-		bb3.order(ByteOrder.nativeOrder());
-		colors = bb3.asFloatBuffer();
-
-		for (int i = 0; i < colors.capacity() / 4; i++) {
-			if (color != null && color.length == 4) {
-				colors.put(color);
-			} else {
-				colors.put(1.0f).put(0.0f).put(1.0f).put(1.0f);
-			}
-		}
 
 		// back-face
 		drawOrder.put( 0);
@@ -97,10 +81,6 @@ public class BoundingBoxBuilder {
 
 	public IntBuffer getDrawOrder() {
 		return drawOrder;
-	}
-
-	public FloatBuffer getColors() {
-		return colors;
 	}
 
 	public int getDrawMode() {

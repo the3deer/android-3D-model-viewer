@@ -623,7 +623,7 @@ public final class Object3DBuilder {
 		BoundingBoxBuilder boundingBox = new BoundingBoxBuilder(obj.getBoundingBox(),
 				obj.getColor());
 		return new Object3DData(boundingBox.getVertices()).setDrawModeList(boundingBox.getDrawModeList())
-				.setVertexColorsArrayBuffer(boundingBox.getColors()).setDrawOrder(boundingBox.getDrawOrder())
+				.setDrawOrder(boundingBox.getDrawOrder())
 				.setDrawMode(boundingBox.getDrawMode())
 				.setColor(obj.getColor()).setId(obj.getId() + "_boundingBox");
 	}
