@@ -20,9 +20,9 @@ News (16/05/2019)
 * Fix: some bugs fixed
 
 
-[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/glasses-3d.png">]
+[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/glasses-3d.jpg">]
 (https://amzn.to/2E8LhxC)
-[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/cardboard-3d.png">]
+[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/cardboard-3d.jpg">]
 (https://amzn.to/2E8M1Tq)
 
 (*) Buying 3D glasses on Amazon with previous links will support my job
@@ -176,10 +176,8 @@ Marketing
 If you want to buy 3D glasses on Amazon, thank you for clicking on following links as it may help supporting 
 this project:
 
-[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/glasses-3d.png">]
-(https://amzn.to/2E8LhxC)
-[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/cardboard-3d.png">]
-(https://amzn.to/2E8M1Tq)
+[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/glasses-3d.jpg">](https://amzn.to/2E8LhxC)
+[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/cardboard-3d.jpg">](https://amzn.to/2E8M1Tq)
 
 
 
