@@ -59,7 +59,12 @@ public class VertexSkinData {
 			jointIds.remove(jointIds.size()-1);
 		}
 	}
-	
-	
 
+	@Override
+	public String toString() {
+		return "VertexSkinData{" +
+				"jointIds=" + jointIds +
+				", weights=" + weights +
+				'}';
+	}
 }

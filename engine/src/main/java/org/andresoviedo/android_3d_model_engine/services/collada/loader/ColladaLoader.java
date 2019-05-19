@@ -73,12 +73,15 @@ public class ColladaLoader {
 				textureBuffer.put(meshData.getTextureCoords());
 				data3D.setTextureCoordsArrayBuffer(textureBuffer);
 			}
+			data3D.setColor(meshData.getColor());
+			data3D.setVertexColorsArrayBuffer(meshData.getColorsBuffer());
 			data3D.setDimensions(modelDimensions);
 			data3D.setDrawOrder(indexBuffer);
 			data3D.setDrawUsingArrays(false);
 			data3D.setDrawMode(GLES20.GL_TRIANGLES);
 
 			if (meshData.getJointIds() != null) {
+				//Log.v("ColladaLoader","joint: "+ Arrays.toString(meshData.getJointIds()));
 				FloatBuffer intBuffer = createNativeByteBuffer(meshData.getJointIds().length * 4).asFloatBuffer();
 				for (int i : meshData.getJointIds()) {
 					intBuffer.put(i);
@@ -86,6 +89,7 @@ public class ColladaLoader {
 				data3D.setJointIds(intBuffer);
 			}
 			if (meshData.getVertexWeights() != null) {
+				//Log.v("ColladaLoader","weights: "+ Arrays.toString(meshData.getVertexWeights()));
 				FloatBuffer floatBuffer = createNativeByteBuffer(meshData.getVertexWeights().length * 4).asFloatBuffer();
 				floatBuffer.put(meshData.getVertexWeights());
 				data3D.setVertexWeights(floatBuffer);
@@ -130,7 +134,7 @@ public class ColladaLoader {
 			data.setId(meshData.getId());
 			vertexBuffer.put(meshData.getVertices());
 			normalsBuffer.put(meshData.getNormals());
-			data.setVertexColorsArrayBuffer(meshData.getColorsBuffer());
+			//data.setVertexColorsArrayBuffer(meshData.getColorsBuffer());
 			indexBuffer.put(meshData.getIndices());
 			data.setFaces(new WavefrontLoader.Faces(vertexBuffer.capacity() / 3));
 			data.setDrawOrder(indexBuffer);
@@ -201,6 +205,7 @@ public class ColladaLoader {
 	static AnimationData loadColladaAnimation(InputStream colladaFile) {
 		XmlNode node = XmlParser.parse(colladaFile);
 		XmlNode animNode = node.getChild("library_animations");
+		if (animNode == null) return null;
 		XmlNode jointsNode = node.getChild("library_visual_scenes");
 		AnimationLoader loader = new AnimationLoader(animNode, jointsNode);
 		AnimationData animData = loader.extractAnimation();
@@ -218,6 +223,7 @@ public class ColladaLoader {
 	 */
 	public static Animation loadAnimation(InputStream colladaFile) {
 		AnimationData animationData = loadColladaAnimation(colladaFile);
+		if (animationData == null) return null;
 		KeyFrame[] frames = new KeyFrame[animationData.keyFrames.length];
 		for (int i = 0; i < frames.length; i++) {
 			frames[i] = createKeyFrame(animationData.keyFrames[i]);

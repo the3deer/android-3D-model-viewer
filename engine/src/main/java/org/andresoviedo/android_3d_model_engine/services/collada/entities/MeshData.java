@@ -16,18 +16,20 @@ public class MeshData {
 	private float[] vertices;
 	private float[] textureCoords;
 	private float[] normals;
+	private float[] color;
 	private FloatBuffer colorsBuffer;
 	private String texture;
 	private int[] indices;
 	private int[] jointIds;
 	private float[] vertexWeights;
 
-	public MeshData(String id, float[] vertices, float[] textureCoords, float[] normals, FloatBuffer colorsBuffer, String texture, int[] indices,
-			int[] jointIds, float[] vertexWeights) {
+	public MeshData(String id, float[] vertices, float[] textureCoords, float[] normals, float[] color, FloatBuffer colorsBuffer, String texture, int[] indices,
+					int[] jointIds, float[] vertexWeights) {
 		this.id = id;
 		this.vertices = vertices;
 		this.textureCoords = textureCoords;
 		this.normals = normals;
+		this.color = color;
 		this.colorsBuffer = colorsBuffer;
 		this.texture = texture;
 		this.indices = indices;
@@ -53,6 +55,10 @@ public class MeshData {
 
 	public float[] getNormals() {
 		return normals;
+	}
+
+	public float[] getColor() {
+		return color;
 	}
 
 	public FloatBuffer getColorsBuffer(){

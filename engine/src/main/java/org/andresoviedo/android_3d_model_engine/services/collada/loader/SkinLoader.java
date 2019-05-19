@@ -44,13 +44,18 @@ public class SkinLoader {
             }
 
             // Ordered joint list
-            List<String> jointsList = loadJointsList();
+            List<String> jointNames = loadJointNames();
+            Log.i("SkinLoader","Joint names: "+jointNames);
 
             // Vertex weights
 			float[] weights = loadWeights();
+
+			// every vertex has 1 or more joints/weights associated
 			XmlNode weightsDataNode = skinningData.getChild("vertex_weights");
 			int[] effectorJointCounts = getEffectiveJointsCounts(weightsDataNode);
-			List<VertexSkinData> vertexWeights = getSkinData(weightsDataNode, effectorJointCounts, weights);
+
+			// load skin data for every vertex
+			List<VertexSkinData> vertexWeights = loadSkinData(weightsDataNode, effectorJointCounts, weights);
 
 			// inverse bind matrix
 			float[] inverseBindMatrix = null;
@@ -60,19 +65,19 @@ public class SkinLoader {
 				String invMatrixString = skinningData.getChildWithAttribute("source",
 						"id",inverseBindMatrixNode.getAttribute("source").substring(1))
 						.getChild("float_array").getData();
-				Log.i("SkinLoader","invMatrix: "+invMatrixString.trim());
+				Log.d("SkinLoader","invMatrix: "+invMatrixString.trim());
 				inverseBindMatrix = Math3DUtils.parseFloat(invMatrixString.trim().split("\\s+"));
-                Log.i("SkinLoader","Inverse bind matrix available");
+                Log.d("SkinLoader","Inverse bind matrix available");
 			} catch (Exception e) {
-				Log.i("SkinLoader","No inverse bind matrix available");
+				Log.d("SkinLoader","No inverse bind matrix available");
 			}
-			ret.put(source,new SkinningData(bindShapeMatrix, jointsList, vertexWeights, inverseBindMatrix));
+			ret.put(source,new SkinningData(bindShapeMatrix, jointNames, vertexWeights, inverseBindMatrix));
 		}
 		Log.d("SkinLoader","Skinning datas '"+ret.keySet()+"'");
 		return ret;
 	}
 
-	private List<String> loadJointsList() {
+	private List<String> loadJointNames() {
 		XmlNode inputNode = skinningData.getChild("vertex_weights");
 		String jointDataId = inputNode.getChildWithAttribute("input", "semantic", "JOINT").getAttribute("source")
 				.substring(1);
@@ -105,7 +110,7 @@ public class SkinLoader {
 		return counts;
 	}
 
-	private List<VertexSkinData> getSkinData(XmlNode weightsDataNode, int[] counts, float[] weights) {
+	private List<VertexSkinData> loadSkinData(XmlNode weightsDataNode, int[] counts, float[] weights) {
 		String[] rawData = weightsDataNode.getChild("v").getData().trim().split("\\s+");
 		List<VertexSkinData> skinningData = new ArrayList<VertexSkinData>();
 		int pointer = 0;

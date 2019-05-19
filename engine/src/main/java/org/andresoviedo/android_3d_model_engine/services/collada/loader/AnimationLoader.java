@@ -24,7 +24,6 @@ public class AnimationLoader {
 	}
 	
 	public AnimationData extractAnimation(){
-		String rootNode = findRootJointName();
 		TreeSet<Float> times = getKeyTimes();
 		Log.i("AnimationLoader","Key times: ("+times.size()+"): "+times);
 		float duration = times.last();
@@ -37,7 +36,7 @@ public class AnimationLoader {
 			if (animationNode.getChild("animation") != null){
 				animationNode = animationNode.getChild("animation");
 			}
-			loadJointTransforms(keyTimes, keyFrames, animationNode, rootNode);
+			loadJointTransforms(keyTimes, keyFrames, animationNode);
 		}
 		return new AnimationData(duration, keyFrames);
 	}
@@ -71,7 +70,7 @@ public class AnimationLoader {
 		return frames;
 	}
 	
-	private void loadJointTransforms(List<Float> keyTimes, KeyFrameData[] frames, XmlNode animationNode, String rootNodeId){
+	private void loadJointTransforms(List<Float> keyTimes, KeyFrameData[] frames, XmlNode animationNode){
 		String[] channel = getChannel(animationNode);
 		String jointNameId = channel[0];
 		String transform = channel[1];
@@ -85,18 +84,18 @@ public class AnimationLoader {
 			XmlNode technique_common = transformData.getChild("technique_common");
 			XmlNode accessor = technique_common.getChild("accessor");
 			if (accessor.getAttribute("stride").equals("16")) {
-				processTransforms(jointNameId, rawTimes, rawData, keyTimes, frames, jointNameId.equals(rootNodeId));
+				processTransforms(jointNameId, rawTimes, rawData, keyTimes, frames);
 			}
 			else if (accessor.getAttribute("stride").equals("2")){
-				processXYTransforms(jointNameId, rawTimes, rawData, keyTimes, frames, jointNameId.equals(rootNodeId));
+				processXYTransforms(jointNameId, rawTimes, rawData, keyTimes, frames);
 			}
 			else if (accessor.getAttribute("stride").equals("1")) {
 				if (accessor.getChildWithAttribute("param", "name", "X") != null) {
-					processXTransforms(jointNameId, rawTimes, rawData, keyTimes, frames, jointNameId.equals(rootNodeId));
+					processXTransforms(jointNameId, rawTimes, rawData, keyTimes, frames);
 				} else if (accessor.getChildWithAttribute("param", "name", "Z") != null) {
-					processZTransforms(jointNameId, rawTimes, rawData, keyTimes, frames, jointNameId.equals(rootNodeId));
+					processZTransforms(jointNameId, rawTimes, rawData, keyTimes, frames);
 				} else if (transform.equals("rotationZ.ANGLE")) {
-					processRotationZTransforms(jointNameId, rawTimes, rawData, keyTimes, frames, jointNameId.equals(rootNodeId));
+					processRotationZTransforms(jointNameId, rawTimes, rawData, keyTimes, frames);
 				}
 			}
             Log.d("AnimationLoader","Animation (key frames: "+rawTimes.length+") "+jointNameId);
@@ -122,7 +121,7 @@ public class AnimationLoader {
 		return data.split("/");
 	}
 
-	private void processTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames, boolean root){
+	private void processTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames){
 		float[] matrixData = new float[16];
 		for(int i=0;i<rawTimes.length;i++){
 			Float keyTime = Float.parseFloat(rawTimes[i]);
@@ -137,7 +136,7 @@ public class AnimationLoader {
 		}
 	}
 
-	private void processXYTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames, boolean root){
+	private void processXYTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames){
 		for(int i=0;i<rawTimes.length;i++){
 			Float keyTime = Float.parseFloat(rawTimes[i]);
 			float[] matrixData = new float[16];
@@ -147,7 +146,7 @@ public class AnimationLoader {
 		}
 	}
 
-	private void processXTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames, boolean root){
+	private void processXTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames){
 		for(int i=0;i<rawTimes.length;i++){
 			Float keyTime = Float.parseFloat(rawTimes[i]);
 			float[] matrixData = new float[16];
@@ -157,7 +156,7 @@ public class AnimationLoader {
 		}
 	}
 
-	private void processZTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames, boolean root){
+	private void processZTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames){
 		for(int i=0;i<rawTimes.length;i++){
 			Float keyTime = Float.parseFloat(rawTimes[i]);
 			float[] matrixData = new float[16];
@@ -167,7 +166,7 @@ public class AnimationLoader {
 		}
 	}
 
-	private void processRotationZTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames, boolean root){
+	private void processRotationZTransforms(String jointName, String[] rawTimes, String[] rawData, List<Float> keyTimes, KeyFrameData[] keyFrames){
 		for(int i=0;i<rawTimes.length;i++){
 			Float keyTime = Float.parseFloat(rawTimes[i]);
 			float[] matrixData = new float[16];
@@ -175,13 +174,5 @@ public class AnimationLoader {
 			Matrix.rotateM(matrixData,0,matrixData,0, Float.parseFloat(rawData[i]), 0,1,0);
 			keyFrames[keyTimes.indexOf(keyTime)].addJointTransform(new JointTransformData(jointName, matrixData));
 		}
-	}
-	
-	private String findRootJointName(){
-		XmlNode skeleton = jointHierarchy.getChild("visual_scene").getChildWithAttribute("node", "id", "Armature");
-		if (skeleton == null){
-		    skeleton = jointHierarchy.getChild("visual_scene").getChildWithAttribute("node","type","JOINT");
-        }
-		return skeleton.getChild("node").getAttribute("id");
 	}
 }

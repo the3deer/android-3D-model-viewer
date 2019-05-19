@@ -56,6 +56,7 @@ public class Joint {
         this.name = name;
         this.bindLocalTransform = bindLocalTransform;
         this.inverseBindTransform = inverseBindTransform;
+        Matrix.setIdentityM(animatedTransform,0);
     }
 
     public int getIndex() {

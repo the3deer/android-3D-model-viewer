@@ -16,8 +16,8 @@ import android.widget.Toast;
 
 import org.andresoviedo.app.model3D.demo.ExampleSceneLoader;
 import org.andresoviedo.app.model3D.demo.SceneLoader;
-import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.dddmodel2.R;
+import org.andresoviedo.util.android.ContentUtils;
 
 import java.io.IOException;
 
@@ -90,8 +90,12 @@ public class ModelActivity extends Activity {
 
         // Create a GLSurfaceView instance and set it
         // as the ContentView for this Activity.
-        gLView = new ModelSurfaceView(this);
-        setContentView(gLView);
+        try {
+            gLView = new ModelSurfaceView(this);
+            setContentView(gLView);
+        } catch (Exception e) {
+            Toast.makeText(this, "Error loading OpenGL view:\n" +e.getMessage(), Toast.LENGTH_LONG).show();
+        }
 
         // Show the Up button in the action bar.
         setupActionBar();
@@ -165,6 +169,9 @@ public class ModelActivity extends Activity {
                 break;
             case R.id.model_toggle_stereoscopic:
                 scene.toggleStereoscopic();
+                break;
+            case R.id.model_toggle_blending:
+                scene.toggleBlending();
                 break;
             case R.id.model_toggle_immersive:
                 toggleImmersive();

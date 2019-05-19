@@ -7,8 +7,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.andresoviedo.android_3d_model_engine.services.Object3DBuilder;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
+import org.andresoviedo.android_3d_model_engine.services.Object3DBuilder;
 import org.andresoviedo.app.model3D.view.ModelActivity;
 import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.util.io.IOUtils;
@@ -161,45 +161,6 @@ public class ExampleSceneLoader extends SceneLoader {
                     } catch (Exception ex) {
                         errors.add(ex);
                     }*/
-
-                    /*// test loading collada object
-					try {
-						// this has heterogeneous faces
-						new ColladaLoaderTask(parent, Uri.parse("assets://org.andresoviedo" +
-                                ".dddmodel2/assets/models/cowboy.dae"), new LoaderTask.Callback() {
-                            @Override
-                            public void onStart() {
-                                // Set up ContentUtils so referenced materials and/or textures could be find
-                                ContentUtils.setThreadActivity(parent);
-                                ContentUtils.provideAssets(parent);
-                            }
-
-                            @Override
-                            public void onLoadError(Exception ex) {
-                                ContentUtils.setThreadActivity(null);
-                                ContentUtils.clearDocumentsProvided();
-                            }
-
-                            @Override
-                            public void onLoadComplete(List<Object3DData> data) {
-
-                            }
-
-                            @Override
-                            public void onLoadComplete(List<Object3DData> data) {
-                                for (Object3DData d : data) {
-                                    d.centerAndScale(4, new float[]{0, 0, -2});
-                                    addObject(d);
-                                }
-                                ContentUtils.setThreadActivity(null);
-                                ContentUtils.clearDocumentsProvided();
-                            }
-                        }).execute();
-
-					} catch (Exception ex) {
-                        Log.e("Example",ex.getMessage(),ex);
-						errors.add(ex);
-					}*/
                 } catch (Exception ex) {
                     errors.add(ex);
                 } finally{
@@ -225,5 +186,18 @@ public class ExampleSceneLoader extends SceneLoader {
 				}
 			}
 		}.execute();
+
+        // test loading collada object
+        /*try {
+            // this has heterogeneous faces
+            new ColladaLoaderTask(parent, Uri.parse("assets://assets/models/cowboy.dae"), this).execute();
+
+        } catch (Exception ex) {
+            Log.e("Example",ex.getMessage(),ex);
+            //errors.add(ex);
+        } finally {
+            ContentUtils.setThreadActivity(null);
+            ContentUtils.clearDocumentsProvided();
+        }*/
 	}
 }

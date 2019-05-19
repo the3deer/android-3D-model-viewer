@@ -5,6 +5,8 @@ import android.view.MotionEvent;
 
 import org.andresoviedo.app.model3D.controller.TouchController;
 
+import java.io.IOException;
+
 /**
  * This is the actual opengl view. From here we can detect touch gestures for example
  * 
@@ -17,7 +19,7 @@ public class ModelSurfaceView extends GLSurfaceView {
 	private ModelRenderer mRenderer;
 	private TouchController touchHandler;
 
-	public ModelSurfaceView(ModelActivity parent) {
+	public ModelSurfaceView(ModelActivity parent) throws IllegalAccessException, IOException {
 		super(parent);
 
 		// parent component

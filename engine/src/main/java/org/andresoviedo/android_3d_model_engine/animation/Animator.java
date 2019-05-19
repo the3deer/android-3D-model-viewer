@@ -57,22 +57,57 @@ public class Animator {
 	 * joints by setting the joint transforms.
 	 */
 	public void update(Object3DData obj) {
+		this.update(obj,false);
+	}
+
+	public void update(Object3DData obj, boolean bindPoseOnly) {
 		if (!(obj instanceof AnimatedModel)) {
 			return;
 		}
+
 		// if (true) return;
 		AnimatedModel animatedModel = (AnimatedModel)obj;
 		if (animatedModel.getAnimation() == null) return;
 
-		// add missing key transformations
-		initAnimation(animatedModel);
+		if (!bindPoseOnly) {
+			// add missing key transformations
+			initAnimation(animatedModel);
 
-		// increase time to progress animation
-		increaseAnimationTime((AnimatedModel)obj);
+			// increase time to progress animation
+			increaseAnimationTime((AnimatedModel) obj);
 
-		Map<String, float[]> currentPose = calculateCurrentAnimationPose(animatedModel);
+			Map<String, float[]> currentPose = calculateCurrentAnimationPose(animatedModel);
 
-		applyPoseToJoints(currentPose, (animatedModel).getRootJoint(), IDENTITY_MATRIX, 0);
+			applyPoseToJoints(currentPose, (animatedModel).getRootJoint(), IDENTITY_MATRIX, 0);
+		} else {
+			bindPose((animatedModel).getRootJoint(), IDENTITY_MATRIX);
+		}
+	}
+
+	private void bindPose(Joint joint, final float[] parentTransform){
+
+		// performance optimization - reuse buffers
+		float[] currentTransform = cache.get(joint.getName());
+		if (currentTransform == null){
+			currentTransform = new float[16];
+			cache.put(joint.getName(), currentTransform);
+		}
+
+		// apply joint local transform to current (parent) transform
+		Matrix.multiplyMM(currentTransform, 0, parentTransform, 0, joint.getBindLocalTransform(), 0);
+
+		// apply calculated transform to inverse matrix for joints only
+		if (joint.getIndex() >= 0) {
+			Matrix.multiplyMM(joint.getAnimatedTransform(), 0, currentTransform, 0,
+					joint.getInverseBindTransform(), 0);
+		}
+
+		// apply transform for joint child
+		// transform children
+		for (int i=0; i<joint.getChildren().size(); i++) {
+			Joint childJoint = joint.getChildren().get(i);
+			bindPose(childJoint, currentTransform);
+		}
 	}
 
 	private void initAnimation(AnimatedModel animatedModel) {

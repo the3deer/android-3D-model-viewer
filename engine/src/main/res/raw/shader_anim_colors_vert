@@ -1,0 +1,45 @@
+const int MAX_JOINTS = 60;
+//const int MAX_WEIGHTS = 3;
+
+// matrix
+uniform mat4 u_MVPMatrix;
+
+// mesh
+attribute vec4 a_Position;
+
+// color
+attribute vec4 a_Color;
+varying vec4 v_Color;
+
+// animation
+attribute vec3 in_jointIndices;
+attribute vec3 in_weights;
+uniform mat4 jointTransforms[MAX_JOINTS];
+
+void main(){
+    vec4 totalLocalPos = vec4(0.0);
+
+    /*  for(int i=0;i<MAX_WEIGHTS;i++){
+    mat4 jointTransform = jointTransforms[in_jointIndices[i]];
+    vec4 posePosition = jointTransform * a_Position;
+    totalLocalPos += posePosition * in_weights[i];
+    }*/
+
+    mat4 jointTransform = jointTransforms[int(in_jointIndices[0])];
+    vec4 posePosition = jointTransform * a_Position;
+    totalLocalPos += posePosition * in_weights[0];
+
+    jointTransform = jointTransforms[int(in_jointIndices[1])];
+    posePosition = jointTransform * a_Position;
+    totalLocalPos += posePosition * in_weights[1];
+
+    jointTransform = jointTransforms[int(in_jointIndices[2])];
+    posePosition = jointTransform * a_Position;
+    totalLocalPos += posePosition * in_weights[2];
+
+    // set position
+    gl_Position = u_MVPMatrix * totalLocalPos;
+
+    // pass color to fragment shader
+    v_Color = a_Color;
+}

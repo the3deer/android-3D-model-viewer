@@ -222,10 +222,6 @@ public class Object3DData {
 	public Object3DData setColor(float[] color) {
 	    // color variable when using single color
 		this.color = color;
-
-		// color buffer when using multiple colors
-		this.vertexColorsArrayBuffer = null;
-
 		return this;
 	}
 
@@ -325,12 +321,18 @@ public class Object3DData {
 	}
 
 	private void updateModelMatrix(){
-		Matrix.setIdentityM(modelMatrix,0);
-		Matrix.setRotateM(modelMatrix,0,getRotationX(),1,0,0);
-		Matrix.setRotateM(modelMatrix,0,getRotationY(),0,1,0);
-		Matrix.setRotateM(modelMatrix,0,getRotationY(),0,0,1);
-		Matrix.scaleM(modelMatrix,0,getScaleX(),getScaleY(),getScaleZ());
-		Matrix.translateM(modelMatrix,0,getPositionX(),getPositionY(),getPositionZ());
+		Matrix.setIdentityM(modelMatrix, 0);
+		if (getRotation() != null) {
+			Matrix.rotateM(modelMatrix, 0, getRotation()[0], 1f, 0f, 0f);
+			Matrix.rotateM(modelMatrix, 0, getRotation()[1], 0, 1f, 0f);
+			Matrix.rotateM(modelMatrix, 0, getRotationZ(), 0, 0, 1f);
+		}
+		if (getScale() != null) {
+			Matrix.scaleM(modelMatrix, 0, getScaleX(), getScaleY(), getScaleZ());
+		}
+		if (getPosition() != null) {
+			Matrix.translateM(modelMatrix, 0, getPositionX(), getPositionY(), getPositionZ());
+		}
 	}
 
 	public float[] getModelMatrix(){

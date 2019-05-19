@@ -8,9 +8,9 @@ import android.widget.Toast;
 import org.andresoviedo.android_3d_model_engine.animation.Animator;
 import org.andresoviedo.android_3d_model_engine.collision.CollisionDetection;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
-import org.andresoviedo.android_3d_model_engine.services.Object3DBuilder;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.android_3d_model_engine.services.LoaderTask;
+import org.andresoviedo.android_3d_model_engine.services.Object3DBuilder;
 import org.andresoviedo.android_3d_model_engine.services.collada.ColladaLoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.stl.STLLoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoaderTask;
@@ -53,6 +53,10 @@ public class SceneLoader implements LoaderTask.Callback {
      */
     private Camera camera;
     /**
+     * Enable or disable blending (transparency)
+     */
+    private boolean isBlendingEnabled = true;
+    /**
      * Whether to draw objects as wireframes
      */
     private boolean drawWireframe = false;
@@ -73,6 +77,10 @@ public class SceneLoader implements LoaderTask.Callback {
      */
     private boolean drawTextures = true;
     /**
+     * Whether to draw using colors or use default white color
+     */
+    private boolean drawColors = true;
+    /**
      * Light toggle feature: we have 3 states: no light, light, light + rotation
      */
     private boolean rotatingLight = true;
@@ -83,7 +91,11 @@ public class SceneLoader implements LoaderTask.Callback {
     /**
      * Animate model (dae only) or not
      */
-    private boolean animateModel = true;
+    private boolean doAnimation = true;
+    /**
+     * show bind pose only
+     */
+    private boolean showBindPose = false;
     /**
      * Draw skeleton or not
      */
@@ -137,6 +149,7 @@ public class SceneLoader implements LoaderTask.Callback {
 
         // Camera to show a point of view
         camera = new Camera();
+        camera.setChanged(true); // force first draw
 
         if (parent.getParamUri() == null){
             return;
@@ -197,10 +210,10 @@ public class SceneLoader implements LoaderTask.Callback {
 
         if (objects.isEmpty()) return;
 
-        if (animateModel) {
+        if (doAnimation) {
             for (int i=0; i<objects.size(); i++) {
                 Object3DData obj = objects.get(i);
-                animator.update(obj);
+                animator.update(obj, isShowBindPose());
             }
         }
     }
@@ -237,16 +250,20 @@ public class SceneLoader implements LoaderTask.Callback {
     }
 
     public void toggleWireframe() {
-        if (this.drawWireframe && !this.drawingPoints) {
+        if (!this.drawWireframe && !this.drawingPoints && !this.drawSkeleton){
+            this.drawWireframe = true;
+            makeToastText("Wireframe", Toast.LENGTH_SHORT);
+        } else if (!this.drawingPoints && !this.drawSkeleton){
             this.drawWireframe = false;
             this.drawingPoints = true;
             makeToastText("Points", Toast.LENGTH_SHORT);
-        } else if (this.drawingPoints) {
+        } else if (!this.drawSkeleton){
             this.drawingPoints = false;
-            makeToastText("Faces", Toast.LENGTH_SHORT);
+            this.drawSkeleton = true;
+            makeToastText("Skeleton", Toast.LENGTH_SHORT);
         } else {
-            makeToastText("Wireframe", Toast.LENGTH_SHORT);
-            this.drawWireframe = true;
+            this.drawSkeleton = false;
+            makeToastText("Faces", Toast.LENGTH_SHORT);
         }
         requestRender();
     }
@@ -273,8 +290,19 @@ public class SceneLoader implements LoaderTask.Callback {
     }
 
     public void toggleTextures() {
-        this.drawTextures = !drawTextures;
-        makeToastText("Textures "+this.drawTextures, Toast.LENGTH_SHORT);
+        if (drawTextures && drawColors){
+            this.drawTextures = false;
+            this.drawColors = true;
+            makeToastText("Texture off", Toast.LENGTH_SHORT);
+        } else if (drawColors){
+            this.drawTextures = false;
+            this.drawColors = false;
+            makeToastText("Colors off", Toast.LENGTH_SHORT);
+        } else {
+            this.drawTextures = true;
+            this.drawColors = true;
+            makeToastText("Textures on", Toast.LENGTH_SHORT);
+        }
     }
 
     public void toggleLighting() {
@@ -293,21 +321,27 @@ public class SceneLoader implements LoaderTask.Callback {
     }
 
     public void toggleAnimation() {
-        if (animateModel && !drawSkeleton){
-            this.drawSkeleton = true;
-            makeToastText("Skeleton on", Toast.LENGTH_SHORT);
-        } else if (animateModel){
-            this.drawSkeleton = false;
-            this.animateModel = false;
-            makeToastText("Animation off", Toast.LENGTH_SHORT);
-        } else {
-            animateModel = true;
+        if (!this.doAnimation && !this.showBindPose){
+            this.doAnimation = true;
             makeToastText("Animation on", Toast.LENGTH_SHORT);
+        }
+        else if (!this.showBindPose) {
+            this.doAnimation = true;
+            this.showBindPose = true;
+            makeToastText("Bind pose", Toast.LENGTH_SHORT);
+        } else {
+            this.doAnimation = false;
+            this.showBindPose = false;
+            makeToastText("Animation off", Toast.LENGTH_SHORT);
         }
     }
 
-    public boolean isDrawAnimation() {
-        return animateModel;
+    public boolean isDoAnimation() {
+        return doAnimation;
+    }
+
+    public boolean isShowBindPose() {
+        return showBindPose;
     }
 
     public void toggleCollision() {
@@ -345,6 +379,10 @@ public class SceneLoader implements LoaderTask.Callback {
         return drawTextures;
     }
 
+    public boolean isDrawColors() {
+        return drawColors;
+    }
+
     public boolean isDrawLighting() {
         return drawLighting;
     }
@@ -363,6 +401,15 @@ public class SceneLoader implements LoaderTask.Callback {
 
     public boolean isAnaglyph() {
         return isAnaglyph;
+    }
+
+    public void toggleBlending() {
+        this.isBlendingEnabled = !isBlendingEnabled;
+        makeToastText("Blending "+isBlendingEnabled, Toast.LENGTH_SHORT);
+    }
+
+    public boolean isBlendingEnabled() {
+        return isBlendingEnabled;
     }
 
     @Override
@@ -385,6 +432,7 @@ public class SceneLoader implements LoaderTask.Callback {
                 }
             }
         }
+
         // TODO: move error alert to LoaderTask
         List<String> allErrors = new ArrayList<>();
         for (Object3DData data : datas) {

@@ -13,11 +13,12 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (16/05/2019)
+News (19/05/2019)
 =================
 
 * New: Stereoscopic rendering: anaglyph (red-green glasses) & VR glasses (cardboard)
-* Fix: some bugs fixed
+* New: Engine refactoring
+* Fix: Bugs fixed
 
 
 
@@ -179,6 +180,13 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 2.5.0 (19/05/2019)
+  - (n) new blending toggle
+  - (n) new color toggle
+  - (i) engine refactoring: externalized shaders
+  - (i) engine improved: fixed bugs and removed classes
+- 2.4.0 (16/05/2019)
+  - (n) stereoscopic rendering: anaglyph + cardboard
 - 2.3.0 (27/09/2018)
   - (n) Externalized 3d engine into android library module
   - (n) Wiki initial documentation

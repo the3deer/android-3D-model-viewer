@@ -198,6 +198,57 @@ public final class Object3DBuilder {
 			1.0f, 0.0f, 1.0f, 1.0f
 	};
 
+	final static float[] cubeColorDataWithTransparency = {
+
+			// Front face (red)
+			1.0f, 0.0f, 0.0f, 0.5f,
+			1.0f, 0.0f, 0.0f, 0.5f,
+			1.0f, 0.0f, 0.0f, 0.5f,
+			1.0f, 0.0f, 0.0f, 0.5f,
+			1.0f, 0.0f, 0.0f, 0.5f,
+			1.0f, 0.0f, 0.0f, 0.5f,
+
+			// Right face (green)
+			0.0f, 1.0f, 0.0f, 0.5f,
+			0.0f, 1.0f, 0.0f, 0.5f,
+			0.0f, 1.0f, 0.0f, 0.5f,
+			0.0f, 1.0f, 0.0f, 0.5f,
+			0.0f, 1.0f, 0.0f, 0.5f,
+			0.0f, 1.0f, 0.0f, 0.5f,
+
+			// Back face (blue)
+			0.0f, 0.0f, 1.0f, 0.5f,
+			0.0f, 0.0f, 1.0f, 0.5f,
+			0.0f, 0.0f, 1.0f, 0.5f,
+			0.0f, 0.0f, 1.0f, 0.5f,
+			0.0f, 0.0f, 1.0f, 0.5f,
+			0.0f, 0.0f, 1.0f, 0.5f,
+
+			// Left face (yellow)
+			1.0f, 1.0f, 0.0f, 0.5f,
+			1.0f, 1.0f, 0.0f, 0.5f,
+			1.0f, 1.0f, 0.0f, 0.5f,
+			1.0f, 1.0f, 0.0f, 0.5f,
+			1.0f, 1.0f, 0.0f, 0.5f,
+			1.0f, 1.0f, 0.0f, 0.5f,
+
+			// Top face (cyan)
+			0.0f, 1.0f, 1.0f, 0.5f,
+			0.0f, 1.0f, 1.0f, 0.5f,
+			0.0f, 1.0f, 1.0f, 0.5f,
+			0.0f, 1.0f, 1.0f, 0.5f,
+			0.0f, 1.0f, 1.0f, 0.5f,
+			0.0f, 1.0f, 1.0f, 0.5f,
+
+			// Bottom face (magenta)
+			1.0f, 0.0f, 1.0f, 0.5f,
+			1.0f, 0.0f, 1.0f, 0.5f,
+			1.0f, 0.0f, 1.0f, 0.5f,
+			1.0f, 0.0f, 1.0f, 0.5f,
+			1.0f, 0.0f, 1.0f, 0.5f,
+			1.0f, 0.0f, 1.0f, 0.5f
+	};
+
 	final static float[] cubeNormalData =
 			{
 					// Front face
@@ -352,7 +403,8 @@ public final class Object3DBuilder {
 	public static Object3DData buildCubeV4(byte[] textureData) {
 		return new Object3DData(
 				createNativeByteBuffer(cubePositionData.length * 4).asFloatBuffer().put(cubePositionData),
-				createNativeByteBuffer(cubeColorData.length * 4).asFloatBuffer().put(cubeColorData).asReadOnlyBuffer(),
+				createNativeByteBuffer(cubeColorDataWithTransparency.length * 4).asFloatBuffer().put(cubeColorDataWithTransparency)
+						.asReadOnlyBuffer(),
 				createNativeByteBuffer(cubeTextureCoordinateData.length * 4).asFloatBuffer()
 						.put(cubeTextureCoordinateData).asReadOnlyBuffer(),
 				textureData).setDrawMode(GLES20.GL_TRIANGLES).setId("cubeV4").centerAndScale(1.0f).setFaces(new Faces(8));

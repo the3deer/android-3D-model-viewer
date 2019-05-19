@@ -1,0 +1,49 @@
+// matrix
+uniform mat4 u_MVPMatrix;
+
+// mesh
+attribute vec4 a_Position;
+
+// colors
+attribute vec4 a_Color;
+varying vec4 v_Color;
+
+// texture variables
+attribute vec2 a_TexCoordinate;
+varying vec2 v_TexCoordinate;
+
+// lights
+uniform mat4 u_MVMatrix;
+uniform vec3 u_LightPos;
+attribute vec3 a_Normal;
+
+void main(){
+    gl_Position = u_MVPMatrix * a_Position;
+
+    // Transform the vertex into eye space.
+    vec3 modelViewVertex = vec3(u_MVMatrix * a_Position);
+
+    // Get a lighting direction vector from the light to the vertex.
+    vec3 lightVector = normalize(u_LightPos - modelViewVertex);
+
+    // Transform the normal's orientation into eye space.
+    vec3 modelViewNormal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));
+
+    // Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
+    // pointing in the same direction then it will get max illumination.
+    float diffuse = max(dot(modelViewNormal, lightVector), 0.1);
+
+    // Attenuate the light based on distance.
+    float distance = length(u_LightPos - modelViewVertex);
+    diffuse = diffuse * (1.0 / (1.0 + (0.05 * distance * distance)));
+
+    //  Add ambient lighting
+    diffuse = diffuse + 0.5;
+
+    // Multiply the color by the illumination level. It will be interpolated across the triangle.
+    v_Color = a_Color * diffuse;
+    v_Color[3] = a_Color[3]; // correct alpha
+
+    // pass texture coord to fragment shader
+    v_TexCoordinate = a_TexCoordinate;
+}

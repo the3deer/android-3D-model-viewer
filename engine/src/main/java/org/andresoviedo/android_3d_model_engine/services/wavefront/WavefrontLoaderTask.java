@@ -5,9 +5,9 @@ import android.net.Uri;
 import android.opengl.GLES20;
 import android.util.Log;
 
-import org.andresoviedo.android_3d_model_engine.services.Object3DBuilder;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.android_3d_model_engine.services.LoaderTask;
+import org.andresoviedo.android_3d_model_engine.services.Object3DBuilder;
 import org.andresoviedo.util.android.ContentUtils;
 
 import java.io.IOException;

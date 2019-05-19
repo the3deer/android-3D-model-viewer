@@ -16,12 +16,12 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoader;
+import org.andresoviedo.dddmodel2.R;
 import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.android.AssetUtils;
 import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.util.android.FileUtils;
 import org.andresoviedo.util.view.TextActivity;
-import org.andresoviedo.dddmodel2.R;
 
 import java.io.File;
 import java.util.HashMap;

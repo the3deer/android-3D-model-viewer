@@ -1,134 +1,101 @@
 package org.andresoviedo.android_3d_model_engine.drawer;
 
+import android.content.Context;
 import android.util.Log;
 
+import org.andresoviedo.android_3d_model_engine.R;
 import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Object3D;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
+import org.andresoviedo.util.io.IOUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DrawerFactory {
 
-    private Object3D object3dv1;
-    private Object3D object3dv2;
-    private Object3D object3dv3;
-    private Object3D object3dv4;
-    private Object3D object3dv5;
-    private Object3D object3dv6;
-    private Object3D object3dv7;
-    private Object3D object3dv8;
-    private Object3D object3dv9;
-    private Object3D object3dv91;
-    private Object3D object3dv10;
-    private Object3D object3dv11;
-    private Object3D object3dv12;
+    /**
+     * shader code loaded from raw resources
+     * resources are cached on activity thread
+     */
+    private Map<String, String> shadersCode = new HashMap<>();
+    /**
+     * list of opengl drawers
+     */
+    private Map<String, DrawerImpl> drawers = new HashMap<>();
 
-    public Object3D getBoundingBoxDrawer() {
-        return object3dv1;
-    }
+    public DrawerFactory(Context context) throws IllegalAccessException, IOException {
 
-    public Object3D getFaceNormalsDrawer() {
-        return object3dv1;
-    }
-
-    public Object3D getPointDrawer() {
-        if (object3dv1 == null) {
-            object3dv1 = new Object3DV1();
+        Log.i("DrawerFactory", "Discovering shaders...");
+        Field[] fields = R.raw.class.getFields();
+        for (int count = 0; count < fields.length; count++) {
+            String shaderId = fields[count].getName();
+            Log.i("DrawerFactory", "Loading shader... " + shaderId);
+            int shaderResId = fields[count].getInt(fields[count]);
+            byte[] shaderBytes = IOUtils.read(context.getResources().openRawResource(shaderResId));
+            String shaderCode = new String(shaderBytes);
+            shadersCode.put(shaderId, shaderCode);
         }
-        return object3dv1;
+        Log.i("DrawerFactory", "Shaders loaded: " + shadersCode.size());
     }
 
-    public Object3D getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights, boolean usingAnimation) {
+    public Object3D getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights, boolean usingAnimation, boolean drawColors) {
 
-        if (object3dv2 == null) {
-            try {
-                getPointDrawer();
-                object3dv2 = new Object3DV2();
-                object3dv3 = new Object3DV3();
-                object3dv4 = new Object3DV4();
-                object3dv5 = new Object3DV5();
-                object3dv6 = new Object3DV6();
-                object3dv7 = new Object3DV7();
-                object3dv8 = new Object3DV8();
-                object3dv9 = new Object3DV9();
-                object3dv91 = new Object3DV91();
-                object3dv10 = new Object3DV10();
-                object3dv11 = new Object3DV11();
-                object3dv12 = new Object3DV12();
-            } catch (Exception e) {
-                Log.e("Object3DBuilder", "Error creating drawer: " + e.getMessage(), e);
-            }
-        }
-
+        // double check features
         boolean isAnimated = usingAnimation && obj instanceof AnimatedModel && ((AnimatedModel) obj).getAnimation() != null;
         boolean isUsingLights = usingLights && (obj.getNormals() != null || obj.getVertexNormalsArrayBuffer() != null);
         boolean isTextured = usingTextures && obj.getTextureData() != null && obj.getTextureCoordsArrayBuffer() != null;
-        boolean isColoured = obj.getVertexColorsArrayBuffer() != null;
+        boolean isColoured = drawColors && obj != null && obj.getVertexColorsArrayBuffer() != null;
 
-        if (isAnimated) {
-            if (isUsingLights) {
-                if (isTextured) {
-                    if (!isColoured) {
-                        return object3dv9;
-                    } else {
-                        Log.w("Object3DBuilder", "No drawer for this object");
-                        return null;
-                    }
-                } else {
-                    if (isColoured) {
-                        return object3dv11;
-                    } else {
-                        return object3dv10;
-                    }
-                }
-            } else {
-                if (isTextured) {
-                    if (!isColoured) {
-                        return object3dv91;
-                    } else {
-                        Log.w("Object3DBuilder", "No drawer for this object");
-                        return null;
-                    }
-                } else {
-                    if (!isColoured) {
-                        return object3dv12;
-                    } else {
-                        Log.w("Object3DBuilder", "No drawer for this object");
-                        return null;
-                    }
-                }
-            }
-        } else {
-            if (isUsingLights) {
-                if (isTextured) {
-                    if (isColoured) {
-                        return object3dv6;
-                    } else {
-                        return object3dv8;
-                    }
-                } else {
-                    if (isColoured) {
-                        return object3dv5;
-                    } else {
-                        return object3dv7;
-                    }
-                }
-            } else {
-                if (isTextured) {
-                    if (isColoured) {
-                        return object3dv4;
-                    } else {
-                        return object3dv3;
-                    }
-                } else {
-                    if (isColoured) {
-                        return object3dv2;
-                    } else {
-                        return object3dv1;
-                    }
-                }
-            }
+        // build shader id according to features
+        StringBuilder shaderIdBuilder = new StringBuilder("shader_");
+        shaderIdBuilder.append(isAnimated ? "anim_" : "");
+        shaderIdBuilder.append(isUsingLights ? "light_" : "");
+        shaderIdBuilder.append(isTextured ? "texture_" : "");
+        shaderIdBuilder.append(isColoured ? "colors_" : "");
+
+        // get cached drawer
+        String shaderId = shaderIdBuilder.toString();
+        DrawerImpl drawer = drawers.get(shaderId);
+        if (drawer != null) return drawer;
+
+        // build drawer
+        String vertexShaderCode = shadersCode.get(shaderId + "vert");
+        String fragmentShaderCode = shadersCode.get(shaderId + "frag");
+        if (vertexShaderCode == null || fragmentShaderCode == null) {
+            Log.e("DrawerFactory", "Shaders not found for " + shaderId);
+            return null;
         }
+
+        // experimental: inject glPointSize
+        vertexShaderCode = vertexShaderCode.replace("void main(){", "void main(){\n\tgl_PointSize = 5.0;");
+
+        // create drawer
+        Log.i("Object3DImpl2", "\n---------- Vertex shader ----------\n");
+        Log.i("Object3DImpl2", vertexShaderCode);
+        Log.i("Object3DImpl2", "---------- Fragment shader ----------\n");
+        Log.i("Object3DImpl2", fragmentShaderCode);
+        Log.i("Object3DImpl2", "-------------------------------------\n");
+        drawer = DrawerImpl.getInstance(shaderId, vertexShaderCode, fragmentShaderCode);
+
+        // cache drawer
+        drawers.put(shaderId, drawer);
+
+        // return drawer
+        return drawer;
+    }
+
+    public Object3D getBoundingBoxDrawer() {
+        return getDrawer(null, false, false, false, false);
+    }
+
+    public Object3D getFaceNormalsDrawer() {
+        return getDrawer(null, false, false, false, false);
+    }
+
+    public Object3D getPointDrawer() {
+        return getDrawer(null, false, false, false, false);
     }
 }
