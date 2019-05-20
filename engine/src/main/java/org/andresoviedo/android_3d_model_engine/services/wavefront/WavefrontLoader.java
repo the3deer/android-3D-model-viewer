@@ -76,6 +76,8 @@ public class WavefrontLoader {
 	int numTextures = 0;
 	int numNormals = 0;
 	int numFaces = 0;
+	int numPolygon = 0;
+	int numTriangles = 0;
 	int numVertsReferences = 0;
 
 	// buffers
@@ -187,6 +189,8 @@ public class WavefrontLoader {
 						numFaces += (faceSize - 2);
 						// (faceSize-2)x3 = converting polygon to triangles
 						numVertsReferences += (faceSize - 2) * 3;
+						numPolygon += (faceSize > 3)? 1 : 0;
+						numTriangles += (faceSize == 3)? 1 : 0;
 					} else if (line.startsWith("mtllib ")) // build material
 					{
 						materials = new Materials(line.substring(7));
@@ -219,6 +223,8 @@ public class WavefrontLoader {
 
 		Log.i("WavefrontLoader","Number of vertices:"+numVerts);
 		Log.i("WavefrontLoader","Number of faces:"+numFaces);
+		Log.i("WavefrontLoader","- Number of polygons:"+numPolygon);
+		Log.i("WavefrontLoader","- Number of triangles:"+numTriangles);
 	}
 
 	/**
@@ -850,6 +856,7 @@ public class WavefrontLoader {
 		 */
 		public ArrayList<int[]> facesNormIdxs;
 
+        private FloatBuffer vertex;
 		private FloatBuffer normals;
 		private ArrayList<Tuple3> texCoords;
 
@@ -869,6 +876,7 @@ public class WavefrontLoader {
 
 		Faces(int totalFaces, IntBuffer buffer, FloatBuffer vs, FloatBuffer ns, ArrayList<Tuple3> ts) {
 			this.totalFaces = totalFaces;
+			vertex = vs;
 			normals = ns;
 			texCoords = ts;
 
@@ -951,10 +959,6 @@ public class WavefrontLoader {
 					// the token
 
 					int vertIdx = Integer.parseInt(faceTokens[0]);
-					/*if (vertIdx > 65535){
-						Log.e("WavefrontLoader","Ignoring face because its out of range (>65535)");
-						continue;
-					}*/
 					if (numSeps > 1){
 						if (vt == null)	vt = new int[3];
 						try{
@@ -974,7 +978,12 @@ public class WavefrontLoader {
 					// add 0's if the vt or vn index values are missing;
 					// 0 is a good choice since real indices start at 1
 
-					if (WavefrontLoader.INDEXES_START_AT_1) {
+                    if (vertIdx < 0){
+					    vertIdx = this.vertex.capacity()/3+vertIdx;
+                        if (vt != null)	vt[faceIndex] = texCoords.size() + vt[faceIndex];
+                        if (vn != null) vn[faceIndex] = normals.capacity()/3 + vn[faceIndex];
+                    }
+					else if (WavefrontLoader.INDEXES_START_AT_1) {
 						vertIdx--;
 						if (vt != null)	vt[faceIndex] = vt[faceIndex] - 1;
 						if (vn != null) vn[faceIndex] = vn[faceIndex] - 1;

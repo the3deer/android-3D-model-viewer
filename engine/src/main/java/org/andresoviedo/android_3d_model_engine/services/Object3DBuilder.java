@@ -576,14 +576,8 @@ public final class Object3DBuilder {
 				}
 			}
 			if (texture != null) {
-			    Log.i("Object3DBuilder","Loading texture "+texture);
-			    InputStream is = ContentUtils.getInputStream(texture);
-			    if (is != null) {
-                    textureData = IOUtils.read(is);
-                    is.close();
-                } else {
-			        obj.addError("Texture '"+texture+"' not found in provided files");
-                }
+				obj.setTextureFile(texture);
+			    Log.i("Object3DBuilder","Texture "+texture);
 			} else {
 				Log.i("Object3DBuilder", "Found material(s) but no texture");
 			}

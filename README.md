@@ -180,6 +180,8 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 2.5.1 (20/05/2019)
+  - (f) wavefront loader fixed for faces point to negative indices
 - 2.5.0 (19/05/2019)
   - (n) new blending toggle
   - (n) new color toggle
