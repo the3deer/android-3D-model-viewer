@@ -73,6 +73,10 @@ public class GeometryLoader {
 
 			// read vertices and normals
             loadVertices(meshData, geometryId);
+            if(vertices.isEmpty()){
+            	Log.i("GeometryLoader","Skipping mesh since it has no vertices: "+geometryId);
+            	continue;
+			}
 
             // link skin weights to vertices
             loadSkinningData(geometryId);
@@ -222,15 +226,21 @@ public class GeometryLoader {
 		XmlNode data = source.getChild("float_array");
 		int count = Integer.parseInt(data.getAttribute("count"));
 
+		// no data ?
+		Log.i("GeometryLoader","Loading data. count: "+count);
+		if (count <= 0){
+			return;
+		}
+
 		// accessor
 		int stride = 4;
 		XmlNode technique = source.getChild("technique_common");
 		if (technique != null && technique.getChild("accessor") != null){
 			stride = Integer.parseInt(technique.getChild("accessor").getAttribute("stride"));
+			Log.i("GeometryLoader","Loading data. stride: "+stride);
 		}
 
 		// parse floats
-		Log.i("GeometryLoader","Loading data. count: "+count+", stride: "+stride);
 		String[] floatData = data.getData().trim().split("\\s+");
 		for (int i = 0; i < count; i+=stride) {
 			float[] f = new float[size];
@@ -244,7 +254,7 @@ public class GeometryLoader {
 			list.add(f);
 		}
 	}
-	
+
 	private void assembleVertices(XmlNode primitive){
 
 		// offsets
@@ -464,7 +474,8 @@ public class GeometryLoader {
 			this.texturesArray = new float[vertices.size() * 2];
 		}
 		this.normalsArray = new float[vertices.size() * 3];
-		if (skinningDataMap != null && skinningDataMap.containsKey(geometryId) || vertices.get(0).getWeightsData() != null) {
+		if (skinningDataMap != null && skinningDataMap.containsKey(geometryId) ||
+				vertices.size() > 0 && vertices.get(0).getWeightsData() != null) {
 			this.jointIdsArray = new int[vertices.size() * vertices.get(0).getWeightsData().jointIds.size()];
 			this.weightsArray = new float[vertices.size() * vertices.get(0).getWeightsData().weights.size()];
 		}
