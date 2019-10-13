@@ -307,6 +307,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 			Object3DData objData = null;
 			try {
 				objData = objects.get(i);
+				if (!objData.isVisible()) continue;
 
 				Object3D drawerObject = drawer.getDrawer(objData, scene.isDrawTextures(), scene.isDrawLighting(),
                         scene.isDoAnimation(), scene.isDrawColors());
