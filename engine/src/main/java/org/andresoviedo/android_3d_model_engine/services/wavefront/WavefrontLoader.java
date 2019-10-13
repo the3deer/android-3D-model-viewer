@@ -279,7 +279,7 @@ public class WavefrontLoader {
 		String line;
 		boolean isFirstCoord = true;
 		boolean isFirstTC = true;
-
+		numFaces = 0;
 		int vertNumber = 0;
 		int normalNumber = 0;
 
@@ -1029,8 +1029,9 @@ public class WavefrontLoader {
 
 		private void addUse(int faceIdx, String matName) {
 			// store the face index and the material it uses
+			Log.d("WavefrontLoader","Using " + matName + " on "+faceIdx);
 			if (faceMats.containsKey(faceIdx)) // face index already present
-				System.out.println("Face index " + faceIdx + " changed to use material " + matName);
+				Log.d("WavefrontLoader","Face index " + faceIdx + " changed to use material " + matName);
 			faceMats.put(faceIdx, matName);
 
 			// store how many times matName has been used by faces
