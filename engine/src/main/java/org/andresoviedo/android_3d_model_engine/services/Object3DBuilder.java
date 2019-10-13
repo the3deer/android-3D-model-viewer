@@ -30,6 +30,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public final class Object3DBuilder {
 
@@ -37,7 +38,7 @@ public final class Object3DBuilder {
 	/**
 	 * Default vertices colors
 	 */
-	private static float[] DEFAULT_COLOR = {1.0f, 1.0f, 0, 1.0f};
+	private static float[] DEFAULT_COLOR = {1.0f, 1.0f, 1.0f, 1.0f};
 
 	final static float[] axisVertexLinesData = new float[]{
 			//@formatter:off
@@ -545,12 +546,17 @@ public final class Object3DBuilder {
 			boolean anyOk = false;
 			float[] currentColor = DEFAULT_COLOR;
 			for (int i = 0; i < faces.getSize(); i++) {
-				if (faceMats.findMaterial(i) != null) {
-					Material mat = materials.getMaterial(faceMats.findMaterial(i));
+			    // Is there any usemtl at this point ?
+                final String materialName = faceMats.findMaterial(i);
+                if (materialName != null) {
+                    // Is material defined in material.mtl file ?
+					Material mat = materials.getMaterial(materialName);
 					if (mat != null) {
 						currentColor = mat.getKdColor() != null ? mat.getKdColor() : currentColor;
 						anyOk = anyOk || mat.getKdColor() != null;
-					}
+					} else {
+				        Log.w("Object3DBuilder", "Material not defined: "+ materialName);
+                    }
 				}
 				colorArrayBuffer.put(currentColor);
 				colorArrayBuffer.put(currentColor);

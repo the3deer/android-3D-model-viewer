@@ -279,7 +279,6 @@ public class WavefrontLoader {
 		String line;
 		boolean isFirstCoord = true;
 		boolean isFirstTC = true;
-		int numFaces = 0;
 
 		int vertNumber = 0;
 		int normalNumber = 0;
@@ -303,7 +302,7 @@ public class WavefrontLoader {
 						isLoaded = addVert(normalsBuffer, normalNumber++ * 3,line, isFirstCoord, null) && isLoaded;
 					else if (line.startsWith("f ")) { // face
 						isLoaded = faces.addFace(line) && isLoaded;
-						numFaces++;
+						numFaces = faces.facesLoadCounter;
 					} else if (line.startsWith("mtllib ")) // build material
 					{
 						// materials = new Materials(new File(modelFile.getParent(),
@@ -679,7 +678,7 @@ public class WavefrontLoader {
 
 				return new Tuple3(x, y, z);
 			} catch (NumberFormatException e) {
-				System.out.println(e.getMessage());
+				Log.e("WavefrontLoader",e.getMessage());
 			}
 
 			return null; // means an error occurred
@@ -1023,12 +1022,12 @@ public class WavefrontLoader {
 
 		// how many times a material (string) is used
 
-		public FaceMaterials() {
-			faceMats = new HashMap<Integer, String>();
-			matCount = new HashMap<String, Integer>();
+		private FaceMaterials() {
+			faceMats = new HashMap<>();
+			matCount = new HashMap<>();
 		} // end of FaceMaterials()
 
-		public void addUse(int faceIdx, String matName) {
+		private void addUse(int faceIdx, String matName) {
 			// store the face index and the material it uses
 			if (faceMats.containsKey(faceIdx)) // face index already present
 				System.out.println("Face index " + faceIdx + " changed to use material " + matName);
