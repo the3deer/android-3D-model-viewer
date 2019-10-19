@@ -34,37 +34,41 @@ import java.util.List;
  */
 public class Joint {
 
-    private final int index;// ID
-    private final String name;
-    private final float[] bindLocalTransform;
+    private final JointData data;
+
+    // descendants
     private final List<Joint> children = new ArrayList<>();
 
-    private float[] inverseBindTransform;
-
+    // this is the animated final matrix used when drawing in opengl
     private final float[] animatedTransform = new float[16];
 
     /**
-     * @param index                - the joint's index (ID).
-     * @param name                 - the name of the joint. This is how the joint is named in the
-     *                             collada file, and so is used to identify which joint a joint
-     *                             transform in an animation keyframe refers to.
-     * @param bindLocalTransform   local space transform
-     * @param inverseBindTransform global space inverse transform
+     * This is called during set-up, after the joints hierarchy has been
+     * created. This calculates the model-space bind transform of this joint
+     * like so: </br>
+     * </br>
+     * {@code bindTransform = parentBindTransform * bindLocalTransform}</br>
+     * </br>
+     * where "bindTransform" is the model-space bind transform of this joint,
+     * "parentBindTransform" is the model-space bind transform of the parent
+     * joint, and "bindLocalTransform" is the bone-space bind transform of this
+     * joint. It then calculates and stores the inverse of this model-space bind
+     * transform, for use when calculating the final animation transform each
+     * frame. It then recursively calls the method for all of the children
+     * joints, so that they too calculate and store their inverse bind-pose
+     * transform.
      */
-    public Joint(int index, String name, float[] bindLocalTransform, float[] inverseBindTransform) {
-        this.index = index;
-        this.name = name;
-        this.bindLocalTransform = bindLocalTransform;
-        this.inverseBindTransform = inverseBindTransform;
+    public Joint(JointData data) {
+        this.data = data;
         Matrix.setIdentityM(animatedTransform,0);
     }
 
     public int getIndex() {
-        return index;
+        return data.index;
     }
 
     public String getName() {
-        return name;
+        return data.getId();
     }
 
     public List<Joint> getChildren() {
@@ -72,7 +76,7 @@ public class Joint {
     }
 
     public float[] getBindLocalTransform() {
-        return bindLocalTransform;
+        return data.getBindLocalTransform();
     }
 
     /**
@@ -113,7 +117,7 @@ public class Joint {
      * @return The inverse of the joint's bind transform (in model-space).
      */
     public float[] getInverseBindTransform() {
-        return inverseBindTransform;
+        return data.getInverseBindTransform();
     }
 
     /**
@@ -137,14 +141,15 @@ public class Joint {
     public void calcInverseBindTransform(float[] parentBindTransform, boolean override) {
 
         float[] bindTransform = new float[16];
-        Matrix.multiplyMM(bindTransform, 0, parentBindTransform, 0, bindLocalTransform, 0);
-        if (index >= 0 && (override || this.inverseBindTransform == null)) {
+        Matrix.multiplyMM(bindTransform, 0, parentBindTransform, 0, data.getBindLocalTransform(), 0);
+        if (data.index >= 0 && (override || this.data.getInverseBindTransform() == null)) {
             // when model has inverse bind transforms available, don't overwrite it
             // this way we calculate only the joints with no animations which has no inverse bind transform available
-            this.inverseBindTransform = new float[16];
+            float[] inverseBindTransform = new float[16];
             if (!Matrix.invertM(inverseBindTransform, 0, bindTransform, 0)) {
-                Log.w("Joint", "Couldn't calculate inverse matrix for " + name);
+                Log.w("Joint", "Couldn't calculate inverse matrix for " + data.getId());
             }
+            data.setInverseBindTransform(inverseBindTransform);
         }
         for (Joint child : children) {
             child.calcInverseBindTransform(bindTransform, override);
@@ -153,8 +158,7 @@ public class Joint {
 
     @Override
     public Joint clone() {
-        final Joint ret = new Joint(this.index, this.name, this.bindLocalTransform.clone(), this.inverseBindTransform !=
-                null? this.inverseBindTransform.clone() : null);
+        final Joint ret = new Joint(data);
         for (final Joint child : this.children){
             ret.addChild(child.clone());
         }

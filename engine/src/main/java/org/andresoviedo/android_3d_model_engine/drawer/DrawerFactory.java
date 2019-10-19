@@ -32,7 +32,7 @@ public class DrawerFactory {
         Field[] fields = R.raw.class.getFields();
         for (int count = 0; count < fields.length; count++) {
             String shaderId = fields[count].getName();
-            Log.i("DrawerFactory", "Loading shader... " + shaderId);
+            Log.d("DrawerFactory", "Loading shader... " + shaderId);
             int shaderResId = fields[count].getInt(fields[count]);
             byte[] shaderBytes = IOUtils.read(context.getResources().openRawResource(shaderResId));
             String shaderCode = new String(shaderBytes);
@@ -73,11 +73,11 @@ public class DrawerFactory {
         vertexShaderCode = vertexShaderCode.replace("void main(){", "void main(){\n\tgl_PointSize = 5.0;");
 
         // create drawer
-        Log.i("Object3DImpl2", "\n---------- Vertex shader ----------\n");
-        Log.i("Object3DImpl2", vertexShaderCode);
-        Log.i("Object3DImpl2", "---------- Fragment shader ----------\n");
-        Log.i("Object3DImpl2", fragmentShaderCode);
-        Log.i("Object3DImpl2", "-------------------------------------\n");
+        Log.d("Object3DImpl2", "\n---------- Vertex shader ----------\n");
+        Log.d("Object3DImpl2", vertexShaderCode);
+        Log.d("Object3DImpl2", "---------- Fragment shader ----------\n");
+        Log.d("Object3DImpl2", fragmentShaderCode);
+        Log.d("Object3DImpl2", "-------------------------------------\n");
         drawer = DrawerImpl.getInstance(shaderId, vertexShaderCode, fragmentShaderCode);
 
         // cache drawer

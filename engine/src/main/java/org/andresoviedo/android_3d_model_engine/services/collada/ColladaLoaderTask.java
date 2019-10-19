@@ -23,7 +23,7 @@ public class ColladaLoaderTask extends LoaderTask {
     @SuppressWarnings("unchecked")
     @Override
     protected List<Object3DData> build() throws IOException {
-        // Parse STL
+        // Parse DAE
         Object[] ret = ColladaLoader.buildAnimatedModel(new URL(uri.toString()));
         List<Object3DData> datas = (List<Object3DData>) ret[1];
         modelData = (AnimatedModelData) ret[0];

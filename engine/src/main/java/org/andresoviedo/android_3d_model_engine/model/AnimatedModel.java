@@ -51,14 +51,10 @@ public class AnimatedModel extends Object3DData {
 	 *            this entity.
 	 * 
 	 */
-	public AnimatedModel setRootJoint(Joint rootJoint, int jointCount, int boneCount, boolean
-									  recalculateInverseBindTransforms) {
+	public AnimatedModel setRootJoint(Joint rootJoint, int jointCount, int boneCount) {
 		this.rootJoint = rootJoint;
 		this.jointCount = jointCount;
 		this.boneCount = boneCount;
-        float[] parentTransform = new float[16];
-        Matrix.setIdentityM(parentTransform,0);
-        rootJoint.calcInverseBindTransform(parentTransform, recalculateInverseBindTransforms);
         this.jointMatrices = new float[boneCount][16];
 		return this;
 	}
@@ -146,4 +142,15 @@ public class AnimatedModel extends Object3DData {
 			addJointsToArray(childJoint, jointMatrices);
 		}
 	}
+
+	private float[] bindShapeMatrix;
+
+	public void setBindShapeMatrix(float[] bindShapeMatrix) {
+		this.bindShapeMatrix = bindShapeMatrix;
+		//super.modelMatrix = bindShapeMatrix;
+	}
+
+	public float[] getBindShapeMatrix() {
+        return bindShapeMatrix;
+    }
 }

@@ -317,7 +317,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				}
 
 				if (!infoLogged.containsKey(objData)) {
-					Log.i("ModelRenderer","Model '"+objData.getId()+"'. Drawer "+drawerObject.getClass().getName());
+					Log.i("ModelRenderer","Drawing model: "+objData.getId());
 					infoLogged.put(objData, true);
 				}
 

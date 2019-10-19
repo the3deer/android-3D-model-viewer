@@ -24,7 +24,7 @@ import java.net.URL;
 public class MainActivity extends Activity {
 
 
-    // Custom handler: org/andresoviedo/app/util/url/android/Handler.class
+    // Custom handler: org/andresoviedo/util/android/assets/Handler.class
     static {
         System.setProperty("java.protocol.handler.pkgs", "org.andresoviedo.util.android");
         URL.setURLStreamHandlerFactory(new AndroidURLStreamHandlerFactory());

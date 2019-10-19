@@ -149,11 +149,11 @@ public class SkeletonLoader {
 
 		// calculate inverse bind matrix in case it's a bone
         float[] inverseBindMatrix = null;
-        if (index >= 0 && skinningData.inverseBindMatrix != null) {
+        if (index >= 0 && skinningData.getInverseBindMatrix() != null) {
             inverseBindMatrix = new float[16];
-            Matrix.transposeM(inverseBindMatrix, 0, skinningData.inverseBindMatrix, index * 16);
+            Matrix.transposeM(inverseBindMatrix, 0, skinningData.getInverseBindMatrix(), index * 16);
         }
 
-        return new JointData(index, nodeId, matrix, inverseBindMatrix);
+        return new JointData(index, nodeId,nodeName, matrix, null, inverseBindMatrix);
 	}
 }

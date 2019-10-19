@@ -14,27 +14,81 @@ import java.util.List;
  */
 public class JointData {
 
-	public final int index;
-	public final String nameId;
-	public final float[] bindLocalTransform;
-    public final float[] inverseBindTransform;
-    public String meshId;
+	// index referenced by sknning data
+	// the order may need to be provided by the bone ordered list
+	public int index;
+
+	// attributes
+	private final String id;
+	private final String name;
+    private String instance_geometry;
+
+	// sum up of all matrix up to the "root"
+	private final float[] bindLocalTransform;
+	private final float[] bindTransform;
+    private float[] inverseBindTransform;
 
 	public final List<JointData> children = new ArrayList<>();
 
-	public JointData(int index, String nameId, float[] bindLocalTransform, float[] inverseBindTransform) {
+	public JointData(int index, String id, String name,
+					 final float[] bindLocalTransform, final float[] bindTransform, final float[] inverseBindTransform) {
+		this.id = id;
+        this.name = name;
+        this.bindLocalTransform = bindLocalTransform;
+        this.bindTransform = bindTransform;
+        this.inverseBindTransform = inverseBindTransform;
+        this.index = index;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setIndex(int index) {
 		this.index = index;
-		this.nameId = nameId;
-		this.bindLocalTransform = bindLocalTransform;
-		this.inverseBindTransform = inverseBindTransform;
 	}
 
 	public void addChild(JointData child) {
 		children.add(child);
 	}
 
-	public JointData setMeshId(String meshId) {
-		this.meshId = meshId;
-		return this;
+	public void setInstanceGeometry(String instanceGeometry){
+		this.instance_geometry = instanceGeometry;
+	}
+
+	public JointData find(String id) {
+		if (id.equals(this.getId())) {
+			return this;
+		} else if (id.equals(this.getName())){
+			return this;
+		} else if (id.equals(this.instance_geometry)){
+			return this;
+		}
+
+		for (JointData childJointData : this.children) {
+			JointData candidate = childJointData.find(id);
+			if (candidate != null) return candidate;
+		}
+		return null;
+	}
+
+	public float[] getBindTransform() {
+		return bindTransform;
+	}
+
+	public float[] getBindLocalTransform() {
+		return bindLocalTransform;
+	}
+
+	public float[] getInverseBindTransform() {
+		return inverseBindTransform;
+	}
+
+	public void setInverseBindTransform(float[] inverseBindTransform) {
+		this.inverseBindTransform = inverseBindTransform;
 	}
 }
