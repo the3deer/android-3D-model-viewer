@@ -1,5 +1,7 @@
 package org.andresoviedo.android_3d_model_engine.model;
 
+import android.opengl.Matrix;
+
 import org.andresoviedo.android_3d_model_engine.animation.Animation;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.Joint;
 
@@ -29,9 +31,13 @@ public class AnimatedModel extends Object3DData {
 
 	// cache
 	private float[][] jointMatrices;
+	private float[] bindShapeMatrix;
+	private final float[] newModelMatrix;
 
 	public AnimatedModel(FloatBuffer vertexArrayBuffer){
 		super(vertexArrayBuffer);
+		this.newModelMatrix = new float[16];
+		Matrix.setIdentityM(newModelMatrix,0);
 	}
 
 	/**
@@ -142,7 +148,25 @@ public class AnimatedModel extends Object3DData {
 	}
 
 	// FIXME: binding coming from skeleton
-	public void setModelMatrix(float[] bindTransform) {
-		super.modelMatrix = bindTransform;
+	public void setBindShapeMatrix(float[] bindTransform) {
+		this.bindShapeMatrix = bindTransform;
+		this.updateModelMatrix();
+	}
+
+	@Override
+	protected void updateModelMatrix() {
+		super.updateModelMatrix();
+		// FIXME:
+		// geometries not linked to any joint does not have bind shape transform
+		if (true || this.bindShapeMatrix == null){
+			System.arraycopy(super.modelMatrix,0,this.newModelMatrix,0,16);
+		} else {
+			Matrix.multiplyMM(newModelMatrix, 0, super.modelMatrix, 0, this.bindShapeMatrix, 0);
+		}
+	}
+
+	@Override
+	public float[] getModelMatrix() {
+		return this.newModelMatrix;
 	}
 }

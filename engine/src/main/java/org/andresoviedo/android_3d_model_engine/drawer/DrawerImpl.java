@@ -182,21 +182,7 @@ class DrawerImpl implements Object3D {
     }
 
     private float[] getMMatrix(Object3DData obj) {
-
-        // calculate object transformation
-        Matrix.setIdentityM(mMatrix, 0);
-        if (obj.getRotation() != null) {
-            Matrix.rotateM(mMatrix, 0, obj.getRotation()[0], 1f, 0f, 0f);
-            Matrix.rotateM(mMatrix, 0, obj.getRotation()[1], 0, 1f, 0f);
-            Matrix.rotateM(mMatrix, 0, obj.getRotationZ(), 0, 0, 1f);
-        }
-        if (obj.getScale() != null) {
-            Matrix.scaleM(mMatrix, 0, obj.getScaleX(), obj.getScaleY(), obj.getScaleZ());
-        }
-        if (obj.getPosition() != null) {
-            Matrix.translateM(mMatrix, 0, obj.getPositionX(), obj.getPositionY(), obj.getPositionZ());
-        }
-        return mMatrix;
+        return obj.getModelMatrix();
     }
 
     private float[] getMvMatrix(float[] mMatrix, float[] vMatrix) {

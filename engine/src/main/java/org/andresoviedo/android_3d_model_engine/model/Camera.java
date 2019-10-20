@@ -110,11 +110,11 @@ public class Camera {
      */
 	private boolean isOutOfBounds(float x, float y, float z) {
 		if (roomBox.outOfBound(x,y,z)){
-			Log.i("Camera", "Out of room walls");
+			Log.v("Camera", "Out of room walls");
 			return true;
 		}
         if (!centerBox.outOfBound(x,y,z)){
-            Log.i("Camera", "Inside absolute center");
+            Log.v("Camera", "Inside absolute center");
             return true;
         }
 		return false;

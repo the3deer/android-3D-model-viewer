@@ -186,11 +186,8 @@ public class SkeletonLoader {
 		}
 
 		// FIXME: is this really needed for modelMatrix?
-		float[] bindTransform = null;
-		if (parent != null) {
-			bindTransform = new float[16];
-			Matrix.multiplyMM(bindTransform, 0, parent.getBindTransform(), 0, matrix, 0);
-		}
+		final float[] bindTransform = new float[16];
+        Matrix.multiplyMM(bindTransform, 0, parent.getBindTransform(), 0, matrix, 0);
 
         return new JointData(index, nodeId,nodeName, geometryId, matrix, bindTransform, inverseBindMatrix);
 	}

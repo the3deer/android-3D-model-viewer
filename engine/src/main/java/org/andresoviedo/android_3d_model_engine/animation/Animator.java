@@ -83,6 +83,9 @@ public class Animator {
 
 	private void bindPose(AnimatedModel animatedModel, Joint joint, final float[] parentTransform){
 
+		/*if (cache.containsKey(joint.getName()+"-already-processed"))
+			return;*/
+
 		// performance optimization - reuse buffers
 		float[] currentTransform = cache.get(joint.getName());
 		if (currentTransform == null){
@@ -95,7 +98,7 @@ public class Animator {
 
 		// apply calculated transform to inverse matrix for joints only
 		if (joint.getIndex() >= 0) {
-			// FIXME:
+			// FIXME: should work also when no skinning data available
 			if (joint.getInverseBindTransform() != null) {
 				Matrix.multiplyMM(joint.getAnimatedTransform(), 0, currentTransform, 0,
 						joint.getInverseBindTransform(), 0);
@@ -112,6 +115,8 @@ public class Animator {
 			Joint childJoint = joint.getChildren().get(i);
 			bindPose(animatedModel, childJoint, currentTransform);
 		}
+
+		//cache.put(joint.getName()+"-already-processed", new float[0]);
 	}
 
 	private void initAnimation(AnimatedModel animatedModel) {
@@ -239,8 +244,13 @@ public class Animator {
 
         // calculate animation only if its used by vertices
         if (joint.getIndex() >= 0) {
-            Matrix.multiplyMM(joint.getAnimatedTransform(), 0, currentTransform, 0,
-                    joint.getInverseBindTransform(), 0);
+			// FIXME: should work also when no skinning data available
+			if (joint.getInverseBindTransform() != null) {
+				Matrix.multiplyMM(joint.getAnimatedTransform(), 0, currentTransform, 0,
+						joint.getInverseBindTransform(), 0);
+			} else {
+				System.arraycopy(currentTransform, 0, joint.getAnimatedTransform(), 0, 16);
+			}
 			animatedModel.updateAnimatedTransform(joint);
         }
 

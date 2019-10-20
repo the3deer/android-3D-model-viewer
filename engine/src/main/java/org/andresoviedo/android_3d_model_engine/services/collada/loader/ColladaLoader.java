@@ -95,11 +95,6 @@ public class ColladaLoader {
 				floatBuffer.put(meshData.getVertexWeights());
 				data3D.setVertexWeights(floatBuffer);
 			}
-			if (modelData.getSkinningData() != null && modelData.getSkinningData().containsKey(meshData.getId())){
-				Log.d("ColladaLoader","Skinning data available");
-				// FIXME: should we set modelMatrix?
-				// data3D.setBindShapeMatrix(modelData.getSkinningData().get(meshData.getId()).getBindShapeMatrix());
-			}
 			ret.add(data3D);
 		}
 
@@ -174,7 +169,7 @@ public class ColladaLoader {
 					JointData jointData = rootJoint.find(meshData.getId());
 					if (jointData != null) {
 						// FIXME: should we set the mmodelMatrix here?
-						data3D.setModelMatrix(jointData.getBindTransform());
+						data3D.setBindShapeMatrix(jointData.getBindTransform());
 					}
 
 					// only animate if there is are joints

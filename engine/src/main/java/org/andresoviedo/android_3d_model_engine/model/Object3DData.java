@@ -320,7 +320,7 @@ public class Object3DData {
 		return this;
 	}
 
-	private void updateModelMatrix(){
+	protected void updateModelMatrix(){
 		Matrix.setIdentityM(modelMatrix, 0);
 		if (getRotation() != null) {
 			Matrix.rotateM(modelMatrix, 0, getRotation()[0], 1f, 0f, 0f);
