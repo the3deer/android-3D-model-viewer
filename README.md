@@ -13,12 +13,12 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (19/05/2019)
+News (22/10/2019)
 =================
 
 * New: Stereoscopic rendering: anaglyph (red-green glasses) & VR glasses (cardboard)
+* Fix: Bugs fixed - better support for collada DAE format - multiple geometries support
 * New: Engine refactoring
-* Fix: Bugs fixed
 
 
 
@@ -180,6 +180,8 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 2.6.0 (22/10/2019)
+  - (f) Support for collada files with multiple geometries
 - 2.5.1 (20/05/2019)
   - (f) wavefront loader fixed for faces point to negative indices
 - 2.5.0 (19/05/2019)
