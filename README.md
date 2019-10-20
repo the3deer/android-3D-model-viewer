@@ -181,7 +181,10 @@ ChangeLog
 (f) fixed, (i) improved, (n) new feature
 
 - 2.6.0 (20/10/2019)
-  - (f) Support for collada files with multiple geometries
+  - (n) #81 Support for collada files with multiple geometries
+  - (f) #94 fixed setVisible(boolean)
+  - (f) #92 fixed multiple color rendering for non-triangulated file.obj
+  - (i) overall engine improved
 - 2.5.1 (20/05/2019)
   - (f) wavefront loader fixed for faces point to negative indices
 - 2.5.0 (19/05/2019)
