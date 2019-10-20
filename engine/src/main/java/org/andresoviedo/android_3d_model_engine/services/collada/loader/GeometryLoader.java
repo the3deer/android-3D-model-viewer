@@ -15,8 +15,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Loads the mesh data for a model from a collada XML file.
@@ -47,6 +49,24 @@ public class GeometryLoader {
 	List<float[]> normals = new ArrayList<>();
 	List<Integer> indices = new ArrayList<>();
 	List<float[]> colors = new ArrayList<>();
+
+	// FIXME: clear this list - only tu debug !!!
+	private final Set<String> includeGeometries = new HashSet<>();
+	{
+		/*includeGeometries.add("ID3393");
+		includeGeometries.add("ID173");
+        includeGeometries.add("ID23");
+        includeGeometries.add("Cube-mesh"); // cowboy
+        includeGeometries.add("U3DMesh-lib"); // raptor attack
+        includeGeometries.add("Stormtroopermesh-mesh"); // stormtrooper
+        includeGeometries.add("defaultmesh-mesh");
+        includeGeometries.add("defaultmesh_001-mesh");
+        includeGeometries.add("Astronaut_meshmesh_001-mesh");
+        includeGeometries.clear();*/
+	}
+
+    boolean textureLinked = false;
+	boolean colorsLinked = false;
 	
 	public GeometryLoader(XmlNode geometryNode, XmlNode materialsNode, XmlNode effectsNode, XmlNode imagesNode, Map<String,SkinningData> skinningData, SkeletonData skeletonData) {
 		this.skinningDataMap = skinningData;
@@ -56,17 +76,23 @@ public class GeometryLoader {
 		this.effectsData = effectsNode;
 		this.skeletonData = skeletonData;
 	}
-	
+
 	public List<MeshData> extractModelData(){
-		List<MeshData> ret = new ArrayList<MeshData>();
+		Log.i("GeometryLoader","Loading geometries...");
+		List<MeshData> ret = new ArrayList<>();
 		for (XmlNode geometry : geometryNode.getChildren("geometry")) {
+
+
+			String geometryId = geometry.getAttribute("id");
+			if (!includeGeometries.isEmpty() && !includeGeometries.contains(geometryId)) {
+				Log.d("GeometryLoader","Geometry ignored: "+geometryId);
+				continue;
+			}
+			Log.i("GeometryLoader", "Loading geometry '" + geometryId + "'...");
 
 			vertices.clear(); vertex.clear();
 			normals.clear(); textures.clear();
 			indices.clear(); colors.clear();
-
-			String geometryId = geometry.getAttribute("id");
-			Log.i("GeometryLoader","Loading geometry '"+geometryId+"'");
 
 			// process mesh...
 			XmlNode meshData = geometry.getChild("mesh");
@@ -74,38 +100,67 @@ public class GeometryLoader {
 			// read vertices and normals
             loadVertices(meshData, geometryId);
             if(vertices.isEmpty()){
-            	Log.i("GeometryLoader","Skipping mesh since it has no vertices: "+geometryId);
+            	Log.i("GeometryLoader","Ignoring geometry since it has no vertices: "+geometryId);
             	continue;
 			}
 
-            // link skin weights to vertices
-            loadSkinningData(geometryId);
-
             // read texture and normals
-			XmlNode primitive = loadPrimitiveData(meshData);
 
-			// get all primitives
-			List<XmlNode> polys = meshData.getChildren("polylist");
+			XmlNode primitive = loadPrimitiveData(meshData);
 
 			// default is no color, no texture
 			Object[] colorAndTexture = new Object[2];
 
-			// TODO: process vcount
-			// this only works if poly is vcount=3 (trooper uses it)
+			// get all primitives
+			List<XmlNode> polys = meshData.getChildren("polylist");
+			Log.d("GeometryLoader","Found polylist. size: "+polys.size());
 			for (XmlNode poly : polys){
-				String material = poly.getAttribute("material");
-				colorAndTexture = getMaterialColorAndTexture(material);
+
+				textureLinked = false;
+                colorsLinked = false;
 				assembleVertices(poly);
+
+				// process material
+				String material = poly.getAttribute("material");
+				if (material != null) {
+				    colorAndTexture = getMaterialColorAndTexture(material);
+					if (colorAndTexture[0] == null){
+						JointData jointData = skeletonData.find(geometryId);
+						if (jointData != null && jointData.containsMaterial(material)){
+							colorAndTexture = getMaterialColorAndTexture(jointData.getMaterial(material));
+						} else {
+                            Log.e("GeometryLoader", "Material for poly not found: " + material);
+                        }
+					}
+				}
 			}
 
 			// triangle mesh
 			List<XmlNode> triangless = meshData.getChildren("triangles");
+			Log.d("GeometryLoader","Found triangles. size: "+triangless.size());
 			for (XmlNode triangles : triangless){
-				String material = triangles.getAttribute("material");
-				colorAndTexture = getMaterialColorAndTexture(material);
+
+                textureLinked = false;
+                colorsLinked = false;
 				assembleVertices(triangles);
+
+                // process material
+                String material = triangles.getAttribute("material");
+                if (material != null) {
+                    colorAndTexture = getMaterialColorAndTexture(material);
+                    if (colorAndTexture[0] == null){
+                        JointData jointData = skeletonData.find(geometryId);
+                        if (jointData != null && jointData.containsMaterial(material)){
+                            colorAndTexture = getMaterialColorAndTexture(jointData.getMaterial(material));
+                        } else {
+                            Log.e("GeometryLoader", "Material for triangle not found: " + material);
+                        }
+                    }
+                }
 			}
 
+			Log.d("GeometryLoader","Assembly mesh...");
+			loadSkinningData(geometryId);
 			initArrays(geometryId);
 			convertDataToArrays();
 			convertIndicesListToArray();
@@ -114,6 +169,11 @@ public class GeometryLoader {
 			String texture = (String) colorAndTexture[1];
 			ret.add(new MeshData(geometryId, verticesArray, texturesArray, normalsArray, color, colorsBuffer,
 					texture, indicesArray, jointIdsArray, weightsArray));
+
+			Log.d("GeometryLoader","Geometry loaded. vertices: "+vertices.size()+
+					", normals: "+(normals != null? normals.size():0)+
+					", textures: "+(textures != null? textures.size():0)+
+					", colors: "+(colors != null? colors.size(): 0));
 		}
 		return ret;
 	}
@@ -141,17 +201,6 @@ public class GeometryLoader {
 		return primitiveNode;
 	}
 
-	private JointData getJointData(JointData jointData, String geometryId){
-		if (geometryId.equals(jointData.meshId)) {
-			return jointData;
-		}
-		for (JointData childJointData : jointData.children) {
-			JointData candidate = getJointData(childJointData, geometryId);
-			if (candidate != null) return candidate;
-		}
-		return null;
-	}
-
 	// <vertices> - may contain "VERTEX" and "NORMAL" semantics
 	private void loadVertices(XmlNode meshData, String geometryId) {
 
@@ -171,46 +220,65 @@ public class GeometryLoader {
         	vertices.add(new Vertex(vertex.get(i)));
 		}
 
-        // load normals
+		// there are vertices, normals that are not pointed by any polylist index
 		for (int i=0; normals != null && i<vertices.size(); i++){
 			vertices.get(i).setNormalIndex(i);
 		}
+		for (int i=0; textures != null && i<vertices.size(); i++){
+			vertices.get(i).setTextureIndex(i);
+		}
     }
 
-    private void loadSkinningData(String geometryId) {
+    private void loadSkinningData(final String geometryId) {
+
+		float[] bindShapeMatrix = null;
+		if (skinningDataMap != null && skinningDataMap.containsKey(geometryId)) {
+			bindShapeMatrix = skinningDataMap.get(geometryId).getBindShapeMatrix();
+		}
+
+		List<VertexSkinData> verticesSkinData = null;
+		if (skinningDataMap == null || !skinningDataMap.containsKey(geometryId)) {
+			Log.d("GeometryLoader","No skinning data available");
+		} else {
+			verticesSkinData = skinningDataMap.get(geometryId).verticesSkinData;
+		}
+
+		JointData jointData = null;
+		if (skeletonData != null){
+			jointData = skeletonData.getHeadJoint().find(geometryId);
+			// FIXME: remove this whole if
+			if (jointData == null){
+				jointData = skeletonData.getHeadJoint();
+			}
+		} else {
+			Log.d("GeometryLoader","No skeleton data available");
+		}
+
         // link vertex to weight data
         for (int i = 0; i < this.vertices.size(); i++) {
 
             Vertex vertex = this.vertices.get(i);
-            float[] positionV = new float[]{vertex.getPosition()[0],vertex.getPosition()[1],vertex.getPosition()[2],1};
+
+			// transform vertex according to bind_shape_matrix (trooper is using it)
+			if (bindShapeMatrix != null) {
+				float[] bindShaped = new float[16];
+				float[] positionV = new float[]{vertex.getPosition()[0],vertex.getPosition()[1],vertex.getPosition()[2],1};
+				Matrix.multiplyMV(bindShaped, 0, bindShapeMatrix, 0, positionV, 0);
+				// FIXME: this is used by stormtrooper - i think it is skin data not geometry
+				vertex.setPosition(new float[]{bindShaped[0],bindShaped[1],bindShaped[2]});
+			}
 
             // skinning data
             VertexSkinData weightsData = null;
-            if (skinningDataMap != null) {
-                weightsData = skinningDataMap.containsKey(geometryId) ?
-                        skinningDataMap.get(geometryId).verticesSkinData.get(i) : null;
-
-				// Log.v("GeometryLoader","weightsData: "+weightsData);
-
-                // transform vertex according to bind_shape_matrix
-                if (skinningDataMap.containsKey(geometryId)) {
-                    float[] bindShapeMatrix = skinningDataMap.get(geometryId).bindShapeMatrix;
-                    float[] bindShaped = new float[16];
-                    Matrix.multiplyMV(bindShaped, 0, bindShapeMatrix, 0, positionV, 0);
-                    positionV = bindShaped;
-                }
-
-                // TODO: review this. meshId is never set on skeleton data so this will probably never work
-                if (weightsData == null && skeletonData != null) {
-                    JointData jointData = getJointData(skeletonData.headJoint, geometryId);
-                    if (jointData != null) {
-                        weightsData = new VertexSkinData();
-                        weightsData.addJointEffect(jointData.index, 1);
-                        weightsData.limitJointNumber(3);
-                    }
-                }
+            if (verticesSkinData != null) {
+				weightsData = verticesSkinData.get(i);
             }
-            vertex.setPosition(new float[]{positionV[0],positionV[1],positionV[2]});
+			// FIXME: do we really need this?
+			if (weightsData == null && jointData != null) {
+				weightsData = new VertexSkinData();
+				weightsData.addJointEffect(jointData.index, 1);
+				weightsData.limitJointNumber(3);
+			}
             vertex.setWeightsData(weightsData);
         }
     }
@@ -227,7 +295,7 @@ public class GeometryLoader {
 		int count = Integer.parseInt(data.getAttribute("count"));
 
 		// no data ?
-		Log.i("GeometryLoader","Loading data. count: "+count);
+		Log.d("GeometryLoader","Loading data: "+sourceId+" . count: "+count);
 		if (count <= 0){
 			return;
 		}
@@ -237,7 +305,6 @@ public class GeometryLoader {
 		XmlNode technique = source.getChild("technique_common");
 		if (technique != null && technique.getChild("accessor") != null){
 			stride = Integer.parseInt(technique.getChild("accessor").getAttribute("stride"));
-			Log.i("GeometryLoader","Loading data. stride: "+stride);
 		}
 
 		// parse floats
@@ -276,6 +343,7 @@ public class GeometryLoader {
 				// only parse set=1
 				if (texOffset==-1) {
 					texOffset = offset;
+					textureLinked = true;
 				}
 			} else if ("NORMAL".equals(semantic)){
 				normalOffset = offset;
@@ -287,40 +355,147 @@ public class GeometryLoader {
 
 		// stride
 		int stride = maxOffset + 1;
-		Log.i("GeometryLoader", "Loading primitive. Stride: " + stride);
-		Log.i("GeometryLoader", "Primitive offsets " + vertexOffset+","+normalOffset+","+texOffset);
+		Log.d("GeometryLoader", "Loading mesh... type: " + primitive.getName()+". offsets: " + vertexOffset+"," +
+				+normalOffset+"," + texOffset);
 
 		// update vertex info
+		String[] vcountList = null;
+		if (primitive.getChild("vcount") != null){
+            vcountList = primitive.getChild("vcount").getData().trim().split("\\s+");
+        }
 		String[] indexData = primitive.getChild("p").getData().trim().split("\\s+");
-		for (int i = 0; i < indexData.length; i+=stride) {
+		if (vcountList != null){
 
-			// get vertex
-			int positionIndex = Integer.parseInt(indexData[i + vertexOffset]);
-			Vertex currentVertex = vertices.get(positionIndex);
+		    if (false) {
+                // triangle strip technique
+                int offset = 0;
+                int totalFaces = 0;
+                for (int k = 0; k < vcountList.length; k++) {
+                    int vcount = Integer.parseInt(vcountList[k]);
 
-			// parse normal if available
-			int normalIndex = -1;
-			if (normalOffset >= 0){
-				normalIndex = Integer.parseInt(indexData[i + normalOffset]);
-				currentVertex.setNormalIndex(normalIndex);
+                    int vcounter = 0;
+                    for (int faceIndex = 0; vcounter < vcount; faceIndex++, vcounter++, offset += stride) {
+
+                        if (faceIndex > 2) { // if already a triangle then step back -2 to implement
+                            faceIndex = 0;
+                            offset -= stride * 2;
+                            vcounter -= 2;
+                            totalFaces++;
+                        }
+
+                        // get vertex
+                        final int positionIndex = Integer.parseInt(indexData[offset + vertexOffset]);
+                        Vertex currentVertex = vertices.get(positionIndex);
+
+                        // parse normal if available
+                        if (normalOffset >= 0) {
+                            currentVertex.setNormalIndex(Integer.parseInt(indexData[offset + normalOffset]));
+                        }
+
+                        // parse color if available
+                        if (colorOffset >= 0) {
+                            currentVertex.setColorIndex(Integer.parseInt(indexData[offset + colorOffset]));
+                        }
+
+                        // parse texture if available
+                        if (texOffset >= 0) {
+							int textureIndex = Integer.parseInt(indexData[offset + texOffset]);
+							if (textureIndex < 0){
+								throw new IllegalArgumentException("texture index < 0");
+							}
+							currentVertex.setTextureIndex(textureIndex);
+                        }
+
+                        // update vertex info
+                        indices.add(positionIndex);
+                    }
+                    totalFaces++;
+                }
+                Log.i("GeometryLoader", "Total STRIP faces: " + totalFaces);
+            } else {
+                // triangle fan technique
+                int offset = 0;
+                int totalFaces = 0;
+                for (int k = 0; k < vcountList.length; k++) {
+                    int vcount = Integer.parseInt(vcountList[k]);
+
+                    int vcounter = 0;
+                    int firstVectorOffset = offset;
+                	boolean doFan = false, doClose = false;
+                    for (int faceIndex = 0; vcounter < vcount; faceIndex++, vcounter++, offset += stride) {
+
+                        if (doClose){
+                            faceIndex = 3;
+							doClose = false;
+                        }
+                        else if (doFan){
+                            offset = firstVectorOffset + vcounter * stride;
+                            doClose = true;
+                            doFan = false;
+                        }
+                        else if (faceIndex > 2) { // if already a triangle then step back -2 to implement
+                            offset = firstVectorOffset;
+                            vcounter -= 2;
+                            totalFaces++;
+                            doFan = true;
+                            doClose = false;
+                        }
+
+                        // get vertex
+                        final int positionIndex = Integer.parseInt(indexData[offset + vertexOffset]);
+                        Vertex currentVertex = vertices.get(positionIndex);
+
+                        // parse normal if available
+                        if (normalOffset >= 0) {
+                            currentVertex.setNormalIndex(Integer.parseInt(indexData[offset + normalOffset]));
+                        }
+
+                        // parse color if available
+                        if (colorOffset >= 0) {
+                            currentVertex.setColorIndex(Integer.parseInt(indexData[offset + colorOffset]));
+                        }
+
+						// parse texture if available
+						if (texOffset >= 0) {
+							int textureIndex = Integer.parseInt(indexData[offset + texOffset]);
+							if (textureIndex < 0){
+								throw new IllegalArgumentException("texture index < 0");
+							}
+							currentVertex.setTextureIndex(textureIndex);
+						}
+
+						// update vertex info
+						indices.add(positionIndex);
+                    }
+                    totalFaces++;
+                }
+                Log.i("GeometryLoader", "Total FAN faces: " + totalFaces+", Total indices: "+indices.size());
+            }
+		}  else {
+			for (int i = 0; i < indexData.length; i += stride) {
+
+				// get vertex
+				final int positionIndex = Integer.parseInt(indexData[i + vertexOffset]);
+				Vertex currentVertex = vertices.get(positionIndex);
+
+				// parse normal if available
+				if (normalOffset >= 0) {
+					currentVertex.setNormalIndex(Integer.parseInt(indexData[i + normalOffset]));
+				}
+
+				// parse color if available
+				if (colorOffset >= 0) {
+					currentVertex.setColorIndex(Integer.parseInt(indexData[i + colorOffset]));
+				}
+
+				// parse texture if available
+				if (texOffset >= 0) {
+					currentVertex.setTextureIndex(Integer.parseInt(indexData[i + texOffset]));
+				}
+
+				// update vertex info
+				indices.add(positionIndex);
 			}
-
-			// parse color if available
-			int colorIndex = -1;
-			if (colorOffset >= 0){
-				colorIndex = Integer.parseInt(indexData[i + colorOffset]);
-				currentVertex.setColorIndex(colorIndex);
-			}
-
-			// parse texture if available
-			int texCoordIndex = -1;
-			if (texOffset >= 0) {
-				texCoordIndex = Integer.parseInt(indexData[i + texOffset]);
-				currentVertex.setTextureIndex(texCoordIndex);
-			}
-
-			// update vertex info
-			indices.add(positionIndex);
 		}
 	}
 
@@ -329,7 +504,6 @@ public class GeometryLoader {
 		try {
 			XmlNode materialNode = materialsData.getChildWithAttribute("material","id",material);
 			if (materialNode == null) {
-				Log.e("GeometryLoader", "No material with id '" + material + "' found");
 				return ret;
 			}
 			XmlNode instanceEffectNode = materialNode.getChild("instance_effect");
@@ -405,7 +579,7 @@ public class GeometryLoader {
 					textureFile = imagesNode.getChildWithAttribute("image", "id", texture).getChild("init_from").getData();
 				}
 			}
-			Log.i("GeometryLoader","Texture '"+textureFile+"'");
+			Log.i("GeometryLoader","Material read. Texture '"+textureFile+"'");
 			ret[1] = textureFile;
 		} catch (Exception ex) {
 			Log.e("GeometryLoader","Error reading material '"+material+"'",ex);
@@ -423,10 +597,6 @@ public class GeometryLoader {
 
 	private float convertDataToArrays() {
 
-		Log.i("GeometryLoader","vertices: "+vertices.size()+
-				", textures: "+(textures != null? textures.size():0)+
-				", colors: "+(colors != null? colors.size(): 0));
-
 		float furthestPoint = 0;
 		int gw = 0, gj = 0; // global weights, global joints
 		for (int i = 0; i < vertices.size(); i++) {
@@ -435,7 +605,7 @@ public class GeometryLoader {
 				furthestPoint = currentVertex.getLength();
 			}
 			float[] position = currentVertex.getPosition();
-			if (textures != null && !textures.isEmpty()) {
+			if (textureLinked &&  textures != null && !textures.isEmpty()) {
 				float[] textureCoord = textures.get(currentVertex.getTextureIndex());
 				texturesArray[i * 2] = textureCoord[0];
 				texturesArray[i * 2 + 1] = 1 - textureCoord[1];
@@ -450,9 +620,10 @@ public class GeometryLoader {
                 normalsArray[i * 3 + 1] = normalVector[1];
                 normalsArray[i * 3 + 2] = normalVector[2];
             }
-            if (colors != null && currentVertex.getColorIndex()>=0){
+            if (colors != null && !colors.isEmpty() && currentVertex.getColorIndex()>=0){
 				float[] color = colors.get(currentVertex.getColorIndex());
 				colorsBuffer.put(color);
+                colorsLinked = true;
 			}
 
 			VertexSkinData weights = currentVertex.getWeightsData();
@@ -465,12 +636,18 @@ public class GeometryLoader {
                 }
 			}
 		}
+
+		// clear buffer if we don't need it
+		if (colorsBuffer != null && !colorsLinked){
+		    colorsBuffer.clear();
+		    colorsBuffer = null;
+        }
 		return furthestPoint;
 	}
 	
 	private void initArrays(String geometryId){
 		this.verticesArray = new float[vertices.size() * 3];
-		if (textures != null && !textures.isEmpty()) {
+		if (textureLinked && textures != null && !textures.isEmpty()) {
 			this.texturesArray = new float[vertices.size() * 2];
 		}
 		this.normalsArray = new float[vertices.size() * 3];
@@ -479,8 +656,9 @@ public class GeometryLoader {
 			this.jointIdsArray = new int[vertices.size() * vertices.get(0).getWeightsData().jointIds.size()];
 			this.weightsArray = new float[vertices.size() * vertices.get(0).getWeightsData().weights.size()];
 		}
-		if (!colors.isEmpty())
-			this.colorsBuffer = createNativeByteBuffer(colors.size()*4*4).asFloatBuffer();
+		if (!colors.isEmpty()) {
+			this.colorsBuffer = createNativeByteBuffer(colors.size() * 4 * 4).asFloatBuffer();
+		}
 	}
 
 	private static ByteBuffer createNativeByteBuffer(int length) {

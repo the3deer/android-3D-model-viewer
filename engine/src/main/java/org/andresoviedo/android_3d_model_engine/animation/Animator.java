@@ -56,10 +56,6 @@ public class Animator {
 	 * time of the animation, and then applies that pose to all the model's
 	 * joints by setting the joint transforms.
 	 */
-	public void update(Object3DData obj) {
-		this.update(obj,false);
-	}
-
 	public void update(Object3DData obj, boolean bindPoseOnly) {
 		if (!(obj instanceof AnimatedModel)) {
 			return;
@@ -67,9 +63,10 @@ public class Animator {
 
 		// if (true) return;
 		AnimatedModel animatedModel = (AnimatedModel)obj;
-		if (animatedModel.getAnimation() == null) return;
 
 		if (!bindPoseOnly) {
+			if (animatedModel.getAnimation() == null) return;
+
 			// add missing key transformations
 			initAnimation(animatedModel);
 
@@ -78,13 +75,16 @@ public class Animator {
 
 			Map<String, float[]> currentPose = calculateCurrentAnimationPose(animatedModel);
 
-			applyPoseToJoints(currentPose, (animatedModel).getRootJoint(), IDENTITY_MATRIX, 0);
+			applyPoseToJoints(animatedModel, currentPose, (animatedModel).getRootJoint(), IDENTITY_MATRIX, 0);
 		} else {
-			bindPose((animatedModel).getRootJoint(), IDENTITY_MATRIX);
+			bindPose(animatedModel, (animatedModel).getRootJoint(), IDENTITY_MATRIX);
 		}
 	}
 
-	private void bindPose(Joint joint, final float[] parentTransform){
+	private void bindPose(AnimatedModel animatedModel, Joint joint, final float[] parentTransform){
+
+		/*if (cache.containsKey(joint.getName()+"-already-processed"))
+			return;*/
 
 		// performance optimization - reuse buffers
 		float[] currentTransform = cache.get(joint.getName());
@@ -98,16 +98,25 @@ public class Animator {
 
 		// apply calculated transform to inverse matrix for joints only
 		if (joint.getIndex() >= 0) {
-			Matrix.multiplyMM(joint.getAnimatedTransform(), 0, currentTransform, 0,
-					joint.getInverseBindTransform(), 0);
+			// FIXME: should work also when no skinning data available
+			if (joint.getInverseBindTransform() != null) {
+				Matrix.multiplyMM(joint.getAnimatedTransform(), 0, currentTransform, 0,
+						joint.getInverseBindTransform(), 0);
+			} else {
+				System.arraycopy(currentTransform, 0, joint.getAnimatedTransform(), 0, 16);
+			}
+			animatedModel.updateAnimatedTransform(joint);
+
 		}
 
 		// apply transform for joint child
 		// transform children
 		for (int i=0; i<joint.getChildren().size(); i++) {
 			Joint childJoint = joint.getChildren().get(i);
-			bindPose(childJoint, currentTransform);
+			bindPose(animatedModel, childJoint, currentTransform);
 		}
+
+		//cache.put(joint.getName()+"-already-processed", new float[0]);
 	}
 
 	private void initAnimation(AnimatedModel animatedModel) {
@@ -204,7 +213,7 @@ public class Animator {
 	 * loaded up to the vertex shader and used to transform the vertices into
 	 * the current pose.
 	 * 
-	 * @param currentPose
+	 * @param animatedModel
 	 *            - a map of the local-space transforms for all the joints for
 	 *            the desired pose. The map is indexed by the name of the joint
 	 *            which the transform corresponds to.
@@ -214,7 +223,8 @@ public class Animator {
 	 *            - the desired model-space transform of the parent joint for
 	 *            the pose.
 	 */
-	private void applyPoseToJoints(Map<String, float[]> currentPose, Joint joint, float[] parentTransform, int limit) {
+	private void applyPoseToJoints(AnimatedModel animatedModel, Map<String,float[]> currentPose, Joint joint, float[]
+			parentTransform, int limit) {
 
 	    float[] currentTransform = cache.get(joint.getName());
 	    if (currentTransform == null){
@@ -222,8 +232,7 @@ public class Animator {
 	        cache.put(joint.getName(), currentTransform);
         }
 
-        // TODO: implement bind pose
-        if (limit <= 0){
+        if (limit <= 0) {
 			if (currentPose.get(joint.getName()) != null) {
 				Matrix.multiplyMM(currentTransform, 0, parentTransform, 0, currentPose.get(joint.getName()), 0);
 			} else {
@@ -234,16 +243,21 @@ public class Animator {
         }
 
         // calculate animation only if its used by vertices
-        //joint.calcInverseBindTransform2(parentTransform);
         if (joint.getIndex() >= 0) {
-            Matrix.multiplyMM(joint.getAnimatedTransform(), 0, currentTransform, 0,
-                    joint.getInverseBindTransform(), 0);
+			// FIXME: should work also when no skinning data available
+			if (joint.getInverseBindTransform() != null) {
+				Matrix.multiplyMM(joint.getAnimatedTransform(), 0, currentTransform, 0,
+						joint.getInverseBindTransform(), 0);
+			} else {
+				System.arraycopy(currentTransform, 0, joint.getAnimatedTransform(), 0, 16);
+			}
+			animatedModel.updateAnimatedTransform(joint);
         }
 
 		// transform children
 		for (int i=0; i<joint.getChildren().size(); i++) {
             Joint childJoint = joint.getChildren().get(i);
-			applyPoseToJoints(currentPose, childJoint, currentTransform, limit-1);
+			applyPoseToJoints(animatedModel, currentPose, childJoint, currentTransform, limit-1);
 		}
 	}
 

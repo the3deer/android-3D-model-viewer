@@ -34,13 +34,13 @@ public class SkinLoader {
 			String source = skinningData.getAttribute("source").substring(1);
 
 			// bind shape matrix
-            float[] bindShapeMatrix = new float[16];
-            Matrix.setIdentityM(bindShapeMatrix,0);
+            float[] bindShapeMatrix = null;
             XmlNode bindShapeMatrixNode = skinningData.getChild("bind_shape_matrix");
             if (bindShapeMatrixNode != null) {
-                float[] temp = Math3DUtils.parseFloat(bindShapeMatrixNode.getData().trim().split("\\s+"));
-                Matrix.transposeM(bindShapeMatrix, 0, temp, 0);
-                Log.i("SkinLoader","Bind shape matrix set");
+                float[] bind_shape_matrix_data = Math3DUtils.parseFloat(bindShapeMatrixNode.getData().trim().split("\\s+"));
+                bindShapeMatrix = new float[16];
+                Matrix.transposeM(bindShapeMatrix, 0, bind_shape_matrix_data, 0);
+                Log.i("SkinLoader","Bind shape matrix: "+Math3DUtils.toString(bindShapeMatrix,0));
             }
 
             // Ordered joint list
@@ -67,13 +67,13 @@ public class SkinLoader {
 						.getChild("float_array").getData();
 				Log.d("SkinLoader","invMatrix: "+invMatrixString.trim());
 				inverseBindMatrix = Math3DUtils.parseFloat(invMatrixString.trim().split("\\s+"));
-                Log.d("SkinLoader","Inverse bind matrix available");
+                Log.d("SkinLoader","Inverse bind matrix: "+Math3DUtils.toString(inverseBindMatrix,0));
 			} catch (Exception e) {
-				Log.d("SkinLoader","No inverse bind matrix available");
+				Log.i("SkinLoader","No inverse bind matrix available");
 			}
 			ret.put(source,new SkinningData(bindShapeMatrix, jointNames, vertexWeights, inverseBindMatrix));
 		}
-		Log.d("SkinLoader","Skinning datas '"+ret.keySet()+"'");
+		Log.i("SkinLoader","Skinning data list loaded: "+ret.keySet());
 		return ret;
 	}
 

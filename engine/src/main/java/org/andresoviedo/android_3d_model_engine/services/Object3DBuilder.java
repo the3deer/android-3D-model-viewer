@@ -691,7 +691,8 @@ public final class Object3DBuilder {
 		if (objData.getDrawOrder() != null) {
 
 			try {
-				Log.i("Object3DBuilder", "Building wireframe...");
+				Log.i("Object3DBuilder", "Building wireframe from draw buffer... Total index: "+objData
+						.getDrawOrder().capacity());
 				IntBuffer drawBuffer = objData.getDrawOrder();
 				IntBuffer wireframeDrawOrder = createNativeByteBuffer(drawBuffer.capacity() * 2 * 4).asIntBuffer();
 				for (int i = 0; i < drawBuffer.capacity(); i += 3) {
@@ -720,8 +721,9 @@ public final class Object3DBuilder {
 					object3DData.setVertexWeights(((AnimatedModel) objData).getVertexWeights());
 					object3DData.setJointIds(((AnimatedModel) objData).getJointIds());
 					object3DData.setRootJoint(((AnimatedModel) objData).getRootJoint(), ((AnimatedModel) objData)
-							.getJointCount(), ((AnimatedModel) objData).getBoneCount(), false);
+							.getJointCount(), ((AnimatedModel) objData).getBoneCount());
 					object3DData.doAnimation(((AnimatedModel) objData).getAnimation());
+					object3DData.setBindShapeMatrix(((AnimatedModel)objData).getBindShapeMatrix());
 					return object3DData;
 				}
 				else {
@@ -736,7 +738,7 @@ public final class Object3DBuilder {
 			}
 		}
 		else if (objData.getVertexArrayBuffer() != null){
-			Log.i("Object3DBuilder", "Building wireframe...");
+			Log.i("Object3DBuilder", "Building wireframe from vertex buffer...");
 			FloatBuffer vertexBuffer = objData.getVertexArrayBuffer();
 			IntBuffer wireframeDrawOrder = createNativeByteBuffer(vertexBuffer.capacity()/3 * 2 * 4).asIntBuffer();
 			for (int i = 0; i < vertexBuffer.capacity()/3; i += 3) {
@@ -861,8 +863,7 @@ public final class Object3DBuilder {
         skeleton.setVertexNormalsArrayBuffer(createNativeByteBuffer(animatedModel.getJointCount()*3*3*4)
                 .asFloatBuffer());
         skeleton.setDrawMode(GLES20.GL_TRIANGLES);
-        skeleton.setRootJoint(animatedModel.getRootJoint().clone(), animatedModel.getJointCount(), animatedModel
-                .getBoneCount(), true);
+        skeleton.setRootJoint(animatedModel.getRootJoint(), animatedModel.getJointCount(), animatedModel.getBoneCount());
         skeleton.setJointIds(createNativeByteBuffer(skeleton.getJointCount()*3*3*4).asFloatBuffer());
         skeleton.doAnimation(animatedModel.getAnimation());
         skeleton.setVertexWeights(createNativeByteBuffer(skeleton.getJointCount()*3*3*4).asFloatBuffer());

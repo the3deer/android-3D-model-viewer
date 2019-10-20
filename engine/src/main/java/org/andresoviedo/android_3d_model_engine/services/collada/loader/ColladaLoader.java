@@ -2,6 +2,7 @@ package org.andresoviedo.android_3d_model_engine.services.collada.loader;
 
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.animation.Animation;
@@ -45,6 +46,7 @@ public class ColladaLoader {
 	}
 
 	public static Object[] buildAnimatedModel(URL url) throws IOException {
+		Log.i("ColladaLoader","Loading model... "+url.toString());
 		List<Object3DData> ret = new ArrayList<>();
 		InputStream is = url.openStream();
 		AnimatedModelData modelData = loadColladaModel(is,3);
@@ -60,7 +62,6 @@ public class ColladaLoader {
 
 
 			// Initialize model dimensions (needed by the Object3DData#scaleCenter()
-			WavefrontLoader.ModelDimensions modelDimensions = new WavefrontLoader.ModelDimensions();
 
 			// notify succeded!
 			AnimatedModel data3D = new AnimatedModel(vertexBuffer);
@@ -75,7 +76,7 @@ public class ColladaLoader {
 			}
 			data3D.setColor(meshData.getColor());
 			data3D.setVertexColorsArrayBuffer(meshData.getColorsBuffer());
-			data3D.setDimensions(modelDimensions);
+			data3D.setDimensions(new WavefrontLoader.ModelDimensions());
 			data3D.setDrawOrder(indexBuffer);
 			data3D.setDrawUsingArrays(false);
 			data3D.setDrawMode(GLES20.GL_TRIANGLES);
@@ -97,46 +98,65 @@ public class ColladaLoader {
 			ret.add(data3D);
 		}
 
+		if (meshDataList.isEmpty()){
+            Log.w("ColladaLoader","Mesh data list empty. Did you exclude any model in GeometryLoader.java?");
+        }
+		Log.i("ColladaLoader","Loading model finished. Objects: "+meshDataList.size());
 		return new Object[]{modelData,ret};
 	}
 
 	public static void populateAnimatedModel(URL url, List<Object3DData> datas, AnimatedModelData modelData){
 
+        Log.i("ColladaLoader", "Loading animation...");
+        Animation animation = null;
+        try (InputStream animationIS = url.openStream()) {
+            animation = loadAnimation(animationIS);
+			Log.i("ColladaLoader", "Loaded animation: "+animation);
+        } catch (Exception e) {
+            Log.e("ColladaLoader","Error loading animation", e);
+        }
+
+		SkeletonData skeletonData = modelData.getJointsData();
+		Joint rootJoint = null;
+		if (skeletonData != null){
+			Log.i("ColladaLoader", "Building joints... nodes: "+skeletonData.getJointCount());
+			rootJoint = skeletonData.buildJoints();
+			float[] parentTransform = new float[16];
+			Matrix.setIdentityM(parentTransform,0);
+			rootJoint.calcInverseBindTransform(parentTransform, false);
+		} else {
+			Log.d("ColladaLoader", "No skeleton data");
+		}
+
+		Log.i("ColladaLoader","Loading objects... "+datas.size());
 		for (int i=0; i<datas.size(); i++) {
 			Object3DData data = datas.get(i);
 
-			// Parse all facets...
-			double[] normal = new double[3];
-			double[][] vertices = new double[3][3];
-			int normalCounter = 0, vertexCounter = 0;
+			MeshData meshData = modelData.getMeshData().get(i);
+            Log.v("ColladaLoader","Loading data... "+meshData.getId());
 
-			FloatBuffer normalsBuffer = data.getVertexNormalsArrayBuffer();
-			FloatBuffer vertexBuffer = data.getVertexArrayBuffer();
+
+            // FIXME: this is overwritten when setFaces called
 			IntBuffer indexBuffer = data.getDrawOrder();
 
 			WavefrontLoader.ModelDimensions modelDimensions = data.getDimensions();
-
-			MeshData meshData = modelData.getMeshData().get(i);
-
 			boolean first = true;
-			for (int counter = 0; counter < meshData.getVertices().length - 3; counter += 3) {
-
-				// update model dimensions
+            float[] vertices = meshData.getVertices();
+            for (int counter = 0; counter < vertices.length - 3; counter += 3) {
 				if (first) {
-					modelDimensions.set(meshData.getVertices()[counter], meshData.getVertices()[counter + 1], meshData.getVertices()[counter + 2]);
+					modelDimensions.set(vertices[counter], vertices[counter + 1], vertices[counter + 2]);
 					first = false;
 				}
-				modelDimensions.update(meshData.getVertices()[counter], meshData.getVertices()[counter + 1], meshData.getVertices()[counter + 2]);
-
+				modelDimensions.update(vertices[counter], vertices[counter + 1], vertices[counter + 2]);
 			}
 
-			Log.i("ColladaLoaderTask", "Building 3D object '"+meshData.getId()+"'...");
+			Log.v("ColladaLoaderTask", "Loading buffers...'");
 			data.setId(meshData.getId());
-			vertexBuffer.put(meshData.getVertices());
-			normalsBuffer.put(meshData.getNormals());
-			//data.setVertexColorsArrayBuffer(meshData.getColorsBuffer());
+			data.getVertexArrayBuffer().put(vertices);
+			data.getVertexNormalsArrayBuffer().put(meshData.getNormals());
+			data.setVertexColorsArrayBuffer(meshData.getColorsBuffer());
 			indexBuffer.put(meshData.getIndices());
-			data.setFaces(new WavefrontLoader.Faces(vertexBuffer.capacity() / 3));
+			data.setFaces(new WavefrontLoader.Faces(data.getVertexArrayBuffer().capacity() / 3));
 			data.setDrawOrder(indexBuffer);
 
 			// Load skeleton and animation
@@ -144,14 +164,20 @@ public class ColladaLoader {
 			try {
 
 				// load skeleton
-				SkeletonData skeletonData = modelData.getJointsData();
-				Joint headJoint = createJoints(skeletonData.headJoint);
-				data3D.setRootJoint(headJoint, skeletonData.jointCount, skeletonData.boneCount, false);
+				if (rootJoint != null){
+					data3D.setRootJoint(rootJoint, skeletonData.getJointCount(), skeletonData.getBoneCount());
+					JointData jointData = rootJoint.find(meshData.getId());
+					if (jointData != null) {
+						// we must set bind shape matrix only for joints
+						// as we don't want to disturb Animator when querying for...
+						data3D.setBindShapeMatrix(jointData.getBindTransform());
+					}
 
-				// load animation
-				Animation animation = loadAnimation(url.openStream());
-				data3D.doAnimation(animation);
-
+					// only animate if there is are joints
+					data3D.doAnimation(animation);
+				} else {
+					Log.d("ColladaLoader", "No skeleton data for "  + meshData.getId());
+				}
 			} catch (Exception e) {
 				Log.e("ColladaLoader", "Problem loading model animation' " + e.getMessage(), e);
 				data3D.doAnimation(null);
@@ -166,41 +192,26 @@ public class ColladaLoader {
 		try {
 			node = XmlParser.parse(colladaFile);
 
-			SkinLoader skinLoader = new SkinLoader(node.getChild("library_controllers"), maxWeights);
-			skinningData = skinLoader.extractSkinData();
-
-			if (!skinningData.isEmpty()) {
-				SkeletonLoader jointsLoader = new SkeletonLoader(node.getChild("library_visual_scenes"), skinningData.values().iterator().next());
-				jointsData = jointsLoader.extractBoneData();
+			XmlNode library_controllers = node.getChild("library_controllers");
+			if (library_controllers != null) {
+				SkinLoader skinLoader = new SkinLoader(library_controllers, maxWeights);
+				skinningData = skinLoader.extractSkinData();
 			}
+
+			SkeletonLoader jointsLoader = new SkeletonLoader(node, skinningData);
+			jointsData = jointsLoader.extractBoneData();
 
 		}catch(Exception ex){
 			Log.e("ColladaLoader","Problem loading skinning/skeleton data",ex);
 		}
 
-		Log.i("ColladaLoader","Extracting geometry...");
 		GeometryLoader g = new GeometryLoader(node.getChild("library_geometries"), node.getChild("library_materials"),
 				node.getChild("library_effects"), node.getChild("library_images"), skinningData, jointsData);
 		List<MeshData> meshData = g.extractModelData();
 
-		return new AnimatedModelData(meshData, jointsData);
+		return new AnimatedModelData(meshData, jointsData, skinningData);
 	}
 
-	/**
-	 * Constructs the joint-hierarchy skeleton from the data extracted from the
-	 * collada file.
-	 *
-	 * @param data
-	 *            - the joints data from the collada file for the head joint.
-	 * @return The created joint, with all its descendants added.
-	 */
-	private static Joint createJoints(JointData data) {
-		Joint joint = new Joint(data.index, data.nameId, data.bindLocalTransform, data.inverseBindTransform);
-		for (JointData child : data.children) {
-			joint.addChild(createJoints(child));
-		}
-		return joint;
-	}
 
 	static AnimationData loadColladaAnimation(InputStream colladaFile) {
 		XmlNode node = XmlParser.parse(colladaFile);

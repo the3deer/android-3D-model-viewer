@@ -93,7 +93,7 @@ public class TouchController {
 		case MotionEvent.ACTION_DOWN:
 		case MotionEvent.ACTION_POINTER_DOWN:
 		case MotionEvent.ACTION_HOVER_ENTER:
-			Log.d(TAG, "Gesture changed...");
+			Log.v(TAG, "Gesture changed...");
 			gestureChanged = true;
 			touchDelay = 0;
 			lastActionTime = SystemClock.uptimeMillis();
@@ -115,7 +115,7 @@ public class TouchController {
 			x1 = motionEvent.getX();
 			y1 = motionEvent.getY();
 			if (gestureChanged) {
-				Log.d(TAG, "x:" + x1 + ",y:" + y1);
+				Log.v(TAG, "x:" + x1 + ",y:" + y1);
 				previousX1 = x1;
 				previousY1 = y1;
 			}
@@ -134,7 +134,7 @@ public class TouchController {
 			vector[0] /= len;
 			vector[1] /= len;
 
-			// Log.d(TAG, "x1:" + x1 + ",y1:" + y1 + ",x2:" + x2 + ",y2:" + y2);
+			// Log.v(TAG, "x1:" + x1 + ",y1:" + y1 + ",x2:" + x2 + ",y2:" + y2);
 			if (gestureChanged) {
 				previousX1 = x1;
 				previousY1 = y1;
@@ -191,7 +191,7 @@ public class TouchController {
 			if (pointerCount == 1 && currentPress1 > 4.0f) {
 			} else if (pointerCount == 1) {
 				touchStatus = TOUCH_STATUS_MOVING_WORLD;
-				// Log.d(TAG, "Translating camera (dx,dy) '" + dx1 + "','" + dy1 + "'...");
+				// Log.v(TAG, "Translating camera (dx,dy) '" + dx1 + "','" + dy1 + "'...");
 				dx1 = (float)(dx1 / max * Math.PI * 2);
 				dy1 = (float)(dy1 / max * Math.PI * 2);
 				camera.translateCamera(dx1,dy1);
@@ -199,12 +199,12 @@ public class TouchController {
 				if (fingersAreClosing) {
 					touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
 					float zoomFactor = (length - previousLength) / max * mRenderer.getFar();
-					Log.i(TAG, "Zooming '" + zoomFactor + "'...");
+					Log.v(TAG, "Zooming '" + zoomFactor + "'...");
 					camera.MoveCameraZ(zoomFactor);
 				}
 				if (isRotating) {
 					touchStatus = TOUCH_STATUS_ROTATING_CAMERA;
-					Log.i(TAG, "Rotating camera '" + Math.signum(rotationVector[2]) + "'...");
+					Log.v(TAG, "Rotating camera '" + Math.signum(rotationVector[2]) + "'...");
 					camera.Rotate((float) (Math.signum(rotationVector[2]) / Math.PI) / 4);
 				}
 			}

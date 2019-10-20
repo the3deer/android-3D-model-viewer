@@ -31,9 +31,13 @@ public class AnimatedModel extends Object3DData {
 
 	// cache
 	private float[][] jointMatrices;
+	private float[] bindShapeMatrix;
+	private final float[] newModelMatrix;
 
 	public AnimatedModel(FloatBuffer vertexArrayBuffer){
 		super(vertexArrayBuffer);
+		this.newModelMatrix = new float[16];
+		Matrix.setIdentityM(newModelMatrix,0);
 	}
 
 	/**
@@ -51,15 +55,12 @@ public class AnimatedModel extends Object3DData {
 	 *            this entity.
 	 * 
 	 */
-	public AnimatedModel setRootJoint(Joint rootJoint, int jointCount, int boneCount, boolean
-									  recalculateInverseBindTransforms) {
+	public AnimatedModel setRootJoint(Joint rootJoint, int jointCount, int boneCount) {
 		this.rootJoint = rootJoint;
 		this.jointCount = jointCount;
 		this.boneCount = boneCount;
-        float[] parentTransform = new float[16];
-        Matrix.setIdentityM(parentTransform,0);
-        rootJoint.calcInverseBindTransform(parentTransform, recalculateInverseBindTransforms);
         this.jointMatrices = new float[boneCount][16];
+        this.jointMatrices[rootJoint.getIndex()] = rootJoint.getAnimatedTransform();
 		return this;
 	}
 
@@ -69,11 +70,6 @@ public class AnimatedModel extends Object3DData {
 
 	public int getBoneCount() {
 		return boneCount;
-	}
-
-	public AnimatedModel setJointCount(int jointCount){
-		this.jointCount = jointCount;
-		return this;
 	}
 
 	public AnimatedModel setJointIds(FloatBuffer jointIds){
@@ -122,7 +118,7 @@ public class AnimatedModel extends Object3DData {
 	 *         animation pose.
 	 */
 	public float[][] getJointTransforms() {
-		addJointsToArray(rootJoint, jointMatrices);
+		//addJointsToArray(rootJoint, jointMatrices);
 		return jointMatrices;
 	}
 
@@ -146,4 +142,36 @@ public class AnimatedModel extends Object3DData {
 			addJointsToArray(childJoint, jointMatrices);
 		}
 	}
+
+	public void updateAnimatedTransform(Joint joint){
+		jointMatrices[joint.getIndex()] = joint.getAnimatedTransform();
+	}
+
+	// binding coming from skeleton
+	public void setBindShapeMatrix(float[] bindTransform) {
+		this.bindShapeMatrix = bindTransform;
+		this.updateModelMatrix();
+	}
+
+
+	public float[] getBindShapeMatrix() {
+		return bindShapeMatrix;
+	}
+
+	@Override
+	protected void updateModelMatrix() {
+		super.updateModelMatrix();
+		if (this.bindShapeMatrix == null){
+			// geometries not linked to any joint does not have bind shape transform
+			System.arraycopy(super.modelMatrix,0,this.newModelMatrix,0,16);
+		} else {
+			Matrix.multiplyMM(newModelMatrix, 0, super.modelMatrix, 0, this.bindShapeMatrix, 0);
+		}
+	}
+
+	@Override
+	public float[] getModelMatrix() {
+		return this.newModelMatrix;
+	}
+
 }

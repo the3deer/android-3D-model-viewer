@@ -3,10 +3,10 @@ package org.andresoviedo.android_3d_model_engine.services.collada.entities;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VertexSkinData {
+public final class VertexSkinData {
 	
-	public final List<Integer> jointIds = new ArrayList<Integer>();
-	public final List<Float> weights = new ArrayList<Float>();
+	public final List<Integer> jointIds = new ArrayList<>(3);
+	public final List<Float> weights = new ArrayList<>(3);
 	
 	public void addJointEffect(int jointId, float weight){
 		for(int i=0;i<weights.size();i++){

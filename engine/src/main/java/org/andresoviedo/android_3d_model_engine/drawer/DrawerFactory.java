@@ -32,7 +32,7 @@ public class DrawerFactory {
         Field[] fields = R.raw.class.getFields();
         for (int count = 0; count < fields.length; count++) {
             String shaderId = fields[count].getName();
-            Log.i("DrawerFactory", "Loading shader... " + shaderId);
+            Log.d("DrawerFactory", "Loading shader... " + shaderId);
             int shaderResId = fields[count].getInt(fields[count]);
             byte[] shaderBytes = IOUtils.read(context.getResources().openRawResource(shaderResId));
             String shaderCode = new String(shaderBytes);
@@ -44,7 +44,7 @@ public class DrawerFactory {
     public Object3D getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights, boolean usingAnimation, boolean drawColors) {
 
         // double check features
-        boolean isAnimated = usingAnimation && obj instanceof AnimatedModel && ((AnimatedModel) obj).getAnimation() != null;
+        boolean isAnimated = usingAnimation && obj instanceof AnimatedModel && (((AnimatedModel) obj).getAnimation() != null);
         boolean isUsingLights = usingLights && (obj.getNormals() != null || obj.getVertexNormalsArrayBuffer() != null);
         boolean isTextured = usingTextures && obj.getTextureData() != null && obj.getTextureCoordsArrayBuffer() != null;
         boolean isColoured = drawColors && obj != null && obj.getVertexColorsArrayBuffer() != null;
@@ -73,11 +73,11 @@ public class DrawerFactory {
         vertexShaderCode = vertexShaderCode.replace("void main(){", "void main(){\n\tgl_PointSize = 5.0;");
 
         // create drawer
-        Log.i("Object3DImpl2", "\n---------- Vertex shader ----------\n");
-        Log.i("Object3DImpl2", vertexShaderCode);
-        Log.i("Object3DImpl2", "---------- Fragment shader ----------\n");
-        Log.i("Object3DImpl2", fragmentShaderCode);
-        Log.i("Object3DImpl2", "-------------------------------------\n");
+        Log.v("DrawerFactory", "\n---------- Vertex shader ----------\n");
+        Log.v("DrawerFactory", vertexShaderCode);
+        Log.v("DrawerFactory", "---------- Fragment shader ----------\n");
+        Log.v("DrawerFactory", fragmentShaderCode);
+        Log.v("DrawerFactory", "-------------------------------------\n");
         drawer = DrawerImpl.getInstance(shaderId, vertexShaderCode, fragmentShaderCode);
 
         // cache drawer
