@@ -199,12 +199,12 @@ public class TouchController {
 				if (fingersAreClosing) {
 					touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
 					float zoomFactor = (length - previousLength) / max * mRenderer.getFar();
-					Log.i(TAG, "Zooming '" + zoomFactor + "'...");
+					Log.d(TAG, "Zooming '" + zoomFactor + "'...");
 					camera.MoveCameraZ(zoomFactor);
 				}
 				if (isRotating) {
 					touchStatus = TOUCH_STATUS_ROTATING_CAMERA;
-					Log.i(TAG, "Rotating camera '" + Math.signum(rotationVector[2]) + "'...");
+					Log.d(TAG, "Rotating camera '" + Math.signum(rotationVector[2]) + "'...");
 					camera.Rotate((float) (Math.signum(rotationVector[2]) / Math.PI) / 4);
 				}
 			}

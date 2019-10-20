@@ -31,9 +31,10 @@ public class JointData {
 	public final List<JointData> children = new ArrayList<>();
 
 	public JointData(int index, String id, String name,
-					 final float[] bindLocalTransform, final float[] bindTransform, final float[] inverseBindTransform) {
+					 String geometryId, final float[] bindLocalTransform, final float[] bindTransform, final float[] inverseBindTransform) {
 		this.id = id;
         this.name = name;
+        this.instance_geometry = geometryId;
         this.bindLocalTransform = bindLocalTransform;
         this.bindTransform = bindTransform;
         this.inverseBindTransform = inverseBindTransform;
@@ -54,10 +55,6 @@ public class JointData {
 
 	public void addChild(JointData child) {
 		children.add(child);
-	}
-
-	public void setInstanceGeometry(String instanceGeometry){
-		this.instance_geometry = instanceGeometry;
 	}
 
 	public JointData find(String id) {
@@ -90,5 +87,14 @@ public class JointData {
 
 	public void setInverseBindTransform(float[] inverseBindTransform) {
 		this.inverseBindTransform = inverseBindTransform;
+	}
+
+	@Override
+	public String toString() {
+		return "JointData{" +
+				"index=" + index +
+				", id='" + id + '\'' +
+				", name='" + name + '\'' +
+				'}';
 	}
 }

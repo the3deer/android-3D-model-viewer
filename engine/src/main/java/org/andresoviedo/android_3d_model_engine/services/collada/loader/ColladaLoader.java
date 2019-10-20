@@ -13,6 +13,7 @@ import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.AnimatedModelData;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.AnimationData;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.Joint;
+import org.andresoviedo.android_3d_model_engine.services.collada.entities.JointData;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.JointTransformData;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.KeyFrameData;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.MeshData;
@@ -95,12 +96,16 @@ public class ColladaLoader {
 				data3D.setVertexWeights(floatBuffer);
 			}
 			if (modelData.getSkinningData() != null && modelData.getSkinningData().containsKey(meshData.getId())){
-				Log.i("ColladaLoader","Skinning data available");
-				data3D.setBindShapeMatrix(modelData.getSkinningData().get(meshData.getId()).getBindShapeMatrix());
+				Log.d("ColladaLoader","Skinning data available");
+				// FIXME: should we set modelMatrix?
+				// data3D.setBindShapeMatrix(modelData.getSkinningData().get(meshData.getId()).getBindShapeMatrix());
 			}
 			ret.add(data3D);
 		}
 
+		if (meshDataList.isEmpty()){
+            Log.w("ColladaLoader","Mesh data list empty. Did you exclude any model in GeometryLoader.java?");
+        }
 		Log.i("ColladaLoader","Loading model finished. Objects: "+meshDataList.size());
 		return new Object[]{modelData,ret};
 	}
@@ -116,11 +121,24 @@ public class ColladaLoader {
             Log.e("ColladaLoader","Error loading animation", e);
         }
 
+		SkeletonData skeletonData = modelData.getJointsData();
+		Joint rootJoint = null;
+		if (skeletonData != null){
+			Log.i("ColladaLoader", "Building joints... nodes: "+skeletonData.getJointCount());
+			rootJoint = skeletonData.buildJoints();
+			float[] parentTransform = new float[16];
+			Matrix.setIdentityM(parentTransform,0);
+			rootJoint.calcInverseBindTransform(parentTransform, false);
+		} else {
+			Log.d("ColladaLoader", "No skeleton data");
+		}
+
+		Log.i("ColladaLoader","Loading objects... "+datas.size());
 		for (int i=0; i<datas.size(); i++) {
 			Object3DData data = datas.get(i);
 
 			MeshData meshData = modelData.getMeshData().get(i);
-            Log.i("ColladaLoader","Loading data... "+meshData.getId());
+            Log.v("ColladaLoader","Loading data... "+meshData.getId());
 
 
             // FIXME: this is overwritten when setFaces called
@@ -137,7 +155,7 @@ public class ColladaLoader {
 				modelDimensions.update(vertices[counter], vertices[counter + 1], vertices[counter + 2]);
 			}
 
-			Log.d("ColladaLoaderTask", "Loading buffers...'");
+			Log.v("ColladaLoaderTask", "Loading buffers...'");
 			data.setId(meshData.getId());
 			data.getVertexArrayBuffer().put(vertices);
 			data.getVertexNormalsArrayBuffer().put(meshData.getNormals());
@@ -151,19 +169,18 @@ public class ColladaLoader {
 			try {
 
 				// load skeleton
-				SkeletonData skeletonData = modelData.getJointsData();
-				if (skeletonData != null){
-					Log.i("ColladaLoader", "Building joints... "  + meshData.getId());
-					Joint headJoint = skeletonData.buildJoints();
-					float[] parentTransform = new float[16];
-					Matrix.setIdentityM(parentTransform,0);
-					headJoint.calcInverseBindTransform(parentTransform, false);
-					data3D.setRootJoint(headJoint, skeletonData.jointCount, skeletonData.boneCount);
+				if (rootJoint != null){
+					data3D.setRootJoint(rootJoint, skeletonData.getJointCount(), skeletonData.getBoneCount());
+					JointData jointData = rootJoint.find(meshData.getId());
+					if (jointData != null) {
+						// FIXME: should we set the mmodelMatrix here?
+						data3D.setModelMatrix(jointData.getBindTransform());
+					}
 
-						// only animate if there is are joints
+					// only animate if there is are joints
 					data3D.doAnimation(animation);
 				} else {
-					Log.i("ColladaLoader", "No skeleton data for "  + meshData.getId());
+					Log.d("ColladaLoader", "No skeleton data for "  + meshData.getId());
 				}
 			} catch (Exception e) {
 				Log.e("ColladaLoader", "Problem loading model animation' " + e.getMessage(), e);
@@ -185,10 +202,8 @@ public class ColladaLoader {
 				skinningData = skinLoader.extractSkinData();
 			}
 
-			if (skinningData != null && !skinningData.isEmpty()) {
-				SkeletonLoader jointsLoader = new SkeletonLoader(node.getChild("library_visual_scenes"), skinningData.values().iterator().next());
-				jointsData = jointsLoader.extractBoneData();
-			}
+			SkeletonLoader jointsLoader = new SkeletonLoader(node, skinningData);
+			jointsData = jointsLoader.extractBoneData();
 
 		}catch(Exception ex){
 			Log.e("ColladaLoader","Problem loading skinning/skeleton data",ex);

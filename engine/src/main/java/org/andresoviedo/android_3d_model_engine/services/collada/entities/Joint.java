@@ -75,6 +75,11 @@ public class Joint {
         return children;
     }
 
+    // FIXME: why is not this used?
+    public float[] getBindTransform() {
+        return data.getBindTransform();
+    }
+
     public float[] getBindLocalTransform() {
         return data.getBindLocalTransform();
     }
@@ -142,7 +147,7 @@ public class Joint {
 
         float[] bindTransform = new float[16];
         Matrix.multiplyMM(bindTransform, 0, parentBindTransform, 0, data.getBindLocalTransform(), 0);
-        if (data.index >= 0 && (override || this.data.getInverseBindTransform() == null)) {
+        if (data.index >= 0 && (override)) {
             // when model has inverse bind transforms available, don't overwrite it
             // this way we calculate only the joints with no animations which has no inverse bind transform available
             float[] inverseBindTransform = new float[16];
@@ -163,5 +168,14 @@ public class Joint {
             ret.addChild(child.clone());
         }
         return ret;
+    }
+
+    @Override
+    public String toString() {
+        return data.toString();
+    }
+
+    public JointData find(String id) {
+        return data.find(id);
     }
 }

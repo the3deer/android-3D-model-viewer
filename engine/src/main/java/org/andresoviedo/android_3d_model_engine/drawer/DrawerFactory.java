@@ -44,7 +44,8 @@ public class DrawerFactory {
     public Object3D getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights, boolean usingAnimation, boolean drawColors) {
 
         // double check features
-        boolean isAnimated = usingAnimation && obj instanceof AnimatedModel && ((AnimatedModel) obj).getAnimation() != null;
+        boolean isAnimated = usingAnimation && obj instanceof AnimatedModel
+                && (((AnimatedModel) obj).getAnimation() != null || ((AnimatedModel) obj).getRootJoint() != null);
         boolean isUsingLights = usingLights && (obj.getNormals() != null || obj.getVertexNormalsArrayBuffer() != null);
         boolean isTextured = usingTextures && obj.getTextureData() != null && obj.getTextureCoordsArrayBuffer() != null;
         boolean isColoured = drawColors && obj != null && obj.getVertexColorsArrayBuffer() != null;

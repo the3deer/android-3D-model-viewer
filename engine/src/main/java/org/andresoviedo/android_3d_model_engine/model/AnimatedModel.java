@@ -1,7 +1,5 @@
 package org.andresoviedo.android_3d_model_engine.model;
 
-import android.opengl.Matrix;
-
 import org.andresoviedo.android_3d_model_engine.animation.Animation;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.Joint;
 
@@ -56,6 +54,7 @@ public class AnimatedModel extends Object3DData {
 		this.jointCount = jointCount;
 		this.boneCount = boneCount;
         this.jointMatrices = new float[boneCount][16];
+        this.jointMatrices[rootJoint.getIndex()] = rootJoint.getAnimatedTransform();
 		return this;
 	}
 
@@ -65,11 +64,6 @@ public class AnimatedModel extends Object3DData {
 
 	public int getBoneCount() {
 		return boneCount;
-	}
-
-	public AnimatedModel setJointCount(int jointCount){
-		this.jointCount = jointCount;
-		return this;
 	}
 
 	public AnimatedModel setJointIds(FloatBuffer jointIds){
@@ -118,7 +112,7 @@ public class AnimatedModel extends Object3DData {
 	 *         animation pose.
 	 */
 	public float[][] getJointTransforms() {
-		addJointsToArray(rootJoint, jointMatrices);
+		//addJointsToArray(rootJoint, jointMatrices);
 		return jointMatrices;
 	}
 
@@ -143,14 +137,12 @@ public class AnimatedModel extends Object3DData {
 		}
 	}
 
-	private float[] bindShapeMatrix;
-
-	public void setBindShapeMatrix(float[] bindShapeMatrix) {
-		this.bindShapeMatrix = bindShapeMatrix;
-		//super.modelMatrix = bindShapeMatrix;
+	public void updateAnimatedTransform(Joint joint){
+		jointMatrices[joint.getIndex()] = joint.getAnimatedTransform();
 	}
 
-	public float[] getBindShapeMatrix() {
-        return bindShapeMatrix;
-    }
+	// FIXME: binding coming from skeleton
+	public void setModelMatrix(float[] bindTransform) {
+		super.modelMatrix = bindTransform;
+	}
 }

@@ -9,30 +9,45 @@ import org.andresoviedo.android_3d_model_engine.services.collada.entities.Skinni
 import org.andresoviedo.util.math.Math3DUtils;
 import org.andresoviedo.util.xml.XmlNode;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 public class SkeletonLoader {
 
+	private final XmlNode rootNode;
+
+	private final XmlNode geometries;
+
 	private final XmlNode visualScene;
 
-	private final SkinningData skinningData;
+	private final Map<String,SkinningData> skinningDataMap;
+
+	private SkinningData skinningData;
 
 	private List<String> boneOrder;
 
 	private int jointCount = 0;
 	private boolean jointFound = false;
 
-	public SkeletonLoader(XmlNode visualSceneNode, SkinningData skinningData) {
-		this.visualScene = visualSceneNode.getChild("visual_scene");
-		this.skinningData = skinningData;
-		this.boneOrder = skinningData.jointOrder;
+	public SkeletonLoader(XmlNode rootNode, Map<String,SkinningData> skinningDataMap) {
+		this.rootNode = rootNode;
+		this.visualScene = rootNode.getChild("library_visual_scenes").getChild("visual_scene");
+		this.geometries = rootNode.getChild("library_geometries");
+		this.skinningDataMap = skinningDataMap;
 	}
 
 	// <visual_scene>
 	public SkeletonData extractBoneData(){
 
 		Log.i("SkeletonLoader", "Loading skeleton...");
+		if (this.skinningDataMap != null) {
+			skinningData = this.skinningDataMap.values().iterator().next();
+			this.boneOrder = skinningData.jointOrder;
+		} else{
+			this.boneOrder = new ArrayList<>();
+		}
 
 		// a visual scene may contain several nodes of different kinds
 		List<XmlNode> nodes = visualScene.getChildren("node");
@@ -40,50 +55,51 @@ public class SkeletonLoader {
 			return null;
 		}
 
-		// does this model has any node containing a skeleton?
-		JointData skeletonData = null;
+		int index = boneOrder.size();
+
+		final float[] IDENTITY = new float[16];
+		Matrix.setIdentityM(IDENTITY, 0);
+		String skeletonId = visualScene.getAttribute("id");
+		final JointData rootJoint = new JointData(index, skeletonId, skeletonId,
+				skeletonId, IDENTITY, IDENTITY, IDENTITY);
+		boneOrder.add(index, skeletonId);
+		this.jointCount = 1;  // root counts
 
 		// analyze all nodes to get skeleton
 		for (XmlNode node : nodes){
 
 			// get first skeleton found
-			JointData jointData = loadSkeleton(node);
-			if (jointData != null && jointFound){
-				skeletonData = jointData;
-				break;
-			}
-			jointCount = 0;
+			JointData jointData = loadSkeleton(node, rootJoint);
+			if (jointData == null) continue;
+			rootJoint.addChild(jointData);
 		}
 
 		// no skeleton found at all
-		if (skeletonData == null){
+		if (rootJoint.children.isEmpty()){
+			Log.i("SkeletonLoader", "Skeleton not found");
 			return null;
 		}
 
-		if (jointFound) {
-			Log.i("SkeletonLoader", "Skeleton found. total joints: " + jointCount);
-		} else {
-			Log.i("SkeletonLoader", "Skeleton not found");
-		}
+		Log.i("SkeletonLoader", "Skeleton found. joints: " + jointCount+", linked bones: "+boneOrder.size());
 
-		return new SkeletonData(jointCount, boneOrder.size(), skeletonData);
+		return new SkeletonData(jointCount, boneOrder.size(), rootJoint);
 	}
-	
-	private JointData loadSkeleton(XmlNode jointNode){
-		JointData joint = createJointData(jointNode);
+
+	private JointData loadSkeleton(XmlNode jointNode, JointData parent){
+		JointData joint = createJointData(jointNode, parent);
 		if (joint == null){
 			return null;
 		}
 		// Log.i("SkeletonLoader","Joint: index "+joint.index+", name: "+joint.nameId);
 		for(XmlNode childNode : jointNode.getChildren("node")){
-			JointData child = loadSkeleton(childNode);
+			JointData child = loadSkeleton(childNode, joint);
 			if (child == null) continue;
 			joint.addChild(child);
 		}
 		return joint;
 	}
-	
-	private JointData createJointData(XmlNode jointNode){
+
+	private JointData createJointData(XmlNode jointNode, JointData parent){
 
 		// joint transformation initialization
         float[] matrix = new float[16];
@@ -131,6 +147,13 @@ public class SkeletonLoader {
 		String nodeName = jointNode.getAttribute("name");
 		String nodeSid = jointNode.getAttribute("sid");
 		String nodeId = jointNode.getAttribute("id");
+		String geometryId = null;
+		if (jointNode.getChild("instance_geometry") != null){
+			XmlNode instance_geometry_node = jointNode.getChild("instance_geometry");
+			if (instance_geometry_node != null && instance_geometry_node.getAttribute("url") != null){
+				geometryId = instance_geometry_node.getAttribute("url").substring(1);
+			}
+		}
 
 		// is this a joint bone?
 		if ("JOINT".equals(jointNode.getAttribute("type"))){
@@ -139,10 +162,10 @@ public class SkeletonLoader {
 
 		// index is only available for declared bones
 		int index = boneOrder.indexOf(nodeName);
-		if (index == -1){
+		if (index == -1) {
 			// fallback to node id
 			index = boneOrder.indexOf(nodeSid);
-			if (index == -1){
+			if (index == -1) {
 				index = boneOrder.indexOf(nodeId);
 			}
 		}
@@ -154,6 +177,21 @@ public class SkeletonLoader {
             Matrix.transposeM(inverseBindMatrix, 0, skinningData.getInverseBindMatrix(), index * 16);
         }
 
-        return new JointData(index, nodeId,nodeName, matrix, null, inverseBindMatrix);
+		if (index == -1 && geometryId != null) {
+			XmlNode linkedGeometryNode = geometries.getChildWithAttribute("geometry", "id", geometryId);
+			if (linkedGeometryNode != null) {
+				index = boneOrder.size();
+				boneOrder.add(geometryId);
+			}
+		}
+
+		// FIXME: is this really needed for modelMatrix?
+		float[] bindTransform = null;
+		if (parent != null) {
+			bindTransform = new float[16];
+			Matrix.multiplyMM(bindTransform, 0, parent.getBindTransform(), 0, matrix, 0);
+		}
+
+        return new JointData(index, nodeId,nodeName, geometryId, matrix, bindTransform, inverseBindMatrix);
 	}
 }

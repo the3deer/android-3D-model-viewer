@@ -861,12 +861,7 @@ public final class Object3DBuilder {
         skeleton.setVertexNormalsArrayBuffer(createNativeByteBuffer(animatedModel.getJointCount()*3*3*4)
                 .asFloatBuffer());
         skeleton.setDrawMode(GLES20.GL_TRIANGLES);
-        Joint clone = animatedModel.getRootJoint().clone();
-        float[] parentTransform = new float[16];
-        Matrix.setIdentityM(parentTransform,0);
-        clone.calcInverseBindTransform(parentTransform, false);
-        skeleton.setRootJoint(clone, animatedModel.getJointCount(), animatedModel
-                .getBoneCount());
+        skeleton.setRootJoint(animatedModel.getRootJoint(), animatedModel.getJointCount(), animatedModel.getBoneCount());
         skeleton.setJointIds(createNativeByteBuffer(skeleton.getJointCount()*3*3*4).asFloatBuffer());
         skeleton.doAnimation(animatedModel.getAnimation());
         skeleton.setVertexWeights(createNativeByteBuffer(skeleton.getJointCount()*3*3*4).asFloatBuffer());

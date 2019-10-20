@@ -317,7 +317,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				}
 
 				if (!infoLogged.containsKey(objData)) {
-					Log.i("ModelRenderer","Drawing model: "+objData.getId());
+					Log.v("ModelRenderer","Drawing model: "+objData.getId());
 					infoLogged.put(objData, true);
 				}
 
@@ -359,6 +359,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 						drawerObject.draw(wireframe, projectionMatrix, viewMatrix, wireframe.getDrawMode(),
 								wireframe.getDrawSize(), textureId, lightPosInEyeSpace,
 								colorMask);
+						animator.update(wireframe, scene.isShowBindPose());
 					}catch(Error e){
 						Log.e("ModelRenderer",e.getMessage(),e);
 					}

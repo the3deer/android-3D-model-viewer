@@ -15,8 +15,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Loads the mesh data for a model from a collada XML file.
@@ -47,6 +49,14 @@ public class GeometryLoader {
 	List<float[]> normals = new ArrayList<>();
 	List<Integer> indices = new ArrayList<>();
 	List<float[]> colors = new ArrayList<>();
+
+	// FIXME: clear this list - only tu debug !!!
+	private final Set<String> includeGeometries = new HashSet<>();
+	{
+		/*includeGeometries.add("ID3393");
+		includeGeometries.add("ID173");
+        includeGeometries.add("ID23");*/
+	}
 	
 	public GeometryLoader(XmlNode geometryNode, XmlNode materialsNode, XmlNode effectsNode, XmlNode imagesNode, Map<String,SkinningData> skinningData, SkeletonData skeletonData) {
 		this.skinningDataMap = skinningData;
@@ -62,8 +72,12 @@ public class GeometryLoader {
 		List<MeshData> ret = new ArrayList<>();
 		for (XmlNode geometry : geometryNode.getChildren("geometry")) {
 
+
 			String geometryId = geometry.getAttribute("id");
-			Log.i("GeometryLoader","Loading geometry '"+geometryId+"'...");
+			if (!includeGeometries.isEmpty() && !includeGeometries.contains(geometryId)) {
+				continue;
+			}
+			Log.i("GeometryLoader", "Loading geometry '" + geometryId + "'...");
 
 			vertices.clear(); vertex.clear();
 			normals.clear(); textures.clear();
@@ -89,7 +103,7 @@ public class GeometryLoader {
 			// get all primitives
 			// this only works if poly is vcount=3 (trooper uses it)
 			List<XmlNode> polys = meshData.getChildren("polylist");
-			Log.i("GeometryLoader","Found polylist. size: "+polys.size());
+			Log.d("GeometryLoader","Found polylist. size: "+polys.size());
 			for (XmlNode poly : polys){
 				assembleVertices(poly);
 
@@ -102,7 +116,7 @@ public class GeometryLoader {
 
 			// triangle mesh
 			List<XmlNode> triangless = meshData.getChildren("triangles");
-			Log.i("GeometryLoader","Found triangles. size: "+triangless.size());
+			Log.d("GeometryLoader","Found triangles. size: "+triangless.size());
 			for (XmlNode triangles : triangless){
 				assembleVertices(triangles);
 
@@ -113,7 +127,7 @@ public class GeometryLoader {
 				}
 			}
 
-			Log.i("GeometryLoader","Assembly mesh...");
+			Log.d("GeometryLoader","Assembly mesh...");
 			loadSkinningData(geometryId);
 			initArrays(geometryId);
 			convertDataToArrays();
@@ -123,6 +137,11 @@ public class GeometryLoader {
 			String texture = (String) colorAndTexture[1];
 			ret.add(new MeshData(geometryId, verticesArray, texturesArray, normalsArray, color, colorsBuffer,
 					texture, indicesArray, jointIdsArray, weightsArray));
+
+			Log.d("GeometryLoader","Geometry loaded. vertices: "+vertices.size()+
+					", normals: "+(normals != null? normals.size():0)+
+					", textures: "+(textures != null? textures.size():0)+
+					", colors: "+(colors != null? colors.size(): 0));
 		}
 		return ret;
 	}
@@ -184,9 +203,20 @@ public class GeometryLoader {
 
 		List<VertexSkinData> verticesSkinData = null;
 		if (skinningDataMap == null || !skinningDataMap.containsKey(geometryId)) {
-			Log.i("GeometryLoader","No skinning data available");
+			Log.d("GeometryLoader","No skinning data available");
 		} else {
 			verticesSkinData = skinningDataMap.get(geometryId).verticesSkinData;
+		}
+
+		JointData jointData = null;
+		if (skeletonData != null){
+			jointData = skeletonData.getHeadJoint().find(geometryId);
+			// FIXME: remove this whole if
+			if (jointData == null){
+				jointData = skeletonData.getHeadJoint();
+			}
+		} else {
+			Log.d("GeometryLoader","No skeleton data available");
 		}
 
         // link vertex to weight data
@@ -208,14 +238,11 @@ public class GeometryLoader {
             if (verticesSkinData != null) {
 				weightsData = verticesSkinData.get(i);
             }
-			// TODO: review this. meshId is never set on skeleton data so this will probably never work
-			if (weightsData == null && skeletonData != null) {
-				JointData jointData = skeletonData.getHeadJoint().find(geometryId);
-				if (jointData != null) {
-					weightsData = new VertexSkinData();
-					weightsData.addJointEffect(jointData.index, 1);
-					weightsData.limitJointNumber(3);
-				}
+			// FIXME: do we really need this?
+			if (weightsData == null && jointData != null) {
+				weightsData = new VertexSkinData();
+				weightsData.addJointEffect(jointData.index, 1);
+				weightsData.limitJointNumber(3);
 			}
             vertex.setWeightsData(weightsData);
         }
@@ -233,7 +260,7 @@ public class GeometryLoader {
 		int count = Integer.parseInt(data.getAttribute("count"));
 
 		// no data ?
-		Log.i("GeometryLoader","Loading data: "+sourceId+" . count: "+count);
+		Log.d("GeometryLoader","Loading data: "+sourceId+" . count: "+count);
 		if (count <= 0){
 			return;
 		}
@@ -292,7 +319,7 @@ public class GeometryLoader {
 
 		// stride
 		int stride = maxOffset + 1;
-		Log.i("GeometryLoader", "Loading mesh... type: " + primitive.getName()+". offsets: " + vertexOffset+"," +
+		Log.d("GeometryLoader", "Loading mesh... type: " + primitive.getName()+". offsets: " + vertexOffset+"," +
 				+normalOffset+"," + texOffset);
 
 		// update vertex info
@@ -328,7 +355,7 @@ public class GeometryLoader {
 		try {
 			XmlNode materialNode = materialsData.getChildWithAttribute("material","id",material);
 			if (materialNode == null) {
-				Log.e("GeometryLoader", "No material with id '" + material + "' found");
+				Log.w("GeometryLoader", "No material with id '" + material + "' found");
 				return ret;
 			}
 			XmlNode instanceEffectNode = materialNode.getChild("instance_effect");
@@ -421,11 +448,6 @@ public class GeometryLoader {
 	}
 
 	private float convertDataToArrays() {
-
-		Log.i("GeometryLoader","vertices: "+vertices.size()+
-				", normals: "+(normals != null? normals.size():0)+
-				", textures: "+(textures != null? textures.size():0)+
-				", colors: "+(colors != null? colors.size(): 0));
 
 		float furthestPoint = 0;
 		int gw = 0, gj = 0; // global weights, global joints
