@@ -61,16 +61,16 @@ The app comes with some included 3D models that were taken for free from Interne
 Whats next
 ==========
 
-* Chromecast support
+* Blender support
 * 3D without glasses
 * Augmented reality
-* Collada:  Show bind pose, key frames and variate speed
+* Improve overall performance
 
 
 Features
 ========
 
-  - Supports >= Android 2.2 (Froyo - API Level 8)
+  - Supports >= Android 4.0.1 (Ice Cream Sandwich) - Min API Level 14 -> Target API Level 28
   - OpenGL ES 2.0 API
   - Formats: OBJ (wavefront), STL (STereoLithography) & DAE (Collada-BETA)
   - calculation of normals
@@ -86,9 +86,9 @@ Features
     - drag to move camera
     - rotate with 2 fingers to rotate camera
     - pinch & spread to zoom in/out the camera
-  - skeletal animations
+  - skeletal animations (collada dae)
   - ray collision detection
-  - stereoscopic 3D
+  - stereoscopic 3D: anaglyph + cardboard
   - other:
     - texture loader
     - lightweight: only 1 Megabyte
