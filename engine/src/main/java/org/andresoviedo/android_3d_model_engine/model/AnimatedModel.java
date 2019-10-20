@@ -156,9 +156,8 @@ public class AnimatedModel extends Object3DData {
 	@Override
 	protected void updateModelMatrix() {
 		super.updateModelMatrix();
-		// FIXME:
-		// geometries not linked to any joint does not have bind shape transform
-		if (true || this.bindShapeMatrix == null){
+		if (this.bindShapeMatrix == null){
+			// geometries not linked to any joint does not have bind shape transform
 			System.arraycopy(super.modelMatrix,0,this.newModelMatrix,0,16);
 		} else {
 			Matrix.multiplyMM(newModelMatrix, 0, super.modelMatrix, 0, this.bindShapeMatrix, 0);
