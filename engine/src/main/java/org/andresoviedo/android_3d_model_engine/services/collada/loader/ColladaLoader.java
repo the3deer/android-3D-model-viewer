@@ -154,8 +154,8 @@ public class ColladaLoader {
 			data.setId(meshData.getId());
 			data.getVertexArrayBuffer().put(vertices);
 			data.getVertexNormalsArrayBuffer().put(meshData.getNormals());
-			//data.setVertexColorsArrayBuffer(meshData.getColorsBuffer());
-			data.getDrawOrder().put(meshData.getIndices());
+			data.setVertexColorsArrayBuffer(meshData.getColorsBuffer());
+			indexBuffer.put(meshData.getIndices());
 			data.setFaces(new WavefrontLoader.Faces(data.getVertexArrayBuffer().capacity() / 3));
 			data.setDrawOrder(indexBuffer);
 
@@ -168,7 +168,8 @@ public class ColladaLoader {
 					data3D.setRootJoint(rootJoint, skeletonData.getJointCount(), skeletonData.getBoneCount());
 					JointData jointData = rootJoint.find(meshData.getId());
 					if (jointData != null) {
-						// FIXME: should we set the mmodelMatrix here?
+						// we must set bind shape matrix only for joints
+						// as we don't want to disturb Animator when querying for...
 						data3D.setBindShapeMatrix(jointData.getBindTransform());
 					}
 

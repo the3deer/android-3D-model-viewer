@@ -93,7 +93,7 @@ public class TouchController {
 		case MotionEvent.ACTION_DOWN:
 		case MotionEvent.ACTION_POINTER_DOWN:
 		case MotionEvent.ACTION_HOVER_ENTER:
-			Log.d(TAG, "Gesture changed...");
+			Log.v(TAG, "Gesture changed...");
 			gestureChanged = true;
 			touchDelay = 0;
 			lastActionTime = SystemClock.uptimeMillis();

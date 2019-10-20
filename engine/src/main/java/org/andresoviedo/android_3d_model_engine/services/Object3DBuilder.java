@@ -691,7 +691,8 @@ public final class Object3DBuilder {
 		if (objData.getDrawOrder() != null) {
 
 			try {
-				Log.i("Object3DBuilder", "Building wireframe from draw buffer...");
+				Log.i("Object3DBuilder", "Building wireframe from draw buffer... Total index: "+objData
+						.getDrawOrder().capacity());
 				IntBuffer drawBuffer = objData.getDrawOrder();
 				IntBuffer wireframeDrawOrder = createNativeByteBuffer(drawBuffer.capacity() * 2 * 4).asIntBuffer();
 				for (int i = 0; i < drawBuffer.capacity(); i += 3) {
@@ -722,6 +723,7 @@ public final class Object3DBuilder {
 					object3DData.setRootJoint(((AnimatedModel) objData).getRootJoint(), ((AnimatedModel) objData)
 							.getJointCount(), ((AnimatedModel) objData).getBoneCount());
 					object3DData.doAnimation(((AnimatedModel) objData).getAnimation());
+					object3DData.setBindShapeMatrix(((AnimatedModel)objData).getBindShapeMatrix());
 					return object3DData;
 				}
 				else {

@@ -55,8 +55,18 @@ public class GeometryLoader {
 	{
 		/*includeGeometries.add("ID3393");
 		includeGeometries.add("ID173");
-        includeGeometries.add("ID23");*/
+        includeGeometries.add("ID23");
+        includeGeometries.add("Cube-mesh"); // cowboy
+        includeGeometries.add("U3DMesh-lib"); // raptor attack
+        includeGeometries.add("Stormtroopermesh-mesh"); // stormtrooper
+        includeGeometries.add("defaultmesh-mesh");
+        includeGeometries.add("defaultmesh_001-mesh");
+        includeGeometries.add("Astronaut_meshmesh_001-mesh");
+        includeGeometries.clear();*/
 	}
+
+    boolean textureLinked = false;
+	boolean colorsLinked = false;
 	
 	public GeometryLoader(XmlNode geometryNode, XmlNode materialsNode, XmlNode effectsNode, XmlNode imagesNode, Map<String,SkinningData> skinningData, SkeletonData skeletonData) {
 		this.skinningDataMap = skinningData;
@@ -66,7 +76,7 @@ public class GeometryLoader {
 		this.effectsData = effectsNode;
 		this.skeletonData = skeletonData;
 	}
-	
+
 	public List<MeshData> extractModelData(){
 		Log.i("GeometryLoader","Loading geometries...");
 		List<MeshData> ret = new ArrayList<>();
@@ -75,6 +85,7 @@ public class GeometryLoader {
 
 			String geometryId = geometry.getAttribute("id");
 			if (!includeGeometries.isEmpty() && !includeGeometries.contains(geometryId)) {
+				Log.d("GeometryLoader","Geometry ignored: "+geometryId);
 				continue;
 			}
 			Log.i("GeometryLoader", "Loading geometry '" + geometryId + "'...");
@@ -94,23 +105,33 @@ public class GeometryLoader {
 			}
 
             // read texture and normals
+
 			XmlNode primitive = loadPrimitiveData(meshData);
 
 			// default is no color, no texture
 			Object[] colorAndTexture = new Object[2];
 
-			// TODO: process vcount
 			// get all primitives
-			// this only works if poly is vcount=3 (trooper uses it)
 			List<XmlNode> polys = meshData.getChildren("polylist");
 			Log.d("GeometryLoader","Found polylist. size: "+polys.size());
 			for (XmlNode poly : polys){
+
+				textureLinked = false;
+                colorsLinked = false;
 				assembleVertices(poly);
 
 				// process material
 				String material = poly.getAttribute("material");
 				if (material != null) {
 				    colorAndTexture = getMaterialColorAndTexture(material);
+					if (colorAndTexture[0] == null){
+						JointData jointData = skeletonData.find(geometryId);
+						if (jointData != null && jointData.containsMaterial(material)){
+							colorAndTexture = getMaterialColorAndTexture(jointData.getMaterial(material));
+						} else {
+                            Log.e("GeometryLoader", "Material for poly not found: " + material);
+                        }
+					}
 				}
 			}
 
@@ -118,13 +139,24 @@ public class GeometryLoader {
 			List<XmlNode> triangless = meshData.getChildren("triangles");
 			Log.d("GeometryLoader","Found triangles. size: "+triangless.size());
 			for (XmlNode triangles : triangless){
+
+                textureLinked = false;
+                colorsLinked = false;
 				assembleVertices(triangles);
 
-				// process material
-				String material = triangles.getAttribute("material");
-				if (material != null) {
-				    colorAndTexture = getMaterialColorAndTexture(material);
-				}
+                // process material
+                String material = triangles.getAttribute("material");
+                if (material != null) {
+                    colorAndTexture = getMaterialColorAndTexture(material);
+                    if (colorAndTexture[0] == null){
+                        JointData jointData = skeletonData.find(geometryId);
+                        if (jointData != null && jointData.containsMaterial(material)){
+                            colorAndTexture = getMaterialColorAndTexture(jointData.getMaterial(material));
+                        } else {
+                            Log.e("GeometryLoader", "Material for triangle not found: " + material);
+                        }
+                    }
+                }
 			}
 
 			Log.d("GeometryLoader","Assembly mesh...");
@@ -188,9 +220,12 @@ public class GeometryLoader {
         	vertices.add(new Vertex(vertex.get(i)));
 		}
 
-        // load normals
+		// there are vertices, normals that are not pointed by any polylist index
 		for (int i=0; normals != null && i<vertices.size(); i++){
 			vertices.get(i).setNormalIndex(i);
+		}
+		for (int i=0; textures != null && i<vertices.size(); i++){
+			vertices.get(i).setTextureIndex(i);
 		}
     }
 
@@ -308,6 +343,7 @@ public class GeometryLoader {
 				// only parse set=1
 				if (texOffset==-1) {
 					texOffset = offset;
+					textureLinked = true;
 				}
 			} else if ("NORMAL".equals(semantic)){
 				normalOffset = offset;
@@ -323,30 +359,143 @@ public class GeometryLoader {
 				+normalOffset+"," + texOffset);
 
 		// update vertex info
+		String[] vcountList = null;
+		if (primitive.getChild("vcount") != null){
+            vcountList = primitive.getChild("vcount").getData().trim().split("\\s+");
+        }
 		String[] indexData = primitive.getChild("p").getData().trim().split("\\s+");
-		for (int i = 0; i < indexData.length; i+=stride) {
+		if (vcountList != null){
 
-			// get vertex
-			final int positionIndex = Integer.parseInt(indexData[i + vertexOffset]);
-			Vertex currentVertex = vertices.get(positionIndex);
+		    if (false) {
+                // triangle strip technique
+                int offset = 0;
+                int totalFaces = 0;
+                for (int k = 0; k < vcountList.length; k++) {
+                    int vcount = Integer.parseInt(vcountList[k]);
 
-			// parse normal if available
-			if (normalOffset >= 0){
-				currentVertex.setNormalIndex(Integer.parseInt(indexData[i + normalOffset]));
+                    int vcounter = 0;
+                    for (int faceIndex = 0; vcounter < vcount; faceIndex++, vcounter++, offset += stride) {
+
+                        if (faceIndex > 2) { // if already a triangle then step back -2 to implement
+                            faceIndex = 0;
+                            offset -= stride * 2;
+                            vcounter -= 2;
+                            totalFaces++;
+                        }
+
+                        // get vertex
+                        final int positionIndex = Integer.parseInt(indexData[offset + vertexOffset]);
+                        Vertex currentVertex = vertices.get(positionIndex);
+
+                        // parse normal if available
+                        if (normalOffset >= 0) {
+                            currentVertex.setNormalIndex(Integer.parseInt(indexData[offset + normalOffset]));
+                        }
+
+                        // parse color if available
+                        if (colorOffset >= 0) {
+                            currentVertex.setColorIndex(Integer.parseInt(indexData[offset + colorOffset]));
+                        }
+
+                        // parse texture if available
+                        if (texOffset >= 0) {
+							int textureIndex = Integer.parseInt(indexData[offset + texOffset]);
+							if (textureIndex < 0){
+								throw new IllegalArgumentException("texture index < 0");
+							}
+							currentVertex.setTextureIndex(textureIndex);
+                        }
+
+                        // update vertex info
+                        indices.add(positionIndex);
+                    }
+                    totalFaces++;
+                }
+                Log.i("GeometryLoader", "Total STRIP faces: " + totalFaces);
+            } else {
+                // triangle fan technique
+                int offset = 0;
+                int totalFaces = 0;
+                for (int k = 0; k < vcountList.length; k++) {
+                    int vcount = Integer.parseInt(vcountList[k]);
+
+                    int vcounter = 0;
+                    int firstVectorOffset = offset;
+                	boolean doFan = false, doClose = false;
+                    for (int faceIndex = 0; vcounter < vcount; faceIndex++, vcounter++, offset += stride) {
+
+                        if (doClose){
+                            faceIndex = 3;
+							doClose = false;
+                        }
+                        else if (doFan){
+                            offset = firstVectorOffset + vcounter * stride;
+                            doClose = true;
+                            doFan = false;
+                        }
+                        else if (faceIndex > 2) { // if already a triangle then step back -2 to implement
+                            offset = firstVectorOffset;
+                            vcounter -= 2;
+                            totalFaces++;
+                            doFan = true;
+                            doClose = false;
+                        }
+
+                        // get vertex
+                        final int positionIndex = Integer.parseInt(indexData[offset + vertexOffset]);
+                        Vertex currentVertex = vertices.get(positionIndex);
+
+                        // parse normal if available
+                        if (normalOffset >= 0) {
+                            currentVertex.setNormalIndex(Integer.parseInt(indexData[offset + normalOffset]));
+                        }
+
+                        // parse color if available
+                        if (colorOffset >= 0) {
+                            currentVertex.setColorIndex(Integer.parseInt(indexData[offset + colorOffset]));
+                        }
+
+						// parse texture if available
+						if (texOffset >= 0) {
+							int textureIndex = Integer.parseInt(indexData[offset + texOffset]);
+							if (textureIndex < 0){
+								throw new IllegalArgumentException("texture index < 0");
+							}
+							currentVertex.setTextureIndex(textureIndex);
+						}
+
+						// update vertex info
+						indices.add(positionIndex);
+                    }
+                    totalFaces++;
+                }
+                Log.i("GeometryLoader", "Total FAN faces: " + totalFaces+", Total indices: "+indices.size());
+            }
+		}  else {
+			for (int i = 0; i < indexData.length; i += stride) {
+
+				// get vertex
+				final int positionIndex = Integer.parseInt(indexData[i + vertexOffset]);
+				Vertex currentVertex = vertices.get(positionIndex);
+
+				// parse normal if available
+				if (normalOffset >= 0) {
+					currentVertex.setNormalIndex(Integer.parseInt(indexData[i + normalOffset]));
+				}
+
+				// parse color if available
+				if (colorOffset >= 0) {
+					currentVertex.setColorIndex(Integer.parseInt(indexData[i + colorOffset]));
+				}
+
+				// parse texture if available
+				if (texOffset >= 0) {
+					currentVertex.setTextureIndex(Integer.parseInt(indexData[i + texOffset]));
+				}
+
+				// update vertex info
+				indices.add(positionIndex);
 			}
-
-			// parse color if available
-			if (colorOffset >= 0){
-				currentVertex.setColorIndex(Integer.parseInt(indexData[i + colorOffset]));
-			}
-
-			// parse texture if available
-			if (texOffset >= 0) {
-				currentVertex.setTextureIndex(Integer.parseInt(indexData[i + texOffset]));
-			}
-
-			// update vertex info
-			indices.add(positionIndex);
 		}
 	}
 
@@ -355,7 +504,6 @@ public class GeometryLoader {
 		try {
 			XmlNode materialNode = materialsData.getChildWithAttribute("material","id",material);
 			if (materialNode == null) {
-				Log.w("GeometryLoader", "No material with id '" + material + "' found");
 				return ret;
 			}
 			XmlNode instanceEffectNode = materialNode.getChild("instance_effect");
@@ -431,7 +579,7 @@ public class GeometryLoader {
 					textureFile = imagesNode.getChildWithAttribute("image", "id", texture).getChild("init_from").getData();
 				}
 			}
-			Log.i("GeometryLoader","Texture '"+textureFile+"'");
+			Log.i("GeometryLoader","Material read. Texture '"+textureFile+"'");
 			ret[1] = textureFile;
 		} catch (Exception ex) {
 			Log.e("GeometryLoader","Error reading material '"+material+"'",ex);
@@ -457,7 +605,7 @@ public class GeometryLoader {
 				furthestPoint = currentVertex.getLength();
 			}
 			float[] position = currentVertex.getPosition();
-			if (textures != null && !textures.isEmpty()) {
+			if (textureLinked &&  textures != null && !textures.isEmpty()) {
 				float[] textureCoord = textures.get(currentVertex.getTextureIndex());
 				texturesArray[i * 2] = textureCoord[0];
 				texturesArray[i * 2 + 1] = 1 - textureCoord[1];
@@ -472,9 +620,10 @@ public class GeometryLoader {
                 normalsArray[i * 3 + 1] = normalVector[1];
                 normalsArray[i * 3 + 2] = normalVector[2];
             }
-            if (colors != null && currentVertex.getColorIndex()>=0){
+            if (colors != null && !colors.isEmpty() && currentVertex.getColorIndex()>=0){
 				float[] color = colors.get(currentVertex.getColorIndex());
 				colorsBuffer.put(color);
+                colorsLinked = true;
 			}
 
 			VertexSkinData weights = currentVertex.getWeightsData();
@@ -487,12 +636,18 @@ public class GeometryLoader {
                 }
 			}
 		}
+
+		// clear buffer if we don't need it
+		if (colorsBuffer != null && !colorsLinked){
+		    colorsBuffer.clear();
+		    colorsBuffer = null;
+        }
 		return furthestPoint;
 	}
 	
 	private void initArrays(String geometryId){
 		this.verticesArray = new float[vertices.size() * 3];
-		if (textures != null && !textures.isEmpty()) {
+		if (textureLinked && textures != null && !textures.isEmpty()) {
 			this.texturesArray = new float[vertices.size() * 2];
 		}
 		this.normalsArray = new float[vertices.size() * 3];
@@ -501,8 +656,9 @@ public class GeometryLoader {
 			this.jointIdsArray = new int[vertices.size() * vertices.get(0).getWeightsData().jointIds.size()];
 			this.weightsArray = new float[vertices.size() * vertices.get(0).getWeightsData().weights.size()];
 		}
-		if (!colors.isEmpty())
-			this.colorsBuffer = createNativeByteBuffer(colors.size()*4*4).asFloatBuffer();
+		if (!colors.isEmpty()) {
+			this.colorsBuffer = createNativeByteBuffer(colors.size() * 4 * 4).asFloatBuffer();
+		}
 	}
 
 	private static ByteBuffer createNativeByteBuffer(int length) {

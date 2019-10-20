@@ -2,7 +2,7 @@ package org.andresoviedo.android_3d_model_engine.services.collada.entities;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Map;
 
 
 /**
@@ -22,6 +22,7 @@ public class JointData {
 	private final String id;
 	private final String name;
     private String instance_geometry;
+    private Map<String,String> materials;
 
 	// sum up of all matrix up to the "root"
 	private final float[] bindLocalTransform;
@@ -31,11 +32,13 @@ public class JointData {
 	public final List<JointData> children = new ArrayList<>();
 
 	public JointData(int index, String id, String name,
-					 String geometryId, final float[] bindLocalTransform, final float[] bindTransform, final float[] inverseBindTransform) {
+					 String geometryId, Map<String,String> materials, final float[] bindLocalTransform, final float[]
+							 bindTransform, final float[] inverseBindTransform) {
 		this.id = id;
         this.name = name;
         this.instance_geometry = geometryId;
-        this.bindLocalTransform = bindLocalTransform;
+		this.materials = materials;
+		this.bindLocalTransform = bindLocalTransform;
         this.bindTransform = bindTransform;
         this.inverseBindTransform = inverseBindTransform;
         this.index = index;
@@ -71,6 +74,14 @@ public class JointData {
 			if (candidate != null) return candidate;
 		}
 		return null;
+	}
+
+	public boolean containsMaterial(String materialId){
+		return materials.containsKey(materialId);
+	}
+
+	public String getMaterial(String materialId){
+		return materials.get(materialId);
 	}
 
 	public float[] getBindTransform() {

@@ -41,4 +41,8 @@ public class SkeletonData {
     public int getJointCount() {
         return jointCount;
     }
+
+    public JointData find(String geometryId) {
+        return headJoint.find(geometryId);
+    }
 }

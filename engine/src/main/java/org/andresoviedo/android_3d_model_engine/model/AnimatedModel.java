@@ -147,10 +147,15 @@ public class AnimatedModel extends Object3DData {
 		jointMatrices[joint.getIndex()] = joint.getAnimatedTransform();
 	}
 
-	// FIXME: binding coming from skeleton
+	// binding coming from skeleton
 	public void setBindShapeMatrix(float[] bindTransform) {
 		this.bindShapeMatrix = bindTransform;
 		this.updateModelMatrix();
+	}
+
+
+	public float[] getBindShapeMatrix() {
+		return bindShapeMatrix;
 	}
 
 	@Override
@@ -168,4 +173,5 @@ public class AnimatedModel extends Object3DData {
 	public float[] getModelMatrix() {
 		return this.newModelMatrix;
 	}
+
 }
