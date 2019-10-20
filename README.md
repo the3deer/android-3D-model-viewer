@@ -13,7 +13,7 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (22/10/2019)
+News (20/10/2019)
 =================
 
 * New: Stereoscopic rendering: anaglyph (red-green glasses) & VR glasses (cardboard)
