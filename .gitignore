@@ -1,1 +1,10 @@
 /bin
+.gradle/
+.idea/
+app/build/generated/
+app/build/intermediates/
+app/build/outputs/apk/debug/
+app/build/outputs/logs/
+app/build/reports/
+build/
+local.properties

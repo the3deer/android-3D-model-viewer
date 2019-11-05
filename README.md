@@ -13,13 +13,12 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (20/10/2019)
+News (06/11/2019)
 =================
 
-* New: Stereoscopic rendering: anaglyph (red-green glasses) & VR glasses (cardboard)
-* Fix: Bugs fixed - better support for collada DAE format - multiple geometries support
-* New: Engine refactoring
-
+* Fix: Shader lightning fixed !
+* Fix: Better support for multiple geometries
+* Fix: Bugs fixed
 
 
 Demo
@@ -180,6 +179,9 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 2.6.1 (06/10/2019)
+  - (f) fixed light rendering issues on shaders #125
+  - (f) fixed bugs when DAE had multiple geometries #125
 - 2.6.0 (20/10/2019)
   - (n) #81 Support for collada files with multiple geometries
   - (f) #94 fixed setVisible(boolean)

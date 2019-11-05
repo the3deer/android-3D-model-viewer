@@ -17,24 +17,21 @@ void main(){
     // Transform the vertex into eye space.
     vec3 modelViewVertex = vec3(u_MVMatrix * a_Position);
 
+    // Transform the normal's orientation into eye space.
+    vec3 modelViewNormal = normalize(vec3(u_MVMatrix * vec4(a_Normal, 0.0)));
+
     // Get a lighting direction vector from the light to the vertex.
     vec3 lightVector = normalize(u_LightPos - modelViewVertex);
 
-    // Transform the normal's orientation into eye space.
-    vec3 modelViewNormal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));
-
     // Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
     // pointing in the same direction then it will get max illumination.
-    float diffuse = max(dot(modelViewNormal, lightVector), 0.1);
+    float diffuse = dot(lightVector, modelViewNormal) * 0.5 + 1.0;
 
     // Attenuate the light based on distance.
     float distance = length(u_LightPos - modelViewVertex);
-    diffuse = diffuse * (1.0 / (1.0 + (0.05 * distance * distance)));
-
-    //  Add ambient lighting
-    diffuse = diffuse + 0.5;
+    distance = 1.0 / (1.0 + 0.5 * distance);
 
     // Multiply the color by the illumination level. It will be interpolated across the triangle.
-    v_Color = vColor * diffuse;
+    v_Color = vColor * (diffuse * distance + 0.25);
     v_Color[3] = vColor[3]; // correct alpha
 }

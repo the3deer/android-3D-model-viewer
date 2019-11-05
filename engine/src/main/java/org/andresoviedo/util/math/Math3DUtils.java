@@ -19,7 +19,7 @@ public class Math3DUtils {
      * @param v2
      * @return
      */
-    public static float[] calculateFaceNormal2(float[] v0, float[] v1, float[] v2) {
+    public static float[] calculateNormal(float[] v0, float[] v1, float[] v2) {
 
         // calculate perpendicular vector to the face. That is to calculate the cross product of v1-v0 x v2-v0
         float[] va = new float[]{v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]};
@@ -27,9 +27,7 @@ public class Math3DUtils {
         float[] n = new float[]{va[1] * vb[2] - va[2] * vb[1], va[2] * vb[0] - va[0] * vb[2],
                 va[0] * vb[1] - va[1] * vb[0]};
         float modul = Matrix.length(n[0], n[1], n[2]);
-        float[] vn = new float[]{n[0] / modul, n[1] / modul, n[2] / modul};
-
-        return vn;
+        return new float[]{n[0] / modul, n[1] / modul, n[2] / modul};
     }
 
     /**
@@ -41,7 +39,7 @@ public class Math3DUtils {
      * @param v2 the third vector of the face
      * @return the 2 vectors (line) corresponding to the face normal
      */
-    public static float[][] calculateFaceNormal(float[] v0, float[] v1, float[] v2) {
+    public static float[][] getNormalLine(float[] v0, float[] v1, float[] v2) {
 
         // calculate perpendicular vector to the face. That is to calculate the cross product of v1-v0 x v2-v0
         float[] va = new float[]{v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]};
@@ -51,15 +49,37 @@ public class Math3DUtils {
         float modul = Matrix.length(n[0], n[1], n[2]);
         float[] vn = new float[]{n[0] / modul, n[1] / modul, n[2] / modul};
 
+       return getNormalLine2(v0, v1, v2, vn);
+    }
+
+    /**
+     * Calculate the 2 vectors, that is a line (x1,y1,z1-x2,y2,z2} corresponding to the normal of the specified face.
+     * The calculated line will be positioned exactly in the middle of the face
+     *
+     * @param v0 the first vector of the face
+     * @param v1 the second vector of the face
+     * @param v2 the third vector of the face
+     * @return the 2 vectors (line) corresponding to the face normal
+     */
+    public static float[][] getNormalLine2(float[] v0, float[] v1, float[] v2, float[] normal) {
+
         // calculate center of the face
-        float[] faceCenter = calculateFaceCenter(v0, v1, v2);
-        float[] vn2 = new float[]{faceCenter[0] + vn[0], faceCenter[1] + vn[1], faceCenter[2] + vn[2]};
-        @SuppressWarnings("unused")
-        String msg = "fNormal(" + v0[0] + "," + v0[1] + "," + v0[2] + "#" + v1[0] + "," + v1[1] + "," + v1[2] + "#"
-                + v2[0] + "," + v2[1] + "," + v2[2] + ")#normal(" + vn[0] + "," + vn[1] + "," + vn[2] + ") center("
-                + faceCenter[0] + "," + faceCenter[1] + "," + faceCenter[2] + ") to(" + vn2[0] + "," + vn2[1] + ","
-                + vn2[2] + ")";
-        // Log.d("ObjectV4", msg);
+        final float[] faceCenter = calculateFaceCenter(v0, v1, v2);
+
+        // scale normal proportional to triangle perimeter (or area)
+        final float[] va = new float[]{v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]};
+        final float[] vb = new float[]{v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]};
+        final float[] vc = new float[]{v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]};
+        final float scaleFactor = (length(va[0], va[1], va[2])
+                        + length(vb[0],vb[1],vb[2])
+                        + length(vc[0], vc[1], vc[2]))/3;
+
+        // calculate 2nd vertex position
+        float[] vn2 = new float[]{
+                faceCenter[0] + normal[0] * scaleFactor
+                , faceCenter[1] + normal[1] * scaleFactor
+                , faceCenter[2] + normal[2] * scaleFactor};
+
         return new float[][]{faceCenter, vn2};
     }
 
@@ -246,5 +266,72 @@ public class Math3DUtils {
             matrixData[i] = Float.parseFloat(rawData[i]);
         }
         return matrixData;
+    }
+
+    /**
+     * {@link Matrix}
+     */
+    public static void setRotateM(float[] rm, int rmOffset,
+                                  float a, float x, float y, float z) {
+        rm[rmOffset + 3] = 0;
+        rm[rmOffset + 7] = 0;
+        rm[rmOffset + 11]= 0;
+        rm[rmOffset + 12]= 0;
+        rm[rmOffset + 13]= 0;
+        rm[rmOffset + 14]= 0;
+        rm[rmOffset + 15]= 1;
+        a *= (float) (Math.PI / 180.0f);
+        float s = (float) Math.sin(a);
+        float c = (float) Math.cos(a);
+        if (1.0f == x && 0.0f == y && 0.0f == z) {
+            rm[rmOffset + 5] = c;   rm[rmOffset + 10]= c;
+            rm[rmOffset + 6] = s;   rm[rmOffset + 9] = -s;
+            rm[rmOffset + 1] = 0;   rm[rmOffset + 2] = 0;
+            rm[rmOffset + 4] = 0;   rm[rmOffset + 8] = 0;
+            rm[rmOffset + 0] = 1;
+        } else if (0.0f == x && 1.0f == y && 0.0f == z) {
+            rm[rmOffset + 0] = c;   rm[rmOffset + 10]= c;
+            rm[rmOffset + 8] = s;   rm[rmOffset + 2] = -s;
+            rm[rmOffset + 1] = 0;   rm[rmOffset + 4] = 0;
+            rm[rmOffset + 6] = 0;   rm[rmOffset + 9] = 0;
+            rm[rmOffset + 5] = 1;
+        } else if (0.0f == x && 0.0f == y && 1.0f == z) {
+            rm[rmOffset + 0] = c;   rm[rmOffset + 5] = c;
+            rm[rmOffset + 1] = s;   rm[rmOffset + 4] = -s;
+            rm[rmOffset + 2] = 0;   rm[rmOffset + 6] = 0;
+            rm[rmOffset + 8] = 0;   rm[rmOffset + 9] = 0;
+            rm[rmOffset + 10]= 1;
+        } else {
+            float len = length(x, y, z);
+            if (1.0f != len) {
+                float recipLen = 1.0f / len;
+                x *= recipLen;
+                y *= recipLen;
+                z *= recipLen;
+            }
+            float nc = 1.0f - c;
+            float xy = x * y;
+            float yz = y * z;
+            float zx = z * x;
+            float xs = x * s;
+            float ys = y * s;
+            float zs = z * s;
+            rm[rmOffset +  0] = x*x*nc +  c;
+            rm[rmOffset +  4] =  xy*nc - zs;
+            rm[rmOffset +  8] =  zx*nc + ys;
+            rm[rmOffset +  1] =  xy*nc + zs;
+            rm[rmOffset +  5] = y*y*nc +  c;
+            rm[rmOffset +  9] =  yz*nc - xs;
+            rm[rmOffset +  2] =  zx*nc - ys;
+            rm[rmOffset +  6] =  yz*nc + xs;
+            rm[rmOffset + 10] = z*z*nc +  c;
+        }
+    }
+
+    /**
+     * {@link Matrix}
+     */
+    public static float length(float x, float y, float z) {
+        return (float) Math.sqrt(x * x + y * y + z * z);
     }
 }

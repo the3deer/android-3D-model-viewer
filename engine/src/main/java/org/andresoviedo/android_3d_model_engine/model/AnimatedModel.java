@@ -31,13 +31,9 @@ public class AnimatedModel extends Object3DData {
 
 	// cache
 	private float[][] jointMatrices;
-	private float[] bindShapeMatrix;
-	private final float[] newModelMatrix;
 
 	public AnimatedModel(FloatBuffer vertexArrayBuffer){
 		super(vertexArrayBuffer);
-		this.newModelMatrix = new float[16];
-		Matrix.setIdentityM(newModelMatrix,0);
 	}
 
 	/**
@@ -118,60 +114,11 @@ public class AnimatedModel extends Object3DData {
 	 *         animation pose.
 	 */
 	public float[][] getJointTransforms() {
-		//addJointsToArray(rootJoint, jointMatrices);
 		return jointMatrices;
-	}
-
-	/**
-	 * This adds the current model-space transform of a joint (and all of its
-	 * descendants) into an array of transforms. The joint's transform is added
-	 * into the array at the position equal to the joint's index.
-	 * 
-	 * @param headJoint
-	 *            - the current joint being added to the array. This method also
-	 *            adds the transforms of all the descendents of this joint too.
-	 * @param jointMatrices
-	 *            - the array of joint transforms that is being filled.
-	 */
-	private void addJointsToArray(Joint headJoint, float [][] jointMatrices) {
-		if (headJoint.getIndex() >= 0) {
-			jointMatrices[headJoint.getIndex()] = headJoint.getAnimatedTransform();
-		}
-		for (int i=0; i<headJoint.getChildren().size(); i++) {
-			Joint childJoint = headJoint.getChildren().get(i);
-			addJointsToArray(childJoint, jointMatrices);
-		}
 	}
 
 	public void updateAnimatedTransform(Joint joint){
 		jointMatrices[joint.getIndex()] = joint.getAnimatedTransform();
-	}
-
-	// binding coming from skeleton
-	public void setBindShapeMatrix(float[] bindTransform) {
-		this.bindShapeMatrix = bindTransform;
-		this.updateModelMatrix();
-	}
-
-
-	public float[] getBindShapeMatrix() {
-		return bindShapeMatrix;
-	}
-
-	@Override
-	protected void updateModelMatrix() {
-		super.updateModelMatrix();
-		if (this.bindShapeMatrix == null){
-			// geometries not linked to any joint does not have bind shape transform
-			System.arraycopy(super.modelMatrix,0,this.newModelMatrix,0,16);
-		} else {
-			Matrix.multiplyMM(newModelMatrix, 0, super.modelMatrix, 0, this.bindShapeMatrix, 0);
-		}
-	}
-
-	@Override
-	public float[] getModelMatrix() {
-		return this.newModelMatrix;
 	}
 
 }

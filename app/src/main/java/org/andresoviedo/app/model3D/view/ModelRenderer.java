@@ -277,15 +277,26 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 			Object3D lightBulbDrawer = drawer.getPointDrawer();
 
-			Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, scene.getLightBulb().getModelMatrix(), 0);
+			// Calculate position of the light in world space to support lighting
+			if (scene.isRotatingLight()) {
+				Matrix.multiplyMV(lightPosInEyeSpace, 0, scene.getLightBulb().getModelMatrix(), 0, scene.getLightPosition(), 0);
+				// Draw a point that represents the light bulb
+				lightBulbDrawer.draw(scene.getLightBulb(), projectionMatrix, viewMatrix, -1, lightPosInEyeSpace,
+						colorMask);
+			} else {
+				// FIXME: memory leak
+				lightPosInEyeSpace = new float[]{scene.getCamera().xPos,	scene.getCamera().yPos,
+						scene.getCamera().zPos, 0f};
+			}
 
-			// Calculate position of the light in eye space to support lighting
-			Matrix.multiplyMV(lightPosInEyeSpace, 0, modelViewMatrix, 0, scene.getLightPosition(), 0);
-
-			// Draw a point that represents the light bulb
-			lightBulbDrawer.draw(scene.getLightBulb(), projectionMatrix, viewMatrix, -1, lightPosInEyeSpace,
-					colorMask);
-
+			// FIXME: memory leak
+			if (scene.isDrawNormals()) {
+				lightBulbDrawer.draw(Object3DBuilder.buildLine(new float[]{lightPosInEyeSpace[0],
+								lightPosInEyeSpace[1], lightPosInEyeSpace[2], 0, 0, 0}), projectionMatrix,
+						viewMatrix, -1,
+						lightPosInEyeSpace,
+						colorMask);
+			}
 		}
 
 		// draw axis
@@ -415,7 +426,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 						}
 					}
 					if (normalData != null) {
-						Object3D normalsDrawer = drawer.getFaceNormalsDrawer();
+						Object3D normalsDrawer = drawer.getDrawer(normalData,false,false,scene.isDoAnimation(),
+								false);
+						animator.update(normalData, scene.isShowBindPose());
 						normalsDrawer.draw(normalData, projectionMatrix, viewMatrix, -1, null);
 					}
 				}

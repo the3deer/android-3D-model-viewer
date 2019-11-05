@@ -43,7 +43,7 @@ public class SkeletonLoader {
 	public SkeletonData extractBoneData(){
 
 		Log.i("SkeletonLoader", "Loading skeleton...");
-		if (this.skinningDataMap != null) {
+		if (this.skinningDataMap != null && skinningDataMap.size() > 0) {
 			skinningData = this.skinningDataMap.values().iterator().next();
 			this.boneOrder = skinningData.jointOrder;
 		} else{
@@ -117,7 +117,8 @@ public class SkeletonLoader {
 
         if (jointNode.getChild("translate") != null) {
 			XmlNode translateNode = jointNode.getChild("translate");
-			float[] translate = Math3DUtils.parseFloat(translateNode.getData().trim().split("\\s+"));
+			float[] translate = Math3DUtils.parseFloat(translateNode.getData().trim().
+					replace(',','.').split("\\s+"));
 			Matrix.translateM(matrix, 0, translate[0], translate[1], translate[2]);
 			matrixFound = true;
 		}
@@ -132,7 +133,8 @@ public class SkeletonLoader {
 
 		if (jointNode.getChild("scale") != null){
 			XmlNode scaleNode = jointNode.getChild("scale");
-			float[] scale = Math3DUtils.parseFloat(scaleNode.getData().trim().split("\\s+"));
+			float[] scale = Math3DUtils.parseFloat(scaleNode.getData().trim().
+					replace(',','.').split("\\s+"));
 			Matrix.scaleM(matrix,0,scale[0], scale[1], scale[2]);
 			matrixFound = true;
 		}

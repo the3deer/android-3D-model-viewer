@@ -137,9 +137,9 @@ class DrawerImpl implements Object3D {
             mTextureHandle = setTexture(obj, textureId);
         }
 
-        // light rendering needs mv matrix
-        if (supportsMvMatrix()) {
-            setMvMatrix(mvMatrix);
+        // light rendering needs the model matrix
+        if (supportsMMatrix()) {
+            setMMatrix(mMatrix);
         }
 
         // TODO: remove this null check
@@ -288,16 +288,16 @@ class DrawerImpl implements Object3D {
         GLES20.glUniform3f(mLightPosHandle, lightPosInEyeSpace[0], lightPosInEyeSpace[1], lightPosInEyeSpace[2]);
     }
 
-    private boolean supportsMvMatrix() {
+    private boolean supportsMMatrix() {
         return features.contains("u_MVMatrix");
     }
 
-    private void setMvMatrix(float[] mvMatrix) {
+    private void setMMatrix(float[] modelMatrix) {
         int mMVMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
         GLUtil.checkGlError("glGetUniformLocation");
 
         // Pass in the modelview matrix.
-        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mvMatrix, 0);
+        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, modelMatrix, 0);
         GLUtil.checkGlError("glUniformMatrix4fv");
     }
 

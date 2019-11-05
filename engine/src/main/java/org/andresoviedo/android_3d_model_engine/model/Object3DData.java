@@ -30,8 +30,6 @@ import java.util.List;
  */
 public class Object3DData {
 
-	// opengl version to use to draw this object
-	private int version = 5;
 	/**
 	 * The directory where the files reside so we can build referenced files in the model like material and textures
 	 * files
@@ -85,10 +83,14 @@ public class Object3DData {
 	protected float[] position = new float[] { 0f, 0f, 0f };
 	protected float[] rotation = new float[] { 0f, 0f, 0f };
 	protected float[] scale = new float[] { 1, 1, 1 };
+    protected float[] bindShapeMatrix = new float[16];
 	protected float[] modelMatrix = new float[16];
-
+    protected float[] newModelMatrix = new float[16];
 	{
+	    // FIXME: is this necessary?
 		Matrix.setIdentityM(modelMatrix,0);
+        Matrix.setIdentityM(bindShapeMatrix,0);
+        Matrix.setIdentityM(newModelMatrix,0);
 	}
 
 	// whether the object has changed
@@ -106,20 +108,17 @@ public class Object3DData {
 
 	public Object3DData(FloatBuffer vertexArrayBuffer) {
 		this.vertexArrayBuffer = vertexArrayBuffer;
-		this.version = 1;
-	}
+    }
 
 	public Object3DData(FloatBuffer vertexBuffer, IntBuffer drawOrder) {
 		this.vertexBuffer = vertexBuffer;
 		this.drawOrderBuffer = drawOrder;
-		this.version = 2;
 	}
 
 	public Object3DData(FloatBuffer vertexArrayBuffer, FloatBuffer textureCoordsArrayBuffer, byte[] texData) {
 		this.vertexArrayBuffer = vertexArrayBuffer;
 		this.textureCoordsArrayBuffer = textureCoordsArrayBuffer;
 		this.textureData = texData;
-		this.version = 3;
 	}
 
 	public Object3DData(FloatBuffer vertexArrayBuffer, FloatBuffer vertexColorsArrayBuffer,
@@ -128,7 +127,6 @@ public class Object3DData {
 		this.vertexColorsArrayBuffer = vertexColorsArrayBuffer;
 		this.textureCoordsArrayBuffer = textureCoordsArrayBuffer;
 		this.textureData = texData;
-		this.version = 4;
 	}
 
 	public Object3DData(FloatBuffer verts, FloatBuffer normals, ArrayList<Tuple3> texCoords, Faces faces,
@@ -184,15 +182,6 @@ public class Object3DData {
 
 	public void setVisible(boolean isVisible) {
 		this.isVisible = isVisible;
-	}
-
-	public int getVersion() {
-		return version;
-	}
-
-	public Object3DData setVersion(int version) {
-		this.version = version;
-		return this;
 	}
 
 	public boolean isChanged() {
@@ -320,7 +309,17 @@ public class Object3DData {
 		return this;
 	}
 
-	protected void updateModelMatrix(){
+    // binding coming from skeleton
+    public void setBindShapeMatrix(float[] bindTransform) {
+        this.bindShapeMatrix = bindTransform;
+        this.updateModelMatrix();
+    }
+
+    public float[] getBindShapeMatrix() {
+        return bindShapeMatrix;
+    }
+
+    protected void updateModelMatrix(){
 		Matrix.setIdentityM(modelMatrix, 0);
 		if (getRotation() != null) {
 			Matrix.rotateM(modelMatrix, 0, getRotation()[0], 1f, 0f, 0f);
@@ -333,10 +332,11 @@ public class Object3DData {
 		if (getPosition() != null) {
 			Matrix.translateM(modelMatrix, 0, getPositionX(), getPositionY(), getPositionZ());
 		}
+		Matrix.multiplyMM(newModelMatrix, 0, this.modelMatrix, 0, this.bindShapeMatrix, 0);
 	}
 
 	public float[] getModelMatrix(){
-		return modelMatrix;
+		return newModelMatrix;
 	}
 
 	public IntBuffer getDrawOrder() {
@@ -723,20 +723,35 @@ public class Object3DData {
 	}
 
 	public static void centerAndScale(List<Object3DData> datas, float newScale, float[] newPosition){
+		Log.i("Object3DData","Scaling datas... total: "+datas.size());
 		// calculate the global max length
-		float maxRight = datas.get(0).getDimensions().rightPt;
-		float maxLeft = datas.get(0).getDimensions().leftPt;
-		float maxTop = datas.get(0).getDimensions().topPt;
-		float maxBottom = datas.get(0).getDimensions().bottomPt;
-		float maxNear = datas.get(0).getDimensions().nearPt;
-		float maxFar = datas.get(0).getDimensions().farPt;
+        Object3DData firstObject = datas.get(0);
+        Log.d("Object3DData","Model[0] dimension: "+ firstObject.getDimensions().toString());
+        float[] corner01 = firstObject.getDimensions().getCornerLeftTopNearVector();
+        Matrix.multiplyMV(corner01,0,firstObject.getBindShapeMatrix(),0,corner01,0);
+        float[] corner02 = firstObject.getDimensions().getCornerRightBottomFar();
+        Matrix.multiplyMV(corner02,0,firstObject.getBindShapeMatrix(),0,corner02,0);
+        float maxLeft = corner01[0];
+        float maxTop = corner01[1];
+        float maxNear = corner01[2];
+        float maxRight = corner02[0];
+        float maxBottom = corner02[1];
+        float maxFar = corner02[2];
+
 		for (int i=1; i<datas.size(); i++){
-			float maxRight2 = datas.get(i).getDimensions().rightPt;
-			float maxLeft2 = datas.get(i).getDimensions().leftPt;
-			float maxTop2 = datas.get(i).getDimensions().topPt;
-			float maxBottom2 = datas.get(i).getDimensions().bottomPt;
-			float maxNear2 = datas.get(i).getDimensions().nearPt;
-			float maxFar2 = datas.get(i).getDimensions().farPt;
+			Object3DData object3DData = datas.get(i);
+			Log.d("Object3DData","Model["+i+"] dimension: "+ object3DData.getDimensions().toString());
+			float[] corner1 = object3DData.getDimensions().getCornerLeftTopNearVector();
+			Matrix.multiplyMV(corner1,0,object3DData.getBindShapeMatrix(),0,corner1,0);
+			float[] corner2 = object3DData.getDimensions().getCornerRightBottomFar();
+            Matrix.multiplyMV(corner2,0,object3DData.getBindShapeMatrix(),0,corner2,0);
+            float maxLeft2 = corner1[0];
+            float maxTop2 = corner1[1];
+            float maxNear2 = corner1[2];
+            float maxRight2 = corner2[0];
+            float maxBottom2 = corner2[1];
+            float maxFar2 = corner2[2];
+
 			if (maxRight2 > maxRight) maxRight = maxRight2;
 			if (maxLeft2 < maxLeft) maxLeft = maxLeft2;
 			if (maxTop2 > maxTop) maxTop = maxTop2;
@@ -761,6 +776,11 @@ public class Object3DData {
 		float translationX = -centerX + newPosition[0];
 		float translationY = -centerY + newPosition[1];
 		float translationZ = -centerZ + newPosition[2];
+
+		Log.v("Object3DData","Total center: "+centerX+","+centerY+","+centerZ);
+
+		Log.d("Object3DData","Total translation: "+translationX+","+translationY+","+translationZ);
+		Log.d("Object3DData","Total scale: "+scaleFactor);
 
 		for (Object3DData data : datas){
 			data.setPosition(new float[]{translationX, translationY, translationZ});

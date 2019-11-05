@@ -71,6 +71,7 @@ public class SceneLoader implements LoaderTask.Callback {
     /**
      * Whether to draw face normals. Normally used to debug models
      */
+    // TODO: toggle feature normals + blending
     private boolean drawNormals = false;
     /**
      * Whether to draw using textures
@@ -251,19 +252,19 @@ public class SceneLoader implements LoaderTask.Callback {
 
     public void toggleWireframe() {
         if (!this.drawWireframe && !this.drawingPoints && !this.drawSkeleton){
-            this.drawWireframe = true;
-            makeToastText("Wireframe", Toast.LENGTH_SHORT);
+                this.drawWireframe = true;
+                makeToastText("Wireframe", Toast.LENGTH_SHORT);
         } else if (!this.drawingPoints && !this.drawSkeleton){
-            this.drawWireframe = false;
-            this.drawingPoints = true;
-            makeToastText("Points", Toast.LENGTH_SHORT);
+                this.drawWireframe = false;
+                this.drawingPoints = true;
+                makeToastText("Points", Toast.LENGTH_SHORT);
         } else if (!this.drawSkeleton){
-            this.drawingPoints = false;
-            this.drawSkeleton = true;
-            makeToastText("Skeleton", Toast.LENGTH_SHORT);
+                this.drawingPoints = false;
+                this.drawSkeleton = true;
+                makeToastText("Skeleton", Toast.LENGTH_SHORT);
         } else {
-            this.drawSkeleton = false;
-            makeToastText("Faces", Toast.LENGTH_SHORT);
+                this.drawSkeleton = false;
+                makeToastText("Faces", Toast.LENGTH_SHORT);
         }
         requestRender();
     }
@@ -321,18 +322,14 @@ public class SceneLoader implements LoaderTask.Callback {
     }
 
     public void toggleAnimation() {
-        if (!this.doAnimation && !this.showBindPose){
+        if (!this.doAnimation){
             this.doAnimation = true;
+            this.showBindPose = false;
             makeToastText("Animation on", Toast.LENGTH_SHORT);
-        }
-        else if (!this.showBindPose) {
-            this.doAnimation = true;
-            this.showBindPose = true;
-            makeToastText("Bind pose", Toast.LENGTH_SHORT);
         } else {
             this.doAnimation = false;
-            this.showBindPose = false;
-            makeToastText("Animation off", Toast.LENGTH_SHORT);
+            this.showBindPose = true;
+            makeToastText("Bind pose", Toast.LENGTH_SHORT);
         }
     }
 
@@ -499,5 +496,9 @@ public class SceneLoader implements LoaderTask.Callback {
 
     public void processMove(float dx1, float dy1) {
         userHasInteracted = true;
+    }
+
+    public boolean isRotatingLight() {
+        return rotatingLight;
     }
 }
