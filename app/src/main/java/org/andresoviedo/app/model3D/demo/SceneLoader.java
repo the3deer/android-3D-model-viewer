@@ -57,6 +57,10 @@ public class SceneLoader implements LoaderTask.Callback {
      */
     private boolean isBlendingEnabled = true;
     /**
+     * Force transparency
+     */
+    private boolean isBlendingForced = false;
+    /**
      * Whether to draw objects as wireframes
      */
     private boolean drawWireframe = false;
@@ -71,7 +75,7 @@ public class SceneLoader implements LoaderTask.Callback {
     /**
      * Whether to draw face normals. Normally used to debug models
      */
-    // TODO: toggle feature normals + blending
+    // TODO: toggle feature this
     private boolean drawNormals = false;
     /**
      * Whether to draw using textures
@@ -401,12 +405,27 @@ public class SceneLoader implements LoaderTask.Callback {
     }
 
     public void toggleBlending() {
-        this.isBlendingEnabled = !isBlendingEnabled;
-        makeToastText("Blending "+isBlendingEnabled, Toast.LENGTH_SHORT);
+        if (this.isBlendingEnabled && !this.isBlendingForced){
+            makeToastText("Blending forced", Toast.LENGTH_SHORT);
+            this.isBlendingEnabled = true;
+            this.isBlendingForced = true;
+        } else if (this.isBlendingForced){
+            makeToastText("Blending disabled", Toast.LENGTH_SHORT);
+            this.isBlendingEnabled = false;
+            this.isBlendingForced = false;
+        } else {
+            makeToastText("Blending enabled", Toast.LENGTH_SHORT);
+            this.isBlendingEnabled = true;
+            this.isBlendingForced = false;
+        }
     }
 
     public boolean isBlendingEnabled() {
         return isBlendingEnabled;
+    }
+
+    public boolean isBlendingForced() {
+        return isBlendingForced;
     }
 
     @Override

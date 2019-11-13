@@ -87,7 +87,7 @@ public class Object3DData {
 	protected float[] modelMatrix = new float[16];
     protected float[] newModelMatrix = new float[16];
 	{
-	    // FIXME: is this necessary?
+	    //
 		Matrix.setIdentityM(modelMatrix,0);
         Matrix.setIdentityM(bindShapeMatrix,0);
         Matrix.setIdentityM(newModelMatrix,0);
@@ -332,7 +332,12 @@ public class Object3DData {
 		if (getPosition() != null) {
 			Matrix.translateM(modelMatrix, 0, getPositionX(), getPositionY(), getPositionZ());
 		}
-		Matrix.multiplyMM(newModelMatrix, 0, this.modelMatrix, 0, this.bindShapeMatrix, 0);
+        if (this.bindShapeMatrix == null){
+            // geometries not linked to any joint does not have bind shape transform
+            System.arraycopy(this.modelMatrix,0,this.newModelMatrix,0,16);
+        } else {
+            Matrix.multiplyMM(newModelMatrix, 0, this.modelMatrix, 0, this.bindShapeMatrix, 0);
+        }
 	}
 
 	public float[] getModelMatrix(){

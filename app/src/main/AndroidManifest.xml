@@ -3,7 +3,7 @@
           xmlns:tools="http://schemas.android.com/tools"
     package="org.andresoviedo.dddmodel2"
     android:versionCode="23"
-    android:versionName="2.6.1" >
+    android:versionName="2.7.0" >
 
     <uses-sdk
         android:minSdkVersion="14"

@@ -85,11 +85,13 @@ public class GeometryLoader {
 
 
 			String geometryId = geometry.getAttribute("id");
-			if (!includeGeometries.isEmpty() && !includeGeometries.contains(geometryId)) {
+			String geometryName = geometry.getAttribute("name");
+			if (!includeGeometries.isEmpty() && !includeGeometries.contains(geometryId)
+					&& !includeGeometries.contains(geometryName)) {
 				Log.d("GeometryLoader","Geometry ignored: "+geometryId);
 				continue;
 			}
-			Log.i("GeometryLoader", "Loading geometry '" + geometryId + "'...");
+			Log.i("GeometryLoader", "Loading geometry '" + geometryId + " ("+geometryName+")'...");
 
 			vertices.clear(); vertex.clear();
 			normals.clear(); textures.clear();
@@ -99,6 +101,8 @@ public class GeometryLoader {
 			XmlNode meshData = geometry.getChild("mesh");
 
 			// read vertices and normals
+			textureLinked = false;
+			colorsLinked = false;
             loadVertices(meshData, geometryId);
             if(vertices.isEmpty()){
             	Log.i("GeometryLoader","Ignoring geometry since it has no vertices: "+geometryId);
@@ -119,8 +123,6 @@ public class GeometryLoader {
 
 				for (XmlNode poly : polys) {
 
-					textureLinked = false;
-					colorsLinked = false;
 					assembleVertices(poly);
 
 					// process material
@@ -129,6 +131,9 @@ public class GeometryLoader {
 						colorAndTexture = getMaterialColorAndTexture(material);
 						if (colorAndTexture[0] == null) {
 							JointData jointData = skeletonData.find(geometryId);
+							if (jointData == null && geometryName != null){
+								jointData = skeletonData.find(geometryName);
+							}
 							if (jointData != null && jointData.containsMaterial(material)) {
 								colorAndTexture = getMaterialColorAndTexture(jointData.getMaterial(material));
 							} else {
@@ -146,8 +151,6 @@ public class GeometryLoader {
 
 				for (XmlNode triangles : triangless) {
 
-					textureLinked = false;
-					colorsLinked = false;
 					assembleVertices(triangles);
 
 					// process material
@@ -156,6 +159,10 @@ public class GeometryLoader {
 						colorAndTexture = getMaterialColorAndTexture(material);
 						if (colorAndTexture[0] == null) {
 							JointData jointData = skeletonData.find(geometryId);
+							if (jointData == null && geometryName != null){
+								jointData = skeletonData.find(geometryName);
+							}
+							Log.v("GeometryLoader", "joint data for geometry: " + geometryId + ":"+jointData);
 							if (jointData != null && jointData.containsMaterial(material)) {
 								colorAndTexture = getMaterialColorAndTexture(jointData.getMaterial(material));
 							} else {
@@ -172,8 +179,6 @@ public class GeometryLoader {
 				Log.d("GeometryLoader", "Found polygons. size: " + polygons.size());
 				for (XmlNode polygon : polygons) {
 
-					textureLinked = false;
-					colorsLinked = false;
 					assembleVertices(polygon);
 
 					// process material
@@ -182,10 +187,13 @@ public class GeometryLoader {
 						colorAndTexture = getMaterialColorAndTexture(material);
 						if (colorAndTexture[0] == null) {
 							JointData jointData = skeletonData.find(geometryId);
+							if (jointData == null && geometryName != null){
+								jointData = skeletonData.find(geometryName);
+							}
 							if (jointData != null && jointData.containsMaterial(material)) {
 								colorAndTexture = getMaterialColorAndTexture(jointData.getMaterial(material));
 							} else {
-								Log.e("GeometryLoader", "Material for triangle not found: " + material);
+								Log.e("GeometryLoader", "Material for polygon not found: " + material);
 							}
 						}
 					}
@@ -255,7 +263,10 @@ public class GeometryLoader {
 				loadData(vertex,meshData,node,3);
             } else if ("NORMAL".equals(semanticId)){
 				loadData(normals,meshData,node,3);
-            }
+            } else if ("TEXCOORD".equals(semanticId)){
+				loadData(textures,meshData,node,2);
+				textureLinked = true;
+			}
         }
 
         // load vertices
@@ -365,7 +376,10 @@ public class GeometryLoader {
 		}
 	}
 
-	private void assembleVertices(XmlNode primitive){
+	private boolean assembleVertices(XmlNode primitive){
+
+		// vertices id
+		String verticesId = null;
 
 		// offsets
 		int vertexOffset = 0;
@@ -380,6 +394,8 @@ public class GeometryLoader {
 			int offset = Integer.valueOf(input.getAttribute("offset"));
 			if ("VERTEX".equals(semantic)){
 				vertexOffset = offset;
+				String source = input.getAttribute("source");
+				verticesId = source != null ? source.substring(1) : null;
 			} else if ("COLOR".equals(semantic)){
 				colorOffset = offset;
 			} else if ("TEXCOORD".equals(semantic)){
@@ -544,12 +560,17 @@ public class GeometryLoader {
 				}
 			}
 		}
+
+		return true;
 	}
 
 	private Object[] getMaterialColorAndTexture(String material){
 		Object[] ret = new Object[2];
 		try {
 			XmlNode materialNode = materialsData.getChildWithAttribute("material","id",material);
+			if (materialNode == null) {
+				materialNode = materialsData.getChildWithAttribute("material","name",material);
+			}
 			if (materialNode == null) {
 				return ret;
 			}

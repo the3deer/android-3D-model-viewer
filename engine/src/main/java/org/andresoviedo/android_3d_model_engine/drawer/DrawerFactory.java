@@ -1,6 +1,7 @@
 package org.andresoviedo.android_3d_model_engine.drawer;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.R;
@@ -26,6 +27,8 @@ public class DrawerFactory {
      */
     private Map<String, DrawerImpl> drawers = new HashMap<>();
 
+    private final String[] shaderIdTemp = new String[3];
+
     public DrawerFactory(Context context) throws IllegalAccessException, IOException {
 
         Log.i("DrawerFactory", "Discovering shaders...");
@@ -49,23 +52,17 @@ public class DrawerFactory {
         boolean isTextured = usingTextures && obj.getTextureData() != null && obj.getTextureCoordsArrayBuffer() != null;
         boolean isColoured = drawColors && obj != null && obj.getVertexColorsArrayBuffer() != null;
 
-        // build shader id according to features
-        StringBuilder shaderIdBuilder = new StringBuilder("shader_");
-        shaderIdBuilder.append(isAnimated ? "anim_" : "");
-        shaderIdBuilder.append(isUsingLights ? "light_" : "");
-        shaderIdBuilder.append(isTextured ? "texture_" : "");
-        shaderIdBuilder.append(isColoured ? "colors_" : "");
+        final String[] shaderId = getShaderId(isAnimated, isUsingLights, isTextured, isColoured);
 
         // get cached drawer
-        String shaderId = shaderIdBuilder.toString();
-        DrawerImpl drawer = drawers.get(shaderId);
+        DrawerImpl drawer = drawers.get(shaderId[0]);
         if (drawer != null) return drawer;
 
         // build drawer
-        String vertexShaderCode = shadersCode.get(shaderId + "vert");
-        String fragmentShaderCode = shadersCode.get(shaderId + "frag");
+        String vertexShaderCode = shadersCode.get(shaderId[1]);
+        String fragmentShaderCode = shadersCode.get(shaderId[2]);
         if (vertexShaderCode == null || fragmentShaderCode == null) {
-            Log.e("DrawerFactory", "Shaders not found for " + shaderId);
+            Log.e("DrawerFactory", "Shaders not found for " + shaderId[0]);
             return null;
         }
 
@@ -78,13 +75,112 @@ public class DrawerFactory {
         Log.v("DrawerFactory", "---------- Fragment shader ----------\n");
         Log.v("DrawerFactory", fragmentShaderCode);
         Log.v("DrawerFactory", "-------------------------------------\n");
-        drawer = DrawerImpl.getInstance(shaderId, vertexShaderCode, fragmentShaderCode);
+        drawer = DrawerImpl.getInstance(shaderId[0], vertexShaderCode, fragmentShaderCode);
 
         // cache drawer
-        drawers.put(shaderId, drawer);
+        drawers.put(shaderId[0], drawer);
 
         // return drawer
         return drawer;
+    }
+
+    @NonNull
+    private String[] getShaderId(boolean isAnimated, boolean isUsingLights, boolean isTextured, boolean
+            isColoured) {
+        if (isAnimated){
+            if (isUsingLights){
+                if (isTextured){
+                    if (isColoured){
+                        shaderIdTemp[0]="shader_anim_light_texture_colors_";
+                        shaderIdTemp[1]="shader_anim_light_texture_colors_vert";
+                        shaderIdTemp[2]="shader_anim_light_texture_colors_frag";
+                    } else {
+                        shaderIdTemp[0]="shader_anim_light_texture_";
+                        shaderIdTemp[1]="shader_anim_light_texture_vert";
+                        shaderIdTemp[2]="shader_anim_light_texture_frag";
+                    }
+                } else{
+                    if (isColoured){
+                        shaderIdTemp[0]="shader_anim_light_colors_";
+                        shaderIdTemp[1]="shader_anim_light_colors_vert";
+                        shaderIdTemp[2]="shader_anim_light_colors_frag";
+                    } else {
+                        shaderIdTemp[0]="shader_anim_light_";
+                        shaderIdTemp[1]="shader_anim_light_vert";
+                        shaderIdTemp[2]="shader_anim_light_frag";
+                    }
+                }
+            } else{
+                if (isTextured){
+                    if (isColoured){
+                        shaderIdTemp[0]="shader_anim_texture_colors_";
+                        shaderIdTemp[1]="shader_anim_texture_colors_vert";
+                        shaderIdTemp[2]="shader_anim_texture_colors_frag";
+                    } else {
+                        shaderIdTemp[0]="shader_anim_texture_";
+                        shaderIdTemp[1]="shader_anim_texture_vert";
+                        shaderIdTemp[2]="shader_anim_texture_frag";
+                    }
+                } else{
+                    if (isColoured){
+                        shaderIdTemp[0]="shader_anim_colors_";
+                        shaderIdTemp[1]="shader_anim_colors_vert";
+                        shaderIdTemp[2]="shader_anim_colors_frag";
+                    } else {
+                        shaderIdTemp[0]="shader_anim_";
+                        shaderIdTemp[1]="shader_anim_vert";
+                        shaderIdTemp[2]="shader_anim_frag";
+                    }
+                }
+            }
+        } else {
+            if (isUsingLights){
+                if (isTextured){
+                    if (isColoured){
+                        shaderIdTemp[0]="shader_light_texture_colors_";
+                        shaderIdTemp[1]="shader_light_texture_colors_vert";
+                        shaderIdTemp[2]="shader_light_texture_colors_frag";
+                    } else {
+                        shaderIdTemp[0]="shader_light_texture_";
+                        shaderIdTemp[1]="shader_light_texture_vert";
+                        shaderIdTemp[2]="shader_light_texture_frag";
+                    }
+                } else{
+                    if (isColoured){
+                        shaderIdTemp[0]="shader_light_colors_";
+                        shaderIdTemp[1]="shader_light_colors_vert";
+                        shaderIdTemp[2]="shader_light_colors_frag";
+                    } else {
+                        shaderIdTemp[0]="shader_light_";
+                        shaderIdTemp[1]="shader_light_vert";
+                        shaderIdTemp[2]="shader_light_frag";
+                    }
+                }
+            } else{
+                if (isTextured){
+                    if (isColoured){
+                        shaderIdTemp[0]="shader_texture_colors_";
+                        shaderIdTemp[1]="shader_texture_colors_vert";
+                        shaderIdTemp[2]="shader_texture_colors_frag";
+                    } else{
+                        shaderIdTemp[0]="shader_texture_";
+                        shaderIdTemp[1]="shader_texture_vert";
+                        shaderIdTemp[2]="shader_texture_frag";
+                    }
+                } else{
+                    if (isColoured){
+                        shaderIdTemp[0]="shader_colors_";
+                        shaderIdTemp[1]="shader_colors_vert";
+                        shaderIdTemp[2]="shader_colors_frag";
+                    } else{
+                        shaderIdTemp[0]="shader_";
+                        shaderIdTemp[1]="shader_vert";
+                        shaderIdTemp[2]="shader_frag";
+                    }
+                }
+            }
+        }
+        return shaderIdTemp;
     }
 
     public Object3D getBoundingBoxDrawer() {

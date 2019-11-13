@@ -38,7 +38,6 @@ public class Quaternion {
 		this.y = y;
 		this.z = z;
 		this.w = w;
-		normalize();
 	}
 
 	/**
@@ -144,7 +143,8 @@ public class Quaternion {
 	 * 
 	 * and here:
 	 * http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/
-	 * 
+	 *
+	 * @param result resulting interpolation
 	 * @param a
 	 * @param b
 	 * @param blend
@@ -152,9 +152,7 @@ public class Quaternion {
 	 *            between the two quaternions.
 	 * @return The resulting interpolated rotation in quaternion format.
 	 */
-	public static Quaternion interpolate(Quaternion a, Quaternion b, float blend) {
-        // TODO: optimize this (memory allocation)
-		Quaternion result = new Quaternion(0, 0, 0, 1);
+	public static void interpolate(Quaternion result, Quaternion a, Quaternion b, float blend) {
 		float dot = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
 		float blendI = 1f - blend;
 		if (dot < 0) {
@@ -169,10 +167,9 @@ public class Quaternion {
 			result.z = blendI * a.z + blend * b.z;
 		}
 		result.normalize();
-		return result;
 	}
 
-    public static void interpolate(Quaternion a, Quaternion b, float blend, float[] output) {
+    /*public static void interpolate(Quaternion a, Quaternion b, float blend, float[] output) {
         Quaternion result = new Quaternion(0, 0, 0, 1);
         float dot = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
         float blendI = 1f - blend;
@@ -189,7 +186,7 @@ public class Quaternion {
         }
         result.normalize();
         result.toRotationMatrix(output);
-    }
+    }*/
 
     @Override
     public String toString() {

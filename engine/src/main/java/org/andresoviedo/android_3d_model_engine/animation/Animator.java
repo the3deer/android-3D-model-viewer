@@ -7,6 +7,7 @@ import android.util.Log;
 import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.Joint;
+import org.andresoviedo.util.math.Quaternion;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +46,13 @@ public class Animator {
 
     private final Map<String,float[]> cache = new HashMap<>();
 
-    public Animator() {
+	private final Map<String,Object> cache2 = new HashMap<>();
+
+    // cache
+    private final Map<String, float[]> currentPose = new HashMap<>();;
+	private KeyFrame[] previousAndNextKeyFrames = new KeyFrame[2];
+
+	public Animator() {
         Matrix.setIdentityM(IDENTITY_MATRIX,0);
 	}
 
@@ -146,7 +153,8 @@ public class Animator {
 				} while (keyFrameNextTransform == null);
 				this.animationTime = keyFrameNext.getTimeStamp();
 				float progression = calculateProgression(keyFramePrevious, keyFrameNextNext);
-				JointTransform missingFrameTransform = JointTransform.interpolate(keyFramePreviousTransform, keyFrameNextTransform, progression);
+				JointTransform missingFrameTransform = JointTransform.interpolate(keyFramePreviousTransform,
+						keyFrameNextTransform, progression, new float[3], new Quaternion(0,0,0,1));
 				keyFrameNext.getJointKeyFrames().put(jointId, missingFrameTransform);
 				Log.i("Animator","Added missing key transform for "+jointId);
 			}
@@ -283,7 +291,9 @@ public class Animator {
 			}
 			previousFrame = allFrames[i];
 		}
-		return new KeyFrame[] { previousFrame, nextFrame };
+		previousAndNextKeyFrames[0] =previousFrame;
+		previousAndNextKeyFrames[1] = nextFrame;
+		return previousAndNextKeyFrames;
 	}
 
 	/**
@@ -323,9 +333,9 @@ public class Animator {
 	 */
 	private Map<String, float[]> interpolatePoses(KeyFrame previousFrame, KeyFrame nextFrame, float progression) {
 	    // TODO: optimize this (memory allocation)
-		Map<String, float[]> currentPose = new HashMap<>();
-		for (String jointName : previousFrame.getJointKeyFrames().keySet()) {
-			JointTransform previousTransform = previousFrame.getJointKeyFrames().get(jointName);
+		for (Map.Entry<String,JointTransform> entry : previousFrame.getJointKeyFrames().entrySet()) {
+			final String jointName = entry.getKey();
+			final JointTransform previousTransform = entry.getValue();
 			if (Math.signum(progression) == 0){
                 currentPose.put(jointName, previousTransform.getLocalTransform());
             } else {
@@ -340,9 +350,20 @@ public class Animator {
                     jointPoseRot = new float[16];
                     cache.put("___rotation___interpolation___", jointPoseRot);
                 }
+				float[] jointPosePos = cache.get("___pos___interpolation___");
+				if (jointPosePos == null){
+					jointPosePos = new float[3];
+					cache.put("___pos___interpolation___", jointPosePos);
+				}
+				Quaternion rotQuat = (Quaternion) cache2.get("___rotQuat___interpolation___");
+				if (rotQuat == null) {
+					rotQuat = new Quaternion(0, 0, 0, 1);
+					cache2.put("___rotQuat___interpolation___",rotQuat);
+				}
                 // calculate interpolation
                 JointTransform nextTransform = nextFrame.getJointKeyFrames().get(jointName);
-                JointTransform.interpolate(previousTransform, nextTransform, progression, jointPose, jointPoseRot);
+				JointTransform.interpolate(previousTransform, nextTransform, progression, jointPose, jointPoseRot,
+						jointPosePos, rotQuat);
                 currentPose.put(jointName, jointPose);
             }
 		}

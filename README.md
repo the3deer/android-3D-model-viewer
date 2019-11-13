@@ -13,11 +13,13 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (06/11/2019)
+News (13/11/2019)
 =================
 
-* Fix: Shader lightning fixed !
-* Fix: Better support for multiple geometries
+* New: version 2.7.0
+* Fix: Shader lighting improved !
+* Fix: Better support for Collada files
+* Fix: Performance issues fixed
 * Fix: Bugs fixed
 
 
@@ -60,10 +62,8 @@ The app comes with some included 3D models that were taken for free from Interne
 Whats next
 ==========
 
-* Blender support
 * 3D without glasses
 * Augmented reality
-* Improve overall performance
 
 
 Features
@@ -179,9 +179,12 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
-- 2.6.1 (06/10/2019)
-  - (f) fixed light rendering issues on shaders #125
+- 2.7.0 (13/11/2019)
+  - (n) new blending force mode to 50% 
+  - (f) fixed light rendering issues on shaders #125 (diffuse + specular)
   - (f) fixed bugs when DAE had multiple geometries #125
+  - (f) fixed textures not being linked issue
+  - (f) fixed performance issues: now rendering below 5% cpu & no ram allocation
 - 2.6.0 (20/10/2019)
   - (n) #81 Support for collada files with multiple geometries
   - (f) #94 fixed setVisible(boolean)
