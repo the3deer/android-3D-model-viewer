@@ -87,24 +87,19 @@ class DrawerImpl implements Object3D {
     }
 
     @Override
-    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPos) {
-        this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPos, null);
+    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPosInWorldSpace, float[] cameraPos) {
+        this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPosInWorldSpace, null, cameraPos);
     }
 
     @Override
-    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPos, float[] colorMask) {
-        this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPos, colorMask);
-    }
-
-    @Override
-    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
-                     float[] lightPos) {
-        this.draw(obj, pMatrix, vMatrix, drawMode, drawSize, textureId, lightPos, null);
+    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPosInWorldSpace, float[]
+            colorMask, float[] cameraPos) {
+        this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPosInWorldSpace, colorMask, cameraPos);
     }
 
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
-                     float[] lightPos, float[] colorMask) {
+                     float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPos) {
 
         // Log.d("Object3DImpl", "Drawing '" + obj.getId() + "' using shader '" + id + "'...");
 
@@ -137,14 +132,15 @@ class DrawerImpl implements Object3D {
             mTextureHandle = setTexture(obj, textureId);
         }
 
-        // light rendering needs mv matrix
-        if (supportsMvMatrix()) {
-            setMvMatrix(mvMatrix);
+        // light rendering needs the model matrix
+        if (supportsMMatrix()) {
+            setMMatrix(mMatrix);
         }
 
         // TODO: remove this null check
-        if (lightPos != null && supportsLighting()) {
-            setLightPos(lightPos);
+        if (lightPosInWorldSpace != null && supportsLighting()) {
+            setLightPos(lightPosInWorldSpace);
+            setCameraPos(cameraPos);
         }
 
         // joint transformation for animated model
@@ -288,16 +284,22 @@ class DrawerImpl implements Object3D {
         GLES20.glUniform3f(mLightPosHandle, lightPosInEyeSpace[0], lightPosInEyeSpace[1], lightPosInEyeSpace[2]);
     }
 
-    private boolean supportsMvMatrix() {
+    private void setCameraPos(float[] cameraPosInWorldSpace) {
+        int mLightPosHandle = GLES20.glGetUniformLocation(mProgram, "u_cameraPos");
+        // Pass in the light position in eye space.
+        GLES20.glUniform3fv(mLightPosHandle, 0, cameraPosInWorldSpace, 0);
+    }
+
+    private boolean supportsMMatrix() {
         return features.contains("u_MVMatrix");
     }
 
-    private void setMvMatrix(float[] mvMatrix) {
+    private void setMMatrix(float[] modelMatrix) {
         int mMVMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
         GLUtil.checkGlError("glGetUniformLocation");
 
         // Pass in the modelview matrix.
-        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mvMatrix, 0);
+        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, modelMatrix, 0);
         GLUtil.checkGlError("glUniformMatrix4fv");
     }
 

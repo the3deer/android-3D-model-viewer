@@ -96,18 +96,19 @@ public class JointTransform {
 	 *            return a transform equal to "frameA", a value of 1 would
 	 *            return a transform equal to "frameB". Everything else gives a
 	 *            transform somewhere in-between the two.
+	 * @param rot
 	 * @return
 	 */
-	protected static JointTransform interpolate(JointTransform frameA, JointTransform frameB, float progression) {
-		float[] pos = interpolate(frameA.position, frameB.position, progression);
-		Quaternion rot = Quaternion.interpolate(frameA.rotation, frameB.rotation, progression);
+	protected static JointTransform interpolate(JointTransform frameA, JointTransform frameB, float progression, float[] pos, Quaternion rot) {
+		interpolate(pos, frameA.position, frameB.position, progression);
+		Quaternion.interpolate(rot, frameA.rotation, frameB.rotation, progression);
 		return new JointTransform(pos, rot);
 	}
 
     protected static float[] interpolate(JointTransform frameA, JointTransform frameB, float progression, float[]
-            matrix1, float[] matrix2) {
-		float[] pos = interpolate(frameA.position, frameB.position, progression);
-        Quaternion rot = Quaternion.interpolate(frameA.rotation, frameB.rotation, progression);
+			matrix1, float[] matrix2, float[] pos, Quaternion rot) {
+		interpolate(pos, frameA.position, frameB.position, progression);
+        Quaternion.interpolate(rot, frameA.rotation, frameB.rotation, progression);
         Matrix.setIdentityM(matrix1,0);
         Matrix.translateM(matrix1,0,pos[0],pos[1],pos[2]);
         Matrix.multiplyMM(matrix1,0,matrix1,0,rot.toRotationMatrix(matrix2),0);
@@ -127,12 +128,13 @@ public class JointTransform {
 	 *            between the two translations.
 	 * @return
 	 */
-	private static float[] interpolate(float[] start, float[] end, float progression) {
+	private static void interpolate(float[] ret, float[] start, float[] end, float progression) {
 		float x = start[0] + (end[0] - start[0]) * progression;
 		float y = start[1] + (end[1] - start[1]) * progression;
 		float z = start[2] + (end[2] - start[2]) * progression;
-        // TODO: optimize this (memory allocation)
-		return new float[]{x, y, z};
+        ret[0] = x;
+        ret[1] = y;
+        ret[2] = z;
 	}
 
 }

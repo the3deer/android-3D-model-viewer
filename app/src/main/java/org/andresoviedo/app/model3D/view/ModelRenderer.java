@@ -27,6 +27,10 @@ import javax.microedition.khronos.opengles.GL10;
 public class ModelRenderer implements GLSurfaceView.Renderer {
 
 	private final static String TAG = ModelRenderer.class.getName();
+    /**
+     * Add 0.5f to the alpha component to the global shader so we can see through the skin
+     */
+	private static final float[] BLENDING_FORCED_MASK_COLOR = {1.0f, 1.0f, 1.0f, 0.5f};
 	// frustrum - nearest pixel
 	private static final float near = 1f;
 	// frustrum - fartest pixel
@@ -67,7 +71,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	private final float[] modelViewMatrix = new float[16];
 	private final float[] projectionMatrix = new float[16];
 	private final float[] viewProjectionMatrix = new float[16];
-	private final float[] lightPosInEyeSpace = new float[4];
+	private final float[] lightPosInWorldSpace = new float[4];
+    private final float[] cameraPosInWorldSpace = new float[3];
 
 	// 3D stereoscopic matrix (left & right camera)
     private final float[] viewMatrixLeft = new float[16];
@@ -169,10 +174,14 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				return;
 			}
 
+			float[] colorMask = null;
 			if (scene.isBlendingEnabled()) {
 				// Enable blending for combining colors when there is transparency
 				GLES20.glEnable(GLES20.GL_BLEND);
 				GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+				if (scene.isBlendingForced()){
+					colorMask = BLENDING_FORCED_MASK_COLOR;
+				}
 			} else {
 				GLES20.glDisable(GLES20.GL_BLEND);
 			}
@@ -182,6 +191,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 			// recalculate mvp matrix according to where we are looking at now
 			Camera camera = scene.getCamera();
+            cameraPosInWorldSpace[0]=camera.xPos;
+            cameraPosInWorldSpace[1]=camera.yPos;
+            cameraPosInWorldSpace[2]=camera.zPos;
 			if (camera.hasChanged()) {
 				// INFO: Set the camera position (View matrix)
 				// The camera has 3 vectors (the position, the vector where we are looking at, and the up position (sky)
@@ -228,7 +240,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 
 			if (!scene.isStereoscopic()) {
-				this.onDrawFrame(viewMatrix, projectionMatrix, viewProjectionMatrix, lightPosInEyeSpace, null);
+				this.onDrawFrame(viewMatrix, projectionMatrix, viewProjectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
 				return;
 			}
 
@@ -236,11 +248,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 			if (scene.isAnaglyph()) {
 				// INFO: switch because blending algorithm doesn't mix colors
 				if (anaglyphSwitch) {
-					this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInEyeSpace,
-							COLOR_RED);
+					this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInWorldSpace,
+							COLOR_RED, cameraPosInWorldSpace);
 				} else {
-					this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInEyeSpace,
-							COLOR_BLUE);
+					this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInWorldSpace,
+							COLOR_BLUE, cameraPosInWorldSpace);
 				}
 				anaglyphSwitch = !anaglyphSwitch;
 				return;
@@ -251,14 +263,14 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				// draw left eye image
 				GLES20.glViewport(0, 0, width / 2, height);
 				GLES20.glScissor(0, 0, width / 2, height);
-				this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInEyeSpace,
-						null);
+				this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInWorldSpace,
+						null, cameraPosInWorldSpace);
 
 				// draw right eye image
 				GLES20.glViewport(width / 2, 0, width / 2, height);
 				GLES20.glScissor(width / 2, 0, width / 2, height);
-				this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInEyeSpace,
-						null);
+				this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInWorldSpace,
+						null, cameraPosInWorldSpace);
 			}
 		}catch (Exception ex){
 			Log.e("ModelRenderer", "Fatal exception: "+ex.getMessage(), ex);
@@ -267,7 +279,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 	}
 
 	private void onDrawFrame(float[] viewMatrix, float[] projectionMatrix, float[] viewProjectionMatrix,
-							float[] lightPosInEyeSpace, float[] colorMask) {
+							float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPosInWorldSpace) {
 
 
 		SceneLoader scene = main.getModelActivity().getScene();
@@ -277,22 +289,34 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
 			Object3D lightBulbDrawer = drawer.getPointDrawer();
 
-			Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, scene.getLightBulb().getModelMatrix(), 0);
+			// Calculate position of the light in world space to support lighting
+			if (scene.isRotatingLight()) {
+				Matrix.multiplyMV(lightPosInWorldSpace, 0, scene.getLightBulb().getModelMatrix(), 0, scene.getLightPosition(), 0);
+				// Draw a point that represents the light bulb
+				lightBulbDrawer.draw(scene.getLightBulb(), projectionMatrix, viewMatrix, -1, lightPosInWorldSpace,
+						colorMask, cameraPosInWorldSpace);
+			} else {
+				lightPosInWorldSpace[0] = scene.getCamera().xPos;
+				lightPosInWorldSpace[1] = scene.getCamera().yPos;
+				lightPosInWorldSpace[2] = scene.getCamera().zPos;
+                lightPosInWorldSpace[3] = 0;
+			}
 
-			// Calculate position of the light in eye space to support lighting
-			Matrix.multiplyMV(lightPosInEyeSpace, 0, modelViewMatrix, 0, scene.getLightPosition(), 0);
-
-			// Draw a point that represents the light bulb
-			lightBulbDrawer.draw(scene.getLightBulb(), projectionMatrix, viewMatrix, -1, lightPosInEyeSpace,
-					colorMask);
-
+			// FIXME: memory leak
+			if (scene.isDrawNormals()) {
+				lightBulbDrawer.draw(Object3DBuilder.buildLine(new float[]{lightPosInWorldSpace[0],
+								lightPosInWorldSpace[1], lightPosInWorldSpace[2], 0, 0, 0}), projectionMatrix,
+						viewMatrix, -1,
+                        lightPosInWorldSpace,
+						colorMask, cameraPosInWorldSpace);
+			}
 		}
 
 		// draw axis
         if (scene.isDrawAxis()){
 			Object3D basicDrawer = drawer.getPointDrawer();
 			basicDrawer.draw(axis, projectionMatrix, viewMatrix, axis.getDrawMode(), axis
-					.getDrawSize(),-1, lightPosInEyeSpace, colorMask);
+					.getDrawSize(),-1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
         }
 
 
@@ -326,12 +350,12 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				// load model texture
 				Integer textureId = textures.get(objData.getTextureData());
 				if (textureId == null && objData.getTextureData() != null) {
-					//Log.i("ModelRenderer","Loading texture '"+objData.getTextureFile()+"'...");
+					Log.i("ModelRenderer","Loading texture '"+objData.getTextureFile()+"'...");
 					ByteArrayInputStream textureIs = new ByteArrayInputStream(objData.getTextureData());
 					textureId = GLUtil.loadTexture(textureIs);
 					textureIs.close();
 					textures.put(objData.getTextureData(), textureId);
-					//Log.i("GLUtil", "Loaded texture ok");
+					Log.i("GLUtil", "Loaded texture ok. id: "+textureId);
 				}
 				if (textureId == null){
 					textureId = -1;
@@ -340,7 +364,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				// draw points
 				if (objData.getDrawMode() == GLES20.GL_POINTS){
 					Object3D basicDrawer = drawer.getPointDrawer();
-					basicDrawer.draw(objData, projectionMatrix, viewMatrix, GLES20.GL_POINTS,lightPosInEyeSpace);
+					basicDrawer.draw(objData, projectionMatrix, viewMatrix, GLES20.GL_POINTS, lightPosInWorldSpace, cameraPosInWorldSpace);
 				}
 
 				// draw wireframe
@@ -357,8 +381,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 							wireframes.put(objData, wireframe);
 						}
 						drawerObject.draw(wireframe, projectionMatrix, viewMatrix, wireframe.getDrawMode(),
-								wireframe.getDrawSize(), textureId, lightPosInEyeSpace,
-								colorMask);
+								wireframe.getDrawSize(), textureId, lightPosInWorldSpace,
+								colorMask, cameraPosInWorldSpace);
 						animator.update(wireframe, scene.isShowBindPose());
 					}catch(Error e){
 						Log.e("ModelRenderer",e.getMessage(),e);
@@ -369,7 +393,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 				else if (scene.isDrawPoints() || objData.getFaces() == null || !objData.getFaces().loaded()){
 						drawerObject.draw(objData, projectionMatrix, viewMatrix
 								, GLES20.GL_POINTS, objData.getDrawSize(),
-								textureId, lightPosInEyeSpace, colorMask);
+								textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
 				}
 
 				// draw skeleton
@@ -383,13 +407,13 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 					animator.update(skeleton, scene.isShowBindPose());
 					drawerObject = drawer.getDrawer(skeleton, false, scene.isDrawLighting(), scene
                             .isDoAnimation(), scene.isDrawColors());
-					drawerObject.draw(skeleton, projectionMatrix, viewMatrix,-1, lightPosInEyeSpace, colorMask);
+					drawerObject.draw(skeleton, projectionMatrix, viewMatrix,-1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
 				}
 
 				// draw solids
 				else {
 						drawerObject.draw(objData, projectionMatrix, viewMatrix,
-								textureId, lightPosInEyeSpace, colorMask);
+								textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
 				}
 
 				// Draw bounding box
@@ -401,7 +425,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     }
                     Object3D boundingBoxDrawer = drawer.getBoundingBoxDrawer();
 					boundingBoxDrawer.draw(boundingBoxData, projectionMatrix, viewMatrix, -1,
-							lightPosInEyeSpace, colorMask);
+                            lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
 				}
 
 				// Draw normals
@@ -415,8 +439,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 						}
 					}
 					if (normalData != null) {
-						Object3D normalsDrawer = drawer.getFaceNormalsDrawer();
-						normalsDrawer.draw(normalData, projectionMatrix, viewMatrix, -1, null);
+						Object3D normalsDrawer = drawer.getDrawer(normalData,false,false,scene.isDoAnimation(),
+								false);
+						animator.update(normalData, scene.isShowBindPose());
+						normalsDrawer.draw(normalData, projectionMatrix, viewMatrix, -1, null,
+                                lightPosInWorldSpace, cameraPosInWorldSpace);
 					}
 				}
 

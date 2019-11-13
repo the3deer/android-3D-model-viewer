@@ -27,6 +27,9 @@ public class Camera {
 	private Object[] lastAction;
 	private boolean changed = false;
 
+	// cache
+	private float[] coordinates = new float[16];
+
 	public Camera() {
 		// Initialize variables...
 		this(0, 0, 6, 0, 0, 0, 0, 1, 0);
@@ -197,7 +200,19 @@ public class Camera {
 		yArriba /= vlen;
 		zArriba /= vlen;
 
-		float[] coordinates = new float[] { xPos, yPos, zPos, 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
+		// coordinates = new float[] { xPos, yPos, zPos, 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
+		coordinates[0]=xPos;
+		coordinates[1]=yPos;
+		coordinates[2]=zPos;
+		coordinates[3]=1;
+		coordinates[4]=xView;
+		coordinates[5]=yView;
+		coordinates[6]=zView;
+		coordinates[7]=1;
+		coordinates[8]=xUp;
+		coordinates[9]=yUp;
+		coordinates[10]=zUp;
+		coordinates[11]=1;
 
 		if (dX != 0 && dY != 0) {
 
@@ -309,7 +324,19 @@ public class Camera {
 		zLook /= vlen;
 
 		createRotationMatrixAroundVector(buffer, 24, rotViewerZ, xLook, yLook, zLook);
-		float[] coordinates = new float[] { xPos, yPos, zPos, 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
+		// float[] coordinates = new float[] { xPos, yPos, zPos, 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
+		coordinates[0]=xPos;
+		coordinates[1]=yPos;
+		coordinates[2]=zPos;
+		coordinates[3]=1;
+		coordinates[4]=xView;
+		coordinates[5]=yView;
+		coordinates[6]=zView;
+		coordinates[7]=1;
+		coordinates[8]=xUp;
+		coordinates[9]=yUp;
+		coordinates[10]=zUp;
+		coordinates[11]=1;
 		multiplyMMV(buffer, 0, buffer, 24, coordinates, 0);
 
 		xPos = buffer[0];

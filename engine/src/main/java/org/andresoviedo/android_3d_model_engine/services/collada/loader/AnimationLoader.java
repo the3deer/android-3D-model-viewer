@@ -6,6 +6,7 @@ import android.util.Log;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.AnimationData;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.JointTransformData;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.KeyFrameData;
+import org.andresoviedo.util.math.Math3DUtils;
 import org.andresoviedo.util.xml.XmlNode;
 
 import java.util.ArrayList;
@@ -170,8 +171,8 @@ public class AnimationLoader {
 		for(int i=0;i<rawTimes.length;i++){
 			Float keyTime = Float.parseFloat(rawTimes[i]);
 			float[] matrixData = new float[16];
-			Matrix.setIdentityM(matrixData,0);
-			Matrix.rotateM(matrixData,0,matrixData,0, Float.parseFloat(rawData[i]), 0,1,0);
+			Matrix.setRotateM(matrixData,0, Float.parseFloat(rawData[i]), 0,0,1);
+			Log.v("AnimationLoader","z matrix: "+ Math3DUtils.toString(matrixData,0));
 			keyFrames[keyTimes.indexOf(keyTime)].addJointTransform(new JointTransformData(jointName, matrixData));
 		}
 	}

@@ -21,8 +21,8 @@ public class JointData {
 	// attributes
 	private final String id;
 	private final String name;
-    private String instance_geometry;
-    private Map<String,String> materials;
+    private final String instance_geometry;
+    private final Map<String,String> materials;
 
 	// sum up of all matrix up to the "root"
 	private final float[] bindLocalTransform;

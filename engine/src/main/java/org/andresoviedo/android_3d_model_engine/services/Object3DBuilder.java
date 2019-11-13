@@ -16,7 +16,6 @@ import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoad
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoader.Materials;
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoader.Tuple3;
 import org.andresoviedo.util.android.ContentUtils;
-import org.andresoviedo.util.io.IOUtils;
 import org.andresoviedo.util.math.Math3DUtils;
 
 import java.io.BufferedReader;
@@ -30,7 +29,6 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public final class Object3DBuilder {
 
@@ -507,7 +505,7 @@ public final class Object3DBuilder {
 					v2[1] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3 + 1);
 					v2[2] = vertexBuffer.get(faces.getIndexBuffer().get(i + 2) * 3 + 2);
 
-					float[] normal = Math3DUtils.calculateFaceNormal2(v0, v1, v2);
+					float[] normal = Math3DUtils.calculateNormal(v0, v1, v2);
 
 					vertexNormalsArrayBuffer.put(i*3,normal[0]);
 					vertexNormalsArrayBuffer.put(i*3+1,normal[1]);
@@ -713,11 +711,13 @@ public final class Object3DBuilder {
 				}
 				if (objData instanceof AnimatedModel){
 					AnimatedModel object3DData = new AnimatedModel(objData.getVertexArrayBuffer());
-					object3DData.setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder).
-							setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
+					object3DData.setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder)
+							.setVertexNormalsBuffer(objData.getVertexNormalsBuffer())
+							.setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData
+							.getColor())
 							.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
 							.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
-							.setDrawMode(GLES20.GL_LINES).setDrawUsingArrays(false);
+							.setDrawMode(GLES20.GL_LINES);
 					object3DData.setVertexWeights(((AnimatedModel) objData).getVertexWeights());
 					object3DData.setJointIds(((AnimatedModel) objData).getJointIds());
 					object3DData.setRootJoint(((AnimatedModel) objData).getRootJoint(), ((AnimatedModel) objData)
@@ -727,11 +727,13 @@ public final class Object3DBuilder {
 					return object3DData;
 				}
 				else {
-					return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder).
-							setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
+					return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer())
+							.setDrawOrder(wireframeDrawOrder)
+							.setVertexNormalsBuffer(objData.getVertexNormalsBuffer())
+							.setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
 							.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
 							.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
-							.setDrawMode(GLES20.GL_LINES).setDrawUsingArrays(false);
+							.setDrawMode(GLES20.GL_LINES);
 				}
 			} catch (Exception ex) {
 				Log.e("Object3DBuilder", ex.getMessage(), ex);
@@ -749,11 +751,13 @@ public final class Object3DBuilder {
 				wireframeDrawOrder.put(i+2);
 				wireframeDrawOrder.put(i);
 			}
-			return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder).
-					setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
+			return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer())
+					.setDrawOrder(wireframeDrawOrder)
+					.setVertexNormalsBuffer(objData.getVertexNormalsBuffer())
+					.setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
 					.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
 					.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
-					.setDrawMode(GLES20.GL_LINES).setDrawUsingArrays(false);
+					.setDrawMode(GLES20.GL_LINES);
 		}
 		return objData;
 	}
@@ -806,9 +810,10 @@ public final class Object3DBuilder {
 		}
 
 		FloatBuffer normalsLines;
+
 		IntBuffer drawBuffer = obj.getDrawOrder();
 		if (drawBuffer != null) {
-			Log.v("Builder", "Generating face normals for '" + obj.getId() + "' using indices...");
+			Log.i("Object3DBuilder", "Generating face normal lines for '" + obj.getId() + "' using indices...");
 			int size = /* 2 points */ 2 * 3 * /* 3 points per face */ (drawBuffer.capacity() / 3)
 					* /* bytes per float */4;
 			normalsLines = createNativeByteBuffer(size).asFloatBuffer();
@@ -817,10 +822,24 @@ public final class Object3DBuilder {
 				int v1 = drawBuffer.get() * COORDS_PER_VERTEX;
 				int v2 = drawBuffer.get() * COORDS_PER_VERTEX;
 				int v3 = drawBuffer.get() * COORDS_PER_VERTEX;
-				float[][] normalLine = Math3DUtils.calculateFaceNormal(
-						new float[]{vertexBuffer.get(v1), vertexBuffer.get(v1 + 1), vertexBuffer.get(v1 + 2)},
-						new float[]{vertexBuffer.get(v2), vertexBuffer.get(v2 + 1), vertexBuffer.get(v2 + 2)},
-						new float[]{vertexBuffer.get(v3), vertexBuffer.get(v3 + 1), vertexBuffer.get(v3 + 2)});
+				float[][] normalLine;
+				if (obj.getVertexNormalsBuffer() != null) {
+					Log.v("Object3DBuilder","Using normal buffer...");
+					float[] normal = new float[]{obj.getVertexNormalsBuffer().get(v1),
+							obj.getVertexNormalsBuffer().get(v1+1),
+							obj.getVertexNormalsBuffer().get(v1+2)};
+					normalLine = Math3DUtils.getNormalLine2(
+							new float[]{vertexBuffer.get(v1), vertexBuffer.get(v1 + 1), vertexBuffer.get(v1 + 2)},
+							new float[]{vertexBuffer.get(v2), vertexBuffer.get(v2 + 1), vertexBuffer.get(v2 + 2)},
+							new float[]{vertexBuffer.get(v3), vertexBuffer.get(v3 + 1), vertexBuffer.get(v3 + 2)},
+							normal);
+				} else {
+					Log.v("Object3DBuilder","Calculating normal...");
+					normalLine = Math3DUtils.getNormalLine(
+							new float[]{vertexBuffer.get(v1), vertexBuffer.get(v1 + 1), vertexBuffer.get(v1 + 2)},
+							new float[]{vertexBuffer.get(v2), vertexBuffer.get(v2 + 1), vertexBuffer.get(v2 + 2)},
+							new float[]{vertexBuffer.get(v3), vertexBuffer.get(v3 + 1), vertexBuffer.get(v3 + 2)});
+				}
 				normalsLines.put(normalLine[0]).put(normalLine[1]);
 			}
 		} else {
@@ -831,11 +850,11 @@ public final class Object3DBuilder {
 				return null;
 			}
 
-			Log.v("Builder", "Generating face normals for '" + obj.getId() + "'...");
+			Log.v("Object3DBuilder", "Generating face normal lines for '" + obj.getId() + "'...");
 			normalsLines = createNativeByteBuffer(6 * vertexBuffer.capacity() / 9 * 4).asFloatBuffer();
 			vertexBuffer.position(0);
 			for (int i = 0; i < vertexBuffer.capacity() / /* COORDS_PER_VERTEX */ 3 / /* VERTEX_PER_FACE */3; i++) {
-				float[][] normalLine = Math3DUtils.calculateFaceNormal(
+				float[][] normalLine = Math3DUtils.getNormalLine(
 						new float[]{vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get()},
 						new float[]{vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get()},
 						new float[]{vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get()});
@@ -850,9 +869,200 @@ public final class Object3DBuilder {
 			}
 		}
 
-		return new Object3DData(normalsLines).setDrawMode(GLES20.GL_LINES).setColor(obj.getColor())
-				.setPosition(obj.getPosition()).setVersion(1);
+		if (obj instanceof AnimatedModel) {
+		    Log.i("Object3DBuilder","New face-normals animated model");
+
+            FloatBuffer jointIds = ((AnimatedModel) obj).getJointIds();
+            FloatBuffer vertexWeights = ((AnimatedModel) obj).getVertexWeights();
+
+            if (drawBuffer != null) {
+
+                int newIdxCapacity = (drawBuffer.capacity() / 3) * 2 * 3;
+                Log.v("Object3DBuilder","face-normals. original index capacity: "+jointIds.capacity()
+                        +" new capacity: " +newIdxCapacity);
+
+                // build new joint info
+                final FloatBuffer newJointIds = createNativeByteBuffer(newIdxCapacity * 4).asFloatBuffer();
+                newJointIds.position(0);
+                final FloatBuffer newVertexWeights = createNativeByteBuffer(newIdxCapacity * 4).asFloatBuffer();
+                newVertexWeights.position(0);
+                drawBuffer.position(0);
+                for (int i = 0; i < drawBuffer.capacity(); i += 3 /* MAX_WEIGHTS x 2 vertex */) {
+
+                    int offsetI1 = drawBuffer.get() * 3;
+                    int offsetI2 = drawBuffer.get() * 3;
+                    int offsetI3 = drawBuffer.get() * 3;
+
+                    newJointIds.put(jointIds.get(offsetI1));
+                    newJointIds.put(jointIds.get(offsetI1+1));
+                    newJointIds.put(jointIds.get(offsetI1+2));
+                    newVertexWeights.put(vertexWeights.get(offsetI1));
+                    newVertexWeights.put(vertexWeights.get(offsetI1 + 1));
+                    newVertexWeights.put(vertexWeights.get(offsetI1 + 2));
+
+                    newJointIds.put(jointIds.get(offsetI2));
+                    newJointIds.put(jointIds.get(offsetI2 + 1));
+                    newJointIds.put(jointIds.get(offsetI2 + 2));
+                    newVertexWeights.put(vertexWeights.get(offsetI2));
+                    newVertexWeights.put(vertexWeights.get(offsetI2 + 1));
+                    newVertexWeights.put(vertexWeights.get(offsetI2 + 2));
+                }
+                jointIds = newJointIds;
+                vertexWeights = newVertexWeights;
+            }
+
+			AnimatedModel faceNormalsModel = new AnimatedModel(normalsLines);
+			faceNormalsModel.setDrawMode(GLES20.GL_LINES).setColor(obj.getColor());
+			faceNormalsModel.setPosition(obj.getPosition());
+			faceNormalsModel.setScale(obj.getScale());
+
+			faceNormalsModel.doAnimation(((AnimatedModel) obj).getAnimation());
+			faceNormalsModel.setRootJoint(((AnimatedModel) obj).getRootJoint(),
+                    ((AnimatedModel) obj).getJointCount(),
+                    ((AnimatedModel) obj).getBoneCount());
+            faceNormalsModel.setJointIds(jointIds);
+            faceNormalsModel.setVertexWeights(vertexWeights);
+			faceNormalsModel.setBindShapeMatrix(obj.getBindShapeMatrix());
+            Log.i("Object3DBuilder","New [animated] face normal lines object created");
+			return faceNormalsModel;
+		} else {
+            Object3DData faceNormalsModel = new Object3DData(normalsLines);
+            faceNormalsModel.setDrawMode(GLES20.GL_LINES).setColor(obj.getColor());
+            faceNormalsModel.setPosition(obj.getPosition());
+            faceNormalsModel.setScale(obj.getScale());
+		    Log.i("Object3DBuilder","New face normal lines object created");
+            return faceNormalsModel;
+		}
 	}
+
+    /**
+     * Generate a new object that contains all the line normals for all the faces for the specified object
+     * <p>
+     * TODO: This only works for objects made of triangles. Make it useful for any kind of polygonal face
+     *
+     * @param obj the object to which we calculate the normals.
+     * @return the model with all the normal lines
+     */
+    public static Object3DData buildFaceNormals2(Object3DData obj) {
+        if (obj.getDrawMode() != GLES20.GL_TRIANGLES) {
+            return null;
+        }
+
+        FloatBuffer vertexBuffer = obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer()
+                : obj.getVertexBuffer();
+        if (vertexBuffer == null) {
+            Log.v("Object3DBuilder", "Generating face normals for '" + obj.getId() + "' I found that there is no vertex data");
+            return null;
+        }
+
+        FloatBuffer normalsLines;
+        IntBuffer drawBuffer = obj.getDrawOrder();
+        if (drawBuffer != null) {
+            Log.v("Object3DBuilder", "Generating face normals for '" + obj.getId() + "' using indices...");
+            int size = /* 2 points */ 2 * 3 * /* 3 points per face */ (drawBuffer.capacity() / 3)
+                    * /* bytes per float */4;
+            normalsLines = createNativeByteBuffer(size).asFloatBuffer();
+            drawBuffer.position(0);
+            for (int i = 0; i < drawBuffer.capacity(); i += 3) {
+                int v1 = drawBuffer.get() * COORDS_PER_VERTEX;
+                int v2 = drawBuffer.get() * COORDS_PER_VERTEX;
+                int v3 = drawBuffer.get() * COORDS_PER_VERTEX;
+                float[][] normalLine = Math3DUtils.getNormalLine(
+                        new float[]{vertexBuffer.get(v1), vertexBuffer.get(v1 + 1), vertexBuffer.get(v1 + 2)},
+                        new float[]{vertexBuffer.get(v2), vertexBuffer.get(v2 + 1), vertexBuffer.get(v2 + 2)},
+                        new float[]{vertexBuffer.get(v3), vertexBuffer.get(v3 + 1), vertexBuffer.get(v3 + 2)});
+                normalsLines.put(normalLine[0]).put(normalLine[1]);
+            }
+        } else {
+            if (vertexBuffer.capacity() % (/* COORDS_PER_VERTEX */3 * /* VERTEX_PER_FACE */ 3) != 0) {
+                // something in the data is wrong
+                Log.v("Builder", "Generating face normals for '" + obj.getId()
+                        + "' I found that vertices are not multiple of 9 (3*3): " + vertexBuffer.capacity());
+                return null;
+            }
+
+            Log.v("Object3DBuilder", "Generating face normals for '" + obj.getId() + "'...");
+            normalsLines = createNativeByteBuffer(6 * vertexBuffer.capacity() / 9 * 4).asFloatBuffer();
+            vertexBuffer.position(0);
+            for (int i = 0; i < vertexBuffer.capacity() / /* COORDS_PER_VERTEX */ 3 / /* VERTEX_PER_FACE */3; i++) {
+                float[][] normalLine = Math3DUtils.getNormalLine(
+                        new float[]{vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get()},
+                        new float[]{vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get()},
+                        new float[]{vertexBuffer.get(), vertexBuffer.get(), vertexBuffer.get()});
+                normalsLines.put(normalLine[0]).put(normalLine[1]);
+
+                // debug
+                @SuppressWarnings("unused")
+                String normal = new StringBuilder().append(normalLine[0][0]).append(",").append(normalLine[0][1])
+                        .append(",").append(normalLine[0][2]).append("-").append(normalLine[1][0]).append(",")
+                        .append(normalLine[1][1]).append(",").append(normalLine[1][2]).toString();
+                // Log.v("Builder", "fNormal[" + i + "]:(" + normal + ")");
+            }
+        }
+
+        if (obj instanceof AnimatedModel) {
+            Log.i("Object3DBuilder","New face-normals animated model");
+
+            FloatBuffer jointIds = ((AnimatedModel) obj).getJointIds();
+            FloatBuffer vertexWeights = ((AnimatedModel) obj).getVertexWeights();
+
+            if (drawBuffer != null) {
+
+                int newIdxCapacity = (drawBuffer.capacity() / 3) * 2 * 3;
+                Log.v("Object3DBuilder","face-normals. original index capacity: "+jointIds.capacity()
+                        +" new capacity: " +newIdxCapacity);
+
+                // build new joint info
+                final FloatBuffer newJointIds = createNativeByteBuffer(newIdxCapacity * 4).asFloatBuffer();
+                newJointIds.position(0);
+                final FloatBuffer newVertexWeights = createNativeByteBuffer(newIdxCapacity * 4).asFloatBuffer();
+                newVertexWeights.position(0);
+                drawBuffer.position(0);
+                for (int i = 0; i < drawBuffer.capacity(); i += 3 /* MAX_WEIGHTS x 2 vertex */) {
+
+                    int offsetI1 = drawBuffer.get() * 3;
+                    int offsetI2 = drawBuffer.get() * 3;
+                    int offsetI3 = drawBuffer.get() * 3;
+
+                    newJointIds.put(jointIds.get(offsetI1));
+                    newJointIds.put(jointIds.get(offsetI1+1));
+                    newJointIds.put(jointIds.get(offsetI1+2));
+                    newVertexWeights.put(vertexWeights.get(offsetI1));
+                    newVertexWeights.put(vertexWeights.get(offsetI1 + 1));
+                    newVertexWeights.put(vertexWeights.get(offsetI1 + 2));
+
+                    newJointIds.put(jointIds.get(offsetI2));
+                    newJointIds.put(jointIds.get(offsetI2 + 1));
+                    newJointIds.put(jointIds.get(offsetI2 + 2));
+                    newVertexWeights.put(vertexWeights.get(offsetI2));
+                    newVertexWeights.put(vertexWeights.get(offsetI2 + 1));
+                    newVertexWeights.put(vertexWeights.get(offsetI2 + 2));
+                }
+                jointIds = newJointIds;
+                vertexWeights = newVertexWeights;
+            }
+
+            AnimatedModel faceNormalsModel = new AnimatedModel(normalsLines);
+            faceNormalsModel.setDrawMode(GLES20.GL_LINES).setColor(obj.getColor());
+            faceNormalsModel.setPosition(obj.getPosition());
+            faceNormalsModel.setScale(obj.getScale());
+
+            faceNormalsModel.doAnimation(((AnimatedModel) obj).getAnimation());
+            faceNormalsModel.setRootJoint(((AnimatedModel) obj).getRootJoint(),
+                    ((AnimatedModel) obj).getJointCount(),
+                    ((AnimatedModel) obj).getBoneCount());
+            faceNormalsModel.setJointIds(jointIds);
+            faceNormalsModel.setVertexWeights(vertexWeights);
+            faceNormalsModel.setBindShapeMatrix(obj.getBindShapeMatrix());
+            return faceNormalsModel;
+        } else {
+            Object3DData faceNormalsModel = new Object3DData(normalsLines);
+            faceNormalsModel.setDrawMode(GLES20.GL_LINES).setColor(obj.getColor());
+            faceNormalsModel.setPosition(obj.getPosition());
+            faceNormalsModel.setScale(obj.getScale());
+            return faceNormalsModel;
+        }
+    }
 
 	public static AnimatedModel buildSkeleton(AnimatedModel animatedModel){
         float[] identity = new float[16];
@@ -890,7 +1100,7 @@ public final class Object3DBuilder {
         float[] point1 = new float[]{point[0],point[1],point[2]-Matrix.length(v[0],v[1],v[2])*0.05f};
         float[] point2 = new float[]{point[0],point[1],point[2]+Matrix.length(v[0],v[1],v[2])*0.05f};
 
-        float[] normal = Math3DUtils.calculateFaceNormal2(parentPoint, point1, point2);
+        float[] normal = Math3DUtils.calculateNormal(parentPoint, point1, point2);
 
         // TODO: remove this
         /*parentPoint = new float[]{vertexBuffer.get((int)(100* Math.random())),vertexBuffer.get((int)(100* Math.random

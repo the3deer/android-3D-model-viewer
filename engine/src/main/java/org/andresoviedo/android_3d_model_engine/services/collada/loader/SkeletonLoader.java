@@ -43,7 +43,7 @@ public class SkeletonLoader {
 	public SkeletonData extractBoneData(){
 
 		Log.i("SkeletonLoader", "Loading skeleton...");
-		if (this.skinningDataMap != null) {
+		if (this.skinningDataMap != null && skinningDataMap.size() > 0) {
 			skinningData = this.skinningDataMap.values().iterator().next();
 			this.boneOrder = skinningData.jointOrder;
 		} else{
@@ -117,7 +117,8 @@ public class SkeletonLoader {
 
         if (jointNode.getChild("translate") != null) {
 			XmlNode translateNode = jointNode.getChild("translate");
-			float[] translate = Math3DUtils.parseFloat(translateNode.getData().trim().split("\\s+"));
+			float[] translate = Math3DUtils.parseFloat(translateNode.getData().trim().
+					replace(',','.').split("\\s+"));
 			Matrix.translateM(matrix, 0, translate[0], translate[1], translate[2]);
 			matrixFound = true;
 		}
@@ -132,14 +133,15 @@ public class SkeletonLoader {
 
 		if (jointNode.getChild("scale") != null){
 			XmlNode scaleNode = jointNode.getChild("scale");
-			float[] scale = Math3DUtils.parseFloat(scaleNode.getData().trim().split("\\s+"));
+			float[] scale = Math3DUtils.parseFloat(scaleNode.getData().trim().
+					replace(',','.').split("\\s+"));
 			Matrix.scaleM(matrix,0,scale[0], scale[1], scale[2]);
 			matrixFound = true;
 		}
 
 		// if no transformation was found, then this is not part of the skeleton transformation
 		if (!matrixFound){
-			return null;
+			// return null;
 		} else {
 			jointCount++;
 		}
@@ -150,31 +152,32 @@ public class SkeletonLoader {
 		String nodeId = jointNode.getAttribute("id");
 		String geometryId = null;
 		Map<String,String> materials = new HashMap<>();
-		if (jointNode.getChild("instance_geometry") != null){
-			XmlNode instance_geometry_node = jointNode.getChild("instance_geometry");
-			if (instance_geometry_node != null){
-			    if (instance_geometry_node.getAttribute("url") != null) {
-                    geometryId = instance_geometry_node.getAttribute("url").substring(1);
-                }
+		XmlNode instance_geometry_node = jointNode.getChild("instance_geometry");
+		if (instance_geometry_node == null){
+			instance_geometry_node = jointNode.getChild("instance_controller");
+		}
+		if (instance_geometry_node != null){
+			if (instance_geometry_node.getAttribute("url") != null) {
+				geometryId = instance_geometry_node.getAttribute("url").substring(1);
+			}
 
-                try {
-                    XmlNode bind_material = instance_geometry_node.getChild("bind_material");
-                    if (bind_material != null){
-                        XmlNode technique_common = bind_material.getChild("technique_common");
-                        if (technique_common != null){
-                            XmlNode instance_material = technique_common.getChild("instance_material");
-                            if (instance_material != null){
-                                String material_symbol = instance_material.getAttribute("symbol");
-                                String material_name = instance_material.getAttribute("target").substring(1);
-                                materials.put(material_symbol,material_name);
-                                Log.v("SkeletonLoader","Loaded material: "+material_symbol+"->"+material_name);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.e("SkeletonLoader","Error loading material bindings... "+e.getMessage());
-                }
-            }
+			try {
+				XmlNode bind_material = instance_geometry_node.getChild("bind_material");
+				if (bind_material != null){
+					XmlNode technique_common = bind_material.getChild("technique_common");
+					if (technique_common != null){
+						XmlNode instance_material = technique_common.getChild("instance_material");
+						if (instance_material != null){
+							String material_symbol = instance_material.getAttribute("symbol");
+							String material_name = instance_material.getAttribute("target").substring(1);
+							materials.put(material_symbol,material_name);
+							Log.v("SkeletonLoader","Loaded material: "+material_symbol+"->"+material_name);
+						}
+					}
+				}
+			} catch (Exception e) {
+				Log.e("SkeletonLoader","Error loading material bindings... "+e.getMessage());
+			}
 		}
 
 		// is this a joint bone?
@@ -207,7 +210,6 @@ public class SkeletonLoader {
 			}
 		}
 
-		// FIXME: is this really needed for modelMatrix?
 		final float[] bindTransform = new float[16];
         Matrix.multiplyMM(bindTransform, 0, parent.getBindTransform(), 0, matrix, 0);
 

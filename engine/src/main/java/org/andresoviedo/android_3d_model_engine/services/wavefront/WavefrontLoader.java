@@ -572,6 +572,14 @@ public class WavefrontLoader {
 			return new Tuple3(xc, yc, zc);
 		} // end of getCenter()
 
+		public float[] getCornerLeftTopNearVector(){
+			return new float[]{leftPt,topPt,nearPt,1};
+		}
+
+		public float[] getCornerRightBottomFar(){
+			return new float[]{rightPt,bottomPt,farPt,1};
+		}
+
 		public void reportDimensions() {
 			Tuple3 center = getCenter();
 
@@ -585,6 +593,16 @@ public class WavefrontLoader {
 			System.out.println("  Mid: " + df.format(center.getZ()) + "; Depth: " + df.format(getDepth()));
 		} // end of reportDimensions()
 
+		@Override
+		public String toString() {
+			float xc = (rightPt + leftPt) / 2.0f;
+			float yc = (topPt + bottomPt) / 2.0f;
+			float zc = (nearPt + farPt) / 2.0f;
+
+			return "ModelDimensions{" +
+					", center: "+xc+","+yc+","+zc+
+					", area: "+(getWidth()*getHeight()*getDepth());
+		}
 	} // end of ModelDimensions class
 
 	public static class Materials {

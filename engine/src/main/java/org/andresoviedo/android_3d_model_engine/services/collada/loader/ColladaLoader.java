@@ -66,6 +66,7 @@ public class ColladaLoader {
 			// notify succeded!
 			AnimatedModel data3D = new AnimatedModel(vertexBuffer);
 			data3D.setVertexBuffer(vertexBuffer);
+			data3D.setVertexNormalsBuffer(meshData.getNormalsBuffer());
 			data3D.setVertexNormalsArrayBuffer(normalsBuffer);
 			data3D.setTextureFile(meshData.getTexture());
 			if (meshData.getTextureCoords() != null) {
@@ -78,7 +79,6 @@ public class ColladaLoader {
 			data3D.setVertexColorsArrayBuffer(meshData.getColorsBuffer());
 			data3D.setDimensions(new WavefrontLoader.ModelDimensions());
 			data3D.setDrawOrder(indexBuffer);
-			data3D.setDrawUsingArrays(false);
 			data3D.setDrawMode(GLES20.GL_TRIANGLES);
 
 			if (meshData.getJointIds() != null) {
@@ -153,7 +153,7 @@ public class ColladaLoader {
 			Log.v("ColladaLoaderTask", "Loading buffers...'");
 			data.setId(meshData.getId());
 			data.getVertexArrayBuffer().put(vertices);
-			data.getVertexNormalsArrayBuffer().put(meshData.getNormals());
+			data.getVertexNormalsArrayBuffer().put(meshData.getNormalsArray());
 			data.setVertexColorsArrayBuffer(meshData.getColorsBuffer());
 			indexBuffer.put(meshData.getIndices());
 			data.setFaces(new WavefrontLoader.Faces(data.getVertexArrayBuffer().capacity() / 3));
