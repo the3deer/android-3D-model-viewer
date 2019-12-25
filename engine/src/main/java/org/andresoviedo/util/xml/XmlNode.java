@@ -1,6 +1,7 @@
 package org.andresoviedo.util.xml;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,16 +12,15 @@ import java.util.Map;
  * tag, and a list of all its children nodes.
  * 
  * @author Karl
- *
  */
-public class XmlNode {
+public final class XmlNode {
 
 	private String name;
 	private Map<String, String> attributes;
 	private String data;
 	private Map<String, List<XmlNode>> childNodes;
 
-	protected XmlNode(String name) {
+    XmlNode(String name) {
 		this.name = name;
 	}
 
@@ -43,8 +43,7 @@ public class XmlNode {
 	 * Gets the value of a certain attribute of the node. Returns {@code null}
 	 * if the attribute doesn't exist.
 	 * 
-	 * @param attr
-	 *            - the name of the attribute.
+     * @param attr - the name of the attribute.
 	 * @return The value of the attribute.
 	 */
 	public String getAttribute(String attr) {
@@ -58,8 +57,7 @@ public class XmlNode {
 	/**
 	 * Gets a certain child node of this node.
 	 * 
-	 * @param childName
-	 *            - the name of the child node.
+     * @param childName - the name of the child node.
 	 * @return The child XML node with the given name.
 	 */
 	public XmlNode getChild(String childName) {
@@ -78,12 +76,9 @@ public class XmlNode {
 	 * attribute. Used to get a specific child when there are multiple child
 	 * nodes with the same node name.
 	 * 
-	 * @param childName
-	 *            - the name of the child node.
-	 * @param attr
-	 *            - the attribute whose value is to be checked.
-	 * @param value
-	 *            - the value that the attribute must have.
+     * @param childName - the name of the child node.
+     * @param attr      - the attribute whose value is to be checked.
+     * @param value     - the value that the attribute must have.
 	 * @return The child node which has the correct name and the correct value
 	 *         for the chosen attribute.
 	 */
@@ -104,8 +99,7 @@ public class XmlNode {
 	/**
 	 * Get the child nodes of this node that have a given name.
 	 * 
-	 * @param name
-	 *            - the name of the child nodes.
+     * @param name - the name of the child nodes.
 	 * @return A list of the child nodes with the given name. If none exist then
 	 *         an empty list is returned.
 	 */
@@ -116,7 +110,7 @@ public class XmlNode {
 				return children;
 			}
 		}
-		return new ArrayList<XmlNode>();
+        return Collections.emptyList();
 	}
 
 	/**
@@ -124,14 +118,12 @@ public class XmlNode {
 	 * Attributes are stored in a HashMap which is initialized in here if it was
 	 * previously null.
 	 * 
-	 * @param attr
-	 *            - the name of the attribute.
-	 * @param value
-	 *            - the value of the attribute.
+     * @param attr  - the name of the attribute.
+     * @param value - the value of the attribute.
 	 */
 	protected void addAttribute(String attr, String value) {
 		if (attributes == null) {
-			attributes = new HashMap<String, String>();
+			attributes = new HashMap<>();
 		}
 		attributes.put(attr, value);
 	}
@@ -139,16 +131,15 @@ public class XmlNode {
 	/**
 	 * Adds a child node to this node.
 	 * 
-	 * @param child
-	 *            - the child node to add.
+     * @param child - the child node to add.
 	 */
 	protected void addChild(XmlNode child) {
 		if (childNodes == null) {
-			childNodes = new HashMap<String, List<XmlNode>>();
+            childNodes = new HashMap<>();
 		}
 		List<XmlNode> list = childNodes.get(child.name);
 		if (list == null) {
-			list = new ArrayList<XmlNode>();
+            list = new ArrayList<>();
 			childNodes.put(child.name, list);
 		}
 		list.add(child);
@@ -157,8 +148,7 @@ public class XmlNode {
 	/**
 	 * Sets some data for this node.
 	 * 
-	 * @param data
-	 *            - the data for this node (text that is found between the start
+     * @param data - the data for this node (text that is found between the start
 	 *            and end tags of this node).
 	 */
 	protected void setData(String data) {

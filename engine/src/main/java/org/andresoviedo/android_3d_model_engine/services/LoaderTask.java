@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author andresoviedo
  */
-public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DData>> {
+public abstract class LoaderTask extends AsyncTask<Void, String, List<Object3DData>> {
 
 	/**
 	 * URL to the 3D model
@@ -36,8 +36,6 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 	 */
 	public LoaderTask(Activity parent, Uri uri, Callback callback) {
 		this.uri = uri;
-		// this.dialog = ProgressDialog.show(this.parent, "Please wait ...", "Loading model data...", true);
-		// this.dialog.setTitle(modelId);
 		this.dialog = new ProgressDialog(parent);
 		this.callback = callback; }
 
@@ -57,7 +55,6 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 		try {
 		    callback.onStart();
 			List<Object3DData> data = build();
-			build(data);
             callback.onLoadComplete(data);
 			return  data;
 		} catch (Exception ex) {
@@ -68,31 +65,14 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 
 	protected abstract List<Object3DData> build() throws Exception;
 
-	protected abstract void build(List<Object3DData> data) throws Exception;
+	protected void onLoad(Object3DData data){
+		callback.onLoad(data);
+	}
 
 	@Override
-	protected void onProgressUpdate(Integer... values) {
+	protected void onProgressUpdate(String... values) {
 		super.onProgressUpdate(values);
-		switch (values[0]) {
-			case 0:
-				this.dialog.setMessage("Analyzing model...");
-				break;
-			case 1:
-				this.dialog.setMessage("Allocating memory...");
-				break;
-			case 2:
-				this.dialog.setMessage("Loading data...");
-				break;
-			case 3:
-				this.dialog.setMessage("Scaling object...");
-				break;
-			case 4:
-				this.dialog.setMessage("Building 3D model...");
-				break;
-			case 5:
-				// Toast.makeText(parent, modelId + " Build!", Toast.LENGTH_LONG).show();
-				break;
-		}
+		this.dialog.setMessage(values[0]);
 	}
 
 	@Override
@@ -109,6 +89,8 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
         void onStart();
 
         void onLoadError(Exception ex);
+
+        void onLoad(Object3DData data);
 
         void onLoadComplete(List<Object3DData> data);
     }

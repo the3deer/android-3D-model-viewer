@@ -42,7 +42,7 @@ public class ModelActivity extends Activity {
     /**
      * Enter into Android Immersive mode so the renderer is full screen or not
      */
-    private boolean immersiveMode = true;
+    private boolean immersiveMode;
     /**
      * Background GL clear color. Default is light gray
      */

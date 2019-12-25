@@ -105,6 +105,9 @@ class DrawerImpl implements Object3D {
 
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
+        if (GLUtil.checkGlError("glUseProgram")){
+            return;
+        }
 
         float[] mMatrix = getMMatrix(obj);
         float[] mvMatrix = getMvMatrix(mMatrix, vMatrix);
@@ -157,23 +160,29 @@ class DrawerImpl implements Object3D {
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
+        GLUtil.checkGlError("glDisableVertexAttribArray");
 
         if (mColorHandle != -1) {
             GLES20.glDisableVertexAttribArray(mColorHandle);
+            GLUtil.checkGlError("glDisableVertexAttribArray");
         }
 
         if (mNormalHandle != -1) {
             GLES20.glDisableVertexAttribArray(mNormalHandle);
+            GLUtil.checkGlError("glDisableVertexAttribArray");
         }
 
         // Disable vertex array
         if (mTextureHandle != -1) {
             GLES20.glDisableVertexAttribArray(mTextureHandle);
+            GLUtil.checkGlError("glDisableVertexAttribArray");
         }
 
         if (in_weightsHandle != -1) {
             GLES20.glDisableVertexAttribArray(in_weightsHandle);
+            GLUtil.checkGlError("glDisableVertexAttribArray");
             GLES20.glDisableVertexAttribArray(in_jointIndicesHandle);
+            GLUtil.checkGlError("glDisableVertexAttribArray");
         }
     }
 
@@ -228,9 +237,15 @@ class DrawerImpl implements Object3D {
         GLES20.glEnableVertexAttribArray(mColorHandle);
         GLUtil.checkGlError("glEnableVertexAttribArray");
 
-        obj.getVertexColorsArrayBuffer().position(0);
-        GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, obj.getVertexColorsArrayBuffer());
-        GLUtil.checkGlError("glVertexAttribPointer");
+        if (obj.isDrawUsingArrays()) {
+            obj.getVertexColorsArrayBuffer().position(0);
+            GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, obj.getVertexColorsArrayBuffer());
+            GLUtil.checkGlError("glVertexAttribPointer");
+        } else {
+            obj.getVertexColorsBuffer().position(0);
+            GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, obj.getVertexColorsBuffer());
+            GLUtil.checkGlError("glVertexAttribPointer");
+        }
 
         return mColorHandle;
     }
@@ -270,6 +285,7 @@ class DrawerImpl implements Object3D {
         FloatBuffer buffer = obj.getVertexNormalsArrayBuffer() != null ? obj.getVertexNormalsArrayBuffer() : obj.getNormals();
         buffer.position(0);
         GLES20.glVertexAttribPointer(mNormalHandle, 3, GLES20.GL_FLOAT, false, 0, buffer);
+        GLUtil.checkGlError("glVertexAttribPointer");
 
         return mNormalHandle;
     }
@@ -282,12 +298,14 @@ class DrawerImpl implements Object3D {
         int mLightPosHandle = GLES20.glGetUniformLocation(mProgram, "u_LightPos");
         // Pass in the light position in eye space.
         GLES20.glUniform3f(mLightPosHandle, lightPosInEyeSpace[0], lightPosInEyeSpace[1], lightPosInEyeSpace[2]);
+        GLUtil.checkGlError("glUniform3f");
     }
 
     private void setCameraPos(float[] cameraPosInWorldSpace) {
         int mLightPosHandle = GLES20.glGetUniformLocation(mProgram, "u_cameraPos");
         // Pass in the light position in eye space.
         GLES20.glUniform3fv(mLightPosHandle, 0, cameraPosInWorldSpace, 0);
+        GLUtil.checkGlError("glUniform3f");
     }
 
     private boolean supportsMMatrix() {
@@ -359,6 +377,7 @@ class DrawerImpl implements Object3D {
         GLUtil.checkGlError("glEnableVertexAttribArray");
         animatedModel.getVertexWeights().position(0);
         GLES20.glVertexAttribPointer(in_weightsHandle, 3, GLES20.GL_FLOAT, false, 0, animatedModel.getVertexWeights());
+        GLUtil.checkGlError("glVertexAttribPointer");
         return in_weightsHandle;
     }
 
@@ -389,102 +408,130 @@ class DrawerImpl implements Object3D {
             int jointTransformsHandle = GLES20.glGetUniformLocation(mProgram, jointTransformHandleName);
             GLUtil.checkGlError("glGetUniformLocation");
             GLES20.glUniformMatrix4fv(jointTransformsHandle, 1, false, jointTransform, 0);
+            GLUtil.checkGlError("glUniformMatrix4fv");
             //handles.add(jointTransformsHandle);
         }
     }
 
     private void drawShape(Object3DData obj, int drawMode, int drawSize) {
-        FloatBuffer vertexBuffer = obj.getVertexArrayBuffer() != null ? obj.getVertexArrayBuffer()
-                : obj.getVertexBuffer();
-        vertexBuffer.position(0);
-        List<int[]> drawModeList = obj.getDrawModeList();
 
-        Buffer drawOrderBuffer = obj.getDrawOrder();
-        int drawBufferType = GLES20.GL_UNSIGNED_INT;
-        if (!drawUsingUnsignedInt) {
-            drawOrderBuffer = obj.getDrawOrderAsShort();
-            drawBufferType = GLES20.GL_UNSIGNED_SHORT;
-        }
 
+        int drawBufferType = -1;
+        final Buffer drawOrderBuffer;
+        final FloatBuffer vertexBuffer;
         if (obj.isDrawUsingArrays()) {
             drawOrderBuffer = null;
+            vertexBuffer = obj.getVertexArrayBuffer();
+        } else {
+            vertexBuffer =  obj.getVertexBuffer();
+            if (drawUsingUnsignedInt) {
+                drawOrderBuffer = obj.getDrawOrder();
+                drawBufferType = GLES20.GL_UNSIGNED_INT;
+            } else {
+                drawOrderBuffer = obj.getDrawOrderAsShort();
+                drawBufferType = GLES20.GL_UNSIGNED_SHORT;
+            }
         }
+        vertexBuffer.position(0);
 
+        List<int[]> drawModeList = obj.getDrawModeList();
         if (drawModeList != null) {
             if (drawOrderBuffer == null) {
-                // Log.v(obj.getId(), "Drawing single polygons using arrays...");
-                for (int j = 0; j < drawModeList.size(); j++) {
-                    int[] polygon = drawModeList.get(j);
-                    int drawModePolygon = polygon[0];
-                    int vertexPos = polygon[1];
-                    int drawSizePolygon = polygon[2];
-                    if (drawMode == GLES20.GL_LINE_LOOP && polygon[2] > 3) {
-                        // is this wireframe?
-                        // Log.v("Object3DImpl","Drawing wireframe for '" + obj.getId() + "' (" + drawSizePolygon + ")...");
-                        for (int i = 0; i < polygon[2] - 2; i++) {
-                            // Log.v("Object3DImpl","Drawing wireframe triangle '" + i + "' for '" + obj.getId() + "'...");
-                            GLES20.glDrawArrays(drawMode, polygon[1] + i, 3);
-                        }
-                    } else {
-                        GLES20.glDrawArrays(drawMode, polygon[1], polygon[2]);
-                    }
-                }
+                drawPolygonsUsingArrays(drawMode, drawModeList);
+
             } else {
-                // Log.d(obj.getId(),"Drawing single polygons using elements...");
-                for (int i = 0; i < drawModeList.size(); i++) {
-                    int[] drawPart = drawModeList.get(i);
-                    int drawModePolygon = drawPart[0];
-                    int vertexPos = drawPart[1];
-                    int drawSizePolygon = drawPart[2];
-                    drawOrderBuffer.position(vertexPos);
-                    GLES20.glDrawElements(drawModePolygon, drawSizePolygon, drawBufferType, drawOrderBuffer);
-                    if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
-                        drawUsingUnsignedInt = false;
-                    }
-                }
+                drawPolygonsUsingIndex(drawOrderBuffer, drawBufferType, drawModeList);
             }
         } else {
             if (drawOrderBuffer != null) {
-                if (drawSize <= 0) {
-                    // String mode = drawMode == GLES20.GL_POINTS ? "Points" : drawMode == GLES20.GL_LINES? "Lines": "Triangles?";
-                    // Log.v(obj.getId(),"Drawing all elements with mode '"+drawMode+"'...");
-                    drawOrderBuffer.position(0);
-                    GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), drawBufferType,
-                            drawOrderBuffer);
-                    if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
-                        drawUsingUnsignedInt = false;
-                    }
-                } else {
-                    //Log.d(obj.getId(),"Drawing single elements of size '"+drawSize+"'...");
-                    for (int i = 0; i < drawOrderBuffer.capacity(); i += drawSize) {
-                        drawOrderBuffer.position(i);
-                        GLES20.glDrawElements(drawMode, drawSize, drawBufferType, drawOrderBuffer);
-                    }
-                    if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
-                        drawUsingUnsignedInt = false;
-                    }
+                drawTrianglesUsingIndex(drawMode, drawSize, drawOrderBuffer, drawBufferType);
+            } else {
+                drawTrianglesUsingArrays(drawMode, drawSize, vertexBuffer.capacity() / COORDS_PER_VERTEX);
+            }
+        }
+    }
+
+    private void drawTrianglesUsingArrays(int drawMode, int drawSize, int drawCount) {
+        if (drawSize <= 0) {
+            // if we want to animate, initialize counter=0 at variable declaration
+            if (this.shift >= 0) {
+                double rotation = ((SystemClock.uptimeMillis() % 10000) / 10000f) * (Math.PI * 2);
+
+                if (this.shift == 0d) {
+                    this.shift = rotation;
+                }
+                drawCount = (int) ((Math.sin(rotation - this.shift + Math.PI / 2 * 3) + 1) / 2f * drawCount);
+            }
+            // Log.d(obj.getId(),"Drawing all triangles using arrays... counter("+drawCount+")");
+            GLES20.glDrawArrays(drawMode, 0, drawCount);
+            GLUtil.checkGlError("glDrawArrays");
+        } else {
+            //Log.d(obj.getId(),"Drawing single triangles using arrays...");
+            for (int i = 0; i < drawCount; i += drawSize) {
+                GLES20.glDrawArrays(drawMode, i, drawSize);
+                GLUtil.checkGlError("glDrawArrays");
+            }
+        }
+    }
+
+    private void drawTrianglesUsingIndex(int drawMode, int drawSize, Buffer drawOrderBuffer, int drawBufferType) {
+        if (drawSize <= 0) {
+            // String mode = drawMode == GLES20.GL_POINTS ? "Points" : drawMode == GLES20.GL_LINES? "Lines": "Triangles?";
+            // Log.v(obj.getId(),"Drawing all elements with mode '"+drawMode+"'...");
+            drawOrderBuffer.position(0);
+            GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), drawBufferType,
+                    drawOrderBuffer);
+            GLUtil.checkGlError("glDrawElements");
+            if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
+                drawUsingUnsignedInt = false;
+            }
+        } else {
+            //Log.d(obj.getId(),"Drawing single elements of size '"+drawSize+"'...");
+            for (int i = 0; i < drawOrderBuffer.capacity(); i += drawSize) {
+                drawOrderBuffer.position(i);
+                GLES20.glDrawElements(drawMode, drawSize, drawBufferType, drawOrderBuffer);
+                GLUtil.checkGlError("glDrawElements");
+            }
+            if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
+                drawUsingUnsignedInt = false;
+            }
+        }
+    }
+
+    private void drawPolygonsUsingIndex(Buffer drawOrderBuffer, int drawBufferType, List<int[]> polygonsList) {
+        // Log.d(obj.getId(),"Drawing single polygons using elements...");
+        for (int i = 0; i < polygonsList.size(); i++) {
+            int[] drawPart = polygonsList.get(i);
+            int drawModePolygon = drawPart[0];
+            int vertexPos = drawPart[1];
+            int drawSizePolygon = drawPart[2];
+            drawOrderBuffer.position(vertexPos);
+            GLES20.glDrawElements(drawModePolygon, drawSizePolygon, drawBufferType, drawOrderBuffer);
+            GLUtil.checkGlError("glDrawElements");
+            if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
+                drawUsingUnsignedInt = false;
+            }
+        }
+    }
+
+    private void drawPolygonsUsingArrays(int drawMode, List<int[]> polygonsList) {
+        // Log.v(obj.getId(), "Drawing single polygons using arrays...");
+        for (int j = 0; j < polygonsList.size(); j++) {
+            int[] polygon = polygonsList.get(j);
+            int drawModePolygon = polygon[0];
+            int vertexPos = polygon[1];
+            int drawSizePolygon = polygon[2];
+            if (drawMode == GLES20.GL_LINE_LOOP && polygon[2] > 3) {
+                // is this wireframe?
+                // Log.v("Object3DImpl","Drawing wireframe for '" + obj.getId() + "' (" + drawSizePolygon + ")...");
+                for (int i = 0; i < polygon[2] - 2; i++) {
+                    // Log.v("Object3DImpl","Drawing wireframe triangle '" + i + "' for '" + obj.getId() + "'...");
+                    GLES20.glDrawArrays(drawMode, polygon[1] + i, 3);
+                    GLUtil.checkGlError("glDrawArrays");
                 }
             } else {
-                if (drawSize <= 0) {
-                    int drawCount = vertexBuffer.capacity() / COORDS_PER_VERTEX;
-
-                    // if we want to animate, initialize counter=0 at variable declaration
-                    if (this.shift >= 0) {
-                        double rotation = ((SystemClock.uptimeMillis() % 10000) / 10000f) * (Math.PI * 2);
-
-                        if (this.shift == 0d) {
-                            this.shift = rotation;
-                        }
-                        drawCount = (int) ((Math.sin(rotation - this.shift + Math.PI / 2 * 3) + 1) / 2f * drawCount);
-                    }
-                    // Log.d(obj.getId(),"Drawing all triangles using arrays... counter("+drawCount+")");
-                    GLES20.glDrawArrays(drawMode, 0, drawCount);
-                } else {
-                    //Log.d(obj.getId(),"Drawing single triangles using arrays...");
-                    for (int i = 0; i < vertexBuffer.capacity() / COORDS_PER_VERTEX; i += drawSize) {
-                        GLES20.glDrawArrays(drawMode, i, drawSize);
-                    }
-                }
+                GLES20.glDrawArrays(drawMode, polygon[1], polygon[2]);
+                GLUtil.checkGlError("glDrawArrays");
             }
         }
     }

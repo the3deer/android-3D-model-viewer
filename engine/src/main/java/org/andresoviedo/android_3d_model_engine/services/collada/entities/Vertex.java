@@ -8,6 +8,7 @@ public class Vertex {
     private int textureIndex = NO_INDEX;
     private int normalIndex = NO_INDEX;
     private int colorIndex = NO_INDEX;
+    private float[] diffuse;
     private float length;
 
 
@@ -60,5 +61,13 @@ public class Vertex {
 
     public int getColorIndex() {
         return colorIndex;
+    }
+
+    public void setDiffuse(float[] diffuse) {
+        this.diffuse = diffuse;
+    }
+
+    public float[] getDiffuse() {
+        return diffuse;
     }
 }

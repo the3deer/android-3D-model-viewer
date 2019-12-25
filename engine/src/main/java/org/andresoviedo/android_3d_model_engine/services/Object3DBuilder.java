@@ -354,7 +354,7 @@ public final class Object3DBuilder {
 
 	public static Object3DData buildPoint(float[] point) {
 		return new Object3DData(createNativeByteBuffer(point.length * 4).asFloatBuffer().put(point))
-				.setDrawMode(GLES20.GL_POINTS).setId("Point");
+				.setDrawMode(GLES20.GL_POINTS).setId("Point").setDrawUsingArrays(true);
 	}
 
 	public static Object3DData buildLine(float[] line) {
@@ -435,6 +435,7 @@ public final class Object3DBuilder {
 
 			data3D.setDrawMode(GLES20.GL_TRIANGLES);
 			generateArrays(data3D);
+			data3D.setDrawUsingArrays(true);
 
 			return data3D;
 		} catch (IOException ex) {
@@ -458,7 +459,6 @@ public final class Object3DBuilder {
 		Log.i("Object3DBuilder", "Allocating vertex array buffer... Vertices ("+faces.getVerticesReferencesCount()+")");
 		final FloatBuffer vertexArrayBuffer = createNativeByteBuffer(faces.getVerticesReferencesCount() * 3 * 4).asFloatBuffer();
 		obj.setVertexArrayBuffer(vertexArrayBuffer);
-		obj.setDrawUsingArrays(true);
 
 		Log.i("Object3DBuilder", "Populating vertex array...");
 		final FloatBuffer vertexBuffer = obj.getVerts();
@@ -670,11 +670,15 @@ public final class Object3DBuilder {
 	}
 
 	public static Object3DData buildBoundingBox(Object3DData obj) {
-		BoundingBoxBuilder boundingBox = new BoundingBoxBuilder(obj.getBoundingBox(),
-				obj.getColor());
-		return new Object3DData(boundingBox.getVertices()).setDrawModeList(boundingBox.getDrawModeList())
-				.setDrawOrder(boundingBox.getDrawOrder())
+		BoundingBoxBuilder boundingBox = new BoundingBoxBuilder(obj.getBoundingBox(), obj.getColor());
+		return new Object3DData(boundingBox.getVertices(), boundingBox.getDrawOrder()).setDrawModeList(boundingBox
+				.getDrawModeList())
 				.setDrawMode(boundingBox.getDrawMode())
+				.setPosition(obj.getPosition())
+				.setScale(obj.getScale())
+				.setRotation(obj.getRotation())
+				.setBindShapeMatrix(obj.getBindShapeMatrix())
+				.setDrawUsingArrays(false)
 				.setColor(obj.getColor()).setId(obj.getId() + "_boundingBox");
 	}
 
@@ -686,22 +690,16 @@ public final class Object3DBuilder {
 	 */
 	public static Object3DData buildWireframe(Object3DData objData) {
 
-		if (objData.getDrawOrder() != null) {
-
-			try {
-				Log.i("Object3DBuilder", "Building wireframe from draw buffer... Total index: "+objData
-						.getDrawOrder().capacity());
-				IntBuffer drawBuffer = objData.getDrawOrder();
-				IntBuffer wireframeDrawOrder = createNativeByteBuffer(drawBuffer.capacity() * 2 * 4).asIntBuffer();
+		try {
+			final IntBuffer wireframeDrawOrder;
+			if (objData.getDrawOrder() != null) {
+				Log.i("Object3DBuilder", "Building wireframe... Total index: " + objData.getDrawOrder().capacity());
+				final IntBuffer drawBuffer = objData.getDrawOrder();
+				wireframeDrawOrder = createNativeByteBuffer(drawBuffer.capacity() * 2 * 4).asIntBuffer();
 				for (int i = 0; i < drawBuffer.capacity(); i += 3) {
 					int v0 = drawBuffer.get(i);
 					int v1 = drawBuffer.get(i + 1);
 					int v2 = drawBuffer.get(i + 2);
-					if (objData.isDrawUsingArrays()) {
-						v0 = i;
-						v1 = i + 1;
-						v2 = i + 2;
-					}
 					wireframeDrawOrder.put(v0);
 					wireframeDrawOrder.put(v1);
 					wireframeDrawOrder.put(v1);
@@ -709,57 +707,55 @@ public final class Object3DBuilder {
 					wireframeDrawOrder.put(v2);
 					wireframeDrawOrder.put(v0);
 				}
-				if (objData instanceof AnimatedModel){
-					AnimatedModel object3DData = new AnimatedModel(objData.getVertexArrayBuffer());
-					object3DData.setVertexBuffer(objData.getVertexBuffer()).setDrawOrder(wireframeDrawOrder)
-							.setVertexNormalsBuffer(objData.getVertexNormalsBuffer())
-							.setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData
-							.getColor())
-							.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
-							.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
-							.setDrawMode(GLES20.GL_LINES);
-					object3DData.setVertexWeights(((AnimatedModel) objData).getVertexWeights());
-					object3DData.setJointIds(((AnimatedModel) objData).getJointIds());
-					object3DData.setRootJoint(((AnimatedModel) objData).getRootJoint(), ((AnimatedModel) objData)
-							.getJointCount(), ((AnimatedModel) objData).getBoneCount());
-					object3DData.doAnimation(((AnimatedModel) objData).getAnimation());
-					object3DData.setBindShapeMatrix(((AnimatedModel)objData).getBindShapeMatrix());
-					return object3DData;
+			} else {
+				Log.i("Object3DBuilder", "Building wireframe... Total vertex: " + objData.getVertexArrayBuffer().capacity());
+				final FloatBuffer vertexBuffer = objData.getVertexArrayBuffer();
+				wireframeDrawOrder = createNativeByteBuffer(vertexBuffer.capacity() / 3 * 2 * 4).asIntBuffer();
+				for (int i = 0; i < vertexBuffer.capacity() / 3; i += 3) {
+					wireframeDrawOrder.put(i);
+					wireframeDrawOrder.put(i + 1);
+					wireframeDrawOrder.put(i + 1);
+					wireframeDrawOrder.put(i + 2);
+					wireframeDrawOrder.put(i + 2);
+					wireframeDrawOrder.put(i);
 				}
-				else {
-					return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer())
-							.setDrawOrder(wireframeDrawOrder)
-							.setVertexNormalsBuffer(objData.getVertexNormalsBuffer())
-							.setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
-							.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
-							.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
-							.setDrawMode(GLES20.GL_LINES);
-				}
-			} catch (Exception ex) {
-				Log.e("Object3DBuilder", ex.getMessage(), ex);
 			}
-		}
-		else if (objData.getVertexArrayBuffer() != null){
-			Log.i("Object3DBuilder", "Building wireframe from vertex buffer...");
-			FloatBuffer vertexBuffer = objData.getVertexArrayBuffer();
-			IntBuffer wireframeDrawOrder = createNativeByteBuffer(vertexBuffer.capacity()/3 * 2 * 4).asIntBuffer();
-			for (int i = 0; i < vertexBuffer.capacity()/3; i += 3) {
-				wireframeDrawOrder.put(i);
-				wireframeDrawOrder.put(i+1);
-				wireframeDrawOrder.put(i+1);
-				wireframeDrawOrder.put(i+2);
-				wireframeDrawOrder.put(i+2);
-				wireframeDrawOrder.put(i);
+			final Object3DData ret;
+			if (objData instanceof AnimatedModel) {
+				final AnimatedModel object3DData = new AnimatedModel(objData.getVertexBuffer(), wireframeDrawOrder);
+				AnimatedModel objDataAnim = (AnimatedModel) objData;
+				object3DData.setVertexWeights(objDataAnim.getVertexWeights());
+				object3DData.setJointIds(objDataAnim.getJointIds());
+				object3DData.setRootJoint(objDataAnim.getRootJoint(), objDataAnim.getJointCount(), objDataAnim.getBoneCount());
+				object3DData.doAnimation(objDataAnim.getAnimation());
+				object3DData.setBindShapeMatrix(objData.getBindShapeMatrix());
+				ret = object3DData;
+			} else {
+				ret = new Object3DData(objData.getVertexBuffer(), wireframeDrawOrder);
 			}
-			return new Object3DData(objData.getVertexArrayBuffer()).setVertexBuffer(objData.getVertexBuffer())
-					.setDrawOrder(wireframeDrawOrder)
-					.setVertexNormalsBuffer(objData.getVertexNormalsBuffer())
-					.setVertexNormalsArrayBuffer(objData.getVertexNormalsArrayBuffer()).setColor(objData.getColor())
-					.setVertexColorsArrayBuffer(objData.getVertexColorsArrayBuffer()).setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer())
-					.setPosition(objData.getPosition()).setRotation(objData.getRotation()).setScale(objData.getScale())
-					.setDrawMode(GLES20.GL_LINES);
+			if (objData.isDrawUsingArrays()){
+				Log.i("Object3DBuilder", "Wireframe built for object using arrays");
+				ret.setVertexBuffer(objData.getVertexArrayBuffer())
+						.setVertexNormalsBuffer(objData.getVertexNormalsArrayBuffer())
+						.setVertexColorsBuffer(objData.getVertexColorsArrayBuffer())
+						.setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer());
+			} else {
+				Log.i("Object3DBuilder", "Wireframe built for object using indices");
+				ret.setVertexNormalsBuffer(objData.getVertexNormalsBuffer())
+						.setVertexColorsBuffer(objData.getVertexColorsBuffer())
+						.setTextureCoordsArrayBuffer(objData.getTextureCoordsArrayBuffer());
+			}
+			ret.setColor(objData.getColor())
+					.setPosition(objData.getPosition())
+					.setRotation(objData.getRotation())
+					.setScale(objData.getScale())
+					.setDrawMode(GLES20.GL_LINES)
+					.setDrawUsingArrays(false);
+			return ret;
+		} catch (Exception ex) {
+			Log.e("Object3DBuilder", ex.getMessage(), ex);
+			throw new RuntimeException("Problem building wireframe",ex);
 		}
-		return objData;
 	}
 
 	/**
@@ -1065,31 +1061,30 @@ public final class Object3DBuilder {
     }
 
 	public static AnimatedModel buildSkeleton(AnimatedModel animatedModel){
-        float[] identity = new float[16];
-        Matrix.setIdentityM(identity,0);
 
-        AnimatedModel skeleton = new AnimatedModel(createNativeByteBuffer(animatedModel.getJointCount()*3*3*4)
-                .asFloatBuffer());
-        skeleton.setVertexNormalsArrayBuffer(createNativeByteBuffer(animatedModel.getJointCount()*3*3*4)
-                .asFloatBuffer());
-        skeleton.setDrawMode(GLES20.GL_TRIANGLES);
-        skeleton.setRootJoint(animatedModel.getRootJoint(), animatedModel.getJointCount(), animatedModel.getBoneCount());
-        skeleton.setJointIds(createNativeByteBuffer(skeleton.getJointCount()*3*3*4).asFloatBuffer());
-        skeleton.doAnimation(animatedModel.getAnimation());
-        skeleton.setVertexWeights(createNativeByteBuffer(skeleton.getJointCount()*3*3*4).asFloatBuffer());
-        skeleton.setPosition(animatedModel.getPosition());
-        skeleton.setScale(animatedModel.getScale());
+		AnimatedModel skeleton = new AnimatedModel(createNativeByteBuffer(animatedModel.getJointCount() * 9 * 4)
+				.asFloatBuffer());
+		skeleton.setVertexNormalsArrayBuffer(createNativeByteBuffer(animatedModel.getJointCount() * 9 * 4)
+				.asFloatBuffer());
+		skeleton.setRootJoint(animatedModel.getRootJoint(), animatedModel.getJointCount(), animatedModel.getBoneCount());
+		skeleton.setJointIds(createNativeByteBuffer(skeleton.getJointCount() * 9 * 4).asFloatBuffer());
+		skeleton.doAnimation(animatedModel.getAnimation());
+		skeleton.setVertexWeights(createNativeByteBuffer(skeleton.getJointCount() * 9 * 4).asFloatBuffer());
+		skeleton.setPosition(animatedModel.getPosition());
+		skeleton.setScale(animatedModel.getScale());
 
-        Log.i("Object3DBuilder","Building "+skeleton.getJointCount()+" bones...");
-        buildBones(skeleton, skeleton.getRootJoint(), identity, new float[]{0,0,0}, -1, animatedModel.getVertexBuffer());
+		Log.i("Object3DBuilder", "Building " + skeleton.getJointCount() + " joints...");
+		buildBones(skeleton, skeleton.getRootJoint(), Math3DUtils.IDENTITY_MATRIX, new float[]{0, 0, 0}, skeleton
+				.getRootJoint().getIndex());
 
-        skeleton.setId(animatedModel.getId()+"-skeleton");
-
+		skeleton.setId(animatedModel.getId() + "-skeleton");
+		skeleton.setDrawMode(GLES20.GL_TRIANGLES);
+		skeleton.setDrawUsingArrays(true);
         return skeleton;
     }
 
     private static void buildBones(AnimatedModel animatedModel, Joint joint, float[] parentTransform, float[]
-            parentPoint, int parentJoinIndex, FloatBuffer vertexBuffer){
+			parentPoint, int parentJoinIndex){
 
         float[] point = new float[4];
         float[] transform = new float[16];
@@ -1101,10 +1096,6 @@ public final class Object3DBuilder {
         float[] point2 = new float[]{point[0],point[1],point[2]+Matrix.length(v[0],v[1],v[2])*0.05f};
 
         float[] normal = Math3DUtils.calculateNormal(parentPoint, point1, point2);
-
-        // TODO: remove this
-        /*parentPoint = new float[]{vertexBuffer.get((int)(100* Math.random())),vertexBuffer.get((int)(100* Math.random
-                ())),vertexBuffer.get((int)(100* Math.random()))};*/
 
         animatedModel.getVertexArrayBuffer().put(parentPoint[0]);
         animatedModel.getVertexArrayBuffer().put(parentPoint[1]);
@@ -1121,19 +1112,25 @@ public final class Object3DBuilder {
         animatedModel.getVertexNormalsArrayBuffer().put(normal);
 
         animatedModel.getJointIds().put(parentJoinIndex);
-        animatedModel.getJointIds().put(parentJoinIndex);
-        animatedModel.getJointIds().put(parentJoinIndex);
-        for (int i=3; i<9; i++) {
+        animatedModel.getJointIds().put(0);
+        animatedModel.getJointIds().put(0);
+		animatedModel.getVertexWeights().put(parentJoinIndex >= 0?1:0);
+		animatedModel.getVertexWeights().put(0);
+		animatedModel.getVertexWeights().put(0);
+
+        for (int i=3; i<9; i+=3) {
             animatedModel.getJointIds().put(joint.getIndex());
+			animatedModel.getJointIds().put(0);
+			animatedModel.getJointIds().put(0);
         }
-        for (int i=0; i<9; i+=3) {
-            animatedModel.getVertexWeights().put(parentJoinIndex >= 0?1:0);
+        for (int i=3; i<9; i+=3) {
+            animatedModel.getVertexWeights().put(1);
             animatedModel.getVertexWeights().put(0);
             animatedModel.getVertexWeights().put(0);
         }
 
         for (Joint child : joint.getChildren()){
-            buildBones(animatedModel,child,transform, point, joint.getIndex(), vertexBuffer);
+            buildBones(animatedModel,child,transform, point, joint.getIndex());
         }
     }
 

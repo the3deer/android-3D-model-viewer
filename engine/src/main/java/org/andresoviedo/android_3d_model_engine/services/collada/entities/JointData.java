@@ -16,7 +16,7 @@ public class JointData {
 
 	// index referenced by sknning data
 	// the order may need to be provided by the bone ordered list
-	public int index;
+	private final int index;
 
 	// attributes
 	private final String id;
@@ -27,7 +27,7 @@ public class JointData {
 	// sum up of all matrix up to the "root"
 	private final float[] bindLocalTransform;
 	private final float[] bindTransform;
-    private float[] inverseBindTransform;
+    private final float[] inverseBindTransform;
 
 	public final List<JointData> children = new ArrayList<>();
 
@@ -52,8 +52,8 @@ public class JointData {
 		return name;
 	}
 
-	public void setIndex(int index) {
-		this.index = index;
+	public int getIndex() {
+		return index;
 	}
 
 	public void addChild(JointData child) {
@@ -96,16 +96,12 @@ public class JointData {
 		return inverseBindTransform;
 	}
 
-	public void setInverseBindTransform(float[] inverseBindTransform) {
-		this.inverseBindTransform = inverseBindTransform;
-	}
-
 	@Override
 	public String toString() {
 		return "JointData{" +
-				"index=" + index +
-				", id='" + id + '\'' +
-				", name='" + name + '\'' +
+				"index=" + getIndex() +
+				", id='" + getId() + '\'' +
+				", name='" + getName() + '\'' +
 				'}';
 	}
 }

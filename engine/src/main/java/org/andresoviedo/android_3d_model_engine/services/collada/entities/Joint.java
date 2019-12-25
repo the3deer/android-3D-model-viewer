@@ -1,7 +1,6 @@
 package org.andresoviedo.android_3d_model_engine.services.collada.entities;
 
 import android.opengl.Matrix;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +63,7 @@ public class Joint {
     }
 
     public int getIndex() {
-        return data.index;
+        return data.getIndex();
     }
 
     public String getName() {
@@ -123,42 +122,6 @@ public class Joint {
      */
     public float[] getInverseBindTransform() {
         return data.getInverseBindTransform();
-    }
-
-    /**
-     * This is called during set-up, after the joints hierarchy has been
-     * created. This calculates the model-space bind transform of this joint
-     * like so: </br>
-     * </br>
-     * {@code bindTransform = parentBindTransform * bindLocalTransform}</br>
-     * </br>
-     * where "bindTransform" is the model-space bind transform of this joint,
-     * "parentBindTransform" is the model-space bind transform of the parent
-     * joint, and "bindLocalTransform" is the bone-space bind transform of this
-     * joint. It then calculates and stores the inverse of this model-space bind
-     * transform, for use when calculating the final animation transform each
-     * frame. It then recursively calls the method for all of the children
-     * joints, so that they too calculate and store their inverse bind-pose
-     * transform.
-     *
-     * @param parentBindTransform - the model-space bind transform of the parent joint.
-     */
-    public void calcInverseBindTransform(float[] parentBindTransform, boolean override) {
-
-        float[] bindTransform = new float[16];
-        Matrix.multiplyMM(bindTransform, 0, parentBindTransform, 0, data.getBindLocalTransform(), 0);
-        if (data.index >= 0 && (override)) {
-            // when model has inverse bind transforms available, don't overwrite it
-            // this way we calculate only the joints with no animations which has no inverse bind transform available
-            float[] inverseBindTransform = new float[16];
-            if (!Matrix.invertM(inverseBindTransform, 0, bindTransform, 0)) {
-                Log.w("Joint", "Couldn't calculate inverse matrix for " + data.getId());
-            }
-            data.setInverseBindTransform(inverseBindTransform);
-        }
-        for (Joint child : children) {
-            child.calcInverseBindTransform(bindTransform, override);
-        }
     }
 
     @Override

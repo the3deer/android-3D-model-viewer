@@ -1,11 +1,10 @@
 package org.andresoviedo.android_3d_model_engine.model;
 
-import android.opengl.Matrix;
-
 import org.andresoviedo.android_3d_model_engine.animation.Animation;
 import org.andresoviedo.android_3d_model_engine.services.collada.entities.Joint;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 /**
  * 
@@ -36,6 +35,10 @@ public class AnimatedModel extends Object3DData {
 		super(vertexArrayBuffer);
 	}
 
+	public AnimatedModel(FloatBuffer vertexBuffer, IntBuffer drawOrderBuffer){
+		super(vertexBuffer, drawOrderBuffer);
+	}
+
 	/**
 	 * Creates a new entity capable of animation. The inverse bind transform for
 	 * all joints is calculated in this constructor. The bind transform is
@@ -55,8 +58,6 @@ public class AnimatedModel extends Object3DData {
 		this.rootJoint = rootJoint;
 		this.jointCount = jointCount;
 		this.boneCount = boneCount;
-        this.jointMatrices = new float[boneCount][16];
-        this.jointMatrices[rootJoint.getIndex()] = rootJoint.getAnimatedTransform();
 		return this;
 	}
 
@@ -118,6 +119,9 @@ public class AnimatedModel extends Object3DData {
 	}
 
 	public void updateAnimatedTransform(Joint joint){
+		if (jointMatrices == null){
+			this.jointMatrices = new float[boneCount][16];
+		}
 		jointMatrices[joint.getIndex()] = joint.getAnimatedTransform();
 	}
 

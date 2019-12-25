@@ -11,6 +11,11 @@ import java.util.Locale;
  */
 public class Math3DUtils {
 
+    public static final float IDENTITY_MATRIX[] = new float[16];
+    static {
+        Matrix.setIdentityM(IDENTITY_MATRIX,0);
+    }
+
     /**
      * Calculate face normal
      *

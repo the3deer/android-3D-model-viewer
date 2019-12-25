@@ -2,6 +2,8 @@ package org.andresoviedo.android_3d_model_engine.model;
 
 import android.opengl.Matrix;
 
+import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoader;
+
 import java.nio.FloatBuffer;
 
 /**
@@ -52,6 +54,12 @@ public final class BoundingBox {
         float[] max = new float[]{xMax, yMax, zMax, 1};
         Matrix.multiplyMV(min,0,modelMatrix,0,min,0);
         Matrix.multiplyMV(max,0,modelMatrix,0,max,0);
+        return new BoundingBox(id, min[0], max[0], min[1], max[1], min[2], max[2]);
+    }
+
+    public static BoundingBox create(String id, WavefrontLoader.ModelDimensions d) {
+        float[] min = new float[]{d.leftPt, d.bottomPt, d.nearPt, 1};
+        float[] max = new float[]{d.rightPt, d.topPt, d.farPt, 1};
         return new BoundingBox(id, min[0], max[0], min[1], max[1], min[2], max[2]);
     }
 

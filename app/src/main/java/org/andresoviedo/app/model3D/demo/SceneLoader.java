@@ -33,10 +33,6 @@ import java.util.List;
 public class SceneLoader implements LoaderTask.Callback {
 
     /**
-     * Default model color: yellow
-     */
-    private static float[] DEFAULT_COLOR = {1.0f, 1.0f, 0, 1.0f};
-    /**
      * Parent component
      */
     protected final ModelActivity parent;
@@ -174,34 +170,34 @@ public class SceneLoader implements LoaderTask.Callback {
         }
     }
 
-    public boolean isDrawAxis(){
+    public final boolean isDrawAxis(){
         return drawAxis;
     }
 
-    public void setDrawAxis(boolean drawAxis) {
+    public final void setDrawAxis(boolean drawAxis) {
         this.drawAxis = drawAxis;
     }
 
-    public Camera getCamera() {
+    public final Camera getCamera() {
         return camera;
     }
 
-    private void makeToastText(final String text, final int toastDuration) {
+    private final void makeToastText(final String text, final int toastDuration) {
         parent.runOnUiThread(() -> Toast.makeText(parent.getApplicationContext(), text, toastDuration).show());
     }
 
-    public Object3DData getLightBulb() {
+    public final Object3DData getLightBulb() {
         return lightPoint;
     }
 
-    public float[] getLightPosition() {
+    public final float[] getLightPosition() {
         return lightPosition;
     }
 
     /**
      * Hook for animating the objects before the rendering
      */
-    public void onDrawFrame() {
+    public final void onDrawFrame() {
 
         animateLight();
 
@@ -236,8 +232,8 @@ public class SceneLoader implements LoaderTask.Callback {
         camera.translateCamera(0.0025f, 0f);
     }
 
-    synchronized void addObject(Object3DData obj) {
-        List<Object3DData> newList = new ArrayList<Object3DData>(objects);
+    final synchronized void addObject(Object3DData obj) {
+        List<Object3DData> newList = new ArrayList<>(objects);
         newList.add(obj);
         this.objects = newList;
         requestRender();
@@ -250,11 +246,11 @@ public class SceneLoader implements LoaderTask.Callback {
         }
     }
 
-    public synchronized List<Object3DData> getObjects() {
+    public final synchronized List<Object3DData> getObjects() {
         return objects;
     }
 
-    public void toggleWireframe() {
+    public final void toggleWireframe() {
         if (!this.drawWireframe && !this.drawingPoints && !this.drawSkeleton){
                 this.drawWireframe = true;
                 makeToastText("Wireframe", Toast.LENGTH_SHORT);
@@ -273,28 +269,28 @@ public class SceneLoader implements LoaderTask.Callback {
         requestRender();
     }
 
-    public boolean isDrawWireframe() {
+    public final boolean isDrawWireframe() {
         return this.drawWireframe;
     }
 
-    public boolean isDrawPoints() {
+    public final boolean isDrawPoints() {
         return this.drawingPoints;
     }
 
-    public void toggleBoundingBox() {
+    public final void toggleBoundingBox() {
         this.drawBoundingBox = !drawBoundingBox;
         requestRender();
     }
 
-    public boolean isDrawBoundingBox() {
+    public final boolean isDrawBoundingBox() {
         return drawBoundingBox;
     }
 
-    public boolean isDrawNormals() {
+    public final boolean isDrawNormals() {
         return drawNormals;
     }
 
-    public void toggleTextures() {
+    public final void toggleTextures() {
         if (drawTextures && drawColors){
             this.drawTextures = false;
             this.drawColors = true;
@@ -310,7 +306,7 @@ public class SceneLoader implements LoaderTask.Callback {
         }
     }
 
-    public void toggleLighting() {
+    public final void toggleLighting() {
         if (this.drawLighting && this.rotatingLight) {
             this.rotatingLight = false;
             makeToastText("Light stopped", Toast.LENGTH_SHORT);
@@ -325,7 +321,8 @@ public class SceneLoader implements LoaderTask.Callback {
         requestRender();
     }
 
-    public void toggleAnimation() {
+    public final void toggleAnimation() {
+        //showAnimationsDialog();
         if (!this.doAnimation){
             this.doAnimation = true;
             this.showBindPose = false;
@@ -337,20 +334,57 @@ public class SceneLoader implements LoaderTask.Callback {
         }
     }
 
-    public boolean isDoAnimation() {
+    /*private final void showAnimationsDialog(){
+
+
+        final AnimatedModel animatedModel;
+        if (objects.get(0) instanceof AnimatedModel){
+            animatedModel = (AnimatedModel)objects.get(0);
+        } else return;
+
+        AlertDialog.Builder builderSingle = new AlertDialog.Builder(this.parent);
+        builderSingle.setTitle("Available animations:");
+
+        // String[] items = new String[animatedModel.getAnimation().getAnimationList().size()];
+        String[] items = new String[animatedModel.getAnimation().getAnimationList().size()];
+        boolean[] selected = new boolean[animatedModel.getAnimation().getAnimationList().size()];
+        for (int i=0; i<items.length; i++){
+            String jointId = animatedModel.getAnimation().getAnimationList().get(i);
+            items[i] = jointId;
+            selected[i] = true;
+        }
+
+        builderSingle.setMultiChoiceItems(items, selected, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                animatedModel.getAnimation().getAnimationList().remove(items[which]);
+            }
+        });
+
+        builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builderSingle.show();
+    }*/
+
+    public final boolean isDoAnimation() {
         return doAnimation;
     }
 
-    public boolean isShowBindPose() {
+    public final boolean isShowBindPose() {
         return showBindPose;
     }
 
-    public void toggleCollision() {
+    public final void toggleCollision() {
         this.isCollision = !isCollision;
         makeToastText("Collisions: "+isCollision, Toast.LENGTH_SHORT);
     }
 
-    public void toggleStereoscopic() {
+    public final void toggleStereoscopic() {
         if (!this.isStereoscopic){
             this.isStereoscopic = true;
             this.isAnaglyph = true;
@@ -372,39 +406,39 @@ public class SceneLoader implements LoaderTask.Callback {
         this.camera.setChanged(true);
     }
 
-    public boolean isVRGlasses() {
+    public final boolean isVRGlasses() {
         return isVRGlasses;
     }
 
-    public boolean isDrawTextures() {
+    public final boolean isDrawTextures() {
         return drawTextures;
     }
 
-    public boolean isDrawColors() {
+    public final boolean isDrawColors() {
         return drawColors;
     }
 
-    public boolean isDrawLighting() {
+    public final boolean isDrawLighting() {
         return drawLighting;
     }
 
-    public boolean isDrawSkeleton() {
+    public final boolean isDrawSkeleton() {
         return drawSkeleton;
     }
 
-    public boolean isCollision() {
+    public final boolean isCollision() {
         return isCollision;
     }
 
-    public boolean isStereoscopic() {
+    public final boolean isStereoscopic() {
         return isStereoscopic;
     }
 
-    public boolean isAnaglyph() {
+    public final boolean isAnaglyph() {
         return isAnaglyph;
     }
 
-    public void toggleBlending() {
+    public final void toggleBlending() {
         if (this.isBlendingEnabled && !this.isBlendingForced){
             makeToastText("Blending forced", Toast.LENGTH_SHORT);
             this.isBlendingEnabled = true;
@@ -420,17 +454,24 @@ public class SceneLoader implements LoaderTask.Callback {
         }
     }
 
-    public boolean isBlendingEnabled() {
+    public final boolean isBlendingEnabled() {
         return isBlendingEnabled;
     }
 
-    public boolean isBlendingForced() {
+    public final boolean isBlendingForced() {
         return isBlendingForced;
     }
 
     @Override
     public void onStart(){
         ContentUtils.setThreadActivity(parent);
+    }
+
+    @Override
+    public void onLoad(Object3DData data){
+        // load new object and rescale all together so they fit in the viewport
+        addObject(data);
+        Object3DData.centerAndScale(this.objects, 5, new float[]{0, 0, 0});
     }
 
     @Override
@@ -517,7 +558,7 @@ public class SceneLoader implements LoaderTask.Callback {
         userHasInteracted = true;
     }
 
-    public boolean isRotatingLight() {
+    public final boolean isRotatingLight() {
         return rotatingLight;
     }
 }

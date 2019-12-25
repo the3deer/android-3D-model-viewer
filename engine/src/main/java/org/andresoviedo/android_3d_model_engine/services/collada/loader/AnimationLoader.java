@@ -72,6 +72,7 @@ public class AnimationLoader {
 	}
 	
 	private void loadJointTransforms(List<Float> keyTimes, KeyFrameData[] frames, XmlNode animationNode){
+		Log.v("AnimationLoader","Loading animation... id: "+animationNode.getAttribute("id"));
 		String[] channel = getChannel(animationNode);
 		String jointNameId = channel[0];
 		String transform = channel[1];
@@ -99,7 +100,7 @@ public class AnimationLoader {
 					processRotationZTransforms(jointNameId, rawTimes, rawData, keyTimes, frames);
 				}
 			}
-            Log.d("AnimationLoader","Animation (key frames: "+rawTimes.length+") "+jointNameId);
+            Log.v("AnimationLoader","Animation (key frames: "+rawTimes.length+") "+jointNameId);
 		} catch (Exception e) {
 			Log.e("AnimationLoader","Problem loading animation for joint '"+jointNameId+"' with source '"+dataId+"'",e);
 			throw new RuntimeException(e);

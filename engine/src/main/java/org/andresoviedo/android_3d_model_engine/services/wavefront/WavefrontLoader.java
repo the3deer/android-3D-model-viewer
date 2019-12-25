@@ -495,7 +495,7 @@ public class WavefrontLoader {
 		public float farPt, nearPt; // on z-axis
 
 		// for reporting
-		private DecimalFormat df = new DecimalFormat("0.##"); // 2 dp
+		private static final DecimalFormat df = new DecimalFormat("0.##"); // 2 dp
 
 		public ModelDimensions() {
 			leftPt = 0.0f;

@@ -380,10 +380,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 							wireframe = Object3DBuilder.buildWireframe(objData);
 							wireframes.put(objData, wireframe);
 						}
+						animator.update(wireframe, scene.isShowBindPose());
 						drawerObject.draw(wireframe, projectionMatrix, viewMatrix, wireframe.getDrawMode(),
 								wireframe.getDrawSize(), textureId, lightPosInWorldSpace,
 								colorMask, cameraPosInWorldSpace);
-						animator.update(wireframe, scene.isShowBindPose());
 					}catch(Error e){
 						Log.e("ModelRenderer",e.getMessage(),e);
 					}

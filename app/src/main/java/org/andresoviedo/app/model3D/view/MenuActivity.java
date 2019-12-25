@@ -327,7 +327,7 @@ public class MenuActivity extends ListActivity {
         Log.i("Menu", "Launching renderer for '" + uri + "'");
         Intent intent = new Intent(getApplicationContext(), ModelActivity.class);
         intent.putExtra("uri", uri.toString());
-        intent.putExtra("immersiveMode", "true");
+        intent.putExtra("immersiveMode", "false");
 
         // content provider case
         if (!loadModelParameters.isEmpty()) {

@@ -55,15 +55,13 @@ public final class STLLoaderTask extends LoaderTask {
             data3D.setFaces(new WavefrontLoader.Faces(totalFaces));
         }
         data3D.setId(uri.toString());
+        this.build(data3D);
         return Collections.singletonList(data3D);
     }
 
-    @Override
-    protected void build(List<Object3DData> datas) throws Exception {
+    private void build(Object3DData data) throws IOException {
         int counter = 0;
         try {
-
-            Object3DData data = datas.get(0);
 
             // Parse all facets...
             double[] normal = new double[3];
@@ -110,7 +108,7 @@ public final class STLLoaderTask extends LoaderTask {
             Log.i("STLLoaderTask", "Building 3D object...");
             data.centerAndScale(5, new float[]{0, 0, 0});
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             Log.e("STLLoaderTask", "Face '" + counter + "'" + e.getMessage(), e);
             throw e;
         } finally {

@@ -59,6 +59,7 @@ public class Object3DData {
 	// Model data
 	private FloatBuffer vertexBuffer = null;
 	private FloatBuffer vertexNormalsBuffer = null;
+	private FloatBuffer vertexColorsBuffer = null;
 	private IntBuffer drawOrderBuffer = null;
 	private ShortBuffer shortDrawOrderBuffer = null;  // in case system doesn't support ints
 	private ArrayList<Tuple3> texCoords;
@@ -80,12 +81,12 @@ public class Object3DData {
 	private BoundingBox boundingBox;
 
 	// Transformation data
-	protected float[] position = new float[] { 0f, 0f, 0f };
+	protected final float[] position = new float[] { 0f, 0f, 0f };
 	protected float[] rotation = new float[] { 0f, 0f, 0f };
-	protected float[] scale = new float[] { 1, 1, 1 };
+	protected final float[] scale = new float[] { 1, 1, 1 };
     protected float[] bindShapeMatrix = new float[16];
-	protected float[] modelMatrix = new float[16];
-    protected float[] newModelMatrix = new float[16];
+	protected final float[] modelMatrix = new float[16];
+    protected final float[] newModelMatrix = new float[16];
 	{
 	    //
 		Matrix.setIdentityM(modelMatrix,0);
@@ -238,7 +239,13 @@ public class Object3DData {
 	}
 
 	public Object3DData setPosition(float[] position) {
-		this.position = position;
+		return this.setPosition(position[0],position[1],position[2]);
+	}
+
+	public Object3DData setPosition(float x, float y, float z) {
+		this.position[0] = x;
+		this.position[1] = y;
+		this.position[2] = z;
 		updateModelMatrix();
 		return this;
 	}
@@ -263,20 +270,18 @@ public class Object3DData {
 		return rotation;
 	}
 
-	public float getRotationX(){
-		return rotation[0];
-	}
-
-	public float getRotationY(){
-		return rotation[1];
-	}
-
 	public float getRotationZ() {
 		return rotation[2];
 	}
 
 	public Object3DData setScale(float[] scale){
-		this.scale = scale;
+		return this.setScale(scale[0],scale[1],scale[2]);
+	}
+
+	public Object3DData setScale(float x, float y, float z){
+		this.scale[0] = x;
+		this.scale[1] = y;
+		this.scale[2] = z;
 		updateModelMatrix();
 		return this;
 	}
@@ -310,9 +315,10 @@ public class Object3DData {
 	}
 
     // binding coming from skeleton
-    public void setBindShapeMatrix(float[] bindTransform) {
+    public Object3DData setBindShapeMatrix(float[] bindTransform) {
         this.bindShapeMatrix = bindTransform;
         this.updateModelMatrix();
+        return this;
     }
 
     public float[] getBindShapeMatrix() {
@@ -477,6 +483,15 @@ public class Object3DData {
 
 	public Object3DData setDrawModeList(List<int[]> drawModeList) {
 		this.drawModeList = drawModeList;
+		return this;
+	}
+
+	public FloatBuffer getVertexColorsBuffer() {
+		return vertexColorsBuffer;
+	}
+
+	public Object3DData setVertexColorsBuffer(FloatBuffer vertexColorsBuffer) {
+		this.vertexColorsBuffer = vertexColorsBuffer;
 		return this;
 	}
 
@@ -698,6 +713,9 @@ public class Object3DData {
 	}
 
 	public BoundingBox getBoundingBox() {
+		if (modelDimensions != null){
+			return BoundingBox.create(getId()+"_BoundingBox", modelDimensions);
+		}
 		FloatBuffer vertexBuffer = getVertexBuffer();
 		if (vertexBuffer == null){
 			vertexBuffer = getVertexArrayBuffer();
@@ -787,9 +805,11 @@ public class Object3DData {
 		Log.d("Object3DData","Total translation: "+translationX+","+translationY+","+translationZ);
 		Log.d("Object3DData","Total scale: "+scaleFactor);
 
+		final float[] finalPosition = new float[]{translationX, translationY, translationZ};
+		final float[] finalScale = new float[]{scaleFactor, scaleFactor, scaleFactor};
 		for (Object3DData data : datas){
-			data.setPosition(new float[]{translationX, translationY, translationZ});
-			data.setScale(new float[]{scaleFactor, scaleFactor, scaleFactor});
+			data.setPosition(finalPosition);
+			data.setScale(finalScale);
 		}
 	}
 

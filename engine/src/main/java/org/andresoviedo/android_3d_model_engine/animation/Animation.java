@@ -21,7 +21,7 @@ public class Animation {
 	 * @param lengthInSeconds
 	 *            - the total length of the animation in seconds.
 	 * @param frames
-	 *            - all the keyframes for the animation, ordered by time of
+ *            - all the keyframes for the animation, ordered by time of
 	 *            appearance in the animation.
 	 */
 	public Animation(float lengthInSeconds, KeyFrame[] frames) {

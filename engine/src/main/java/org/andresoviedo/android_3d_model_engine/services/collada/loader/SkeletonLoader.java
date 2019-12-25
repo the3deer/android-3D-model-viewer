@@ -56,14 +56,12 @@ public class SkeletonLoader {
 			return null;
 		}
 
-		int index = boneOrder.size();
+		// int index = boneOrder.size();
 
-		final float[] IDENTITY = new float[16];
-		Matrix.setIdentityM(IDENTITY, 0);
 		String skeletonId = visualScene.getAttribute("id");
-		final JointData rootJoint = new JointData(index, skeletonId, skeletonId,
-				skeletonId, null, IDENTITY, IDENTITY, IDENTITY);
-		boneOrder.add(index, skeletonId);
+		final JointData rootJoint = new JointData(-1, skeletonId, skeletonId,
+				skeletonId, null, Math3DUtils.IDENTITY_MATRIX, Math3DUtils.IDENTITY_MATRIX, Math3DUtils.IDENTITY_MATRIX);
+		/*boneOrder.add(index, skeletonId);*/
 		this.jointCount = 1;  // root counts
 
 		// analyze all nodes to get skeleton
@@ -103,48 +101,65 @@ public class SkeletonLoader {
 	private JointData createJointData(XmlNode jointNode, JointData parent){
 
 		// joint transformation initialization
-        float[] matrix = new float[16];
-		Matrix.setIdentityM(matrix,0);
+        float[] matrix = null;
 
 		// did we find any supported transformations?
-		boolean matrixFound = false;
 		if (jointNode.getChild("matrix") != null) {
 			XmlNode jointMatrix = jointNode.getChild("matrix");
-            float[] matrix1 = Math3DUtils.parseFloat(jointMatrix.getData().trim().split("\\s+"));
-            Matrix.transposeM(matrix, 0, matrix1, 0);
-			matrixFound = true;
+			String data = jointMatrix.getData().trim();
+			if (!data.equals("1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1")) {
+				float[] matrix1 = Math3DUtils.parseFloat(data.split("\\s+"));
+				matrix = new float[16];
+				Matrix.transposeM(matrix, 0, matrix1, 0);
+			}
         }
 
         if (jointNode.getChild("translate") != null) {
 			XmlNode translateNode = jointNode.getChild("translate");
-			float[] translate = Math3DUtils.parseFloat(translateNode.getData().trim().
-					replace(',','.').split("\\s+"));
-			Matrix.translateM(matrix, 0, translate[0], translate[1], translate[2]);
-			matrixFound = true;
+			String data = translateNode.getData().trim().replace(',', '.');
+			if (!data.equals("0 0 0")) {
+				float[] translate = Math3DUtils.parseFloat(data.split("\\s+"));
+				if (matrix == null) {
+					matrix = new float[16];
+					Matrix.setIdentityM(matrix, 0);
+				}
+				Matrix.translateM(matrix, 0, translate[0], translate[1], translate[2]);
+			}
 		}
 
 		if (jointNode.getChild("rotate") != null) {
 			for (XmlNode rotateNode : jointNode.getChildren("rotate")) {
-				float[] rotate = Math3DUtils.parseFloat(rotateNode.getData().trim().split("\\s+"));
-				Matrix.rotateM(matrix, 0, rotate[3], rotate[0], rotate[1], rotate[2]);
+				String data = rotateNode.getData().trim();
+				if (!data.equals("0 0 0 0")) {
+					float[] rotate = Math3DUtils.parseFloat(data.split("\\s+"));
+					if (matrix == null) {
+						matrix = new float[16];
+						Matrix.setIdentityM(matrix, 0);
+					}
+					Matrix.rotateM(matrix, 0, rotate[3], rotate[0], rotate[1], rotate[2]);
+				}
 			}
-			matrixFound = true;
 		}
 
 		if (jointNode.getChild("scale") != null){
 			XmlNode scaleNode = jointNode.getChild("scale");
-			float[] scale = Math3DUtils.parseFloat(scaleNode.getData().trim().
-					replace(',','.').split("\\s+"));
-			Matrix.scaleM(matrix,0,scale[0], scale[1], scale[2]);
-			matrixFound = true;
+			String data = scaleNode.getData().trim();
+			if (!data.equals("1 1 1")) {
+				float[] scale = Math3DUtils.parseFloat(data.replace(',', '.').split("\\s+"));
+				if (matrix == null) {
+					matrix = new float[16];
+					Matrix.setIdentityM(matrix, 0);
+				}
+				Matrix.scaleM(matrix, 0, scale[0], scale[1], scale[2]);
+			}
 		}
 
 		// if no transformation was found, then this is not part of the skeleton transformation
-		if (!matrixFound){
-			// return null;
-		} else {
-			jointCount++;
+		if (matrix == null){
+			matrix = Math3DUtils.IDENTITY_MATRIX;
 		}
+
+		jointCount++;
 
 		// get node attributes
 		String nodeName = jointNode.getAttribute("name");
@@ -171,7 +186,8 @@ public class SkeletonLoader {
 							String material_symbol = instance_material.getAttribute("symbol");
 							String material_name = instance_material.getAttribute("target").substring(1);
 							materials.put(material_symbol,material_name);
-							Log.v("SkeletonLoader","Loaded material: "+material_symbol+"->"+material_name);
+							Log.v("SkeletonLoader",String.format("Loaded material: " +
+									"%s->%s",material_symbol,material_name));
 						}
 					}
 				}
@@ -196,7 +212,7 @@ public class SkeletonLoader {
 		}
 
 		// calculate inverse bind matrix in case it's a bone
-        float[] inverseBindMatrix = null;
+        float[] inverseBindMatrix = Math3DUtils.IDENTITY_MATRIX;
         if (index >= 0 && skinningData.getInverseBindMatrix() != null) {
             inverseBindMatrix = new float[16];
             Matrix.transposeM(inverseBindMatrix, 0, skinningData.getInverseBindMatrix(), index * 16);
@@ -207,12 +223,21 @@ public class SkeletonLoader {
 			if (linkedGeometryNode != null) {
 				index = boneOrder.size();
 				boneOrder.add(geometryId);
+				Log.i("SkeletonLoader","Found linked geometry. "+geometryId);
 			}
 		}
+		if (index == -1){
+			//index = boneOrder.size();
+			//boneOrder.add(nodeId);
+			Log.i("SkeletonLoader", "Found unlinked node. " + nodeId);
+		}
 
-		final float[] bindTransform = new float[16];
-        Matrix.multiplyMM(bindTransform, 0, parent.getBindTransform(), 0, matrix, 0);
+		float[] bindTransform = Math3DUtils.IDENTITY_MATRIX;
+        if (parent.getBindTransform() != Math3DUtils.IDENTITY_MATRIX || matrix != Math3DUtils.IDENTITY_MATRIX) {
+			bindTransform = new float[16];
+       		Matrix.multiplyMM(bindTransform, 0, parent.getBindTransform(), 0, matrix, 0);
+		}
 
-        return new JointData(index, nodeId,nodeName, geometryId, materials, matrix, bindTransform, inverseBindMatrix);
+        return new JointData(index, nodeId, nodeName, geometryId, materials, matrix, bindTransform, inverseBindMatrix);
 	}
 }

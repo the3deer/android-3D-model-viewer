@@ -10,7 +10,7 @@ import org.andresoviedo.util.math.Math3DUtils;
 public class Camera {
 
     private static final float ROOM_CENTER_SIZE = 0.5f;
-	private static final float ROOM_SIZE = 30;
+	private static final float ROOM_SIZE = 60;
 
 	public float xPos, yPos; // Camera position.
 	public float zPos;

@@ -50,7 +50,8 @@ public class DrawerFactory {
         boolean isAnimated = usingAnimation && obj instanceof AnimatedModel && (((AnimatedModel) obj).getAnimation() != null);
         boolean isUsingLights = usingLights && (obj.getNormals() != null || obj.getVertexNormalsArrayBuffer() != null);
         boolean isTextured = usingTextures && obj.getTextureData() != null && obj.getTextureCoordsArrayBuffer() != null;
-        boolean isColoured = drawColors && obj != null && obj.getVertexColorsArrayBuffer() != null;
+        boolean isColoured = drawColors && obj != null && (obj.getVertexColorsBuffer() != null || obj
+                .getVertexColorsArrayBuffer() != null);
 
         final String[] shaderId = getShaderId(isAnimated, isUsingLights, isTextured, isColoured);
 
@@ -68,6 +69,9 @@ public class DrawerFactory {
 
         // experimental: inject glPointSize
         vertexShaderCode = vertexShaderCode.replace("void main(){", "void main(){\n\tgl_PointSize = 5.0;");
+
+        // use opengl constant to dynamically set up array size in shaders. That should be >=120
+        vertexShaderCode = vertexShaderCode.replace("const int MAX_JOINTS = 60;","const int MAX_JOINTS = gl_MaxVertexUniformVectors;");
 
         // create drawer
         Log.v("DrawerFactory", "\n---------- Vertex shader ----------\n");

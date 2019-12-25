@@ -33,12 +33,12 @@ public class WavefrontLoaderTask extends LoaderTask {
         WavefrontLoader wfl = new WavefrontLoader("");
 
         // allocate memory
-        publishProgress(0);
+        super.publishProgress("Analyzing model...");
         wfl.analyzeModel(params0);
         params0.close();
 
         // Allocate memory
-        publishProgress(1);
+        super.publishProgress("Allocating memory...");
         wfl.allocateBuffers();
         wfl.reportOnModel();
 
@@ -50,23 +50,21 @@ public class WavefrontLoaderTask extends LoaderTask {
         data3D.setLoader(wfl);
         data3D.setDrawMode(GLES20.GL_TRIANGLES);
         data3D.setDimensions(data3D.getLoader().getDimensions());
-
+        build(data3D);
         return Collections.singletonList(data3D);
     }
 
-    @Override
-    protected void build(List<Object3DData> datas) throws Exception {
+    private void build(Object3DData data) throws IOException {
         InputStream stream = ContentUtils.getInputStream(uri);
         try {
-            Object3DData data = datas.get(0);
 
             // parse model
-            publishProgress(2);
+            super.publishProgress("Loading data...");
             data.getLoader().loadModel(stream);
             stream.close();
 
             // scale object
-            publishProgress(3);
+            super.publishProgress("Scaling object...");
             data.centerScale();
             data.setScale(new float[]{5, 5, 5});
 
@@ -74,11 +72,11 @@ public class WavefrontLoaderTask extends LoaderTask {
             data.setDrawMode(GLES20.GL_TRIANGLES);
 
             // build 3D object buffers
-            publishProgress(4);
+            super.publishProgress("Building 3D model...");
             Object3DBuilder.generateArrays(data);
-            publishProgress(5);
+            data.setDrawUsingArrays(true);
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             Log.e("Object3DBuilder", e.getMessage(), e);
             throw e;
         }
