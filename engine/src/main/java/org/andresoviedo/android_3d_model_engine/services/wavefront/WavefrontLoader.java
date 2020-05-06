@@ -31,11 +31,9 @@ package org.andresoviedo.android_3d_model_engine.services.wavefront;
 
 import android.net.Uri;
 import android.opengl.GLES20;
-import android.support.annotation.Nullable;
 import android.util.Log;
-
+import androidx.annotation.Nullable;
 import org.andresoviedo.util.android.ContentUtils;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,15 +1,15 @@
 package org.andresoviedo.android_3d_model_engine.drawer;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import org.andresoviedo.android_3d_model_engine.R;
 import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Object3D;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.util.io.IOUtils;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;

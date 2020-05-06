@@ -30,7 +30,7 @@ public class ContentUtils {
      */
     private static Map<String, Uri> documentsProvided = new HashMap<>();
 
-    private static ThreadLocal<Activity> currentActivity = new ThreadLocal<>();
+    private static ThreadLocal<Context> context = new ThreadLocal<>();
 
     private static File currentDir = null;
 
@@ -43,13 +43,13 @@ public class ContentUtils {
         }
     }
 
-    public static void setThreadActivity(Activity currentActivity) {
+    public static void setThreadActivity(Context context) {
         Log.i("ContentUtils", "Current activity thread: " + Thread.currentThread().getName());
-        ContentUtils.currentActivity.set(currentActivity);
+        ContentUtils.context.set(context);
     }
 
-    private static Activity getCurrentActivity() {
-        return ContentUtils.currentActivity.get();
+    private static Context getCurrentActivity() {
+        return ContentUtils.context.get();
     }
 
     public static void setCurrentDir(File file) {
@@ -61,10 +61,10 @@ public class ContentUtils {
         documentsProvided.clear();
     }
 
-    public static void provideAssets(Activity activity) {
+    public static void provideAssets(Context context) {
         documentsProvided.clear();
         try {
-            for (String document : activity.getAssets().list("models")) {
+            for (String document : context.getAssets().list("models")) {
                 documentsProvided.put(document, Uri.parse("assets://assets/models/" + document));
             }
         } catch (IOException ex) {
