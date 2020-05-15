@@ -29,28 +29,30 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 	 */
 	private final ProgressDialog dialog;
 
+	private final boolean showProgressDialog;
+
 	/**
 	 * Build a new progress dialog for loading the data model asynchronously
      * @param uri        the URL pointing to the 3d model
      *
 	 */
-	public LoaderTask(Context context, Uri uri, Callback callback) {
+	public LoaderTask(Context context, Uri uri, Callback callback, Boolean showProgressDialog) {
 		this.uri = uri;
 		// this.dialog = ProgressDialog.show(this.parent, "Please wait ...", "Loading model data...", true);
 		// this.dialog.setTitle(modelId);
 		this.dialog = new ProgressDialog(context);
-		this.callback = callback; }
-
+		this.callback = callback;
+        this.showProgressDialog = showProgressDialog;
+	}
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		this.dialog.setMessage("Loading...");
-		this.dialog.setCancelable(false);
-		this.dialog.show();
+		if (!showProgressDialog) return;
+        this.dialog.setMessage("Loading...");
+        this.dialog.setCancelable(false);
+        this.dialog.show();
 	}
-
-
 
 	@Override
 	protected List<Object3DData> doInBackground(Void... params) {
@@ -73,6 +75,7 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 	@Override
 	protected void onProgressUpdate(Integer... values) {
 		super.onProgressUpdate(values);
+		if (!showProgressDialog) return;
 		switch (values[0]) {
 			case 0:
 				this.dialog.setMessage("Analyzing model...");
@@ -98,6 +101,7 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 	@Override
 	protected void onPostExecute(List<Object3DData> data) {
 		super.onPostExecute(data);
+		if (!showProgressDialog) return;
 		if (dialog.isShowing()) {
 			dialog.dismiss();
 		}

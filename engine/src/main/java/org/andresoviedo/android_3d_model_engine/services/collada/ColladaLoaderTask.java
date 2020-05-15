@@ -16,8 +16,13 @@ public class ColladaLoaderTask extends LoaderTask {
 
     AnimatedModelData modelData;
 
-    public ColladaLoaderTask(Activity parent, Uri uri, Callback callback) {
-        super(parent, uri, callback);
+    public ColladaLoaderTask(
+            Activity parent,
+            Uri uri,
+            Callback callback,
+            boolean showProgressDialog
+    ) {
+        super(parent, uri, callback, showProgressDialog);
     }
 
     @SuppressWarnings("unchecked")

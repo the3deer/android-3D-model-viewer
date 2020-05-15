@@ -21,8 +21,13 @@ import java.util.List;
 
 public class WavefrontLoaderTask extends LoaderTask {
 
-    public WavefrontLoaderTask(final Context context, final Uri uri, final Callback callback) {
-        super(context, uri, callback);
+    public WavefrontLoaderTask(
+        final Context context,
+        final Uri uri,
+        final Callback callback,
+        final boolean showProgressDialog
+    ) {
+        super(context, uri, callback, showProgressDialog);
     }
 
     @Override
