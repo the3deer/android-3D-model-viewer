@@ -526,11 +526,14 @@ public final class Object3DBuilder {
 		FloatBuffer colorArrayBuffer = null;
 		if (materials != null) {
 			Log.i("Object3DBuilder", "Reading materials...");
-			try(InputStream inputStream = ContentUtils.getInputStream(materials.mfnm)) {
-				BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-				materials.readMaterials(br);
-				materials.showMaterials();
-				br.close();
+			try {
+				InputStream inputStream = ContentUtils.getInputStream(materials.mfnm);
+				if (inputStream != null) {
+					BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+					materials.readMaterials(br);
+					materials.showMaterials();
+					br.close();
+				}
 			} catch (Exception ex){
 			    Log.e("Object3DBuilder","Couldn't load material file "+materials.mfnm+". "+ex.getMessage(), ex);
 			    obj.addError(materials.mfnm+":"+ex.getMessage());
