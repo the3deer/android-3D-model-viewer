@@ -192,6 +192,6 @@ public class DrawerFactory {
     }
 
     public Object3D getPointDrawer() {
-        return getDrawer(null, false, false, false, false);
+        return getDrawer(null, false, false, false, true);
     }
 }

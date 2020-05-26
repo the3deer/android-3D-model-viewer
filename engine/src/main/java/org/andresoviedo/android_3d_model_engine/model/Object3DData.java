@@ -223,6 +223,10 @@ public class Object3DData {
 		return this;
 	}
 
+	public void setDrawSize(int size) {
+		this.drawSize = size;
+	}
+
 	public int getDrawSize() {
 		return drawSize;
 	}
