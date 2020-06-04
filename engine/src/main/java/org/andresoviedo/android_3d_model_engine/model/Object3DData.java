@@ -247,6 +247,12 @@ public class Object3DData {
 		return this;
 	}
 
+	public Object3DData setPositionY(float posY) {
+		this.position[1] = posY;
+		updateModelMatrix();
+		return this;
+	}
+
 	public float[] getPosition() {
 		return position;
 	}
@@ -307,8 +313,20 @@ public class Object3DData {
 		return this;
 	}
 
+	public Object3DData setRotationX(float rotX) {
+		this.rotation[0] = rotX;
+		updateModelMatrix();
+		return this;
+	}
+
 	public Object3DData setRotationY(float rotY) {
 		this.rotation[1] = rotY;
+		updateModelMatrix();
+		return this;
+	}
+
+	public Object3DData setRotationZ(float rotZ) {
+		this.rotation[2] = rotZ;
 		updateModelMatrix();
 		return this;
 	}

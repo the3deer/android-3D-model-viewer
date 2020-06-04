@@ -40,22 +40,113 @@ public final class Object3DBuilder {
 
 	final static float[] axisVertexLinesData = new float[]{
 			//@formatter:off
+			0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // right
+			0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // left
+			0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // up
+			0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, // down
+			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // z+
+			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, // z-
+
+			0.95f, 0.05f, 0, 1, 0, 0, 0.95f, -0.05f, 0, 1, 0f, 0f, // Arrow X (>)
+			-0.95f, 0.05f, 0, -1, 0, 0, -0.95f, -0.05f, 0, -1, 0f, 0f, // Arrow X (<)
+			-0.05f, 0.95f, 0, 0, 1, 0, 0.05f, 0.95f, 0, 0, 1f, 0f, // Arrox Y (^)
+			-0.05f, 0, 0.95f, 0, 0, 1, 0.05f, 0, 0.95f, 0, 0, 1, // Arrox z (v)
+
+			1.05F, 0.05F, 0, 1.10F, -0.05F, 0, 1.05F, -0.05F, 0, 1.10F, 0.05F, 0, // Letter X
+			-0.05F, 1.05F, 0, 0.05F, 1.10F, 0, -0.05F, 1.10F, 0, 0.0F, 1.075F, 0, // Letter Y
+			-0.05F, 0.05F, 1.05F, 0.05F, 0.05F, 1.05F, 0.05F, 0.05F, 1.05F, -0.05F, -0.05F, 1.05F, -0.05F, -0.05F,
+			1.05F, 0.05F, -0.05F, 1.05F // letter z
+			//@formatter:on
+	};
+
+	final static float[] arrowLine = new float[] {
+			0.0f, 0.0f, 0.0f,
+			0.0f, 0.5f, 0.0f, // right
+
+			0.0f, 0.0f, 0.0f,
+			0.1f, 0.5f, 0.0f, // right
+
+			0.0f, 0.0f, 0.0f,
+			0.2f, 0.5f, 0.0f, // right
+
+//			1.0f, 0.2f, 0.0f, 1.0f, -0.2f, 0.0f,
+//			1.5f, 0.0f, 0.0f, 1.0f, 0.2f, 0.0f,
+//			1.5f, 0.0f, 0.0f, 1.0f, -0.2f, 0.0f
+	};
+
+	final static float[] xAxisVertexLinesData = new float[] {
 			0.0f, 0.0f, 0.0f, 2.0f, 0.0f, 0.0f, // right
 			0.0f, 0.0f, 0.0f, -2.0f, 0.0f, 0.0f, // left
-			0.0f, 0.0f, 0.0f, 0.0f, 2.0f, 0.0f, // up
-			0.0f, 0.0f, 0.0f, 0.0f, -2.0f, 0.0f, // down
-			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.0f, // z+
-			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -3.5f, // z-
+
+			// Duplicate layers to make a thicker line effect
+			0.0f, 0.0f, 0.0f, 2.0f, 0.01f, 0.0f,
+			0.0f, 0.0f, 0.0f, -2.0f, 0.01f, 0.0f,
+			0.0f, 0.0f, 0.0f, 2.0f, 0.015f, 0.0f,
+			0.0f, 0.0f, 0.0f, -2.0f, 0.015f, 0.0f,
+			0.0f, 0.0f, 0.0f, 2.0f, 0.02f, 0.0f,
+			0.0f, 0.0f, 0.0f, -2.0f, 0.02f, 0.0f,
+			0.0f, 0.0f, 0.0f, 2.0f, 0.025f, 0.0f,
+			0.0f, 0.0f, 0.0f, -2.0f, 0.025f, 0.0f,
+			0.0f, 0.0f, 0.0f, 2.0f, 0.03f, 0.0f,
+			0.0f, 0.0f, 0.0f, -2.0f, 0.03f, 0.0f,
+			0.0f, 0.0f, 0.0f, 2.0f, 0.035f, 0.0f,
+			0.0f, 0.0f, 0.0f, -2.0f, 0.035f, 0.0f,
+			0.0f, 0.0f, 0.0f, 2.0f, 0.04f, 0.0f,
+			0.0f, 0.0f, 0.0f, -2.0f, 0.04f, 0.0f,
 
 			2, -0.05f, 0, 2.1f, -0.05f, 0, // right -
 			-2, -0.1f, 0, -1.90f, -0.1f, 0, -1.95f, -0.05f, 0, -1.95f, -0.15f, 0, // left +
+	};
+
+	final static float[] yAxisVertexLinesData = new float[] {
+			0.0f, 0.0f, 0.0f, 0.0f, 2.0f, 0.0f, // up
+			0.0f, 0.0f, 0.0f, 0.0f, -2.0f, 0.0f, // down
+
+			// Duplicate layers to make a thicker line effect
+			0.0f, 0.0f, 0.0f, 0.01f, 2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.01f, -2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.015f, 2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.015f, -2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.02f, 2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.02f, -2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.025f, 2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.025f, -2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.03f, 2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.03f, -2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.035f, 2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.035f, -2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.04f, 2.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.04f, -2.0f, 0.0f,
+
 			-0.05f, 2f, 0f, -0.15f, 2f, 0f, -0.1f, 2.05f, 0f, -0.1f, 1.95f, 0f, // top +
 			-0.05f, -2.0f, 0.0f, -0.15f, -2.0f, 0.0f, // bottom -
+	};
+
+	final static float[] zAxisVertexLinesData = new float[] {
+			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.0f, // z+
+			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -3.5f, // z-
+
+			// Duplicate layers to make a thicker line effect
+			0.0f, 0.0f, 0.0f, 0.01f, 0.0f, 2.0f,
+			0.0f, 0.0f, 0.0f, 0.01f, 0.0f, -3.5f,
+			0.0f, 0.0f, 0.0f, 0.015f, 0.0f, 2.0f,
+			0.0f, 0.0f, 0.0f, 0.015f, 0.0f, -3.5f,
+			0.0f, 0.0f, 0.0f, 0.02f, 0.0f, 2.0f,
+			0.0f, 0.0f, 0.0f, 0.02f, 0.0f, -3.5f,
+			0.0f, 0.0f, 0.0f, 0.025f, 0.0f, 2.0f,
+			0.0f, 0.0f, 0.0f, 0.025f, 0.0f, -3.5f,
+			0.0f, 0.0f, 0.0f, 0.03f, 0.0f, 2.0f,
+			0.0f, 0.0f, 0.0f, 0.03f, 0.0f, -3.5f,
+			0.0f, 0.0f, 0.0f, 0.035f, 0.0f, 2.0f,
+			0.0f, 0.0f, 0.0f, 0.035f, 0.0f, -3.5f,
+			0.0f, 0.0f, 0.0f, 0.04f, 0.0f, 2.0f,
+			0.0f, 0.0f, 0.0f, 0.04f, 0.0f, -3.5f,
+
 			0.0f, -0.05f, 2f, 0.0f, -0.05f, 2.1f, // z-
 			0.0f, -0.1f, -3.5f, 0.0f, -0.1f, -3.6f,
-			0.0f, -0.05f, -3.55f, 0.0f, -0.15f, -3.55f // z+
-			//@formatter:on
+			0.0f, -0.05f, -3.55f, 0.0f, -0.15f, -3.55f, // z+
 	};
+
 
 	final static float[] squarePositionData = new float[]{
 			// @formatter:off
@@ -363,6 +454,30 @@ public final class Object3DBuilder {
 	public static Object3DData buildAxis() {
 		return new Object3DData(
 				createNativeByteBuffer(axisVertexLinesData.length * 4).asFloatBuffer().put(axisVertexLinesData))
+				.setDrawMode(GLES20.GL_LINES).setFaces(new Faces(0));
+	}
+
+	public static Object3DData buildArrowLine() {
+		return new Object3DData(
+				createNativeByteBuffer(arrowLine.length * 4).asFloatBuffer().put(arrowLine))
+				.setDrawMode(GLES20.GL_LINES).setFaces(new Faces(0));
+	}
+
+	public static Object3DData buildXAxis() {
+		return new Object3DData(
+				createNativeByteBuffer(xAxisVertexLinesData.length * 4).asFloatBuffer().put(xAxisVertexLinesData))
+				.setDrawMode(GLES20.GL_LINES).setFaces(new Faces(0));
+	}
+
+	public static Object3DData buildYAxis() {
+		return new Object3DData(
+				createNativeByteBuffer(yAxisVertexLinesData.length * 4).asFloatBuffer().put(yAxisVertexLinesData))
+				.setDrawMode(GLES20.GL_LINES).setFaces(new Faces(0));
+	}
+
+	public static Object3DData buildZAxis() {
+		return new Object3DData(
+				createNativeByteBuffer(zAxisVertexLinesData.length * 4).asFloatBuffer().put(zAxisVertexLinesData))
 				.setDrawMode(GLES20.GL_LINES).setFaces(new Faces(0));
 	}
 
