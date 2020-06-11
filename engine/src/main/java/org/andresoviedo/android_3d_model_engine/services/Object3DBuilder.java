@@ -61,17 +61,41 @@ public final class Object3DBuilder {
 
 	final static float[] arrowLine = new float[] {
 			0.0f, 0.0f, 0.0f, // point 1
-			0.0f, 1f, 0.0f, // point 2  plot to y top
+			0.0f, 0.6f, 0.0f, // point 2  plot to y up
 
-//			0.0f, 0.0f, 0.0f,
-//			0.1f, 0.5f, 0.0f, // right
-//
-//			0.0f, 0.0f, 0.0f,
-//			0.2f, 0.5f, 0.0f, // right
+			0.01f, 0.0f, 0.0f, // point 1
+			0.01f, 0.6f, 0.0f, // point 2  plot to y up
 
-//			1.0f, 0.2f, 0.0f, 1.0f, -0.2f, 0.0f,
-//			1.5f, 0.0f, 0.0f, 1.0f, 0.2f, 0.0f,
-//			1.5f, 0.0f, 0.0f, 1.0f, -0.2f, 0.0f
+			0.02f, 0.0f, 0.0f, // point 1
+			0.02f, 0.6f, 0.0f, // point 2  plot to y up
+
+			0.03f, 0.0f, 0.0f, // point 1
+			0.03f, 0.6f, 0.0f, // point 2  plot to y up
+
+			0.04f, 0.0f, 0.0f, // point 1
+			0.04f, 0.6f, 0.0f, // point 2  plot to y up
+
+			0.05f, 0.0f, 0.0f, // point 1
+			0.05f, 0.6f, 0.0f, // point 2  plot to y up
+
+			0.06f, 0.0f, 0.0f, // point 1
+			0.06f, 0.6f, 0.0f, // point 2  plot to y up
+
+			0.07f, 0.0f, 0.0f, // point 1
+			0.07f, 0.6f, 0.0f, // point 2  plot to y up
+
+			0.08f, 0.0f, 0.0f, // point 1
+			0.08f, 0.6f, 0.0f, // point 2  plot to y up
+
+			0.09f, 0.0f, 0.0f, // point 1
+			0.09f, 0.6f, 0.0f, // point 2  plot to y up
+	};
+
+	final static float[] arrowTip = new float[] {
+			0.0f, 0.6f, 0.0f, 0.2f, 0.6f, 0.0f,
+			0.0f, 0.6f, 0.0f, -0.2f, 0.6f, 0.0f,
+			-0.2f, 0.6f, 0.0f, 0.0f, 0.8f, 0.0f,
+			0.2f, 0.6f, 0.0f, 0.0f, 0.8f, 0.0f
 	};
 
 	final static float[] xAxisVertexLinesData = new float[] {
@@ -458,6 +482,12 @@ public final class Object3DBuilder {
 	}
 
 	public static Object3DData buildArrowLine() {
+		return new Object3DData(
+				createNativeByteBuffer(arrowLine.length * 4).asFloatBuffer().put(arrowLine))
+				.setDrawMode(GLES20.GL_LINES).setFaces(new Faces(0));
+	}
+
+	public static Object3DData buildArrowTip() {
 		return new Object3DData(
 				createNativeByteBuffer(arrowLine.length * 4).asFloatBuffer().put(arrowLine))
 				.setDrawMode(GLES20.GL_LINES).setFaces(new Faces(0));
