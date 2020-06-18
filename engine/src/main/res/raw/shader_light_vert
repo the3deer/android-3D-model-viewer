@@ -31,13 +31,14 @@ void main(){
     // specular light
     vec3 viewDir = normalize(u_cameraPos - modelViewVertex);
     vec3 reflectDir = reflect(-lightVector, modelViewNormal);
-    float specular = pow(max(dot(reflectDir, viewDir),0.0), 100.0);
+    float specular = pow(max(dot(reflectDir, viewDir),0.0), 32.0);
 
     // Attenuate the light based on distance.
     float distance = length(u_LightPos - modelViewVertex);
     distance = 1.0 / (1.0 + 0.25 * distance);
 
     // Multiply the color by the illumination level. It will be interpolated across the triangle.
-    v_Color = vColor * min((diffuse * distance + specular + 0.5), 1.0);
+    // v_Color = vColor * min((diffuse * distance + specular + 0.5), 1.0);
+    v_Color = vColor * min((diffuse * distance + 0.5), 1.0);
     v_Color[3] = vColor[3]; // correct alpha
 }
