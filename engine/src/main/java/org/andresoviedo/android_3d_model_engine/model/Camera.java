@@ -10,7 +10,7 @@ import org.andresoviedo.util.math.Math3DUtils;
 public class Camera {
 
     private static final float ROOM_CENTER_SIZE = 0.5f;
-	private static final float ROOM_SIZE = 30;
+	private static final float ROOM_SIZE = 1000;
 
 	public float xPos, yPos; // Camera position.
 	public float zPos;
@@ -30,9 +30,9 @@ public class Camera {
 	// cache
 	private float[] coordinates = new float[16];
 
-	public Camera() {
+	public Camera(float distance) {
 		// Initialize variables...
-		this(0, 0, 6, 0, 0, 0, 0, 1, 0);
+		this(0, 0, distance, 0, 0, 0, 0, 1, 0);
 	}
 
 	public Camera(float xPos, float yPos, float zPos, float xView, float yView, float zView, float xUp, float yUp,
@@ -49,6 +49,37 @@ public class Camera {
 		this.xUp = xUp;
 		this.yUp = yUp;
 		this.zUp = zUp;
+	}
+
+	public void setPosition(float position) {
+
+		// Moving the camera requires a little more then adding 1 to the z or
+		// subracting 1.
+		// First we need to get the direction at which we are looking.
+		float xLookDirection, yLookDirection, zLookDirection;
+
+		// The look direction is the view minus the position (where we are).
+		xLookDirection = xView - xPos;
+		yLookDirection = yView - yPos;
+		zLookDirection = zView - zPos;
+
+		// Normalize the direction.
+		float dp = Matrix.length(xLookDirection, yLookDirection, zLookDirection);
+		xLookDirection /= dp;
+		yLookDirection /= dp;
+		zLookDirection /= dp;
+
+		float x = xLookDirection * position;
+		float y = yLookDirection * position;
+		float z = zLookDirection * position;
+
+		if (isOutOfBounds(x, y , z)) return;
+
+		xPos = x;
+		yPos = y;
+		zPos = z;
+
+		setChanged(true);
 	}
 
 	public synchronized void animate(){
@@ -113,7 +144,7 @@ public class Camera {
      */
 	private boolean isOutOfBounds(float x, float y, float z) {
 		if (roomBox.outOfBound(x,y,z)){
-			Log.v("Camera", "Out of room walls");
+			Log.v("Camera", "Out of room walls. "+x+","+y+","+z);
 			return true;
 		}
         if (!centerBox.outOfBound(x,y,z)){
@@ -139,7 +170,7 @@ public class Camera {
 	 * @param dY the Y component of the user 2D vector, that is, a value between [-1,1]
 	 */
 	public synchronized void translateCamera(float dX, float dY) {
-		//Log.v("Camera","translate:"+dX+","+dY);
+		// Log.v("Camera","translate:"+dX+","+dY);
 		if (dX == 0 && dY == 0) return;
 		translateCameraImpl(dX, dY);
 		lastAction = new Object[]{"translate",dX, dY};

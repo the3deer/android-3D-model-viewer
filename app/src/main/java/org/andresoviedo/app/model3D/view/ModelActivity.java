@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.Loader;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,19 +15,28 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import org.andresoviedo.app.model3D.demo.ExampleSceneLoader;
-import org.andresoviedo.app.model3D.demo.SceneLoader;
+import org.andresoviedo.android_3d_model_engine.camera.CameraController;
+import org.andresoviedo.android_3d_model_engine.collision.CollisionController;
+import org.andresoviedo.android_3d_model_engine.controller.TouchController;
+import org.andresoviedo.android_3d_model_engine.services.LoaderTask;
+import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
+import org.andresoviedo.android_3d_model_engine.view.ModelRenderer;
+import org.andresoviedo.android_3d_model_engine.view.ModelSurfaceView;
+import org.andresoviedo.app.model3D.demo.DemoLoaderTask;
 import org.andresoviedo.dddmodel2.R;
 import org.andresoviedo.util.android.ContentUtils;
+import org.andresoviedo.util.event.EventListener;
 
 import java.io.IOException;
+import java.net.URI;
+import java.util.EventObject;
 
 /**
  * This activity represents the container for our 3D viewer.
  *
  * @author andresoviedo
  */
-public class ModelActivity extends Activity {
+public class ModelActivity extends Activity implements EventListener {
 
     private static final int REQUEST_CODE_LOAD_TEXTURE = 1000;
     private static final int FULLSCREEN_DELAY = 10000;
@@ -38,72 +48,134 @@ public class ModelActivity extends Activity {
     /**
      * The file to load. Passed as input parameter
      */
-    private Uri paramUri;
+    private URI paramUri;
     /**
      * Enter into Android Immersive mode so the renderer is full screen or not
      */
-    private boolean immersiveMode = true;
+    private boolean immersiveMode;
     /**
      * Background GL clear color. Default is light gray
      */
-    private float[] backgroundColor = new float[]{0f, 0f, 0f, 1.0f};
+    private float[] backgroundColor = new float[]{0.0f, 0.0f, 0.0f, 1.0f};
 
     private ModelSurfaceView gLView;
-
+    private TouchController touchController;
     private SceneLoader scene;
+    private ModelViewerGUI gui;
+    private CollisionController collisionController;
+
 
     private Handler handler;
+    private CameraController cameraController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i("ModelActivity", "Loading activity...");
         super.onCreate(savedInstanceState);
 
         // Try to get input parameters
         Bundle b = getIntent().getExtras();
         if (b != null) {
-            if (b.getString("uri") != null) {
-                this.paramUri = Uri.parse(b.getString("uri"));
-            }
-            this.paramType = b.getString("type") != null ? Integer.parseInt(b.getString("type")) : -1;
-            this.immersiveMode = "true".equalsIgnoreCase(b.getString("immersiveMode"));
             try {
-                String[] backgroundColors = b.getString("backgroundColor").split(" ");
-                backgroundColor[0] = Float.parseFloat(backgroundColors[0]);
-                backgroundColor[1] = Float.parseFloat(backgroundColors[1]);
-                backgroundColor[2] = Float.parseFloat(backgroundColors[2]);
-                backgroundColor[3] = Float.parseFloat(backgroundColors[3]);
+                if (b.getString("uri") != null) {
+                    this.paramUri = new URI(b.getString("uri"));
+                    Log.i("ModelActivity", "Params: uri '" + paramUri + "'");
+                }
+                this.paramType = b.getString("type") != null ? Integer.parseInt(b.getString("type")) : -1;
+                this.immersiveMode = "true".equalsIgnoreCase(b.getString("immersiveMode"));
+
+                if (b.getString("backgroundColor") != null) {
+                    String[] backgroundColors = b.getString("backgroundColor").split(" ");
+                    backgroundColor[0] = Float.parseFloat(backgroundColors[0]);
+                    backgroundColor[1] = Float.parseFloat(backgroundColors[1]);
+                    backgroundColor[2] = Float.parseFloat(backgroundColors[2]);
+                    backgroundColor[3] = Float.parseFloat(backgroundColors[3]);
+                }
             } catch (Exception ex) {
-                // Assuming default background color
+                Log.e("ModelActivity", "Error parsing activity parameters: "+ex.getMessage(), ex);
             }
+
         }
-        Log.i("Renderer", "Params: uri '" + paramUri + "'");
 
         handler = new Handler(getMainLooper());
 
-        // Create our 3D sceneario
+        // Create our 3D scenario
+        Log.i("ModelActivity","Loading Scene...");
+        scene = new SceneLoader(this, paramUri, paramType, gLView);
+        if (paramUri == null) {
+            final LoaderTask task = new DemoLoaderTask(this, null, scene);
+            task.execute();
+        }
+
+/*        Log.i("ModelActivity","Loading Scene...");
         if (paramUri == null) {
             scene = new ExampleSceneLoader(this);
         } else {
-            scene = new SceneLoader(this);
-        }
-        scene.init();
+            scene = new SceneLoader(this, paramUri, paramType, gLView);
+        }*/
 
-        // Create a GLSurfaceView instance and set it
-        // as the ContentView for this Activity.
         try {
-            gLView = new ModelSurfaceView(this);
+            Log.i("ModelActivity","Loading GLSurfaceView...");
+            gLView = new ModelSurfaceView(this, backgroundColor, this.scene);
+            gLView.addListener(this);
             setContentView(gLView);
+            scene.setView(gLView);
         } catch (Exception e) {
+            Log.e("ModelActivity",e.getMessage(),e);
             Toast.makeText(this, "Error loading OpenGL view:\n" +e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        try {
+            Log.i("ModelActivity","Loading TouchController...");
+            touchController = new TouchController(this);
+            touchController.addListener(this);
+        } catch (Exception e) {
+            Log.e("ModelActivity",e.getMessage(),e);
+            Toast.makeText(this, "Error loading TouchController:\n" +e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        try {
+            Log.i("ModelActivity","Loading CollisionController...");
+            collisionController = new CollisionController(gLView, scene);
+            collisionController.addListener(scene);
+            touchController.addListener(collisionController);
+            touchController.addListener(scene);
+        }catch(Exception e){
+            Log.e("ModelActivity",e.getMessage(),e);
+            Toast.makeText(this, "Error loading CollisionController\n" +e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        try {
+            Log.i("ModelActivity","Loading CameraController...");
+            cameraController = new CameraController(scene.getCamera());
+            gLView.getModelRenderer().addListener(cameraController);
+            touchController.addListener(cameraController);
+        }catch (Exception e){
+            Log.e("ModelActivity", e.getMessage(), e);
+            Toast.makeText(this, "Error loading CameraController" +e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        try {
+            // TODO: finish UI implementation
+            Log.i("ModelActivity", "Loading GUI...");
+            gui = new ModelViewerGUI(gLView, scene);
+            touchController.addListener(gui);
+            gLView.addListener(gui);
+            scene.addGUIObject(gui);
+        } catch (Exception e) {
+            Log.e("ModelActivity", e.getMessage(), e);
+            Toast.makeText(this, "Error loading GUI" + e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
         // Show the Up button in the action bar.
         setupActionBar();
 
-        // TODO: Alert user when there is no multitouch support (2 fingers). He won't be able to rotate or zoom
-        ContentUtils.printTouchCapabilities(getPackageManager());
-
         setupOnSystemVisibilityChangeListener();
+
+        // load model
+        scene.init();
+
+        Log.i("ModelActivity","Finished loading");
     }
 
     /**
@@ -254,26 +326,6 @@ public class ModelActivity extends Activity {
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
 
-    public Uri getParamUri() {
-        return paramUri;
-    }
-
-    public int getParamType() {
-        return paramType;
-    }
-
-    public float[] getBackgroundColor() {
-        return backgroundColor;
-    }
-
-    public SceneLoader getScene() {
-        return scene;
-    }
-
-    public ModelSurfaceView getGLView() {
-        return gLView;
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != RESULT_OK) {
@@ -297,5 +349,23 @@ public class ModelActivity extends Activity {
                     }
                 }
         }
+    }
+
+    @Override
+    public boolean onEvent(EventObject event) {
+        if (event instanceof ModelRenderer.ViewEvent) {
+            ModelRenderer.ViewEvent viewEvent = (ModelRenderer.ViewEvent) event;
+            if(viewEvent.getCode() == ModelRenderer.ViewEvent.Code.SURFACE_CHANGED) {
+                touchController.setSize(viewEvent.getWidth(), viewEvent.getHeight());
+                gLView.setTouchController(touchController);
+
+                // process event in GUI
+                if (gui != null) {
+                    gui.setSize(viewEvent.getWidth(), viewEvent.getHeight());
+                    gui.setVisible(true);
+                }
+            }
+        }
+        return true;
     }
 }

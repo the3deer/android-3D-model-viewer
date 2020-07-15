@@ -2,11 +2,11 @@ package org.andresoviedo.android_3d_model_engine.services;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.net.Uri;
 import android.os.AsyncTask;
 
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -14,16 +14,16 @@ import java.util.List;
  *
  * @author andresoviedo
  */
-public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DData>> {
+public abstract class LoaderTask extends AsyncTask<Void, String, List<Object3DData>> implements LoadListener {
 
 	/**
 	 * URL to the 3D model
 	 */
-	protected final Uri uri;
+	protected final URI uri;
 	/**
 	 * Callback to notify of events
 	 */
-	private final Callback callback;
+	private final LoadListener callback;
 	/**
 	 * The dialog that will show the progress of the loading
 	 */
@@ -34,10 +34,8 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
      * @param uri        the URL pointing to the 3d model
      *
 	 */
-	public LoaderTask(Activity parent, Uri uri, Callback callback) {
+	public LoaderTask(Activity parent, URI uri, LoadListener callback) {
 		this.uri = uri;
-		// this.dialog = ProgressDialog.show(this.parent, "Please wait ...", "Loading model data...", true);
-		// this.dialog.setTitle(modelId);
 		this.dialog = new ProgressDialog(parent);
 		this.callback = callback; }
 
@@ -47,6 +45,7 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 		super.onPreExecute();
 		this.dialog.setMessage("Loading...");
 		this.dialog.setCancelable(false);
+		//this.dialog.getWindow().setGravity(Gravity.BOTTOM);
 		this.dialog.show();
 	}
 
@@ -57,8 +56,7 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 		try {
 		    callback.onStart();
 			List<Object3DData> data = build();
-			build(data);
-            callback.onLoadComplete(data);
+            callback.onLoadComplete();
 			return  data;
 		} catch (Exception ex) {
             callback.onLoadError(ex);
@@ -68,31 +66,14 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 
 	protected abstract List<Object3DData> build() throws Exception;
 
-	protected abstract void build(List<Object3DData> data) throws Exception;
+	public void onLoad(Object3DData data){
+		callback.onLoad(data);
+	}
 
 	@Override
-	protected void onProgressUpdate(Integer... values) {
+	protected void onProgressUpdate(String... values) {
 		super.onProgressUpdate(values);
-		switch (values[0]) {
-			case 0:
-				this.dialog.setMessage("Analyzing model...");
-				break;
-			case 1:
-				this.dialog.setMessage("Allocating memory...");
-				break;
-			case 2:
-				this.dialog.setMessage("Loading data...");
-				break;
-			case 3:
-				this.dialog.setMessage("Scaling object...");
-				break;
-			case 4:
-				this.dialog.setMessage("Building 3D model...");
-				break;
-			case 5:
-				// Toast.makeText(parent, modelId + " Build!", Toast.LENGTH_LONG).show();
-				break;
-		}
+		this.dialog.setMessage(values[0]);
 	}
 
 	@Override
@@ -103,13 +84,24 @@ public abstract class LoaderTask extends AsyncTask<Void, Integer, List<Object3DD
 		}
 	}
 
+	@Override
+	public void onStart() {
+		callback.onStart();
+	}
 
-    public interface Callback {
+	@Override
+	public void onProgress(String progress) {
+		super.publishProgress(progress);
+		callback.onProgress(progress);
+	}
 
-        void onStart();
+	@Override
+	public void onLoadError(Exception ex) {
+		callback.onLoadError(ex);
+	}
 
-        void onLoadError(Exception ex);
-
-        void onLoadComplete(List<Object3DData> data);
-    }
+	@Override
+	public void onLoadComplete() {
+		callback.onLoadComplete();
+	}
 }

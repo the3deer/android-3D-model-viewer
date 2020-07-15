@@ -6,6 +6,7 @@ import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 public final class GLUtil {
@@ -93,13 +94,18 @@ public final class GLUtil {
 
 		int[] compiled = new int[1];
 		GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-		Log.i("GLUtil", "Shader compilation info: " + GLES20.glGetShaderInfoLog(shader));
+		Log.d("GLUtil", "Shader compilation info: " + GLES20.glGetShaderInfoLog(shader));
 		if (compiled[0] == 0) {
 			Log.e("GLUtil", "Shader error: " + GLES20.glGetShaderInfoLog(shader) + "\n" + shaderCode);
 			GLES20.glDeleteShader(shader);
 		}
 
 		return shader;
+	}
+
+	public static int loadTexture(final byte[] textureData){
+		ByteArrayInputStream textureIs = new ByteArrayInputStream(textureData);
+		return loadTexture(textureIs);
 	}
 
 	public static int loadTexture(final InputStream is) {
@@ -159,6 +165,11 @@ public final class GLUtil {
 		while ((glError = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
 			Log.e(TAG, glOperation + ": glError " + glError);
 			error = true;
+			Log.e(TAG, Thread.currentThread().getStackTrace()[3].toString());
+            Log.e(TAG, Thread.currentThread().getStackTrace()[4].toString());
+            Log.e(TAG, Thread.currentThread().getStackTrace()[5].toString());
+            Log.e(TAG, Thread.currentThread().getStackTrace()[6].toString());
+
 			// throw new RuntimeException(glOperation + ": glError " + error);
 		}
 		return error;

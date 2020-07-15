@@ -1,19 +1,20 @@
 package org.andresoviedo.android_3d_model_engine.services.stl;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.opengl.GLES20;
 import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
+import org.andresoviedo.android_3d_model_engine.services.LoadListener;
 import org.andresoviedo.android_3d_model_engine.services.LoaderTask;
-import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoader;
+import org.andresoviedo.android_3d_model_engine.services.collada.entities.MeshData;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,91 +27,81 @@ public final class STLLoaderTask extends LoaderTask {
 
     private STLFileReader stlFileReader;
 
-    public STLLoaderTask(Activity parent, Uri uri, Callback callback) {
+    public STLLoaderTask(Activity parent, URI uri, LoadListener callback) {
         super(parent, uri, callback);
     }
 
     @Override
     protected List<Object3DData> build() throws IOException {
-        // Parse STL
-        this.stlFileReader = new STLFileReader(new URL(uri.toString()));
-        int totalFaces = stlFileReader.getNumOfFacets()[0];
-        Log.i("STLLoaderTask", "Num of objects: " + stlFileReader.getNumOfObjects());
-        Log.i("STLLoaderTask", "Found '" + totalFaces + "' facets");
-        Log.i("STLLoaderTask", "Parsing messages: " + stlFileReader.getParsingMessages());
 
-        // Allocate data
-        FloatBuffer normalsBuffer = createNativeByteBuffer(totalFaces * 3 * 3 * 4).asFloatBuffer();
-        FloatBuffer vertexBuffer = createNativeByteBuffer(totalFaces * 3 * 3 * 4).asFloatBuffer();
-
-        // Initialize model dimensions (needed by the Object3DData#scaleCenter()
-        WavefrontLoader.ModelDimensions modelDimensions = new WavefrontLoader.ModelDimensions();
-
-        // notify succeded!
-        Object3DData data3D = new Object3DData(vertexBuffer).setVertexNormalsArrayBuffer(normalsBuffer);
-        data3D.setDimensions(modelDimensions);
-        data3D.setDrawUsingArrays(true);
-        data3D.setDrawMode(GLES20.GL_TRIANGLES);
-        if (totalFaces > 0) {
-            data3D.setFaces(new WavefrontLoader.Faces(totalFaces));
-        }
-        data3D.setId(uri.toString());
-        return Collections.singletonList(data3D);
-    }
-
-    @Override
-    protected void build(List<Object3DData> datas) throws Exception {
+        // current facet counter
         int counter = 0;
+
         try {
 
-            Object3DData data = datas.get(0);
+            // log event
+            Log.i("STLLoaderTask", "Parsing model...");
+            super.publishProgress("Parsing model...");
+
+            // Parse STL
+            this.stlFileReader = new STLFileReader(new URL(uri.toString()));
+
+            // get total facets
+            int totalFaces = stlFileReader.getNumOfFacets()[0];
+
+            // log event
+            Log.i("STLLoaderTask", "Num of objects found: " + stlFileReader.getNumOfObjects());
+            Log.i("STLLoaderTask", "Num facets found '" + totalFaces + "' facets");
+            Log.i("STLLoaderTask", "Parsing messages: " + stlFileReader.getParsingMessages());
+
+            // primitive data
+            final List<float[]> vertices = new ArrayList<>();
+            final List<float[]> normals = new ArrayList<>();
 
             // Parse all facets...
             double[] normal = new double[3];
-            double[][] vertices = new double[3][3];
-            int normalCounter = 0, vertexCounter = 0;
+            double[][] triangle = new double[3][3];
 
-            FloatBuffer normalsBuffer = data.getVertexNormalsArrayBuffer();
-            FloatBuffer vertexBuffer = data.getVertexArrayBuffer();
-            WavefrontLoader.ModelDimensions modelDimensions = data.getDimensions();
+            // notify user
+            super.publishProgress("Loading facets...");
 
-            int totalFaces = stlFileReader.getNumOfFacets()[0];
-            boolean first = true;
-            while (stlFileReader.getNextFacet(normal, vertices) && counter++ < totalFaces) {
-                normalsBuffer.put(normalCounter++, (float) normal[0]);
-                normalsBuffer.put(normalCounter++, (float) normal[1]);
-                normalsBuffer.put(normalCounter++, (float) normal[2]);
-                normalsBuffer.put(normalCounter++, (float) normal[0]);
-                normalsBuffer.put(normalCounter++, (float) normal[1]);
-                normalsBuffer.put(normalCounter++, (float) normal[2]);
-                normalsBuffer.put(normalCounter++, (float) normal[0]);
-                normalsBuffer.put(normalCounter++, (float) normal[1]);
-                normalsBuffer.put(normalCounter++, (float) normal[2]);
+            // load data
+            while (stlFileReader.getNextFacet(normal, triangle) && counter++ < totalFaces) {
 
-                vertexBuffer.put(vertexCounter++, (float) vertices[0][0]);
-                vertexBuffer.put(vertexCounter++, (float) vertices[0][1]);
-                vertexBuffer.put(vertexCounter++, (float) vertices[0][2]);
-                vertexBuffer.put(vertexCounter++, (float) vertices[1][0]);
-                vertexBuffer.put(vertexCounter++, (float) vertices[1][1]);
-                vertexBuffer.put(vertexCounter++, (float) vertices[1][2]);
-                vertexBuffer.put(vertexCounter++, (float) vertices[2][0]);
-                vertexBuffer.put(vertexCounter++, (float) vertices[2][1]);
-                vertexBuffer.put(vertexCounter++, (float) vertices[2][2]);
+                normals.add(new float[]{(float)normal[0], (float)normal[1], (float)normal[2]});
+                normals.add(new float[]{(float)normal[0], (float)normal[1], (float)normal[2]});
+                normals.add(new float[]{(float)normal[0], (float)normal[1], (float)normal[2]});
 
-                // update model dimensions
-                if (first) {
-                    modelDimensions.set((float) vertices[0][0], (float) vertices[0][1], (float) vertices[0][2]);
-                    first = false;
-                }
-                modelDimensions.update((float) vertices[0][0], (float) vertices[0][1], (float) vertices[0][2]);
-                modelDimensions.update((float) vertices[1][0], (float) vertices[1][1], (float) vertices[1][2]);
-                modelDimensions.update((float) vertices[2][0], (float) vertices[2][1], (float) vertices[2][2]);
+                vertices.add(new float[]{(float)triangle[0][0],(float)triangle[0][1],(float)triangle[0][2]});
+                vertices.add(new float[]{(float)triangle[1][0],(float)triangle[1][1],(float)triangle[1][2]});
+                vertices.add(new float[]{(float)triangle[2][0],(float)triangle[2][1],(float)triangle[2][2]});
             }
 
-            Log.i("STLLoaderTask", "Building 3D object...");
-            data.centerAndScale(5, new float[]{0, 0, 0});
+            // log event
+            Log.i("STLLoaderTask", "Loaded model. Facets: " + counter + ", vertices:" +vertices.size()+", normals: "+normals.size());
 
-        } catch (Exception e) {
+            // build data
+            final MeshData mesh = new MeshData.Builder().vertices(vertices).normals(normals).build();
+
+            // fix missing or wrong normals
+            super.publishProgress("Validating data...");
+            mesh.fixNormals();
+
+            // smooth
+            super.publishProgress("Smoothing faces...");
+            mesh.smooth();
+
+            // notify succeded!
+            Object3DData data = new Object3DData(mesh.getVertexBuffer()).setNormalsBuffer(mesh.getNormalsBuffer());
+            data.setDrawUsingArrays(true);
+            data.setDrawMode(GLES20.GL_TRIANGLES);
+            data.setId(uri.toString());
+
+            // super.publishProgress("Loading facets... "+counter+"/"+totalFaces);
+            super.onLoad(data);
+
+            return Collections.singletonList(data);
+        } catch (IOException e) {
             Log.e("STLLoaderTask", "Face '" + counter + "'" + e.getMessage(), e);
             throw e;
         } finally {

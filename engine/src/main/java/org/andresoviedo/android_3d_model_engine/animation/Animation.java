@@ -7,7 +7,7 @@ package org.andresoviedo.android_3d_model_engine.animation;
  * contains the length of the animation in seconds, and a list of
  * {@link KeyFrame}s.
  * 
- * @author Karl
+ * @author andresoviedo
  * 
  *
  */

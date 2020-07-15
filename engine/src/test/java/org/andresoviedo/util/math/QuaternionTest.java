@@ -1,7 +1,5 @@
 package org.andresoviedo.util.math;
 
-import android.opengl.Matrix;
-
 import org.junit.Test;
 
 public class QuaternionTest {

@@ -1,7 +1,8 @@
-package org.andresoviedo.android_3d_model_engine.services.collada.entities;
+package org.andresoviedo.android_3d_model_engine.animation;
 
 import android.opengl.Matrix;
-import android.util.Log;
+
+import org.andresoviedo.android_3d_model_engine.services.collada.entities.JointData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.List;
  * relative to its parent (in bone-space). The inverseBindTransform is that bind
  * transform in model-space, but inversed.
  *
- * @author Karl
+ * @author andresoviedo
  */
 public class Joint {
 
@@ -63,8 +64,38 @@ public class Joint {
         Matrix.setIdentityM(animatedTransform,0);
     }
 
+    /**
+     * Constructs the joint-hierarchy skeleton from the data extracted from the
+     * collada file.
+     *
+     * @return The created joint, with all its descendants added.
+     */
+    public static Joint buildJoints(JointData rootJointData) {
+        return buildJoint(rootJointData);
+    }
+
+    /**
+     * Creates a new entity capable of animation. The inverse bind transform for
+     * all joints is calculated in this constructor. The bind transform is
+     * simply the original (no pose applied) transform of a joint in relation to
+     * the model's origin (model-space). The inverse bind transform is simply
+     * that but inverted.
+     *
+     * @param data
+     *            - the root joint of the joint hierarchy which makes up the
+     *            "skeleton" of the entity.
+     *
+     */
+    private static Joint buildJoint(JointData data){
+        Joint ret = new Joint(data);
+        for (JointData child : data.children) {
+            ret.addChild(buildJoint(child));
+        }
+        return ret;
+    }
+
     public int getIndex() {
-        return data.index;
+        return data.getIndex();
     }
 
     public String getName() {
@@ -73,11 +104,6 @@ public class Joint {
 
     public List<Joint> getChildren() {
         return children;
-    }
-
-    // FIXME: why is not this used?
-    public float[] getBindTransform() {
-        return data.getBindTransform();
     }
 
     public float[] getBindLocalTransform() {
@@ -125,42 +151,6 @@ public class Joint {
         return data.getInverseBindTransform();
     }
 
-    /**
-     * This is called during set-up, after the joints hierarchy has been
-     * created. This calculates the model-space bind transform of this joint
-     * like so: </br>
-     * </br>
-     * {@code bindTransform = parentBindTransform * bindLocalTransform}</br>
-     * </br>
-     * where "bindTransform" is the model-space bind transform of this joint,
-     * "parentBindTransform" is the model-space bind transform of the parent
-     * joint, and "bindLocalTransform" is the bone-space bind transform of this
-     * joint. It then calculates and stores the inverse of this model-space bind
-     * transform, for use when calculating the final animation transform each
-     * frame. It then recursively calls the method for all of the children
-     * joints, so that they too calculate and store their inverse bind-pose
-     * transform.
-     *
-     * @param parentBindTransform - the model-space bind transform of the parent joint.
-     */
-    public void calcInverseBindTransform(float[] parentBindTransform, boolean override) {
-
-        float[] bindTransform = new float[16];
-        Matrix.multiplyMM(bindTransform, 0, parentBindTransform, 0, data.getBindLocalTransform(), 0);
-        if (data.index >= 0 && (override)) {
-            // when model has inverse bind transforms available, don't overwrite it
-            // this way we calculate only the joints with no animations which has no inverse bind transform available
-            float[] inverseBindTransform = new float[16];
-            if (!Matrix.invertM(inverseBindTransform, 0, bindTransform, 0)) {
-                Log.w("Joint", "Couldn't calculate inverse matrix for " + data.getId());
-            }
-            data.setInverseBindTransform(inverseBindTransform);
-        }
-        for (Joint child : children) {
-            child.calcInverseBindTransform(bindTransform, override);
-        }
-    }
-
     @Override
     public Joint clone() {
         final Joint ret = new Joint(data);
@@ -178,4 +168,9 @@ public class Joint {
     public JointData find(String id) {
         return data.find(id);
     }
+
+    public List<JointData> findAll(String id) {
+        return data.findAll(id);
+    }
+
 }
