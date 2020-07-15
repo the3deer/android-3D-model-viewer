@@ -18,6 +18,11 @@ import java.util.List;
  */
 
 public class Octree {
+
+    // The minimum size of the 3D space for individual boxes
+    // if the model is 100 size, then 10 for boxes is OK
+    public static final double BOX_SIZE = 10;
+
     final BoundingBox boundingBox;
     private final List<float[]> pending = new ArrayList<>();
     private final List<float[]> triangles = new ArrayList<>();
@@ -43,6 +48,7 @@ public class Octree {
     }
 
     private void subdivide(){
+        Log.v("Octree", "Subdividing octree...");
         for (Octree child : children){
             if (child != null){
                 subdivide(child);
@@ -55,9 +61,10 @@ public class Octree {
         final Octree ret = new Octree(object.getBoundingBox());
         if (object.getDrawOrder() == null) {
             // vertex array contains vertex in sequence
-            final FloatBuffer buffer = object.getVertexArrayBuffer().asReadOnlyBuffer();
+            final FloatBuffer buffer = object.getVertexBuffer().asReadOnlyBuffer();
             final List<float[]> triangles = new ArrayList<>(buffer.capacity() / 3 * 4);
             final float[] modelMatrix = object.getModelMatrix();
+            buffer.position(0);
             for (int i = 0; i < buffer.capacity(); i += 9) {
                 float[] triangle = new float[]{buffer.get(), buffer.get(), buffer.get(), 1,
                         buffer.get(), buffer.get(), buffer.get(), 1,
@@ -144,7 +151,7 @@ public class Octree {
         }
         if (anyInOctant){
             // subdivide if big enough (>=0.02)
-            if ((mid[0]+min[0])/2 > 0.01 && (mid[1]+min[1])/2 > 0.01 && (mid[2]+min[2])/2 > 0.01) {
+            if ((mid[0]+min[0])/2 > BOX_SIZE && (mid[1]+min[1])/2 > BOX_SIZE && (mid[2]+min[2])/2 > BOX_SIZE) {
                 octree.subdivide();
             }
             else{

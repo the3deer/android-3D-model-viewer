@@ -4,27 +4,29 @@ public class Vertex {
 
     private static final int NO_INDEX = -1;
 
+    private int vertexIndex = 0;
     private float[] position;
     private int textureIndex = NO_INDEX;
     private int normalIndex = NO_INDEX;
     private int colorIndex = NO_INDEX;
-    private float[] diffuse;
-    private float length;
-
 
     private VertexSkinData weightsData;
 
+    public Vertex(int vertexIndex) {
+        this.vertexIndex = vertexIndex;
+    }
+
+    @Deprecated
     public Vertex(float[] position) {
         this.position = position;
-        this.length = position.length;
+    }
+
+    public int getVertexIndex() {
+        return vertexIndex;
     }
 
     public VertexSkinData getWeightsData() {
         return weightsData;
-    }
-
-    public float getLength() {
-        return length;
     }
 
     public void setTextureIndex(int textureIndex) {
@@ -63,11 +65,23 @@ public class Vertex {
         return colorIndex;
     }
 
-    public void setDiffuse(float[] diffuse) {
-        this.diffuse = diffuse;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Vertex vertex = (Vertex) o;
+
+        if (vertexIndex != vertex.vertexIndex) return false;
+        if (textureIndex != vertex.textureIndex) return false;
+        return normalIndex == vertex.normalIndex;
     }
 
-    public float[] getDiffuse() {
-        return diffuse;
+    @Override
+    public int hashCode() {
+        int result = vertexIndex;
+        result = 31 * result + textureIndex;
+        result = 31 * result + normalIndex;
+        return result;
     }
 }

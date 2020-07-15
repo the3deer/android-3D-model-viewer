@@ -2,12 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
     package="org.andresoviedo.dddmodel2"
-    android:versionCode="23"
-    android:versionName="2.7.0" >
+    android:versionCode="24"
+    android:versionName="2.7.0">
 
     <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="28"
         tools:overrideLibrary="android.support.compat, android.arch.lifecycle" />
 
     <uses-feature

@@ -1,5 +1,7 @@
 package org.andresoviedo.util.xml;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -103,6 +105,7 @@ public final class XmlNode {
 	 * @return A list of the child nodes with the given name. If none exist then
 	 *         an empty list is returned.
 	 */
+	@NonNull
 	public List<XmlNode> getChildren(String name) {
 		if (childNodes != null) {
 			List<XmlNode> children = childNodes.get(name);

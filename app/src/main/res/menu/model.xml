@@ -42,7 +42,7 @@
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="800"
         android:showAsAction="ifRoom"
-        android:title="Toggle Blending"/>
+        android:title="Toggle X-Ray" />
     <item
         android:id="@+id/model_toggle_boundingbox"
         android:icon="@android:drawable/ic_menu_crop"

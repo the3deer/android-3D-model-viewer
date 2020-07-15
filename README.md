@@ -179,6 +179,15 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.0.0 (15/07/2020)
+  - (n) Support for Object Groups  (wavefront: o,g, dae: <geometry>)
+  - (n) Support for Smoothing Groups (wavefront)
+  - (n) migrated project to androidx compat libraries
+  - (n) GUI - fps counter - experimental framework
+  - (n) Collada support for polygon with holes (<ph>)
+  - (i) Complete re-engineering and refactoring of the code
+  - (i) Wavefront + Collada Loader reimplemented
+  - (f) Fixed overall bugs
 - 2.7.0 (13/11/2019)
   - (n) new blending force mode to 50% 
   - (f) fixed light rendering issues on shaders #125 (diffuse + specular)
@@ -191,7 +200,7 @@ ChangeLog
   - (f) #92 fixed multiple color rendering for non-triangulated file.obj
   - (i) overall engine improved
 - 2.5.1 (20/05/2019)
-  - (f) wavefront loader fixed for faces point to negative indices
+  - (f) wavefront loader fixed for meshObject point to negative indices
 - 2.5.0 (19/05/2019)
   - (n) new blending toggle
   - (n) new color toggle
@@ -259,14 +268,14 @@ ChangeLog
 - 1.2.6 (02/04/2017)
   - (f) Fixed #12. Drawing the wireframe using GL_LINES and the index buffer (drawElements)
 - 1.2.5 (01/04/2017)
-  - (f) Fixed #10. Map faces to texture only when using the only loaded texture
+  - (f) Fixed #10. Map meshObject to texture only when using the only loaded texture
   - (f) Fixed #11. Generation of missing vertex normals
 - 1.2.4 (30/03/2017)
   - (f) Fixed #5. Memory performance optimization
 - 1.2.3 (27/03/2017)
   - (f) Fixed #1. Cpu performance optimization
 - 1.2.2 (25/03/2017)
-  - (f) Fixed #9. IOOBE loading face normals when faces had no texture or normals
+  - (f) Fixed #9. IOOBE loading face normals when meshObject had no texture or normals
 - 1.2.1 (27/02/2017)
   - (f) Fixed loading external files issue #6
   - (i) Project moved to gradle

@@ -14,7 +14,7 @@ import java.util.Map;
  * joint transforms are stored in a map, indexed by the name of the joint that
  * they should be applied to.
  * 
- * @author Karl
+ * @author Karl,andresoviedo
  *
  */
 public class KeyFrame {
@@ -49,8 +49,15 @@ public class KeyFrame {
 	 *         they correspond to. This basically represents the "pose" at this
 	 *         keyframe.
 	 */
-	protected Map<String, JointTransform> getJointKeyFrames() {
+	protected Map<String, JointTransform> getTransforms() {
 		return pose;
 	}
 
+	@Override
+	public String toString() {
+		return "KeyFrame{" +
+				"timeStamp=" + timeStamp +
+				", pose=" + pose +
+				'}';
+	}
 }

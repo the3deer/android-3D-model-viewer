@@ -4,45 +4,37 @@ public class SkeletonData {
 
     private final int jointCount;
     private final JointData headJoint;
-    private final int boneCount;
 
-    public SkeletonData(int jointCount, int boneCount, JointData headJoint) {
+    private int boneCount = 0;
+
+    public SkeletonData(int jointCount, JointData headJoint) {
         this.jointCount = jointCount;
-        this.boneCount = boneCount;
         this.headJoint = headJoint;
     }
 
-    /**
-     * Constructs the joint-hierarchy skeleton from the data extracted from the
-     * collada file.
-     *
-     * @return The created joint, with all its descendants added.
-     */
-    public Joint buildJoints() {
-        return buildJoint(getHeadJoint());
-    }
-
-    private Joint buildJoint(JointData data){
-        Joint ret = new Joint(data);
-        for (JointData child : data.children) {
-            ret.addChild(buildJoint(child));
-        }
-        return ret;
-    }
-
-    public JointData getHeadJoint() {
-        return headJoint;
+    public void incrementBoneCount() {
+        this.boneCount++;
     }
 
     public int getBoneCount() {
         return boneCount;
     }
 
+    public JointData getHeadJoint() {
+        return headJoint;
+    }
+
     public int getJointCount() {
         return jointCount;
     }
 
+    /**
+     * use instead {@link JointData#findAll(String)}
+     */
+    @Deprecated
     public JointData find(String geometryId) {
         return headJoint.find(geometryId);
     }
+
+
 }

@@ -6,13 +6,13 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,15 +33,6 @@ public class ContentUtils {
     private static ThreadLocal<Activity> currentActivity = new ThreadLocal<>();
 
     private static File currentDir = null;
-
-    public static void printTouchCapabilities(PackageManager packageManager) {
-        if (packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH)) {
-            Log.i("utils", "System supports multitouch (2 fingers)");
-        }
-        if (packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT)) {
-            Log.i("utils", "System supports advanced multitouch (multiple fingers)");
-        }
-    }
 
     public static void setThreadActivity(Activity currentActivity) {
         Log.i("ContentUtils", "Current activity thread: " + Thread.currentThread().getName());
@@ -98,21 +89,24 @@ public class ContentUtils {
         }
         Log.w("ContentUtils","Media not found: "+path);
         Log.w("ContentUtils","Available media: "+documentsProvided);
-        return null;
+        throw new FileNotFoundException("File not found: "+path);
     }
 
     public static InputStream getInputStream(URI uri) throws IOException {
-        return getInputStream(Uri.parse(uri.toString()));
+        return getInputStream(Uri.parse(uri.toURL().toString()));
     }
 
     public static InputStream getInputStream(Uri uri) throws IOException {
-        Log.i("ContentUtils", "Opening stream " + uri.getPath());
+        Log.i("ContentUtils", "Opening stream ..." + uri);
         if (uri.getScheme().equals("assets")) {
             Log.i("ContentUtils", "Opening asset: " + uri.getPath());
             return getCurrentActivity().getAssets().open(uri.getPath().substring(1));
         }
         if (uri.getScheme().equals("http") || uri.getScheme().equals("https")) {
             return new URL(uri.toString()).openStream();
+        }
+        if (uri.getScheme().equals("content")) {
+            return getCurrentActivity().getContentResolver().openInputStream(uri);
         }
         return getCurrentActivity().getContentResolver().openInputStream(uri);
     }
@@ -131,7 +125,7 @@ public class ContentUtils {
      * Get the Intent for selecting content to be used in an Intent Chooser.
      *
      * @return The intent for opening a file with Intent.createChooser()
-     * @author paulburke
+     * @author andresoviedo
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private static Intent createGetMultipleContentIntent(String mimeType) {
@@ -150,12 +144,12 @@ public class ContentUtils {
      * Get the Intent for selecting content to be used in an Intent Chooser.
      *
      * @return The intent for opening a file with Intent.createChooser()
-     * @author paulburke
+     * @author andresoviedo
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private static Intent createGetSingleContentIntent(String mimeType) {
         // Implicitly allow the user to select a particular kind of data
-        final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        final Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         // The MIME data type filter
         intent.setType(mimeType);
         // Only return URIs that can be opened with ContentResolver

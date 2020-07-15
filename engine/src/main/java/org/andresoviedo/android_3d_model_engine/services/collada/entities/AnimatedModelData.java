@@ -5,7 +5,7 @@ import java.util.Map;
 
 /**
  * Contains the extracted data for an animated model, which includes the mesh data, and skeleton (joints heirarchy) data.
- * @author Karl
+ * @author andresoviedo
  *
  */
 public class AnimatedModelData {

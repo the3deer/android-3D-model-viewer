@@ -1,6 +1,8 @@
-package org.andresoviedo.android_3d_model_engine.services.collada.entities;
+package org.andresoviedo.android_3d_model_engine.animation;
 
 import android.opengl.Matrix;
+
+import org.andresoviedo.android_3d_model_engine.services.collada.entities.JointData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,7 @@ import java.util.List;
  * relative to its parent (in bone-space). The inverseBindTransform is that bind
  * transform in model-space, but inversed.
  *
- * @author Karl
+ * @author andresoviedo
  */
 public class Joint {
 
@@ -62,6 +64,36 @@ public class Joint {
         Matrix.setIdentityM(animatedTransform,0);
     }
 
+    /**
+     * Constructs the joint-hierarchy skeleton from the data extracted from the
+     * collada file.
+     *
+     * @return The created joint, with all its descendants added.
+     */
+    public static Joint buildJoints(JointData rootJointData) {
+        return buildJoint(rootJointData);
+    }
+
+    /**
+     * Creates a new entity capable of animation. The inverse bind transform for
+     * all joints is calculated in this constructor. The bind transform is
+     * simply the original (no pose applied) transform of a joint in relation to
+     * the model's origin (model-space). The inverse bind transform is simply
+     * that but inverted.
+     *
+     * @param data
+     *            - the root joint of the joint hierarchy which makes up the
+     *            "skeleton" of the entity.
+     *
+     */
+    private static Joint buildJoint(JointData data){
+        Joint ret = new Joint(data);
+        for (JointData child : data.children) {
+            ret.addChild(buildJoint(child));
+        }
+        return ret;
+    }
+
     public int getIndex() {
         return data.getIndex();
     }
@@ -72,11 +104,6 @@ public class Joint {
 
     public List<Joint> getChildren() {
         return children;
-    }
-
-    // FIXME: why is not this used?
-    public float[] getBindTransform() {
-        return data.getBindTransform();
     }
 
     public float[] getBindLocalTransform() {
@@ -141,4 +168,9 @@ public class Joint {
     public JointData find(String id) {
         return data.find(id);
     }
+
+    public List<JointData> findAll(String id) {
+        return data.findAll(id);
+    }
+
 }
