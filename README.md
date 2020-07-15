@@ -13,14 +13,14 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (13/11/2019)
+News (15/07/2020)
 =================
 
-* New: version 2.7.0
-* Fix: Shader lighting improved !
-* Fix: Better support for Collada files
-* Fix: Performance issues fixed
-* Fix: Bugs fixed
+* New version released 3.0.0
+* Collada support for polygon with holes
+* Wavefront support for smoothing groups
+* New FPS counter (frames per second)
+* Full refactoring of the code
 
 
 Demo
@@ -62,6 +62,7 @@ The app comes with some included 3D models that were taken for free from Interne
 Whats next
 ==========
 
+* Support for glTF standard format
 * 3D without glasses
 * Augmented reality
 
@@ -78,8 +79,10 @@ Features
   - textures
   - lighting
   - wireframe & points mode
-  - bounding box drawing
-  - object selection
+  - holes
+  - smoothing
+  - bounding box
+  - object pick
   - camera support
     - tap to select object
     - drag to move camera
@@ -91,6 +94,7 @@ Features
   - other:
     - texture loader
     - lightweight: only 1 Megabyte
+    - file explorer
 
 
 Try it
