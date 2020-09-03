@@ -86,7 +86,7 @@ public class RendererFactory {
         vertexShaderCode = vertexShaderCode.replace("void main(){", "void main(){\n\tgl_PointSize = 5.0;");
 
         // use opengl constant to dynamically set up array size in shaders. That should be >=120
-        vertexShaderCode = vertexShaderCode.replace("const int MAX_JOINTS = 60;","const int MAX_JOINTS = gl_MaxVertexUniformVectors;");
+        vertexShaderCode = vertexShaderCode.replace("const int MAX_JOINTS = 60;","const int MAX_JOINTS = gl_MaxVertexUniformVectors > 60 ? 60 : gl_MaxVertexUniformVectors;");
 
         // create drawer
         Log.v("RendererFactory", "\n---------- Vertex shader ----------\n");

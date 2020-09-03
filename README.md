@@ -13,10 +13,10 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (15/07/2020)
+News (03/09/2020)
 =================
 
-* New version released 3.0.0
+* New version released 3.0.2
 * Collada support for polygon with holes
 * Wavefront support for smoothing groups
 * New FPS counter (frames per second)
@@ -183,6 +183,11 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.0.2 (03/09/2020)
+  - (f) setUniform4fv function had length zero - issue detected with Xiaomi Redmi 8
+  - (f) gl_MaxVertexUniformVectors is apparently not working - "too many uniforms" - detected in Xiaomi Redmi 8
+- 3.0.1 (15/07/2020)
+  - (f) Forgot to add requestLegacyExternalStorage option
 - 3.0.0 (15/07/2020)
   - (n) Support for Object Groups  (wavefront: o,g, dae: <geometry>)
   - (n) Support for Smoothing Groups (wavefront)

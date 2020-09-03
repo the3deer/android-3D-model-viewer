@@ -211,8 +211,7 @@ class GLES20Renderer implements Renderer {
         int handle = GLES20.glGetUniformLocation(mProgram, variableName);
         GLUtil.checkGlError("glGetUniformLocation");
 
-        // Pass in the light position in eye space.
-        GLES20.glUniform3fv(handle, 0, uniform3f, 0);
+        GLES20.glUniform3fv(handle, 1, uniform3f, 0);
         GLUtil.checkGlError("glUniform3fv");
     }
 
@@ -220,8 +219,7 @@ class GLES20Renderer implements Renderer {
         int handle = GLES20.glGetUniformLocation(mProgram, variableName);
         GLUtil.checkGlError("glGetUniformLocation");
 
-        // Pass in the light position in eye space.
-        GLES20.glUniform4fv(handle, 0, uniform4f, 0);
+        GLES20.glUniform4fv(handle, 1, uniform4f, 0);
         GLUtil.checkGlError("glUniform4fv");
     }
 
