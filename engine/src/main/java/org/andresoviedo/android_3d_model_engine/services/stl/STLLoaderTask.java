@@ -87,12 +87,9 @@ public final class STLLoaderTask extends LoaderTask {
             super.publishProgress("Validating data...");
             mesh.fixNormals();
 
-            // smooth
-            super.publishProgress("Smoothing faces...");
-            mesh.smooth();
-
             // notify succeded!
             Object3DData data = new Object3DData(mesh.getVertexBuffer()).setNormalsBuffer(mesh.getNormalsBuffer());
+            data.setMeshData(mesh);
             data.setDrawUsingArrays(true);
             data.setDrawMode(GLES20.GL_TRIANGLES);
             data.setId(uri.toString());

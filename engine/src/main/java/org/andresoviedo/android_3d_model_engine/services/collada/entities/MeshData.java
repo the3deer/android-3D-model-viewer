@@ -140,6 +140,7 @@ public class MeshData {
     private final String materialFile;
 
     // smoothing
+    private List<float[]> normalsOriginal;
     private final Map<String, List<Vertex>> smoothingGroups;
 
     public MeshData(String id, String name, List<float[]> vertices, List<float[]> normals, List<float[]> colors, List<float[]> textures, List<Vertex> verticesAttributes,
@@ -179,12 +180,22 @@ public class MeshData {
 
     public void smooth() {
 
+        // save normals to allow rollback operation
+        this.normalsOriginal = new ArrayList<>(this.normals.size());
+        for (int i = 0; i < this.normals.size(); i++) {
+            this.normalsOriginal.add(this.normals.get(i).clone());
+        }
+
         // check we have normals to smooth
         if (smoothingGroups == null || smoothingGroups.isEmpty()) {
             smoothAuto();
         } else {
             smoothGroups();
         }
+    }
+
+    public void unSmooth() {
+        this.normals = normalsOriginal;
     }
 
     private void smoothAuto() {
@@ -215,7 +226,7 @@ public class MeshData {
                 float[] v1 = this.vertices.get(va1.getVertexIndex());
                 float[] v2 = this.vertices.get(va2.getVertexIndex());
                 float[] v3 = this.vertices.get(va3.getVertexIndex());
-                float[] normal = Math3DUtils.calculateNormal(v1, v2, v3);
+                float[] normal = calculateNormalFailsafe(v1, v2, v3);
                 smoothNormal = Math3DUtils.add(smoothNormal, normal);
             }
 
@@ -244,6 +255,28 @@ public class MeshData {
         }
     }
 
+    /**
+     * Calculate normal using high precision if needed. Otherwise return dummy normal
+     *
+     * @param v1
+     * @param v2
+     * @param v3
+     * @return
+     */
+    private static float[] calculateNormalFailsafe(float[] v1, float[] v2, float[] v3) {
+        float[] normal = Math3DUtils.calculateNormal(v1, v2, v3);
+        try {
+            Math3DUtils.normalize(normal);
+        } catch (Exception e) {
+            Log.e("MeshData", "Error calculating normal. " + e.getMessage()
+                    + "," + Math3DUtils.toString(v1)
+                    + "," + Math3DUtils.toString(v2)
+                    + "," + Math3DUtils.toString(v3), e);
+            normal = WRONG_NORMAL;
+        }
+        return normal;
+    }
+
 
     /**
      * Fix missing or wrong normals.  Only for triangulated polygons
@@ -252,21 +285,21 @@ public class MeshData {
 
         Log.i("MeshData", "Fixing missing or wrong normals...");
 
-        // check there is normals to fix
-        if (this.normals == null || this.normals.isEmpty()) {
+            // check there is normals to fix
+            if (this.normals == null || this.normals.isEmpty()) {
 
-            // write new normals
-            generateNormals();
+                // write new normals
+                generateNormals();
 
-        } else {
-
-            // fix missing or wrong
-            if (this.elements != null) {
-                fixNormalsForElements();
             } else {
-                fixNormalsForArrays();
+
+                // fix missing or wrong
+                if (this.elements != null) {
+                    fixNormalsForElements();
+                } else {
+                    fixNormalsForArrays();
+                }
             }
-        }
     }
 
 
@@ -317,10 +350,7 @@ public class MeshData {
                 }
 
                 // calculate normal
-                final float[] calculatedNormal = Math3DUtils.calculateNormal(v1, v2, v3);
-
-                // normalize
-                Math3DUtils.normalize(calculatedNormal);
+                final float[] calculatedNormal = calculateNormalFailsafe(v1, v2, v3);
 
                 // update normal attribute
                 vertexAttribute1.setNormalIndex(newNormals.size());
@@ -369,13 +399,7 @@ public class MeshData {
             final float[] normalV3 = normals.get(i + 2);
 
             // calculate normal
-            float[] calculatedNormal = Math3DUtils.calculateNormal(v1, v2, v3);
-            try {
-                Math3DUtils.normalize(calculatedNormal);
-            } catch (Exception e) {
-                Log.i("MeshData", "Problem calculating normal...");
-                calculatedNormal = WRONG_NORMAL;
-            }
+            float[] calculatedNormal = calculateNormalFailsafe(v1, v2, v3);
 
             // check normal attribute 1
             if (Math3DUtils.length(normalV1) < 0.1f) {
@@ -479,8 +503,7 @@ public class MeshData {
                 final float[] normalV3 = normals.get(normalIdxV3);
 
                 // calculate normal
-                final float[] calculatedNormal = Math3DUtils.calculateNormal(v1, v2, v3);
-                Math3DUtils.normalize(calculatedNormal);
+                float[] calculatedNormal = calculateNormalFailsafe(v1, v2, v3);
 
                 // check normal attribute 1
                 if (normalIdxV1 == -1 || Math3DUtils.length(normalV1) < 0.1f) {
@@ -611,7 +634,7 @@ public class MeshData {
                 float[] smoothNormal = smoothNormals.get(vertexIndex);
                 if (smoothNormal == null) {
                     try {
-                        float[] normal =this.normals.get(normalIndex);
+                        float[] normal = this.normals.get(normalIndex);
                         smoothNormal = normal.clone();
                         smoothNormals.put(vertexIndex, smoothNormal);
                     } catch (Exception e) {
@@ -717,6 +740,19 @@ public class MeshData {
             }
         }
         return normalsBuffer;
+    }
+
+    public void refreshNormalsBuffer() {
+        if (this.normalsBuffer == null || this.normals.isEmpty() || this.normalsBuffer.capacity() != this.normals.size() * 3) {
+            Log.e("MeshData", "Can't refresh normals buffer. Either normals or normalsBuffer is empty");
+            return;
+        }
+        Log.i("MeshData", "Refreshing normals buffer...");
+        for (int i = 0; i < this.normals.size(); i++) {
+            this.normalsBuffer.put(i * 3, this.normals.get(i)[0]);
+            this.normalsBuffer.put(i * 3 + 1, this.normals.get(i)[1]);
+            this.normalsBuffer.put(i * 3 + 2, this.normals.get(i)[2]);
+        }
     }
 
     public FloatBuffer getColorsBuffer() {

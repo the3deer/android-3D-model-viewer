@@ -125,14 +125,12 @@ public class WavefrontLoader {
                 // fix missing or wrong normals
                 meshData.fixNormals();
 
-                // smooth normals
-                meshData.smooth();
-
                 // check we didn't brake normals
                 meshData.validate();
 
                 // create 3D object
                 Object3DData data3D = new Object3DData(meshData.getVertexBuffer());
+                data3D.setMeshData(meshData);
                 data3D.setId(meshData.getId());
                 data3D.setName(meshData.getName());
                 data3D.setNormalsBuffer(meshData.getNormalsBuffer());

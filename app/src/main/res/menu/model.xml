@@ -26,6 +26,12 @@
         android:showAsAction="ifRoom"
         android:title="@string/toggle_animation"/>
     <item
+        android:id="@+id/model_toggle_smooth"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:orderInCategory="600"
+        android:showAsAction="ifRoom"
+        android:title="Toggle Smooth"/>
+    <item
         android:id="@+id/model_load_texture"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="650"

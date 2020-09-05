@@ -92,7 +92,7 @@ public class ModelActivity extends Activity implements EventListener {
                     backgroundColor[3] = Float.parseFloat(backgroundColors[3]);
                 }
             } catch (Exception ex) {
-                Log.e("ModelActivity", "Error parsing activity parameters: "+ex.getMessage(), ex);
+                Log.e("ModelActivity", "Error parsing activity parameters: " + ex.getMessage(), ex);
             }
 
         }
@@ -100,7 +100,7 @@ public class ModelActivity extends Activity implements EventListener {
         handler = new Handler(getMainLooper());
 
         // Create our 3D scenario
-        Log.i("ModelActivity","Loading Scene...");
+        Log.i("ModelActivity", "Loading Scene...");
         scene = new SceneLoader(this, paramUri, paramType, gLView);
         if (paramUri == null) {
             final LoaderTask task = new DemoLoaderTask(this, null, scene);
@@ -115,44 +115,44 @@ public class ModelActivity extends Activity implements EventListener {
         }*/
 
         try {
-            Log.i("ModelActivity","Loading GLSurfaceView...");
+            Log.i("ModelActivity", "Loading GLSurfaceView...");
             gLView = new ModelSurfaceView(this, backgroundColor, this.scene);
             gLView.addListener(this);
             setContentView(gLView);
             scene.setView(gLView);
         } catch (Exception e) {
-            Log.e("ModelActivity",e.getMessage(),e);
-            Toast.makeText(this, "Error loading OpenGL view:\n" +e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("ModelActivity", e.getMessage(), e);
+            Toast.makeText(this, "Error loading OpenGL view:\n" + e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
         try {
-            Log.i("ModelActivity","Loading TouchController...");
+            Log.i("ModelActivity", "Loading TouchController...");
             touchController = new TouchController(this);
             touchController.addListener(this);
         } catch (Exception e) {
-            Log.e("ModelActivity",e.getMessage(),e);
-            Toast.makeText(this, "Error loading TouchController:\n" +e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("ModelActivity", e.getMessage(), e);
+            Toast.makeText(this, "Error loading TouchController:\n" + e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
         try {
-            Log.i("ModelActivity","Loading CollisionController...");
+            Log.i("ModelActivity", "Loading CollisionController...");
             collisionController = new CollisionController(gLView, scene);
             collisionController.addListener(scene);
             touchController.addListener(collisionController);
             touchController.addListener(scene);
-        }catch(Exception e){
-            Log.e("ModelActivity",e.getMessage(),e);
-            Toast.makeText(this, "Error loading CollisionController\n" +e.getMessage(), Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Log.e("ModelActivity", e.getMessage(), e);
+            Toast.makeText(this, "Error loading CollisionController\n" + e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
         try {
-            Log.i("ModelActivity","Loading CameraController...");
+            Log.i("ModelActivity", "Loading CameraController...");
             cameraController = new CameraController(scene.getCamera());
             gLView.getModelRenderer().addListener(cameraController);
             touchController.addListener(cameraController);
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.e("ModelActivity", e.getMessage(), e);
-            Toast.makeText(this, "Error loading CameraController" +e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Error loading CameraController" + e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
         try {
@@ -175,7 +175,7 @@ public class ModelActivity extends Activity implements EventListener {
         // load model
         scene.init();
 
-        Log.i("ModelActivity","Finished loading");
+        Log.i("ModelActivity", "Finished loading");
     }
 
     /**
@@ -233,6 +233,9 @@ public class ModelActivity extends Activity implements EventListener {
             case R.id.model_toggle_animation:
                 scene.toggleAnimation();
                 break;
+            case R.id.model_toggle_smooth:
+                scene.toggleSmooth();
+                break;
             case R.id.model_toggle_collision:
                 scene.toggleCollision();
                 break;
@@ -273,7 +276,7 @@ public class ModelActivity extends Activity implements EventListener {
         } else {
             showSystemUI();
         }
-        Toast.makeText(this, "Fullscreen " +this.immersiveMode, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Fullscreen " + this.immersiveMode, Toast.LENGTH_SHORT).show();
     }
 
     private void hideSystemUIDelayed() {
@@ -355,7 +358,7 @@ public class ModelActivity extends Activity implements EventListener {
     public boolean onEvent(EventObject event) {
         if (event instanceof ModelRenderer.ViewEvent) {
             ModelRenderer.ViewEvent viewEvent = (ModelRenderer.ViewEvent) event;
-            if(viewEvent.getCode() == ModelRenderer.ViewEvent.Code.SURFACE_CHANGED) {
+            if (viewEvent.getCode() == ModelRenderer.ViewEvent.Code.SURFACE_CHANGED) {
                 touchController.setSize(viewEvent.getWidth(), viewEvent.getHeight());
                 gLView.setTouchController(touchController);
 

@@ -6,6 +6,7 @@ import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.collision.Octree;
 import org.andresoviedo.android_3d_model_engine.drawer.RendererFactory;
+import org.andresoviedo.android_3d_model_engine.services.collada.entities.MeshData;
 import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.event.EventListener;
 import org.andresoviedo.util.io.IOUtils;
@@ -65,6 +66,9 @@ public class Object3DData {
      * This drawing mode uses the vertexBuffer
      */
     private int drawMode = GLES20.GL_POINTS;
+
+    // mesh vertex data
+    private MeshData meshData = null;
 
     // Model data
     protected FloatBuffer vertexBuffer = null;
@@ -136,6 +140,14 @@ public class Object3DData {
 
 
     public Object3DData() {
+    }
+
+    public void setMeshData(MeshData meshData) {
+        this.meshData = meshData;
+    }
+
+    public MeshData getMeshData() {
+        return meshData;
     }
 
     public Object3DData(FloatBuffer vertexBuffer) {

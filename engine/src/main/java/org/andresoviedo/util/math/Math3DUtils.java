@@ -4,6 +4,7 @@ import android.opengl.Matrix;
 
 import org.andresoviedo.android_3d_model_engine.animation.JointTransform;
 
+import java.math.BigDecimal;
 import java.util.Locale;
 
 /**
@@ -28,6 +29,16 @@ public class Math3DUtils {
 
     /**
      * Calculate face normal
+     * <p>
+     * So for a triangle p1, p2, p3, if the vector U = p2 - p1 and the vector V = p3 - p1 then the normal N = U X V and can be calculated by:
+     * </p>
+     * <pre>
+     * Nx = UyVz - UzVy
+     * Ny = UzVx - UxVz
+     * Nz = UxVy - UyVx
+     * </pre>
+     *
+     * <a href="https://www.khronos.org/opengl/wiki/Calculating_a_Surface_Normal">Calculating_a_Surface_Normal</a>
      *
      * @param v0
      * @param v1
@@ -39,8 +50,63 @@ public class Math3DUtils {
         // calculate perpendicular vector to the face. That is to calculate the cross product of v1-v0 x v2-v0
         double[] va = new double[]{v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]};
         double[] vb = new double[]{v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]};
-        return new float[]{(float) (va[1] * vb[2] - va[2] * vb[1]), (float) (va[2] * vb[0] - va[0] * vb[2]),
+        float[] vn = {(float) (va[1] * vb[2] - va[2] * vb[1]), (float) (va[2] * vb[0] - va[0] * vb[2]),
                 (float) (va[0] * vb[1] - va[1] * vb[0])};
+
+        if (length(vn) != 0) {
+            return vn;
+        } else {
+            return calculateNormal_highPrecision(v0, v1, v2);
+        }
+    }
+
+    /**
+     * Calculate face normal using high precision maths
+     * <p>
+     * So for a triangle p1, p2, p3, if the vector U = p2 - p1 and the vector V = p3 - p1 then the normal N = U X V and can be calculated by:
+     * </p>
+     * <pre>
+     * Nx = UyVz - UzVy
+     * Ny = UzVx - UxVz
+     * Nz = UxVy - UyVx
+     * </pre>
+     *
+     * <a href="https://www.khronos.org/opengl/wiki/Calculating_a_Surface_Normal">Calculating_a_Surface_Normal</a>
+     *
+     * @param v0
+     * @param v1
+     * @param v2
+     * @return
+     */
+    public static float[] calculateNormal_highPrecision(float[] v0, float[] v1, float[] v2) {
+
+        // calculate the 2 vectors
+        final float[] u = substract(v1, v0);
+        final float[] v = substract(v2, v0);
+
+        final BigDecimal[] u_ = new BigDecimal[]{
+                new BigDecimal(Float.toString(u[0])),
+                new BigDecimal(Float.toString(u[1])),
+                new BigDecimal(Float.toString(u[2]))
+        };
+
+        final BigDecimal[] v_ = new BigDecimal[]{
+                new BigDecimal(Float.toString(v[0])),
+                new BigDecimal(Float.toString(v[1])),
+                new BigDecimal(Float.toString(v[2]))
+        };
+
+        final BigDecimal[] n_ = new BigDecimal[]{
+                u_[1].multiply(v_[2]).subtract(u_[2].multiply(v_[1])),
+                u_[2].multiply(v_[0]).subtract(u_[0].multiply(v_[2])),
+                u_[0].multiply(v_[1]).subtract(u_[1].multiply(v_[0]))
+        };
+
+        return new float[]{
+                n_[0].floatValue(),
+                n_[1].floatValue(),
+                n_[2].floatValue()
+        };
     }
 
     /**
@@ -512,10 +578,22 @@ public class Math3DUtils {
         float cos_1 = 1 - cos;
 
         // @formatter:off
-        matrix[offset]=cos_1*x*x + cos     ;    	matrix[offset+1 ]=cos_1*x*y - z*sin   ;   matrix[offset+2 ]=cos_1*z*x + y*sin   ;   matrix[offset+3]=0   ;
-        matrix[offset+4 ]=cos_1*x*y + z*sin   ;  	matrix[offset+5 ]=cos_1*y*y + cos     ;   matrix[offset+6 ]=cos_1*y*z - x*sin   ;   matrix[offset+7]=0   ;
-        matrix[offset+8 ]=cos_1*z*x - y*sin   ;  	matrix[offset+9 ]=cos_1*y*z + x*sin   ;   matrix[offset+10]=cos_1*z*z + cos    ;   matrix[offset+11]=0  ;
-        matrix[offset+12]=0           		 ;      matrix[offset+13]=0          		  ;   matrix[offset+14]=0          		  ;   matrix[offset+15]=1  ;
+        matrix[offset] = cos_1 * x * x + cos;
+        matrix[offset + 1] = cos_1 * x * y - z * sin;
+        matrix[offset + 2] = cos_1 * z * x + y * sin;
+        matrix[offset + 3] = 0;
+        matrix[offset + 4] = cos_1 * x * y + z * sin;
+        matrix[offset + 5] = cos_1 * y * y + cos;
+        matrix[offset + 6] = cos_1 * y * z - x * sin;
+        matrix[offset + 7] = 0;
+        matrix[offset + 8] = cos_1 * z * x - y * sin;
+        matrix[offset + 9] = cos_1 * y * z + x * sin;
+        matrix[offset + 10] = cos_1 * z * z + cos;
+        matrix[offset + 11] = 0;
+        matrix[offset + 12] = 0;
+        matrix[offset + 13] = 0;
+        matrix[offset + 14] = 0;
+        matrix[offset + 15] = 1;
 
         // @formatter:on
 

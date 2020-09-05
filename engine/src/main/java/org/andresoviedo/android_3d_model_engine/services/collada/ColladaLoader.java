@@ -102,6 +102,7 @@ public final class ColladaLoader {
 
                     // create 3D Model
                     AnimatedModel data3D = new AnimatedModel(meshData.getVertexBuffer(), null);
+                    data3D.setMeshData(meshData);
                     data3D.setId(meshData.getId());
                     data3D.setVertexBuffer(meshData.getVertexBuffer());
                     data3D.setNormalsBuffer(meshData.getNormalsBuffer());

@@ -140,6 +140,10 @@ public class SceneLoader implements LoadListener, EventListener {
      */
     private boolean doAnimation = true;
     /**
+     * Animate model (dae only) or not
+     */
+    private boolean isSmooth = false;
+    /**
      * show bind pose only
      */
     private boolean showBindPose = false;
@@ -197,14 +201,14 @@ public class SceneLoader implements LoadListener, EventListener {
         this.type = type;
         this.glView = glView;
 
-        lightBulb.setLocation(new float[]{0,0,DEFAULT_CAMERA_POSITION});
+        lightBulb.setLocation(new float[]{0, 0, DEFAULT_CAMERA_POSITION});
     }
 
     public void init() {
 
         camera.setChanged(true); // force first draw
 
-        if (uri == null){
+        if (uri == null) {
             return;
         }
 
@@ -212,15 +216,15 @@ public class SceneLoader implements LoadListener, EventListener {
         if (uri.toString().toLowerCase().endsWith(".obj") || type == 0) {
             new WavefrontLoaderTask(parent, uri, this).execute();
         } else if (uri.toString().toLowerCase().endsWith(".stl") || type == 1) {
-            Log.i("SceneLoader", "Loading STL object from: "+uri);
+            Log.i("SceneLoader", "Loading STL object from: " + uri);
             new STLLoaderTask(parent, uri, this).execute();
         } else if (uri.toString().toLowerCase().endsWith(".dae") || type == 2) {
-            Log.i("SceneLoader", "Loading Collada object from: "+uri);
+            Log.i("SceneLoader", "Loading Collada object from: " + uri);
             new ColladaLoaderTask(parent, uri, this).execute();
         }
     }
 
-    public final boolean isDrawAxis(){
+    public final boolean isDrawAxis() {
         return drawAxis;
     }
 
@@ -258,7 +262,7 @@ public class SceneLoader implements LoadListener, EventListener {
         if (objects.isEmpty()) return;
 
         if (doAnimation) {
-            for (int i=0; i<objects.size(); i++) {
+            for (int i = 0; i < objects.size(); i++) {
                 Object3DData obj = objects.get(i);
                 animator.update(obj, isShowBindPose());
             }
@@ -271,15 +275,15 @@ public class SceneLoader implements LoadListener, EventListener {
         // animate light - Do a complete rotation every 5 seconds.
         long time = SystemClock.uptimeMillis() % 5000L;
         float angleInDegrees = (360.0f / 5000.0f) * ((int) time);
-        lightBulb.setRotation1(new float[]{0,angleInDegrees,0});
+        lightBulb.setRotation1(new float[]{0, angleInDegrees, 0});
     }
 
-    private void animateCamera(){
+    private void animateCamera() {
         camera.translateCamera(0.0005f, 0f);
     }
 
     public final synchronized void addObject(Object3DData obj) {
-        Log.i("SceneLoader","Adding object to scene... "+obj);
+        Log.i("SceneLoader", "Adding object to scene... " + obj);
         objects.add(obj);
         //requestRender();
 
@@ -290,7 +294,7 @@ public class SceneLoader implements LoadListener, EventListener {
     public final synchronized void addGUIObject(Object3DData obj) {
 
         // log event
-        Log.i("SceneLoader","Adding GUI object to scene... "+obj);
+        Log.i("SceneLoader", "Adding GUI object to scene... " + obj);
 
         // add object
         guiObjects.add(obj);
@@ -323,7 +327,7 @@ public class SceneLoader implements LoadListener, EventListener {
         this.drawWireframe = false;
 
         // toggle state machine
-        switch (drawwMode){
+        switch (drawwMode) {
             case 0:
                 makeToastText("Faces", Toast.LENGTH_SHORT);
                 break;
@@ -370,11 +374,11 @@ public class SceneLoader implements LoadListener, EventListener {
     }
 
     public final void toggleTextures() {
-        if (drawTextures && drawColors){
+        if (drawTextures && drawColors) {
             this.drawTextures = false;
             this.drawColors = true;
             makeToastText("Texture off", Toast.LENGTH_SHORT);
-        } else if (drawColors){
+        } else if (drawColors) {
             this.drawTextures = false;
             this.drawColors = false;
             makeToastText("Colors off", Toast.LENGTH_SHORT);
@@ -402,7 +406,7 @@ public class SceneLoader implements LoadListener, EventListener {
 
     public final void toggleAnimation() {
         //showAnimationsDialog();
-        if (!this.doAnimation){
+        if (!this.doAnimation) {
             this.doAnimation = true;
             this.showBindPose = false;
             makeToastText("Animation on", Toast.LENGTH_SHORT);
@@ -413,18 +417,30 @@ public class SceneLoader implements LoadListener, EventListener {
         }
     }
 
-    public final void showSettingsDialog(){
+    public final void toggleSmooth() {
+        for (int i = 0; i < getObjects().size(); i++) {
+            if (!this.isSmooth) {
+                getObjects().get(0).getMeshData().smooth();
+            } else {
+                getObjects().get(0).getMeshData().unSmooth();
+            }
+            getObjects().get(0).getMeshData().refreshNormalsBuffer();
+        }
+        this.isSmooth = !this.isSmooth;
+    }
+
+    public final void showSettingsDialog() {
 
         final AnimatedModel animatedModel;
-        if (objects.get(0) instanceof AnimatedModel){
-            animatedModel = (AnimatedModel)objects.get(0);
+        if (objects.get(0) instanceof AnimatedModel) {
+            animatedModel = (AnimatedModel) objects.get(0);
         } else return;
 
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this.parent);
         builderSingle.setTitle("Scene");
-        String[] items = new String[]{"Geometries...","Joints..."};
+        String[] items = new String[]{"Geometries...", "Joints..."};
         builderSingle.setItems(items, (dialog, which) -> {
-            switch (which){
+            switch (which) {
                 case 0:
                     showGeometriesDialog(animatedModel);
                     break;
@@ -440,13 +456,13 @@ public class SceneLoader implements LoadListener, EventListener {
         builderSingle.show();
     }
 
-    private void showGeometriesDialog(final AnimatedModel animatedModel){
+    private void showGeometriesDialog(final AnimatedModel animatedModel) {
         final AlertDialog.Builder builderSingle = new AlertDialog.Builder(this.parent);
         builderSingle.setTitle("Geometries");
         final String[] items = new String[animatedModel.getElements().size()];
         boolean[] selected = new boolean[animatedModel.getElements().size()];
-        for (int i=0; i<items.length; i++){
-            String jointId = "Element #"+i;
+        for (int i = 0; i < items.length; i++) {
+            String jointId = "Element #" + i;
             items[i] = jointId;
             selected[i] = true;
         }
@@ -461,13 +477,13 @@ public class SceneLoader implements LoadListener, EventListener {
         builderSingle.show();
     }
 
-    private void showJointsDialog(final AnimatedModel animatedModel){
+    private void showJointsDialog(final AnimatedModel animatedModel) {
         final AlertDialog.Builder builderSingle = new AlertDialog.Builder(this.parent);
         builderSingle.setTitle("Joints");
         final String[] items = new String[animatedModel.getElements().size()];
         boolean[] selected = new boolean[animatedModel.getElements().size()];
-        for (int i=0; i<items.length; i++){
-            String jointId = "Joint #"+i;
+        for (int i = 0; i < items.length; i++) {
+            String jointId = "Joint #" + i;
             items[i] = jointId;
             selected[i] = true;
         }
@@ -492,16 +508,16 @@ public class SceneLoader implements LoadListener, EventListener {
 
     public final void toggleCollision() {
         this.isCollision = !isCollision;
-        makeToastText("Collisions: "+isCollision, Toast.LENGTH_SHORT);
+        makeToastText("Collisions: " + isCollision, Toast.LENGTH_SHORT);
     }
 
     public final void toggleStereoscopic() {
-        if (!this.isStereoscopic){
+        if (!this.isStereoscopic) {
             this.isStereoscopic = true;
             this.isAnaglyph = true;
             this.isVRGlasses = false;
             makeToastText("Stereoscopic Anaplygh", Toast.LENGTH_SHORT);
-        } else if (this.isAnaglyph){
+        } else if (this.isAnaglyph) {
             this.isAnaglyph = false;
             this.isVRGlasses = true;
             // move object automatically cause with VR glasses we still have no way of moving object
@@ -550,11 +566,11 @@ public class SceneLoader implements LoadListener, EventListener {
     }
 
     public final void toggleBlending() {
-        if (this.isBlendingEnabled && !this.isBlendingForced){
+        if (this.isBlendingEnabled && !this.isBlendingForced) {
             makeToastText("X-Ray enabled", Toast.LENGTH_SHORT);
             this.isBlendingEnabled = true;
             this.isBlendingForced = true;
-        } else if (this.isBlendingForced){
+        } else if (this.isBlendingForced) {
             makeToastText("Blending disabled", Toast.LENGTH_SHORT);
             this.isBlendingEnabled = false;
             this.isBlendingForced = false;
@@ -574,7 +590,7 @@ public class SceneLoader implements LoadListener, EventListener {
     }
 
     @Override
-    public void onStart(){
+    public void onStart() {
 
         // mark start time
         startTime = SystemClock.uptimeMillis();
@@ -588,7 +604,7 @@ public class SceneLoader implements LoadListener, EventListener {
     }
 
     @Override
-    public synchronized void onLoad(Object3DData data){
+    public synchronized void onLoad(Object3DData data) {
 
         // if we add object, we need to initialize Animation, otherwise ModelRenderer will crash
         if (doAnimation) {
@@ -614,7 +630,7 @@ public class SceneLoader implements LoadListener, EventListener {
         for (Object3DData data : objs) {
             allErrors.addAll(data.getErrors());
         }
-        if (!allErrors.isEmpty()){
+        if (!allErrors.isEmpty()) {
             makeToastText(allErrors.toString(), Toast.LENGTH_LONG);
         }
 
@@ -629,27 +645,27 @@ public class SceneLoader implements LoadListener, EventListener {
         rescale(this.getObjects(), DEFAULT_MAX_MODEL_SIZE, new float[3]);
 
         // reposition camera
-        Log.i("SceneLoader","Camera position: "+DEFAULT_CAMERA_POSITION);
+        Log.i("SceneLoader", "Camera position: " + DEFAULT_CAMERA_POSITION);
         camera.setPosition(DEFAULT_CAMERA_POSITION);
     }
 
     private void rescale(List<Object3DData> objs) {
-        Log.v("SceneLoader","Rescaling objects... "+objs.size());
+        Log.v("SceneLoader", "Rescaling objects... " + objs.size());
 
         // get largest object in scene
         float largest = 1;
-        for (int i=0; i<objs.size(); i++){
+        for (int i = 0; i < objs.size(); i++) {
             Object3DData data = objs.get(i);
             float candidate = data.getCurrentDimensions().getLargest();
-            if (candidate > largest){
+            if (candidate > largest) {
                 largest = candidate;
             }
         }
-        Log.v("SceneLoader","Object largest dimension: "+ largest);
+        Log.v("SceneLoader", "Object largest dimension: " + largest);
 
         // rescale objects
         float ratio = DEFAULT_MAX_MODEL_SIZE / largest;
-        Log.v("SceneLoader","Scaling "+objs.size()+" objects with factor: "+ratio);
+        Log.v("SceneLoader", "Scaling " + objs.size() + " objects with factor: " + ratio);
         float[] newScale = new float[]{ratio, ratio, ratio};
         for (Object3DData data : objs) {
             // data.center();
@@ -698,7 +714,7 @@ public class SceneLoader implements LoadListener, EventListener {
         //Log.v("SceneLoader","Processing event... "+event);
         if (event instanceof TouchEvent) {
             userHasInteracted = true;
-        } else if (event instanceof CollisionEvent){
+        } else if (event instanceof CollisionEvent) {
             Object3DData objectToSelect = ((CollisionEvent) event).getObject();
             Object3DData point = ((CollisionEvent) event).getPoint();
             if (isCollision() && point != null) {
@@ -718,28 +734,29 @@ public class SceneLoader implements LoadListener, EventListener {
         return true;
     }
 
-    private void rescale(List<Object3DData> datas, float newScale, float[] newPosition){
+    private void rescale(List<Object3DData> datas, float newScale, float[] newPosition) {
 
         //if (true) return;
 
         // check we have objects to scale, otherwise, there should be an issue with LoaderTask
-        if (datas == null || datas.isEmpty()){
+        if (datas == null || datas.isEmpty()) {
             return;
         }
 
-        Log.d("SceneLoader","Scaling datas... total: "+datas.size());
+        Log.d("SceneLoader", "Scaling datas... total: " + datas.size());
         // calculate the global max length
         final Object3DData firstObject = datas.get(0);
         final Dimensions currentDimensions;
-        if (this.originalDimensions.containsKey(firstObject)){
+        if (this.originalDimensions.containsKey(firstObject)) {
             currentDimensions = this.originalDimensions.get(firstObject);
         } else {
             currentDimensions = firstObject.getCurrentDimensions();
             this.originalDimensions.put(firstObject, currentDimensions);
         }
-        Log.v("SceneLoader","Model[0] dimension: "+ currentDimensions.toString());
+        Log.v("SceneLoader", "Model[0] dimension: " + currentDimensions.toString());
 
-        final float[] corner01 = currentDimensions.getCornerLeftTopNearVector();;
+        final float[] corner01 = currentDimensions.getCornerLeftTopNearVector();
+        ;
         final float[] corner02 = currentDimensions.getCornerRightBottomFar();
         final float[] center01 = currentDimensions.getCenter();
 
@@ -753,21 +770,21 @@ public class SceneLoader implements LoadListener, EventListener {
         float maxCenterY = center01[1];
         float maxCenterZ = center01[2];
 
-        for (int i=1; i<datas.size(); i++){
+        for (int i = 1; i < datas.size(); i++) {
 
             final Object3DData obj = datas.get(i);
 
             final Dimensions original;
-            if (this.originalDimensions.containsKey(obj)){
+            if (this.originalDimensions.containsKey(obj)) {
                 original = this.originalDimensions.get(obj);
-                Log.v("SceneLoader","Found dimension: "+ original.toString());
-            }else {
+                Log.v("SceneLoader", "Found dimension: " + original.toString());
+            } else {
                 original = obj.getCurrentDimensions();
                 this.originalDimensions.put(obj, original);
             }
 
 
-            Log.v("SceneLoader","Model["+i+"] '"+obj.getId()+"' dimension: "+ original.toString());
+            Log.v("SceneLoader", "Model[" + i + "] '" + obj.getId() + "' dimension: " + original.toString());
             final float[] corner1 = original.getCornerLeftTopNearVector();
             final float[] corner2 = original.getCornerRightBottomFar();
             final float[] center = original.getCenter();
@@ -798,7 +815,7 @@ public class SceneLoader implements LoadListener, EventListener {
         float maxLength = lengthX;
         if (lengthY > maxLength) maxLength = lengthY;
         if (lengthZ > maxLength) maxLength = lengthZ;
-        Log.v("SceneLoader","Max length: "+maxLength);
+        Log.v("SceneLoader", "Max length: " + maxLength);
 
         float maxLocation = 0;
         if (datas.size() > 1) {
@@ -809,52 +826,52 @@ public class SceneLoader implements LoadListener, EventListener {
         Log.v("SceneLoader", "Max location: " + maxLocation);
 
         // calculate the scale factor
-        float scaleFactor = newScale  / (maxLength + maxLocation);
+        float scaleFactor = newScale / (maxLength + maxLocation);
         final float[] finalScale = new float[]{scaleFactor, scaleFactor, scaleFactor};
-        Log.d("SceneLoader","New scale: "+scaleFactor);
+        Log.d("SceneLoader", "New scale: " + scaleFactor);
 
         // calculate the global center
-        float centerX = (maxRight + maxLeft)/2;
-        float centerY = (maxTop + maxBottom)/2;
-        float centerZ = (maxNear + maxFar)/2;
-        Log.d("SceneLoader","Total center: "+centerX+","+centerY+","+centerZ);
+        float centerX = (maxRight + maxLeft) / 2;
+        float centerY = (maxTop + maxBottom) / 2;
+        float centerZ = (maxNear + maxFar) / 2;
+        Log.d("SceneLoader", "Total center: " + centerX + "," + centerY + "," + centerZ);
 
         // calculate the new location
         float translationX = -centerX + newPosition[0];
         float translationY = -centerY + newPosition[1];
         float translationZ = -centerZ + newPosition[2];
-        final float[] globalDifference = new float[]{translationX*scaleFactor, translationY*scaleFactor, translationZ*scaleFactor};
-        Log.d("SceneLoader","Total translation: "+ Arrays.toString(globalDifference));
+        final float[] globalDifference = new float[]{translationX * scaleFactor, translationY * scaleFactor, translationZ * scaleFactor};
+        Log.d("SceneLoader", "Total translation: " + Arrays.toString(globalDifference));
 
 
-        for (Object3DData data : datas){
+        for (Object3DData data : datas) {
 
-                final Transform original;
-                if (this.originalTransforms.containsKey(data)){
-                    original = this.originalTransforms.get(data);
-                    Log.v("SceneLoader","Found transform: "+ original);
-                } else {
-                    original = data.getTransform();
-                    this.originalTransforms.put(data, original);
-                }
+            final Transform original;
+            if (this.originalTransforms.containsKey(data)) {
+                original = this.originalTransforms.get(data);
+                Log.v("SceneLoader", "Found transform: " + original);
+            } else {
+                original = data.getTransform();
+                this.originalTransforms.put(data, original);
+            }
 
-                // rescale
-                float localScaleX = scaleFactor * original.getScale()[0];
-                float localScaleY = scaleFactor * original.getScale()[1];
-                float localScaleZ = scaleFactor * original.getScale()[2];
-                data.setScale(new float[]{localScaleX, localScaleY, localScaleZ});
-                Log.v("SceneLoader","Mew model scale: "+ Arrays.toString(data.getScale()));
+            // rescale
+            float localScaleX = scaleFactor * original.getScale()[0];
+            float localScaleY = scaleFactor * original.getScale()[1];
+            float localScaleZ = scaleFactor * original.getScale()[2];
+            data.setScale(new float[]{localScaleX, localScaleY, localScaleZ});
+            Log.v("SceneLoader", "Mew model scale: " + Arrays.toString(data.getScale()));
 
-                // relocate
-                float localTranlactionX = original.getLocation()[0] * scaleFactor;
-                float localTranlactionY = original.getLocation()[1] * scaleFactor;
-                float localTranlactionZ = original.getLocation()[2] * scaleFactor;
-                data.setLocation(new float[]{localTranlactionX, localTranlactionY, localTranlactionZ});
-                Log.v("SceneLoader","Mew model location: "+ Arrays.toString(data.getLocation()));
+            // relocate
+            float localTranlactionX = original.getLocation()[0] * scaleFactor;
+            float localTranlactionY = original.getLocation()[1] * scaleFactor;
+            float localTranlactionZ = original.getLocation()[2] * scaleFactor;
+            data.setLocation(new float[]{localTranlactionX, localTranlactionY, localTranlactionZ});
+            Log.v("SceneLoader", "Mew model location: " + Arrays.toString(data.getLocation()));
 
-                // center
-                data.translate(globalDifference);
-                Log.v("SceneLoader","Mew model translated: "+ Arrays.toString(data.getLocation()));
+            // center
+            data.translate(globalDifference);
+            Log.v("SceneLoader", "Mew model translated: " + Arrays.toString(data.getLocation()));
         }
 
 
@@ -883,4 +900,6 @@ public class SceneLoader implements LoadListener, EventListener {
             }
         }*/
     }
+
+
 }

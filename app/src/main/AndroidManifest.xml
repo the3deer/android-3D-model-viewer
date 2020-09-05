@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
     package="org.andresoviedo.dddmodel2"
-    android:versionCode="26"
-    android:versionName="3.0.2">
+    android:versionCode="27"
+    android:versionName="3.0.3">
 
     <uses-sdk
         tools:overrideLibrary="android.support.compat, android.arch.lifecycle" />
