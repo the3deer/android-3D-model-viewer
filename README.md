@@ -1,7 +1,7 @@
 Android 3D Model Viewer
 =======================
 
-![codeship badge](https://codeship.com/projects/52cf9560-deb2-0134-4203-2aaddef843aa/status?branch=master)
+![travis-ci badge](https://travis-ci.org/the3deers/android-3D-model-viewer.svg?branch=master)
 
 This is a demo of OpenGL ES 2.0.
 It is basically an android application with a 3D engine that can load Wavefront OBJ, STL & DAE files.
