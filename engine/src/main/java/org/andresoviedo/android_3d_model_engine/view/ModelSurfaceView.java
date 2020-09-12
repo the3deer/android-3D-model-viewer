@@ -109,7 +109,7 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 	}
 
 	public void toggleAnimation() {
-		Log.i("ModelSurfaceView","Toggling textures...");
+		Log.i("ModelSurfaceView","Toggling animation...");
 		mRenderer.toggleAnimation();
 	}
 
