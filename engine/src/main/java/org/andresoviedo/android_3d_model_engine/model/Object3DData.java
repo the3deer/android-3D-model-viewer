@@ -36,6 +36,10 @@ public class Object3DData {
     }
 
     /**
+     * CAD Tool used to generate model
+     */
+    private String authoringTool;
+    /**
      * Parent object if hierarchy of objects
      */
     protected Object3DData parent;
@@ -140,6 +144,14 @@ public class Object3DData {
 
 
     public Object3DData() {
+    }
+
+    public void setAuthoringTool(String authoringTool) {
+        this.authoringTool = authoringTool;
+    }
+
+    public String getAuthoringTool() {
+        return authoringTool;
     }
 
     public void setMeshData(MeshData meshData) {

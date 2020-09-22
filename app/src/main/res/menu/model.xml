@@ -14,6 +14,12 @@
         android:showAsAction="ifRoom"
         android:title="@string/toggle_wireframe"/>
     <item
+        android:id="@+id/model_toggle_skybox"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:orderInCategory="300"
+        android:showAsAction="ifRoom"
+        android:title="Toggle Sky Box"/>
+    <item
         android:id="@+id/model_toggle_textures"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="300"

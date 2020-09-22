@@ -138,7 +138,7 @@ public class MenuActivity extends ListActivity {
                 (String file) -> {
                     if (file != null) {
                         ContentUtils.provideAssets(this);
-                        launchModelRendererActivity(Uri.parse("assets://" + getPackageName() + "/" + file));
+                        launchModelRendererActivity(Uri.parse("android://"+getPackageName()+"/assets/" + file));
                     }
                 });
     }

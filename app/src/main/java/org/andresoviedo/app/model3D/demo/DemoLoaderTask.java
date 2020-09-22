@@ -120,7 +120,7 @@ public class DemoLoaderTask extends LoaderTask {
                         Rescaler.rescale(obj53, 2f);
                         DemoLoaderTask.this.onLoad(obj53);
                     }
-                }).load(new URI("assets://assets/models/teapot.obj")).get(0);
+                }).load(new URI("android://org.andresoviedo.dddmodel2/assets/models/teapot.obj")).get(0);
 
                 //obj51.setScale(2f,2f,2f);
                 //obj51.setSize(0.5f);
@@ -139,7 +139,7 @@ public class DemoLoaderTask extends LoaderTask {
                         obj53.setColor(new float[] { 0.0f, 1.0f, 1f, 1.0f });
                         DemoLoaderTask.this.onLoad(obj53);
                     }
-                }).load(new URI("assets://assets/models/cube.obj")).get(0);
+                }).load(new URI("android://org.andresoviedo.dddmodel2/assets/models/cube.obj")).get(0);
 
                 //obj52.setScale(0.5f, 0.5f, 0.5f);
                 //super.onLoad(obj52);
@@ -158,7 +158,7 @@ public class DemoLoaderTask extends LoaderTask {
                         Rescaler.rescale(obj53, 2f);
                         DemoLoaderTask.this.onLoad(obj53);
                     }
-                }).load(new URI("assets://assets/models/ToyPlane.obj")).get(0);
+                }).load(new URI("android://org.andresoviedo.dddmodel2/assets/models/ToyPlane.obj")).get(0);
 
                 //super.onLoad(obj53);
             } catch (Exception ex) {
@@ -168,7 +168,7 @@ public class DemoLoaderTask extends LoaderTask {
             // test loading object made of polygonal faces
             try {
                 // this has heterogeneous faces
-                Object3DData obj53 = new ColladaLoader().load(new URI("assets://assets/models/cowboy.dae"), new LoadListenerAdapter(){
+                Object3DData obj53 = new ColladaLoader().load(new URI("android://org.andresoviedo.dddmodel2/assets/models/cowboy.dae"), new LoadListenerAdapter(){
                     @Override
                     public void onLoad(Object3DData obj53) {
                         obj53.setLocation(new float[] { 0f, -1f, 1f});
@@ -187,7 +187,7 @@ public class DemoLoaderTask extends LoaderTask {
 
             // test loading object without normals
                     /*try {
-                        Object3DData obj = Object3DBuilder.loadV5(parent, Uri.parse("assets://assets/models/cube4.obj"));
+                        Object3DData obj = Object3DBuilder.loadV5(parent, Uri.parse("android://assets/models/cube4.obj"));
                         obj.setPosition(new float[] { 0f, 2f, -2f });
                         obj.setColor(new float[] { 0.3f, 0.52f, 1f, 1.0f });
                         addObject(obj);

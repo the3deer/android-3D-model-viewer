@@ -59,6 +59,15 @@ public final class ColladaLoader {
             callback.onProgress("Loading file...");
             final XmlNode xml = XmlParser.parse(is);
 
+            // get authoring tool
+            String authoring_tool = null;
+            try {
+                XmlNode child = xml.getChild("asset").getChild("contributor").getChild("authoring_tool");
+                authoring_tool = child.getData();
+                Log.i("ColladaLoaderTask","authoring_tool: "+ authoring_tool);
+            } catch (Exception e) {
+                // ignore
+            }
 
             // load visual scene
             // we need this first in order to progressively load geometries with it's binded transform
@@ -103,6 +112,7 @@ public final class ColladaLoader {
 
                     // create 3D Model
                     AnimatedModel data3D = new AnimatedModel(meshData.getVertexBuffer(), null);
+                    data3D.setAuthoringTool(authoring_tool);
                     data3D.setMeshData(meshData);
                     data3D.setId(meshData.getId());
                     data3D.setVertexBuffer(meshData.getVertexBuffer());

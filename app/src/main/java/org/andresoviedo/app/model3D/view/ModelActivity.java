@@ -120,6 +120,7 @@ public class ModelActivity extends Activity implements EventListener {
             gLView.addListener(this);
             setContentView(gLView);
             scene.setView(gLView);
+            if (paramUri != null) gLView.fixCoordinateSystem();
         } catch (Exception e) {
             Log.e("ModelActivity", e.getMessage(), e);
             Toast.makeText(this, "Error loading OpenGL view:\n" + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -226,6 +227,9 @@ public class ModelActivity extends Activity implements EventListener {
                 break;
             case R.id.model_toggle_boundingbox:
                 scene.toggleBoundingBox();
+                break;
+            case R.id.model_toggle_skybox:
+                gLView.toggleSkyBox();
                 break;
             case R.id.model_toggle_textures:
                 scene.toggleTextures();

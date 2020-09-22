@@ -22,6 +22,13 @@ public final class IOUtils {
         return data;
     }
 
+    /**
+     * Read fully the input stream and return the bytes.
+     *
+     * @param is input stream
+     * @return the bytes
+     * @throws IOException if there is an error reading from the stream
+     */
     public static byte[] read(InputStream is) throws IOException {
         byte[] isData = new byte[512];
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -33,23 +40,23 @@ public final class IOUtils {
     }
 
     public static FloatBuffer createFloatBuffer(int floats) {
-        return createNativeByteBuffer(floats*4).asFloatBuffer();
+        return createNativeByteBuffer(floats * 4).asFloatBuffer();
     }
 
     public static FloatBuffer createFloatBuffer(List<float[]> vectorArray, int stride) {
         final FloatBuffer floatBuffer = createFloatBuffer(vectorArray.size() * stride);
-        for (int i=0; i<vectorArray.size(); i++){
+        for (int i = 0; i < vectorArray.size(); i++) {
             floatBuffer.put(vectorArray.get(i));
         }
         return floatBuffer;
     }
 
     public static IntBuffer createIntBuffer(int integers) {
-        return createNativeByteBuffer(integers*4).asIntBuffer();
+        return createNativeByteBuffer(integers * 4).asIntBuffer();
     }
 
     public static ShortBuffer createShortBuffer(int shorts) {
-        return createNativeByteBuffer(shorts*2).asShortBuffer();
+        return createNativeByteBuffer(shorts * 2).asShortBuffer();
     }
 
     public static ByteBuffer createNativeByteBuffer(int length) {
@@ -59,7 +66,6 @@ public final class IOUtils {
         bb.order(ByteOrder.nativeOrder());
         return bb;
     }
-
 
 
 }

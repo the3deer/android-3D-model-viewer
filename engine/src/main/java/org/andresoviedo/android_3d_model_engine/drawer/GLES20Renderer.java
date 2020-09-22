@@ -72,6 +72,7 @@ class GLES20Renderer implements Renderer {
 
     static GLES20Renderer getInstance(String id, String vertexShaderCode, String fragmentShaderCode) {
         Set<String> shaderFeatures = new HashSet<>();
+        testShaderFeature(shaderFeatures, vertexShaderCode, "u_MMatrix");
         testShaderFeature(shaderFeatures, vertexShaderCode, "a_Position");
         testShaderFeature(shaderFeatures, vertexShaderCode, "a_Normal");
         testShaderFeature(shaderFeatures, vertexShaderCode, "a_Color");
@@ -79,6 +80,7 @@ class GLES20Renderer implements Renderer {
         testShaderFeature(shaderFeatures, vertexShaderCode, "u_LightPos");
         testShaderFeature(shaderFeatures, vertexShaderCode, "in_jointIndices");
         testShaderFeature(shaderFeatures, vertexShaderCode, "in_weights");
+        testShaderFeature(shaderFeatures, fragmentShaderCode, "u_TextureCube");
         return new GLES20Renderer(id, vertexShaderCode, fragmentShaderCode, shaderFeatures);
     }
 
@@ -133,7 +135,9 @@ class GLES20Renderer implements Renderer {
         }
 
         // mvp matrix for position + lighting + animation
-        setUniformMatrix4(obj.getModelMatrix(), "u_MMatrix");
+        if(supportsMMatrix()) {
+            setUniformMatrix4(obj.getModelMatrix(), "u_MMatrix");
+        }
         setUniformMatrix4(vMatrix, "u_VMatrix");
         setUniformMatrix4(pMatrix, "u_PMatrix");
 
@@ -162,6 +166,11 @@ class GLES20Renderer implements Renderer {
         if (textureId != -1 && supportsTextures()) {
             setTexture(textureId);
             mTextureHandle = setVBO("a_TexCoordinate", obj.getTextureBuffer(), TEXTURE_COORDS_PER_VERTEX);
+        }
+
+        // pass in the SkyBox texture
+        if (textureId != -1 && supportsTextureCube()){
+            setTextureCube(textureId);
         }
 
         // pass in light position for lighting
@@ -239,6 +248,14 @@ class GLES20Renderer implements Renderer {
         }
     }
 
+    private boolean supportsMMatrix(){
+        return features.contains("u_MMatrix");
+    }
+
+    private boolean supportsTextureCube(){
+        return features.contains("u_TextureCube");
+    }
+
     private boolean supportsColors() {
         return features.contains("a_Color");
     }
@@ -265,6 +282,25 @@ class GLES20Renderer implements Renderer {
 
         // Bind to the texture in OpenGL
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+        GLUtil.checkGlError("glBindTexture");
+
+        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
+        GLES20.glUniform1i(mTextureUniformHandle, 0);
+        GLUtil.checkGlError("glUniform1i");
+
+    }
+
+    private void setTextureCube(int textureId) {
+
+        int mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, "u_TextureCube");
+        GLUtil.checkGlError("glGetUniformLocation");
+
+        // Set the active texture unit to texture unit 0.
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLUtil.checkGlError("glActiveTexture");
+
+        // Bind to the texture in OpenGL
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_CUBE_MAP, textureId);
         GLUtil.checkGlError("glBindTexture");
 
         // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
@@ -340,7 +376,6 @@ class GLES20Renderer implements Renderer {
                 }
                 drawCount = (int) ((Math.sin(rotation - this.shift + Math.PI / 2 * 3) + 1) / 2f * drawCount);
             }
-            // Log.d(obj.getId(),"Drawing all triangles using arrays... counter("+drawCount+")");
             GLES20.glDrawArrays(drawMode, 0, drawCount);
             GLUtil.checkGlError("glDrawArrays");
         } else {

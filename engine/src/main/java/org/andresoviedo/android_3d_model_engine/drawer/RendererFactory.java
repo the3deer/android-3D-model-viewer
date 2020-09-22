@@ -58,7 +58,7 @@ public class RendererFactory {
         Log.i("RendererFactory", "Shaders loaded: " + shadersCode.size());
     }
 
-    public Renderer getDrawer(Object3DData obj, boolean usingTextures, boolean usingLights, boolean usingAnimation, boolean drawColors) {
+    public Renderer getDrawer(Object3DData obj, boolean usingSkyBox, boolean usingTextures, boolean usingLights, boolean usingAnimation, boolean drawColors) {
 
         // double check features
         boolean isAnimated = usingAnimation && obj instanceof AnimatedModel
@@ -68,7 +68,7 @@ public class RendererFactory {
         boolean isColoured = drawColors && obj != null && (obj.getColorsBuffer() != null || obj
                 .getColorsBuffer() != null);
 
-        final String[] shaderId = getShaderId(isAnimated, isUsingLights, isTextured, isColoured);
+        final String[] shaderId = getShaderId(usingSkyBox, isAnimated, isUsingLights, isTextured, isColoured);
 
         // get cached drawer
         GLES20Renderer drawer = drawers.get(shaderId[0]);
@@ -104,8 +104,15 @@ public class RendererFactory {
     }
 
     @NonNull
-    private String[] getShaderId(boolean isAnimated, boolean isUsingLights, boolean isTextured, boolean
+    private String[] getShaderId(boolean isUsingSkyBox, boolean isAnimated, boolean isUsingLights, boolean isTextured, boolean
             isColoured) {
+
+        if (isUsingSkyBox){
+            shaderIdTemp[0]="shader_skybox_";
+            shaderIdTemp[1]="shader_skybox_vert";
+            shaderIdTemp[2]="shader_skybox_frag";
+            return shaderIdTemp;
+        }
         if (isAnimated){
             if (isUsingLights){
                 if (isTextured){
@@ -203,14 +210,18 @@ public class RendererFactory {
     }
 
     public Renderer getBoundingBoxDrawer() {
-        return getDrawer(null, false, false, false, false);
+        return getDrawer(null, false, false, false, false, false);
     }
 
     public Renderer getFaceNormalsDrawer() {
-        return getDrawer(null, false, false, false, false);
+        return getDrawer(null, false, false, false, false, false);
     }
 
     public Renderer getBasicShader() {
-        return getDrawer(null, false, false, false, false);
+        return getDrawer(null, false, false, false, false, false);
+    }
+
+    public Renderer getSkyBoxDrawer() {
+        return getDrawer(null, true, false, false, false, false);
     }
 }

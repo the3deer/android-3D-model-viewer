@@ -68,7 +68,7 @@ public class DemoActivity extends ListActivity {
 	private void loadDemo(final String selectedItem) {
 		ContentUtils.addModelsUris(this);
 		Intent intent = new Intent(DemoActivity.this.getApplicationContext(), ModelActivity.class);
-		intent.putExtra("uri", "assets://assets/models/"+selectedItem);
+		intent.putExtra("uri", "android://assets/models/"+selectedItem);
 		intent.putExtra("immersiveMode", "true");
 		DemoActivity.this.startActivity(intent);
 	}

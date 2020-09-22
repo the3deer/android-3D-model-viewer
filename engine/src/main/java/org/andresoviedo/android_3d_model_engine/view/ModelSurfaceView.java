@@ -93,6 +93,11 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 		mRenderer.toggleLights();
 	}
 
+	public void toggleSkyBox() {
+		Log.i("ModelSurfaceView","Toggling sky box...");
+		mRenderer.toggleSkyBox();
+	}
+
     public void toggleWireframe() {
 		Log.i("ModelSurfaceView","Toggling wireframe...");
         mRenderer.toggleWireframe();
@@ -116,4 +121,9 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 	public boolean isLightsEnabled() {
 		return mRenderer.isLightsEnabled();
 	}
+
+    public void fixCoordinateSystem() {
+		Log.i("ModelSurfaceView","Fixing coordinate system...");
+		mRenderer.fixCoordinateSystem();
+    }
 }

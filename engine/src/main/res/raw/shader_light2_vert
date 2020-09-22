@@ -1,0 +1,68 @@
+// MVP matrices
+uniform mat4 u_MMatrix;
+uniform mat4 u_VMatrix;
+uniform mat4 u_PMatrix;
+
+// mesh
+attribute vec4 a_Position;
+
+// colors
+uniform vec4 vColor;
+varying vec4 v_Color;
+
+// lights
+uniform vec3 u_LightPos;
+uniform vec3 u_cameraPos;
+attribute vec3 a_Normal;
+
+// fragment lighting
+varying vec3 v_Position;
+varying vec3 v_lightPos;
+varying vec3 v_Normal;
+
+void main(){
+
+    // calculate MVP matrix
+    mat4 u_MVMatrix = u_VMatrix * u_MMatrix;
+    mat4 u_MVPMatrix = u_PMatrix * u_MVMatrix;
+
+    // calculate rendered position
+    gl_Position = u_MVPMatrix * a_Position;
+
+    // Transform the vertex into eye space.
+    vec3 modelViewVertex = vec3(u_MMatrix * a_Position);
+
+    v_Position = modelViewVertex;
+
+    // Transform the normal's orientation into eye space.
+    vec3 modelViewNormal = vec3(u_MMatrix * vec4(a_Normal, 0.0));
+
+    v_Normal = modelViewNormal;
+
+    // Get a lighting direction vector from the light to the vertex.
+    vec3 lightVector = normalize(u_LightPos - modelViewVertex);
+
+    v_lightPos = u_LightPos;
+
+    // Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
+    // pointing in the same direction then it will get max illumination.
+    // float diffuse = max(dot(lightVector, modelViewNormal),0.0); // --> lights only on camera in front of face
+    float diffuse = max(dot(lightVector, normalize(modelViewNormal)),0.0);
+
+    // Attenuate the light based on distance.
+    float distance = distance(u_LightPos,modelViewVertex);
+    distance = 1.0 / (1.0 + distance * 0.05);
+    diffuse = diffuse * distance;
+
+    // specular light
+    vec3 viewDir = normalize(u_cameraPos - modelViewVertex);
+    vec3 reflectDir = reflect(-lightVector, modelViewNormal);
+    float specular = pow(max(dot(reflectDir, viewDir),0.0),32.0);
+
+    // ambient light
+    float ambient = 0.5;
+
+    // Multiply the color by the illumination level. It will be interpolated across the triangle.
+    v_Color = vColor * min((diffuse + specular + ambient),1.0);
+    v_Color[3] = vColor[3]; // correct alpha
+}
