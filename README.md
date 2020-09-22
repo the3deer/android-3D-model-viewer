@@ -13,13 +13,15 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (05/09/2020)
+News (22/09/2020)
 =================
 
-* New version released 3.0.3
+* /¡\ repo moved to the3deers organization + MIT License 2020
+* New version released 3.1.0
 * Collada support for polygon with holes
 * Wavefront support for smoothing groups
 * New FPS counter (frames per second)
+* Sky Box
 * Full refactoring of the code
 
 
@@ -62,6 +64,7 @@ The app comes with some included 3D models that were taken for free from Interne
 Whats next
 ==========
 
+* Skybox is a quick win - very soon
 * Support for glTF standard format
 * 3D without glasses
 * Augmented reality
@@ -142,39 +145,39 @@ You can run application in an emulator
     adb -s emulator-5554 push .\app\src\main\assets\models /sdcard/download
 
 
+Glases
+======
+
+You may need one of this glasses to view models in 3D virtual reality.
+
+[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/glasses-3d.jpg">](https://amzn.to/2E8LhxC)
+[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/cardboard-3d.jpg">](https://amzn.to/2E8M1Tq)
+
+
 Documentation
 =============
 
 https://github.com/andresoviedo/android-3D-model-viewer/wiki
 
 
-Final Notes
-===========
+Acknowledgement
+===============
 
-You are free to use this program while you keep this file and the authoring comments in the code.
-Any comments and suggestions are welcome.
-
-
-Contact
-=======
-
-http://www.andresoviedo.org
+* For teaching how animation engine works: https://github.com/TheThinMatrix/OpenGL-Animation
+* To the lot of user's feedback: https://github.com/the3deers/android-3D-model-viewer/issues
+* To the many infinite educational resources found in Internet for free :)
 
 
-Donations
-=========
+Licenses
+========
 
-[<img src="https://www.paypalobjects.com/webstatic/en_US/i/btn/png/btn_donate_92x26.png">](https://www.paypal.me/andresoviedo)
+The following copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
 
-Marketing
-=========
-
-If you want to buy 3D glasses on Amazon, thank you for clicking on following links as it may help supporting 
-this project:
-
-[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/glasses-3d.jpg">](https://amzn.to/2E8LhxC)
-[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/cardboard-3d.jpg">](https://amzn.to/2E8M1Tq)
+    MIT License - Copyright (c) 2020 The 3Deers - https://github.com/the3deers
+    GNU LGPL v2.1 Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski - STL Parser
+    ISC License - Earcut - https://github.com/the3deers/earcut
 
 
 
@@ -184,13 +187,13 @@ ChangeLog
 (f) fixed, (i) improved, (n) new feature
 
 - 3.0.3 (05/09/2020)
-  - (f) smooth faces are not toggle featured - not all models should be smoothed
+  - (f) smooth faces are now toggle featured - not all models should be smoothed
   - (f) fixed normal calculation - using high precision numbers
 - 3.0.2 (03/09/2020)
   - (f) setUniform4fv function had length zero - issue detected with Xiaomi Redmi 8
   - (f) gl_MaxVertexUniformVectors is apparently not working - "too many uniforms" - detected in Xiaomi Redmi 8
 - 3.0.1 (15/07/2020)
-  - (f) Forgot to add requestLegacyExternalStorage option
+  - (f) Forgot to add requestLegacyExternalStorage option - Android 10 requirement
 - 3.0.0 (15/07/2020)
   - (n) Support for Object Groups  (wavefront: o,g, dae: <geometry>)
   - (n) Support for Smoothing Groups (wavefront)
