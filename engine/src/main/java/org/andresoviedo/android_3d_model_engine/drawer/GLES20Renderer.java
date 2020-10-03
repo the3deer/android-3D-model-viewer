@@ -122,7 +122,7 @@ class GLES20Renderer implements Renderer {
 
         // log event once
         if (id != flags.get(obj.getId())) {
-            Log.i("GLES20Renderer", "Rendering with shader: " + id + "vert... obj: " + obj);
+            Log.d("GLES20Renderer", "Rendering with shader: " + id + "vert... obj: " + obj);
             flags.put(obj.getId(), this.id);
         }
 
@@ -383,7 +383,7 @@ class GLES20Renderer implements Renderer {
 
                 // log event
                 if (id != flags.get(element)) {
-                    Log.d("GLES20Renderer", "Rendering element " + i + "....  " + element);
+                    Log.v("GLES20Renderer", "Rendering element " + i + "....  " + element);
                 }
 
                 // FIXME: there may be element without texture. so a Different shader should be used
@@ -410,7 +410,7 @@ class GLES20Renderer implements Renderer {
 
                 // log event
                 if (id != flags.get(element)) {
-                    Log.d("GLES20Renderer", "Rendering element " + i + " finished");
+                    Log.v("GLES20Renderer", "Rendering element " + i + " finished");
                     flags.put(element, this.id);
                 }
             }
