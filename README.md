@@ -13,16 +13,12 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (22/09/2020)
+News (05/10/2020)
 =================
 
 * /¡\ repo moved to the3deers organization + MIT License 2020
 * New version released 3.1.0
-* Collada support for polygon with holes
-* Wavefront support for smoothing groups
-* New FPS counter (frames per second)
-* Sky Box
-* Full refactoring of the code
+* Collada support improved - fixed #147
 
 
 Demo
@@ -186,6 +182,9 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.1.0 (05/10/2020)
+  - (f) support for multiple skin controllers
+  - (f) skeleton fixed to use invert of inverse bind matrix
 - 3.0.3 (05/09/2020)
   - (f) smooth faces are now toggle featured - not all models should be smoothed
   - (f) fixed normal calculation - using high precision numbers
