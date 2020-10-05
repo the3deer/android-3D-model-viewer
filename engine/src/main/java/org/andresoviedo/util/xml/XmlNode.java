@@ -98,6 +98,24 @@ public final class XmlNode {
 		return null;
 	}
 
+	public XmlNode getChildWithAttributeRecursive(String childName, String attr, String value) {
+		List<XmlNode> children = getChildren(childName);
+		if (children == null || children.isEmpty()) {
+			return null;
+		}
+		for (XmlNode child : children) {
+			String val = child.getAttribute(attr);
+			if (value.equals(val)) {
+				return child;
+			} else {
+				XmlNode candidate = null;
+				candidate = child.getChildWithAttributeRecursive(childName, attr, value);
+				if (candidate != null) return candidate;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Get the child nodes of this node that have a given name.
 	 * 

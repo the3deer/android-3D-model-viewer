@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class SkeletonLoader {
@@ -23,7 +24,6 @@ public class SkeletonLoader {
 
 	private final XmlNode visualScene;
 
-	private int jointCount = 0;
 	private boolean jointFound = false;
 
 	public SkeletonLoader(XmlNode xml) {
@@ -33,56 +33,100 @@ public class SkeletonLoader {
 	}
 
 	// <visual_scene>
-	public SkeletonData loadJoints(){
+	public Map<String,SkeletonData> loadJoints(){
 
 		Log.i("SkeletonLoader", "Loading skeleton...");
 
 
 		// a visual scene may contain several nodes of different kinds
 		List<XmlNode> nodes = visualScene.getChildren("node");
-		if (nodes == null || nodes.isEmpty()){
+		if (nodes.isEmpty()){
 			return null;
 		}
 
-		// int index = boneOrder.size();
-
+		// create root node
 		String visualSceneId = visualScene.getAttribute("id");
 		final JointData rootJoint = new JointData(visualSceneId);
-		/*boneOrder.add(index, skeletonId);*/
-		this.jointCount = 1;  // root counts
+		AtomicInteger defaultCount = new AtomicInteger();
+		defaultCount.incrementAndGet();
+
+
+		// list with all parsed instance skeletons
+		Map<String,SkeletonData> ret = new HashMap<>();
 
 		// analyze all nodes to get skeleton
 		for (XmlNode node : nodes){
 
-			// get first skeleton found
-			JointData jointData = loadSkeleton(node, rootJoint);
-			if (jointData == null) continue;
-			rootJoint.addChild(jointData);
+			XmlNode instance_controller = node.getChild("instance_controller");
+			if (instance_controller != null){
+				try {
+
+					// get linked geometry - so get bones
+					String controllerId = instance_controller.getAttribute("url").substring(1);
+					XmlNode controller = this.xml.getChild("library_controllers").getChildWithAttribute("controller","id", controllerId);
+					String geometryId = controller.getChild("skin").getAttribute("source").substring(1);
+					if (instance_controller.getChild("skeleton") == null){
+						continue;
+					}
+					String skeletonId = instance_controller.getChild("skeleton").getData().substring(1);
+
+					// root joint
+					final JointData rootJoint2 = new JointData(visualSceneId);
+					AtomicInteger count = new AtomicInteger();
+					count.incrementAndGet();
+
+					// add current node
+					final JointData instanceJoint = createJointData(node, rootJoint2, count);
+					rootJoint2.addChild(instanceJoint);
+
+					// bind linked child node
+					JointData jointData = loadSkeleton(visualScene.getChildWithAttributeRecursive("node", "id", skeletonId), instanceJoint, count);
+					instanceJoint.addChild(jointData);
+
+					// log event
+					Log.i("SkeletonLoader", "Node found. skeleton: "+skeletonId+", geometryId: "+geometryId+", joints: " + count.get());
+
+					// add to returned list
+					ret.put(geometryId, new SkeletonData(count.get(), rootJoint2));
+
+				} catch (Exception e) {
+					Log.e("SkeletonLoader", e.getMessage(), e);
+				}
+
+			} else {
+
+				// parse joints
+				JointData jointData = loadSkeleton(node, rootJoint, defaultCount);
+				rootJoint.addChild(jointData);
+				Log.i("SkeletonLoader", "Node found. joints: " + defaultCount.get());
+			}
 		}
 
+		// add to returned list
+		ret.put("default", new SkeletonData(defaultCount.get(), rootJoint));
+
 		// no skeleton found at all
-		if (rootJoint.children.isEmpty()){
+		if (ret.isEmpty()){
 			Log.i("SkeletonLoader", "Skeleton not found");
 			return null;
 		}
 
-		Log.i("SkeletonLoader", "Skeleton found. joints: " + jointCount);
-
-		return new SkeletonData(jointCount, rootJoint);
+		Log.i("SkeletonLoader", "Skeleton founds: " + ret.size()+", names: "+ret.keySet());
+		return ret;
 	}
 
-	private JointData loadSkeleton(XmlNode jointNode, JointData parent){
-		JointData joint = createJointData(jointNode, parent);
+	private JointData loadSkeleton(XmlNode jointNode, JointData parent, AtomicInteger count){
+		JointData joint = createJointData(jointNode, parent, count);
 
 		// Log.i("SkeletonLoader","Joint: index "+joint.index+", name: "+joint.nameId);
 		for(XmlNode childNode : jointNode.getChildren("node")){
-			JointData child = loadSkeleton(childNode, joint);
+			JointData child = loadSkeleton(childNode, joint, count);
 			joint.addChild(child);
 		}
 		return joint;
 	}
 
-	private JointData createJointData(XmlNode jointNode, JointData parent){
+	private JointData createJointData(XmlNode jointNode, JointData parent, AtomicInteger count){
 
 		// joint transformation initialization
         float[] bindLocalTransform = null;
@@ -165,7 +209,7 @@ public class SkeletonLoader {
 			bindLocalTransform = Math3DUtils.IDENTITY_MATRIX;
 		}
 
-		jointCount++;
+		count.incrementAndGet();
 
 		// get node attributes
 		String nodeName = jointNode.getAttribute("name");
@@ -220,49 +264,65 @@ public class SkeletonLoader {
 		);
 	}
 
-	public void updateJointData(JointData rootJoint, Map<String, SkinningData> skinningDataMap, SkeletonData skeletonData) {
-		List<String> boneOrder = new ArrayList<>();
-		SkinningData skinningData = null;
-		if (skinningDataMap != null && skinningDataMap.size() > 0) {
-			skinningData = skinningDataMap.values().iterator().next();
-			boneOrder = skinningData.jointOrder;
+	public void updateJointData(Map<String, SkinningData> skinningDataMap, Map<String,SkeletonData> skeletons) {
+
+		List<String> defaultBoneList = new ArrayList<>();
+		if (skinningDataMap != null && !skinningDataMap.isEmpty()) {
+			defaultBoneList = skinningDataMap.values().iterator().next().jointOrder;
 		}
 
-		for (JointData jointData : rootJoint.children){
-			updateChildJointData(jointData, skinningDataMap,skeletonData, boneOrder);
-		}
+		for (Map.Entry<String,SkeletonData> entry : skeletons.entrySet()) {
 
-		// log event
-		StringBuilder jointIndicesString = new StringBuilder();
-		List<JointData> pending = new ArrayList<>();
-		pending.add(rootJoint);
-		while(!pending.isEmpty()){
-			JointData current = pending.get(0);
-			if (current.getIndex() != -1) {
-				jointIndicesString.append(current.getName() != null? current.getName():current.getId())
-						.append(":").append(current.getIndex()).append(", ");
+			// we need skinning data to get inverse_bind_matrix
+			SkinningData skinningData = null;
+			List<String> boneList = null;
+			if (skinningDataMap != null && skinningDataMap.containsKey(entry.getKey())) {
+				skinningData = skinningDataMap.get(entry.getKey());
+				boneList = skinningData.jointOrder;
+			} else if (skinningDataMap != null){
+				// old behaviour
+				skinningData = skinningDataMap.values().iterator().next();
+				boneList = skinningData.jointOrder;
 			}
-			pending.addAll(current.children);
-			pending.remove(0);
+
+			for (JointData jointData : entry.getValue().getHeadJoint().children) {
+				updateChildJointData(jointData, skinningData, entry.getValue(), boneList != null? boneList : defaultBoneList);
+			}
+
+			// log event
+			StringBuilder jointIndicesString = new StringBuilder();
+			List<JointData> pending = new ArrayList<>();
+			pending.add(entry.getValue().getHeadJoint());
+			while(!pending.isEmpty()){
+				JointData current = pending.get(0);
+				if (current.getIndex() != -1) {
+					jointIndicesString.append(current.getName() != null? current.getName():current.getId())
+							.append(":").append(current.getIndex()).append(", ");
+				}
+				pending.addAll(current.children);
+				pending.remove(0);
+			}
+			Log.i("SkeletonLoader", "Loaded joint indices: "+jointIndicesString);
 		}
-		Log.i("SkeletonLoader", "Loaded joint indices: "+jointIndicesString);
+
+
 	}
 
-	private void updateChildJointData(JointData childJoint, Map<String, SkinningData> skinningDataMap, SkeletonData skeletonData, List<String> boneOrder) {
-		upateJointData_impl(childJoint, skinningDataMap,skeletonData, boneOrder);
+	private void updateChildJointData(JointData childJoint, SkinningData skinningData, SkeletonData skeletonData, List<String> boneOrder) {
+		upateJointData_impl(childJoint, skinningData,skeletonData, boneOrder);
 		for (JointData jointData : childJoint.children){
-			updateChildJointData(jointData, skinningDataMap,skeletonData, boneOrder);
+			updateChildJointData(jointData, skinningData,skeletonData, boneOrder);
 		}
 	}
 
-	private void upateJointData_impl(JointData jointData, Map<String, SkinningData> skinningDataMap, SkeletonData skeletonData, List<String> boneOrder){
-
-		Log.v("SkeletonLoader", "Updating joint: "+jointData.getId());
-
-		SkinningData skinningData = null;
-		if (skinningDataMap != null && skinningDataMap.size() > 0) {
-			skinningData = skinningDataMap.values().iterator().next();
-		}
+	/**
+	 *
+	 * @param jointData
+	 * @param skinningData skin data containing the "Name_array"
+	 * @param skeletonData
+	 * @param boneOrder
+	 */
+	private void upateJointData_impl(JointData jointData,SkinningData skinningData, SkeletonData skeletonData, List<String> boneOrder){
 
 		final String nodeName = jointData.getName();
 		final String nodeSid = jointData.getSid();

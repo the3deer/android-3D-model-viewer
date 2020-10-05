@@ -137,14 +137,14 @@ public class AnimatedModel extends Object3DData {
      * animation pose.
      */
     public float[][] getJointTransforms() {
+        if (jointMatrices == null) {
+            this.jointMatrices = new float[getBoneCount()][16];
+        }
         return jointMatrices;
     }
 
     public void updateAnimatedTransform(Joint joint) {
-        if (jointMatrices == null) {
-            this.jointMatrices = new float[getBoneCount()][16];
-        }
-        jointMatrices[joint.getIndex()] = joint.getAnimatedTransform();
+        getJointTransforms()[joint.getIndex()] = joint.getAnimatedTransform();
     }
 
     public Dimensions getCurrentDimensions() {
@@ -199,6 +199,7 @@ public class AnimatedModel extends Object3DData {
         final AnimatedModel ret = new AnimatedModel();
         super.copy(ret);
         ret.setJointsData(this.getJointsData());
+        ret.setRootJoint(this.getRootJoint());
         ret.setJointIds(this.getJointIds());
         ret.setVertexWeights(this.getVertexWeights());
         ret.doAnimation(this.getAnimation());

@@ -103,6 +103,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     private static final float[] COLOR_RED = {1.0f, 0.0f, 0.0f, 1f};
     private static final float[] COLOR_BLUE = {0.0f, 1.0f, 0.0f, 1f};
     private static final float[] COLOR_WHITE = {1f, 1f, 1f, 1f};
+    private static final float[] COLOR_HALF_TRANSPARENT = {1f, 1f, 1f, 0.5f};
+    private static final float[] COLOR_ALMOST_TRANSPARENT = {1f, 1f, 1f, 0.1f};
 
     private final float[] backgroundColor;
     private final SceneLoader scene;
@@ -136,7 +138,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     private Map<Object3DData, Object3DData> boundingBoxes = new HashMap<>();
     // The corresponding opengl bounding boxes
     private Map<Object3DData, Object3DData> normals = new HashMap<>();
+
+    // skeleton
     private Map<Object3DData, Object3DData> skeleton = new HashMap<>();
+    private boolean debugSkeleton = false;
+
 
     // 3D matrices to project our 3D world
     private final float[] viewMatrix = new float[16];
@@ -482,6 +488,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         } else {
             framesPerSecondCounter++;
         }
+
+        debugSkeleton = !debugSkeleton;
     }
 
     private void drawObject(float[] viewMatrix, float[] projectionMatrix, float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPosInWorldSpace, boolean doAnimation, boolean drawLighting, boolean drawWireframe, boolean drawTextures, boolean drawColors, List<Object3DData> objects, int i) {
@@ -602,14 +610,20 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 // draw skeleton
                 else if (scene.isDrawSkeleton() && objData instanceof AnimatedModel && ((AnimatedModel) objData)
                         .getAnimation() != null) {
+
+                    // draw the original object a bit transparent
+                    drawerObject.draw(objData, projectionMatrix, viewMatrix,  textureId, lightPosInWorldSpace, COLOR_HALF_TRANSPARENT, cameraPosInWorldSpace);
+
+                    // draw skeleton on top of it
+                    GLES20.glDisable(GLES20.GL_DEPTH_TEST);
                     Object3DData skeleton = this.skeleton.get(objData);
                     if (skeleton == null || changed) {
                         skeleton = Skeleton.build((AnimatedModel) objData);
                         this.skeleton.put(objData, skeleton);
                     }
-                    animator.update(skeleton, scene.isShowBindPose());
-                    drawerObject = drawer.getDrawer(skeleton, false, drawLighting, doAnimation, drawColors);
-                    drawerObject.draw(skeleton, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                    final Renderer skeletonDrawer = drawer.getDrawer(skeleton, false, drawLighting, doAnimation, drawColors);
+                    skeletonDrawer.draw(skeleton, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                    GLES20.glEnable(GLES20.GL_DEPTH_TEST);
                 }
 
                 // draw solids
@@ -652,7 +666,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             }
 
         } catch (Exception ex) {
-            Log.e("ModelRenderer", "There was a problem rendering the object '" + objData.getId() + "':" + ex.getMessage(), ex);
+            if (!infoLogged.containsKey(ex.getMessage())) {
+                Log.e("ModelRenderer", "There was a problem rendering the object '" + objData.getId() + "':" + ex.getMessage(), ex);
+                infoLogged.put(ex.getMessage(), true);
+            }
         } catch (Error ex) {
             Log.e("ModelRenderer", "There was a problem rendering the object '" + objData.getId() + "':" + ex.getMessage(), ex);
         }

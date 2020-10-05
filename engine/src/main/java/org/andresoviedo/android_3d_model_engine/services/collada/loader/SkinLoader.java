@@ -21,21 +21,20 @@ import java.util.Map;
 
 public class SkinLoader {
 
-	private final XmlNode controllersNode;
-	private XmlNode skinningData;
+	private final XmlNode library_controllers;
 	private final int maxWeights;
 
-	public SkinLoader(XmlNode controllersNode, int maxWeights) {
+	public SkinLoader(XmlNode library_controllers, int maxWeights) {
 		this.maxWeights = maxWeights;
-		this.controllersNode = controllersNode;
+		this.library_controllers = library_controllers;
 	}
 
 	public Map<String, SkinningData> loadSkinData() {
 		Map<String, SkinningData> ret = new HashMap<>();
-		for (XmlNode controller : controllersNode.getChildren("controller")) {
-			this.skinningData = controller.getChild("skin");
-			String source = skinningData.getAttribute("source").substring(1);
-			Log.i("SkinLoader", "Loading skin... " + source);
+		for (XmlNode controller : library_controllers.getChildren("controller")) {
+			XmlNode skinningData = controller.getChild("skin");
+			String skinId = skinningData.getAttribute("source").substring(1);
+			Log.i("SkinLoader", "Loading skin... " + skinId);
 
 			// bind shape matrix
 			float[] bindShapeMatrix = null;
@@ -44,15 +43,18 @@ public class SkinLoader {
 				float[] bind_shape_matrix_data = Math3DUtils.parseFloat(bindShapeMatrixNode.getData().trim().split("\\s+"));
 				bindShapeMatrix = new float[16];
 				Matrix.transposeM(bindShapeMatrix, 0, bind_shape_matrix_data, 0);
-				Log.i("SkinLoader", "Bind shape matrix: " + Math3DUtils.toString(bindShapeMatrix, 0));
+				Log.v("SkinLoader", "Bind shape matrix: " + Math3DUtils.toString(bindShapeMatrix, 0));
 			}
 
 			// Ordered joint list
-			List<String> jointNames = loadJointNames();
+			List<String> jointNames = loadJointNames(skinningData);
 			Log.i("SkinLoader", "Joints found: " + jointNames.size() + ", names: " + jointNames);
 
 			// Vertex weights
-			float[] weights = loadWeights();
+			float[] weights = loadWeights(skinningData);
+			if (weights == null){
+				continue;
+			}
 
 			// every vertex has 1 or more joints/weights associated
 			XmlNode weightsDataNode = skinningData.getChild("vertex_weights");
@@ -66,22 +68,27 @@ public class SkinLoader {
 			try {
 				XmlNode joints = skinningData.getChild("joints");
 				XmlNode inverseBindMatrixNode = joints.getChildWithAttribute("input", "semantic", "INV_BIND_MATRIX");
-				String invMatrixString = skinningData.getChildWithAttribute("source",
-						"id", inverseBindMatrixNode.getAttribute("source").substring(1))
+				String invMatrixString = skinningData.getChildWithAttribute("source","id", inverseBindMatrixNode.getAttribute("source").substring(1))
 						.getChild("float_array").getData();
-				Log.d("SkinLoader", "invMatrix: " + invMatrixString.trim());
 				inverseBindMatrix = Math3DUtils.parseFloat(invMatrixString.trim().split("\\s+"));
 				Log.d("SkinLoader", "Inverse bind matrix: " + Math3DUtils.toString(inverseBindMatrix, 0));
 			} catch (Exception e) {
 				Log.i("SkinLoader", "No inverse bind matrix available");
 			}
-			ret.put(source, new SkinningData(bindShapeMatrix, jointNames, vertexWeights, inverseBindMatrix));
+
+			Log.i("SkinLoader", "Controller loaded: " + controller.getAttribute("id"));
+			SkinningData skinData = new SkinningData(skinId, bindShapeMatrix, jointNames, vertexWeights, inverseBindMatrix);
+			ret.put(skinId, skinData);
+
+			// add also as controller id (to avoid refactoring right now)
+			ret.put(controller.getAttribute("id"), skinData);
+
 		}
 		Log.i("SkinLoader", "Skinning data list loaded: " + ret.keySet());
 		return ret;
 	}
 
-	private List<String> loadJointNames() {
+	private static List<String> loadJointNames(XmlNode skinningData) {
 		XmlNode inputNode = skinningData.getChild("vertex_weights");
 		String jointDataId = inputNode.getChildWithAttribute("input", "semantic", "JOINT").getAttribute("source")
 				.substring(1);
@@ -92,11 +99,17 @@ public class SkinLoader {
 		return jointsList;
 	}
 
-	private float[] loadWeights() {
+	private static float[] loadWeights(XmlNode skinningData) {
 		XmlNode inputNode = skinningData.getChild("vertex_weights");
 		String weightsDataId = inputNode.getChildWithAttribute("input", "semantic", "WEIGHT").getAttribute("source")
 				.substring(1);
+
 		XmlNode weightsNode = skinningData.getChildWithAttribute("source", "id", weightsDataId).getChild("float_array");
+		if ("0".equals(weightsNode.getAttribute("count"))){
+			Log.e("SkinLoader", "Empty weights from source '"+weightsDataId+"'");
+			return null;
+		}
+
 		String[] rawData = weightsNode.getData().trim().split("\\s+");
 		float[] weights = new float[rawData.length];
 		for (int i = 0; i < weights.length; i++) {
@@ -131,35 +144,26 @@ public class SkinLoader {
 		return skinningData;
 	}
 
-	public static void loadSkin(MeshData meshData, Map<String, SkinningData> skinningDataMap, SkeletonData skeletonData){
-
-		loadSkinningData(meshData, skinningDataMap, skeletonData);
-		loadSkinningArrays(meshData, skinningDataMap);
-
-		Log.d("SkinLoader", "Loaded skinning data: "
-				+ "jointIds: " + (meshData.getJointsArray() != null ? meshData.getJointsArray().length : 0)
-				+ ", weights: " + (meshData.getWeightsArray() != null ? meshData.getWeightsArray().length : 0));
-	}
-
-	private static void loadSkinningData(MeshData meshData, Map<String, SkinningData> skinningDataMap, SkeletonData skeletonData) {
+	public static void loadSkinningData(MeshData meshData, SkinningData skinningData, SkeletonData skeletonData) {
 
 		Log.d("SkinLoader", "Loading skinning data...");
 		final String geometryId = meshData.getId();
 
 		// load bind_shape_matrix
-		if (skinningDataMap != null && skinningDataMap.containsKey(geometryId)) {
-			float[] bindShapeMatrix = skinningDataMap.get(geometryId).getBindShapeMatrix();
+		if (skinningData != null) {
+			float[] bindShapeMatrix = skinningData.getBindShapeMatrix();
 			if (bindShapeMatrix != null) {
 				Log.d("SkinLoader", "Found bind_shape_matrix");
 				meshData.setBindShapeMatrix(bindShapeMatrix);
 			}
 		}
 
+		// load skin data
 		List<VertexSkinData> verticesSkinData = null;
-		if (skinningDataMap == null || !skinningDataMap.containsKey(geometryId)) {
+		if (skinningData == null) {
 			Log.d("SkinLoader", "No skinning data available");
 		} else {
-			verticesSkinData = skinningDataMap.get(geometryId).verticesSkinData;
+			verticesSkinData = skinningData.verticesSkinData;
 		}
 
 		// link vertex to weight data
@@ -195,14 +199,13 @@ public class SkinLoader {
 		}
 	}
 
-	private static void loadSkinningArrays(MeshData meshData, Map<String, SkinningData> skinningDataMap) {
+	public static void loadSkinningArrays(MeshData meshData) {
 
 		Log.d("SkinLoader", "Loading skinning arrays...");
 		final String geometryId = meshData.getId();
 		final List<Vertex> vertexList = meshData.getVerticesAttributes();
 
-		if (skinningDataMap != null && skinningDataMap.containsKey(geometryId) ||
-				vertexList.size() > 0 && vertexList.get(0).getWeightsData() != null) {
+		if (vertexList.size() > 0 && vertexList.get(0).getWeightsData() != null) {
 			int[] jointsArray = new int[vertexList.size() * vertexList.get(0).getWeightsData().jointIds.size()];
 			float[] weightsArray = new float[vertexList.size() * vertexList.get(0).getWeightsData().weights.size()];
 

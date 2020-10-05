@@ -317,12 +317,14 @@ public class Animator {
 	private void applyPoseToJoints(AnimatedModel animatedModel, Map<String,float[]> currentPose, Joint joint, float[]
 			parentTransform, int limit) {
 
+		// memory optimization
 		float[] currentTransform = (float[])cache.get(joint.getName());
 		if (currentTransform == null){
 			currentTransform = new float[16];
 			cache.put(joint.getName(), currentTransform);
 		}
 
+		// calculate animated transform
 		if (currentPose.get(joint.getName()) != null){
 			Matrix.multiplyMM(currentTransform, 0, parentTransform, 0, currentPose.get(joint.getName()), 0);
 		}else {
