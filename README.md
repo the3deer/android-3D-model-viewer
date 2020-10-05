@@ -17,7 +17,7 @@ News (05/10/2020)
 =================
 
 * /¡\ repo moved to the3deers organization + MIT License 2020
-* New version released 3.1.0
+* New version released 3.0.4
 * Collada support improved - fixed #147
 
 
@@ -182,7 +182,7 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
-- 3.1.0 (05/10/2020)
+- 3.0.4 (05/10/2020)
   - (f) support for multiple skin controllers
   - (f) skeleton fixed to use invert of inverse bind matrix
 - 3.0.3 (05/09/2020)
