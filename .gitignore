@@ -8,3 +8,4 @@ app/build/outputs/logs/
 app/build/reports/
 build/
 local.properties
+**/.iml

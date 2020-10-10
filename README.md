@@ -13,12 +13,14 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (05/10/2020)
+News (10/10/2020)
 =================
 
 * /¡\ repo moved to the3deers organization + MIT License 2020
-* New version released 3.0.4
+* New version released 3.1.0
+* Skybox + background extras
 * Collada support improved - fixed #147
+
 
 
 Demo
@@ -54,13 +56,12 @@ As this is my first android app and Im still learning the OpenGL 2.0 language, i
 but I will try to continue improving the app and adding more features. So please send me your comments, suggestions or
 complains by opening an [issue](https://github.com/andresoviedo/android-3D-model-viewer/issues) or email me to andresoviedo@gmail.com.
 
-The app comes with some included 3D models that were taken for free from Internet.
+The app comes with some included 3D models that have different licenses.
 
 
 Whats next
 ==========
 
-* Skybox is a quick win - very soon
 * Support for glTF standard format
 * 3D without glasses
 * Augmented reality
@@ -77,10 +78,11 @@ Features
   - colors
   - textures
   - lighting
-  - wireframe & points mode
+  - wireframe + points mode
   - holes
   - smoothing
   - bounding box
+  - skybox
   - object pick
   - camera support
     - tap to select object
@@ -176,12 +178,23 @@ copies or substantial portions of the Software.
     ISC License - Earcut - https://github.com/the3deers/earcut
 
 
+Assets
+
+ * cowboy       : Unlicense License - https://github.com/TheThinMatrix/OpenGL-Animation
+ * stormtrooper : MIT License - https://github.com/hujiulong/vue-3d-model
+ * toyplane     : Editorial Uses Only - https://blog.turbosquid.com/turbosquid-3d-model-license/#Editorial-Usage
+ * skybox sea   : https://learnopengl.com/Advanced-OpenGL/Cubemaps
+ * skybox sand  : Copyright 2012 Mobialia - https://github.com/mobialia/jmini3d
+
 
 ChangeLog
 =========
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.1.0 (10/10/2020)
+  - (n) skybox
+  - (f) deleted unlicensed assets
 - 3.0.4 (05/10/2020)
   - (f) support for multiple skin controllers
   - (f) skeleton fixed to use invert of inverse bind matrix
