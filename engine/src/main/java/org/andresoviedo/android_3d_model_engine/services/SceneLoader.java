@@ -46,17 +46,9 @@ public class SceneLoader implements LoadListener, EventListener {
      */
     private static final float DEFAULT_MAX_MODEL_SIZE = 100;
     /**
-     *
-     */
-    public static final float[] DEFAULT_MODEL_SCALE = {DEFAULT_MAX_MODEL_SIZE, DEFAULT_MAX_MODEL_SIZE, DEFAULT_MAX_MODEL_SIZE};
-    /**
      * Camera position on Z axis
      */
     private static final float DEFAULT_CAMERA_POSITION = DEFAULT_MAX_MODEL_SIZE / 2 + 25;
-    /**
-     * Position 0f,0f,0f
-     */
-    public static final float[] POSITION_ZERO = new float[3];
     /**
      * Parent component
      */
@@ -82,15 +74,14 @@ public class SceneLoader implements LoadListener, EventListener {
      */
     private List<Object3DData> guiObjects = new ArrayList<>();
     /**
-     * Show axis or not
-     */
-    private boolean drawAxis = false;
-
-    // Camera to show a point of view
-    /**
      * Point of view camera
      */
     private Camera camera = new Camera(DEFAULT_CAMERA_POSITION);
+    /**
+     * Blender uses different coordinate system.
+     * This is a patch to turn camera and SkyBox 90 degree on X axis
+     */
+    private boolean isFixCoordinateSystem = false;
     /**
      * Enable or disable blending (transparency)
      */
@@ -224,12 +215,21 @@ public class SceneLoader implements LoadListener, EventListener {
         }
     }
 
-    public final boolean isDrawAxis() {
-        return drawAxis;
+    public void fixCoordinateSystem() {
+        final List<Object3DData> objects = getObjects();
+        for (int i = 0; i < objects.size(); i++) {
+            final Object3DData objData = objects.get(i);
+            if (objData.getAuthoringTool() != null && objData.getAuthoringTool().toLowerCase().contains("blender")) {
+                getCamera().rotate(90f, 1, 0, 0);
+                Log.i("SceneLoader", "Fixed coordinate system to 90 degrees on x axis. object: " + objData.getId());
+                this.isFixCoordinateSystem = true;
+                break;
+            }
+        }
     }
 
-    public final void setDrawAxis(boolean drawAxis) {
-        this.drawAxis = drawAxis;
+    public boolean isFixCoordinateSystem() {
+        return this.isFixCoordinateSystem;
     }
 
     public final Camera getCamera() {
@@ -288,6 +288,7 @@ public class SceneLoader implements LoadListener, EventListener {
         //requestRender();
 
         // rescale objects so they fit in the viewport
+        // FIXME: this does not be reviewed
         //rescale(this.getObjects(), DEFAULT_MAX_MODEL_SIZE, new float[3]);
     }
 
@@ -644,9 +645,8 @@ public class SceneLoader implements LoadListener, EventListener {
         // rescale all object so they fit in the screen
         rescale(this.getObjects(), DEFAULT_MAX_MODEL_SIZE, new float[3]);
 
-        // reposition camera
-        Log.i("SceneLoader", "Camera position: " + DEFAULT_CAMERA_POSITION);
-        camera.setPosition(DEFAULT_CAMERA_POSITION);
+        // fix coordinate system
+        fixCoordinateSystem();
     }
 
     private void rescale(List<Object3DData> objs) {

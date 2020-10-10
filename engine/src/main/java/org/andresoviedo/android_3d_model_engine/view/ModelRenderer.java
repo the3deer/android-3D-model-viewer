@@ -197,10 +197,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     private SkyBox[] skyBoxes = null;
     private Object3DData[] skyBoxes3D = null;
 
-    // coordinate system
-    private boolean isFixCoordinateSystem = false;
-    private boolean isFixedCoordinateSystem = false;
-
     /**
      * Whether the info of the model has been written to console log
      */
@@ -247,10 +243,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
     public void toggleLights() {
         lightsEnabled = !lightsEnabled;
-    }
-
-    public void fixCoordinateSystem(){
-        this.isFixCoordinateSystem = true;
     }
 
     public void toggleSkyBox() {
@@ -460,19 +452,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         // set up camera
         final Camera camera = scene.getCamera();
 
-        // fix coordinate system
-        if (isFixCoordinateSystem && !isFixedCoordinateSystem) {
-            final List<Object3DData> objects = scene.getObjects();
-            for (int i = 0; i< objects.size(); i++) {
-                final Object3DData objData = objects.get(i);
-                if (objData.getAuthoringTool() != null && objData.getAuthoringTool().toLowerCase().contains("blender")) {
-                    scene.getCamera().rotate(90f, 1, 0, 0);
-                    Log.i("ModelRenderer", "Fixed coordinate system to 90 degrees on x axis. object: " + objData.getId());
-                    isFixedCoordinateSystem = true;
-                }
-            }
-        }
-
         // draw environment
         int skyBoxId = isUseskyBoxId;
         if (skyBoxId == -3){
@@ -511,7 +490,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 }
                 Matrix.setLookAtM(viewMatrixSkyBox, 0, 0, 0, 0, camera.getxView() - camera.getxPos(), camera.getyView() - camera.getyPos(),
                         camera.getzView() - camera.getzPos(), camera.getxUp() - camera.getxPos(), camera.getyUp() - camera.getyPos(), camera.getzUp() - camera.getzPos());
-                if (isFixedCoordinateSystem){
+                if (scene.isFixCoordinateSystem()){
                     Matrix.rotateM(viewMatrixSkyBox, 0, 90, 1, 0, 0);
                 }
                 Renderer basicShader = drawer.getSkyBoxDrawer();

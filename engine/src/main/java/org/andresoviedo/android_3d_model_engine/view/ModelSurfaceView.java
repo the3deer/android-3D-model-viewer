@@ -122,8 +122,4 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 		return mRenderer.isLightsEnabled();
 	}
 
-    public void fixCoordinateSystem() {
-		Log.i("ModelSurfaceView","Fixing coordinate system...");
-		mRenderer.fixCoordinateSystem();
-    }
 }
