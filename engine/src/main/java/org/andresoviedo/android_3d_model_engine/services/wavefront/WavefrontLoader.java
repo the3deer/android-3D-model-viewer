@@ -285,6 +285,7 @@ public class WavefrontLoader {
                             // build mesh
                             meshCurrent.vertices(vertexList).normals(normalsList).textures(textureList)
                                     .vertexAttributes(verticesAttributes)
+				    .materialFile(mtllib)
                                     .addElement(elementCurrent.indices(indicesCurrent).build());
 
                             // add current mesh
