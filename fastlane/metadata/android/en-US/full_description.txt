@@ -1,0 +1,24 @@
+Load 3D models and see how to do it with this open source code application. Formats supported currently: <code>*.obj</code>, <code>*.stl</code> & <code>*.dae</code>
+
+The main purpose of this app is to show how to draw in android using the OpenGL 2.0 by sharing the source code. So please, don't expect this application to be much richer or nicer than the ones already published in the app store, but at least it's unique in the sense it's opened to anyone who wants to contribute or don't want to start a similar project from scratch.
+
+As this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs; but I will try to continue improving the app and adding more features. So please send me your comments, suggestions or complains to <a href='mailto:andresoviedo@gmail.com'>mailto:andresoviedo@gmail.com</a>; or leave a nice comment :)
+
+The app comes with some included 3D models that were taken for free from Internet.
+
+<b>Currently implemented features:</b>
+
+* OpenGL ES 2.0 API
+* Formats: OBJ (wavefront), STL (STereoLithography) & DAE (Collada)
+* calculation of normals
+* transformations: scaling, rotation, translation
+* colors
+* textures
+* lighting
+* wireframe & points mode
+* bounding box drawing
+* object selection
+* camera support: tap to select object, drag to move camera, rotate with 2 fingers to rotate camera, pinch & spread to zoom in/out the camera
+* skeletal animations (collada)
+* ray collision detection
+* stereoscopic 3D
