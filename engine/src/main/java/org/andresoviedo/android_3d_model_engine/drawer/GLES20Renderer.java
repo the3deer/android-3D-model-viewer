@@ -398,8 +398,8 @@ class GLES20Renderer implements Renderer {
                 drawOrderBuffer.position(0);
                 GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), drawBufferType,
                         drawOrderBuffer);
-                GLUtil.checkGlError("glDrawElements");
-                if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
+                boolean error = GLUtil.checkGlError("glDrawElements");
+                if (drawUsingUnsignedInt && error) {
                     drawUsingUnsignedInt = false;
                 }
             }*/
@@ -438,8 +438,8 @@ class GLES20Renderer implements Renderer {
                 drawOrderBuffer.position(0);
                 GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), drawBufferType,
                         drawOrderBuffer);
-                GLUtil.checkGlError("glDrawElements");
-                if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
+                boolean error = GLUtil.checkGlError("glDrawElements");
+                if (drawUsingUnsignedInt && error) {
                     drawUsingUnsignedInt = false;
                 }
 
@@ -455,10 +455,10 @@ class GLES20Renderer implements Renderer {
             for (int i = 0; i < drawOrderBuffer.capacity(); i += drawSize) {
                 drawOrderBuffer.position(i);
                 GLES20.glDrawElements(drawMode, drawSize, drawBufferType, drawOrderBuffer);
-                GLUtil.checkGlError("glDrawElements");
-            }
-            if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
-                drawUsingUnsignedInt = false;
+                boolean error = GLUtil.checkGlError("glDrawElements");
+                if (drawUsingUnsignedInt && error) {
+                    drawUsingUnsignedInt = false;
+                }
             }
         }
     }
@@ -472,8 +472,8 @@ class GLES20Renderer implements Renderer {
             int drawSizePolygon = drawPart[2];
             drawOrderBuffer.position(vertexPos);
             GLES20.glDrawElements(drawModePolygon, drawSizePolygon, drawBufferType, drawOrderBuffer);
-            GLUtil.checkGlError("glDrawElements");
-            if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
+            boolean error = GLUtil.checkGlError("glDrawElements");
+            if (drawUsingUnsignedInt && error) {
                 drawUsingUnsignedInt = false;
             }
         }
