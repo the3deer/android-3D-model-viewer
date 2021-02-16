@@ -9,9 +9,12 @@ import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Element;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.util.android.GLUtil;
+import org.andresoviedo.util.io.IOUtils;
 
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -416,6 +419,7 @@ class GLES20Renderer implements Renderer {
                 Element element = obj.getElements().get(i);
                 drawOrderBuffer = element.getIndexBuffer();
 
+
                 // log event
                 if (id != flags.get(element)) {
                     Log.v("GLES20Renderer", "Rendering element " + i + "....  " + element);
@@ -427,10 +431,22 @@ class GLES20Renderer implements Renderer {
                 if (element.getMaterial() != null) {
                     if (!supportsColors()) {
                         setUniform4(element.getMaterial().getColor() != null ? element.getMaterial().getColor() :
-                                obj.getColor() != null? obj.getColor() : DEFAULT_COLOR, "vColor");
+                                obj.getColor() != null ? obj.getColor() : DEFAULT_COLOR, "vColor");
                     }
                     if (element.getMaterial().getTextureId() != -1 && supportsTextures()) {
                         setTexture(element.getMaterial().getTextureId());
+                    }
+                }
+
+                if(drawUsingUnsignedInt == false){
+                    ShortBuffer indexShortBuffer = null;
+                    drawOrderBuffer.position(0);
+                    if (indexShortBuffer == null && drawOrderBuffer != null) {
+                        indexShortBuffer = IOUtils.createShortBuffer(((IntBuffer) drawOrderBuffer).capacity());
+                        for (int j = 0; j < indexShortBuffer.capacity(); j++) {
+                            indexShortBuffer.put((short) ((IntBuffer) drawOrderBuffer).get(j));
+                        }
+                        drawOrderBuffer = indexShortBuffer;
                     }
                 }
 
