@@ -54,7 +54,7 @@ but at least it's opened to anyone who wants to contribute or don't want to star
 
 As this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs;
 but I will try to continue improving the app and adding more features. So please send me your comments, suggestions or
-complains by opening an [issue](https://github.com/andresoviedo/android-3D-model-viewer/issues) or email me to andresoviedo@gmail.com.
+complains by opening an [issue](https://github.com/the3deers/android-3D-model-viewer/issues) or email me to andresoviedo@gmail.com.
 
 The app comes with some included 3D models that have different licenses.
 
@@ -148,14 +148,14 @@ Glases
 
 You may need one of this glasses to view models in 3D virtual reality.
 
-[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/glasses-3d.jpg">](https://amzn.to/2E8LhxC)
-[<img src="https://raw.githubusercontent.com/andresoviedo/android-3D-model-viewer/master/market/cardboard-3d.jpg">](https://amzn.to/2E8M1Tq)
+[<img src="https://raw.githubusercontent.com/the3deers/android-3D-model-viewer/master/market/glasses-3d.jpg">](https://amzn.to/2E8LhxC)
+[<img src="https://raw.githubusercontent.com/the3deers/android-3D-model-viewer/master/market/cardboard-3d.jpg">](https://amzn.to/2E8M1Tq)
 
 
 Documentation
 =============
 
-https://github.com/andresoviedo/android-3D-model-viewer/wiki
+https://github.com/the3deers/android-3D-model-viewer/wiki
 
 
 Acknowledgement
@@ -192,6 +192,9 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.1.1 (28/10/2021)
+  - (f) google play required library upgrades
+  - (f) spanish menu fixed
 - 3.1.0 (10/10/2020)
   - (n) skybox
   - (f) deleted unlicensed assets

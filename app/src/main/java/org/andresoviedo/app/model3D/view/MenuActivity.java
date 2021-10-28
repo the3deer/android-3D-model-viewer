@@ -35,7 +35,7 @@ import java.util.Map;
 
 public class MenuActivity extends ListActivity {
 
-    private static final String REPO_URL = "https://github.com/andresoviedo/android-3D-model-viewer/raw/master/models/index";
+    private static final String REPO_URL = "https://github.com/the3deers/android-3D-model-viewer/raw/master/models/index";
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1000;
     private static final int REQUEST_INTERNET_ACCESS = 1001;
     private static final int REQUEST_READ_CONTENT_PROVIDER = 1002;
@@ -48,7 +48,7 @@ public class MenuActivity extends ListActivity {
 
 
     private enum Action {
-        LOAD_MODEL, GITHUB, SETTINGS, HELP, ABOUT, EXIT, UNKNOWN, DEMO
+        LOAD_MODEL, CARGAR_MODELO, GITHUB, SETTINGS, HELP, AYUDA, ABOUT, ACERCA, EXIT, SALIR, UNKNOWN, DEMO
     }
 
     /**
@@ -84,18 +84,21 @@ public class MenuActivity extends ListActivity {
                     MenuActivity.this.startActivity(demoIntent);
                     break;
                 case GITHUB:
-                    AndroidUtils.openUrl(this, "https://github.com/andresoviedo/android-3D-model-viewer");
+                    AndroidUtils.openUrl(this, "https://github.com/the3deers/android-3D-model-viewer");
                     break;
                 case LOAD_MODEL:
+                case CARGAR_MODELO:
                     loadModel();
                     break;
                 case ABOUT:
+                case ACERCA:
                     Intent aboutIntent = new Intent(MenuActivity.this.getApplicationContext(), TextActivity.class);
                     aboutIntent.putExtra("title", selectedItem);
                     aboutIntent.putExtra("text", getResources().getString(R.string.about_text));
                     MenuActivity.this.startActivity(aboutIntent);
                     break;
                 case HELP:
+                case AYUDA:
                     Intent helpIntent = new Intent(MenuActivity.this.getApplicationContext(), TextActivity.class);
                     helpIntent.putExtra("title", selectedItem);
                     helpIntent.putExtra("text", getResources().getString(R.string.help_text));
@@ -104,6 +107,7 @@ public class MenuActivity extends ListActivity {
                 case SETTINGS:
                     break;
                 case EXIT:
+                case SALIR:
                     MenuActivity.this.finish();
                     break;
                 case UNKNOWN:
@@ -119,15 +123,15 @@ public class MenuActivity extends ListActivity {
 
     private void loadModel() {
         ContentUtils.showListDialog(this, "File Provider", new String[]{"Samples", "Repository",
-                "File Explorer", "Android Explorer"}, (DialogInterface dialog, int which) -> {
+                "Android Explorer", "File Explorer (Android <= 10)"}, (DialogInterface dialog, int which) -> {
             if (which == 0) {
                 loadModelFromAssets();
             } else if (which == 1) {
                 loadModelFromRepository();
             } else if (which == 2) {
-                loadModelFromSdCard();
-            } else {
                 loadModelFromContentProvider();
+            } else {
+                loadModelFromSdCard();
             }
         });
 

@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
     package="org.andresoviedo.dddmodel2"
-    android:versionCode="29"
-    android:versionName="3.1.0">
+    android:versionCode="30"
+    android:versionName="3.1.1">
 
     <uses-sdk
         tools:overrideLibrary="android.support.compat, android.arch.lifecycle" />
@@ -19,11 +19,13 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" android:largeHeap="true"
+        android:theme="@style/AppTheme" 
+	    android:largeHeap="true"
         android:requestLegacyExternalStorage="true">
         <activity
             android:name="org.andresoviedo.app.model3D.MainActivity"
-            android:label="@string/app_name" >
+	        android:exported="true"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
