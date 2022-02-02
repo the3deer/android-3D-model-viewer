@@ -116,7 +116,7 @@ public class MeshData {
     private final String id;
     private final String name;
 
-    private final List<Vertex> verticesAttributes;
+    private List<Vertex> verticesAttributes;
 
     private final List<float[]> vertices;
     private final List<float[]> textures;
@@ -140,8 +140,9 @@ public class MeshData {
     private final String materialFile;
 
     // smoothing
-    private List<float[]> normalsOriginal;
     private final Map<String, List<Vertex>> smoothingGroups;
+    private List<float[]> normalsOriginal;
+    private List<Vertex> verticesAttributesOriginal;
 
     public MeshData(String id, String name, List<float[]> vertices, List<float[]> normals, List<float[]> colors, List<float[]> textures, List<Vertex> verticesAttributes,
                     List<Element> elements, String materialFile, Map<String, List<Vertex>> smoothingGroups) {
@@ -180,10 +181,20 @@ public class MeshData {
 
     public void smooth() {
 
-        // save normals to allow rollback operation
+        // backup current data
         this.normalsOriginal = new ArrayList<>(this.normals.size());
         for (int i = 0; i < this.normals.size(); i++) {
             this.normalsOriginal.add(this.normals.get(i).clone());
+        }
+        if (this.verticesAttributes != null) {
+            try {
+                this.verticesAttributesOriginal = new ArrayList<>(this.verticesAttributes.size());
+                for (int i = 0; i < this.verticesAttributes.size(); i++) {
+                    this.verticesAttributesOriginal.add(this.verticesAttributes.get(i).clone());
+                }
+            } catch (CloneNotSupportedException e) {
+                // this should never happen
+            }
         }
 
         // check we have normals to smooth
@@ -192,10 +203,21 @@ public class MeshData {
         } else {
             smoothGroups();
         }
+
+        // refresh normals buffer
+        refreshNormalsBuffer();
     }
 
     public void unSmooth() {
-        this.normals = normalsOriginal;
+        if (this.normalsOriginal != null) {
+            this.normals.clear();
+            this.normals = this.normalsOriginal;
+        }
+        if (this.verticesAttributesOriginal != null) {
+            this.verticesAttributes.clear();
+            this.verticesAttributes = verticesAttributesOriginal;
+        }
+
     }
 
     private void smoothAuto() {
@@ -285,21 +307,21 @@ public class MeshData {
 
         Log.i("MeshData", "Fixing missing or wrong normals...");
 
-            // check there is normals to fix
-            if (this.normals == null || this.normals.isEmpty()) {
+        // check there is normals to fix
+        if (this.normals == null || this.normals.isEmpty()) {
 
-                // write new normals
-                generateNormals();
+            // write new normals
+            generateNormals();
 
+        } else {
+
+            // fix missing or wrong
+            if (this.elements != null) {
+                fixNormalsForElements();
             } else {
-
-                // fix missing or wrong
-                if (this.elements != null) {
-                    fixNormalsForElements();
-                } else {
-                    fixNormalsForArrays();
-                }
+                fixNormalsForArrays();
             }
+        }
     }
 
 
@@ -615,9 +637,8 @@ public class MeshData {
         // log event
         Log.i("MeshData", "Auto smoothing normals for all elements...");
 
-        // smoothed normal
-        final Map<Integer, float[]> smoothNormals = new HashMap<>();
-        final Map<Integer, Integer> vertexToNormalMap = new HashMap<>();
+        // list of normals associated to the vertex (vertexId --> set of normals)
+        final Map<Integer, List<float[]>> vertexNormals = new HashMap<>();
 
         for (Element element : getElements()) {
 
@@ -630,47 +651,89 @@ public class MeshData {
                 final int vertexIndex = this.verticesAttributes.get(idx).getVertexIndex();
                 final int normalIndex = this.verticesAttributes.get(idx).getNormalIndex();
 
-                // initialize smoothed normal
-                float[] smoothNormal = smoothNormals.get(vertexIndex);
-                if (smoothNormal == null) {
-                    try {
-                        float[] normal = this.normals.get(normalIndex);
-                        smoothNormal = normal.clone();
-                        smoothNormals.put(vertexIndex, smoothNormal);
-                    } catch (Exception e) {
-                        Log.e("MeshData", e.getMessage());
-                    }
-                    vertexToNormalMap.put(vertexIndex, normalIndex);
-                    continue;
-                }
-
-                // if same normal, do nothing
+                // current normal
                 final float[] normal = this.normals.get(normalIndex);
-                if (normal == smoothNormal) {
-                    this.verticesAttributes.get(i).setNormalIndex(normalIndex);
-                    continue;
+
+                // add normal to normals list per vertex
+                List<float[]> normals = vertexNormals.get(vertexIndex);
+                if (normals == null) {
+                    normals = new ArrayList<>();
+                    normals.add(normal);
+                    vertexNormals.put(vertexIndex, normals);
+                } else {
+                    normals.add(normal);
                 }
-
-                // if same normal values, point to already existing normal
-                if (Arrays.equals(normal, smoothNormal)) {
-                    this.verticesAttributes.get(i).setNormalIndex(normalIndex);
-                    continue;
-                }
-
-                // smooth normal
-                final float[] newSmoothNormal = Math3DUtils.mean(smoothNormal, normal);
-                Math3DUtils.normalize(newSmoothNormal);
-
-                // update smoothed normal
-                smoothNormal[0] = newSmoothNormal[0];
-                smoothNormal[1] = newSmoothNormal[1];
-                smoothNormal[2] = newSmoothNormal[2];
-
-                // replace with smoothed normal
-                this.normals.set(normalIndex, smoothNormal);
-                this.verticesAttributes.get(i).setNormalIndex(normalIndex);
             }
         }
+
+        // list of saved smoothed normals
+        final Map<Integer, float[]> vertexSmooths = new HashMap<>();
+        for (Map.Entry<Integer,List<float[]>> entry : vertexNormals.entrySet()) {
+            // if same normal, do nothing
+            final List<float[]> normals = entry.getValue();
+
+            // if only 1 normal per vertex, no need to do anything
+            if (normals.size() == 1) {
+                vertexSmooths.put(entry.getKey(), normals.get(0));
+                continue;
+            };
+
+            // otherwise, calculate normal average and save
+            final float[] smoothNormal = Math3DUtils.mean(normals);
+            //final float[] smoothNormal = new float[]{1,0,0};
+            Math3DUtils.normalize(smoothNormal);
+
+            vertexSmooths.put(entry.getKey(), smoothNormal);
+        }
+
+        this.normals.clear();
+        for (Element element : getElements()) {
+
+            for (int i = 0; i < element.getIndices().size(); i++) {
+
+                // next index
+                final int idx = element.getIndices().get(i);
+
+                // next vertex attributes
+                final int vertexIndex = this.verticesAttributes.get(idx).getVertexIndex();
+                final int normalIndex = this.verticesAttributes.get(idx).getNormalIndex();
+
+                float[] smoothNormal = vertexSmooths.get(vertexIndex);
+                //if (smoothNormal == null) smoothNormal = new float[]{0,1,0};
+                this.verticesAttributes.get(idx).setNormalIndex(this.normals.size());
+                this.normals.add(smoothNormal);
+            }
+        }
+
+//        // last, we update smooth to all references normals
+//        int count = 0;
+//        for (Map.Entry<Integer,float[]> entry : vertexSmooths.entrySet()) {
+//            final float[] smoothNormal = entry.getValue();
+//            final List<float[]> normals = vertexNormals.get(entry.getKey());
+//            for (int j = 0; j < normals.size(); j++) {
+//                normals.get(j)[0] = smoothNormal[0];
+//                normals.get(j)[1] = smoothNormal[1];
+//                normals.get(j)[2] = smoothNormal[2];
+//                count++;
+//
+////                float[] check = search(this.normals, normals.get(j));
+////                if (check == null || !Arrays.equals(check, normals.get(j))){
+////                    Log.e("MeshData","search returned ko");
+////                }
+//            }
+//
+//        }
+
+        //Log.i("MeshData", "Smoothing fixed a total of " + count + " normals");
+    }
+
+    private static float[] search(List<float[]> list, float[] search){
+        for (int i=0; i<list.size();i++){
+            if (list.get(i) == search){
+                return list.get(i);
+            }
+        }
+        return null;
     }
 
     public void validate() {
@@ -743,15 +806,35 @@ public class MeshData {
     }
 
     public void refreshNormalsBuffer() {
-        if (this.normalsBuffer == null || this.normals.isEmpty() || this.normalsBuffer.capacity() != this.normals.size() * 3) {
+        if (this.normalsBuffer == null || this.normals.isEmpty()) {
             Log.e("MeshData", "Can't refresh normals buffer. Either normals or normalsBuffer is empty");
             return;
+        } else if (this.verticesAttributes != null && this.verticesAttributes.size() * 3 != this.normalsBuffer.capacity()) {
+            Log.e("MeshData", "Can't refresh normals buffer. Buffer size doesn't match actual data");
+        } else if (this.verticesAttributes == null && this.normals.size() * 3 != this.normalsBuffer.capacity()) {
+            Log.e("MeshData", "Can't refresh normals buffer. Buffer size doesn't match actual data");
         }
+
         Log.i("MeshData", "Refreshing normals buffer...");
-        for (int i = 0; i < this.normals.size(); i++) {
-            this.normalsBuffer.put(i * 3, this.normals.get(i)[0]);
-            this.normalsBuffer.put(i * 3 + 1, this.normals.get(i)[1]);
-            this.normalsBuffer.put(i * 3 + 2, this.normals.get(i)[2]);
+        if (this.verticesAttributes != null) {
+            for (int i = 0; i < verticesAttributes.size(); i++) {
+                float[] normal = WRONG_NORMAL; // no normal in case of error
+                final int index = verticesAttributes.get(i).getNormalIndex();
+                if (index >= 0 && index < normals.size()) {
+                    normal = this.normals.get(index);
+                } else {
+                    Log.e("MeshData", "Wrong normal index: " + index);
+                }
+                this.normalsBuffer.put(i * 3, normal[0]);
+                this.normalsBuffer.put(i * 3 + 1, normal[1]);
+                this.normalsBuffer.put(i * 3 + 2, normal[2]);
+            }
+        } else {
+            for (int i = 0; i < this.normals.size(); i++) {
+                this.normalsBuffer.put(i * 3, this.normals.get(i)[0]);
+                this.normalsBuffer.put(i * 3 + 1, this.normals.get(i)[1]);
+                this.normalsBuffer.put(i * 3 + 2, this.normals.get(i)[2]);
+            }
         }
     }
 

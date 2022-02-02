@@ -1,6 +1,7 @@
 package org.andresoviedo.app.model3D.view;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
@@ -26,8 +27,10 @@ import org.andresoviedo.util.view.TextActivity;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,7 +38,7 @@ import java.util.Map;
 
 public class MenuActivity extends ListActivity {
 
-    private static final String REPO_URL = "https://github.com/the3deers/android-3D-model-viewer/raw/master/models/index";
+    private static final URL REPO_URL = createURL("https://github.com/the3deers/android-3D-model-viewer/raw/master/models/index");
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1000;
     private static final int REQUEST_INTERNET_ACCESS = 1001;
     private static final int REQUEST_READ_CONTENT_PROVIDER = 1002;
@@ -44,7 +47,7 @@ public class MenuActivity extends ListActivity {
     private static final int REQUEST_CODE_OPEN_MATERIAL = 1102;
     private static final int REQUEST_CODE_OPEN_TEXTURE = 1103;
     private static final int REQUEST_CODE_ADD_FILES = 1200;
-    private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae)";
+    private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae|index)";
 
 
     private enum Action {
@@ -56,6 +59,13 @@ public class MenuActivity extends ListActivity {
      */
     private Map<String, Object> loadModelParameters = new HashMap<>();
 
+    private static URL createURL(String url) {
+        try {
+            return new URL(url);
+        } catch(MalformedURLException e){
+            throw new RuntimeException(e);
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,7 +137,7 @@ public class MenuActivity extends ListActivity {
             if (which == 0) {
                 loadModelFromAssets();
             } else if (which == 1) {
-                loadModelFromRepository();
+                loadModelFromRepository(REPO_URL);
             } else if (which == 2) {
                 loadModelFromContentProvider();
             } else {
@@ -147,15 +157,16 @@ public class MenuActivity extends ListActivity {
                 });
     }
 
-    private void loadModelFromRepository() {
+    private void loadModelFromRepository(URL url) {
         if (AndroidUtils.checkPermission(this, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
-            new LoadRepoIndexTask().execute();
+            new LoadRepoIndexTask().execute(url);
         }
     }
 
-    class LoadRepoIndexTask extends AsyncTask<Void, Integer, List<String>> {
+    class LoadRepoIndexTask extends AsyncTask<URL, Integer, List<String>> {
 
         private final ProgressDialog dialog;
+        private AlertDialog.Builder chooser;
 
         public LoadRepoIndexTask() {
             this.dialog = new ProgressDialog(MenuActivity.this);
@@ -170,8 +181,36 @@ public class MenuActivity extends ListActivity {
         }
 
         @Override
-        protected List<String> doInBackground(Void... voids) {
-            return ContentUtils.getIndex(REPO_URL);
+        protected List<String> doInBackground(URL... urls) {
+
+            // model files
+            final List<String> files = ContentUtils.readLines(urls[0].toString());
+
+            // optional icons
+            Map<String, byte[]> icons = null;
+            try {
+                icons = ContentUtils.readFiles(new URL(urls[0].toString()+".icons.zip"));
+            } catch (MalformedURLException ex) {
+                Log.e("MenuActivity", ex.getMessage(), ex);
+            }
+
+            // chooser
+            chooser = ContentUtils.createChooserDialog(MenuActivity.this, "Select file", null,
+                    files, icons, SUPPORTED_FILE_TYPES_REGEX,
+                    (String file) -> {
+                        if (file != null) {
+                            if (file.endsWith(".index")) {
+                                try {
+                                    loadModelFromRepository(new URL(file));
+                                } catch (MalformedURLException e) {
+                                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            } else {
+                                launchModelRendererActivity(Uri.parse(file));
+                            }
+                        }
+                    });
+            return files;
         }
 
         @Override
@@ -183,13 +222,8 @@ public class MenuActivity extends ListActivity {
                 Toast.makeText(MenuActivity.this, "Couldn't load repo index", Toast.LENGTH_LONG).show();
                 return;
             }
-            ContentUtils.createChooserDialog(MenuActivity.this, "Select file", null,
-                    strings, SUPPORTED_FILE_TYPES_REGEX,
-                    (String file) -> {
-                        if (file != null) {
-                            launchModelRendererActivity(Uri.parse(file));
-                        }
-                    });
+
+            chooser.create().show();
         }
     }
 
@@ -239,7 +273,7 @@ public class MenuActivity extends ListActivity {
                     loadModelFromContentProvider();
                     break;
                 case REQUEST_INTERNET_ACCESS:
-                    loadModelFromRepository();
+                    loadModelFromRepository(REPO_URL);
                     break;
                 case REQUEST_CODE_LOAD_MODEL:
                     if (resultCode != RESULT_OK) {

@@ -1,11 +1,12 @@
 package org.andresoviedo.android_3d_model_engine.services.collada.entities;
 
-public class Vertex {
+import androidx.annotation.NonNull;
+
+public class Vertex implements Cloneable {
 
     private static final int NO_INDEX = -1;
 
-    private int vertexIndex = 0;
-    private float[] position;
+    private final int vertexIndex;
     private int textureIndex = NO_INDEX;
     private int normalIndex = NO_INDEX;
     private int colorIndex = NO_INDEX;
@@ -14,11 +15,6 @@ public class Vertex {
 
     public Vertex(int vertexIndex) {
         this.vertexIndex = vertexIndex;
-    }
-
-    @Deprecated
-    public Vertex(float[] position) {
-        this.position = position;
     }
 
     public int getVertexIndex() {
@@ -37,10 +33,6 @@ public class Vertex {
         this.normalIndex = normalIndex;
     }
 
-    public float[] getPosition() {
-        return position;
-    }
-
     public int getTextureIndex() {
         return textureIndex;
     }
@@ -51,10 +43,6 @@ public class Vertex {
 
     public void setWeightsData(VertexSkinData weightsData) {
         this.weightsData = weightsData;
-    }
-
-    public void setPosition(float[] position) {
-        this.position = position;
     }
 
     public void setColorIndex(int colorIndex) {
@@ -83,5 +71,11 @@ public class Vertex {
         result = 31 * result + textureIndex;
         result = 31 * result + normalIndex;
         return result;
+    }
+
+    @NonNull
+    @Override
+    protected Vertex clone() throws CloneNotSupportedException {
+        return (Vertex) super.clone();
     }
 }

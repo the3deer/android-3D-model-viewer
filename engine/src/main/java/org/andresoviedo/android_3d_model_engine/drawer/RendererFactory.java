@@ -39,9 +39,7 @@ public class RendererFactory {
     /**
      * list of opengl drawers
      */
-    private Map<String, GLES20Renderer> drawers = new HashMap<>();
-
-    private final String[] shaderIdTemp = new String[3];
+    private Map<Shader, GLES20Renderer> drawers = new HashMap<>();
 
     public RendererFactory(Context context) throws IllegalAccessException, IOException {
 
@@ -68,17 +66,17 @@ public class RendererFactory {
         boolean isColoured = drawColors && obj != null && (obj.getColorsBuffer() != null || obj
                 .getColorsBuffer() != null);
 
-        final String[] shaderId = getShaderId(usingSkyBox, isAnimated, isUsingLights, isTextured, isColoured);
+        final Shader shader = getShader(usingSkyBox, isAnimated, isUsingLights, isTextured, isColoured);
 
         // get cached drawer
-        GLES20Renderer drawer = drawers.get(shaderId[0]);
+        GLES20Renderer drawer = drawers.get(shader);
         if (drawer != null) return drawer;
 
         // build drawer
-        String vertexShaderCode = shadersCode.get(shaderId[1]);
-        String fragmentShaderCode = shadersCode.get(shaderId[2]);
+        String vertexShaderCode = shadersCode.get(shader.vertexShaderCode);
+        String fragmentShaderCode = shadersCode.get(shader.fragmentShaderCode);
         if (vertexShaderCode == null || fragmentShaderCode == null) {
-            Log.e("RendererFactory", "Shaders not found for " + shaderId[0]);
+            Log.e("RendererFactory", "Shaders not found for " + shader.id);
             return null;
         }
 
@@ -94,68 +92,51 @@ public class RendererFactory {
         Log.v("RendererFactory", "---------- Fragment shader ----------\n");
         Log.v("RendererFactory", fragmentShaderCode);
         Log.v("RendererFactory", "-------------------------------------\n");
-        drawer = GLES20Renderer.getInstance(shaderId[0], vertexShaderCode, fragmentShaderCode);
+        drawer = GLES20Renderer.getInstance(shader.id, vertexShaderCode, fragmentShaderCode);
 
         // cache drawer
-        drawers.put(shaderId[0], drawer);
+        drawers.put(shader, drawer);
 
         // return drawer
         return drawer;
     }
 
     @NonNull
-    private String[] getShaderId(boolean isUsingSkyBox, boolean isAnimated, boolean isUsingLights, boolean isTextured, boolean
+    private Shader getShader(boolean isUsingSkyBox, boolean isAnimated, boolean isUsingLights, boolean isTextured, boolean
             isColoured) {
 
         if (isUsingSkyBox){
-            shaderIdTemp[0]="shader_skybox_";
-            shaderIdTemp[1]="shader_skybox_vert";
-            shaderIdTemp[2]="shader_skybox_frag";
-            return shaderIdTemp;
+            return Shader.SKYBOX;
         }
+
+        Shader ret = null;
         if (isAnimated){
             if (isUsingLights){
                 if (isTextured){
                     if (isColoured){
-                        shaderIdTemp[0]="shader_anim_light_texture_colors_";
-                        shaderIdTemp[1]="shader_anim_light_texture_colors_vert";
-                        shaderIdTemp[2]="shader_anim_light_texture_colors_frag";
+                        ret = Shader.ANIM_LIGHT_TEXTURE_COLORS;
                     } else {
-                        shaderIdTemp[0]="shader_anim_light_texture_";
-                        shaderIdTemp[1]="shader_anim_light_texture_vert";
-                        shaderIdTemp[2]="shader_anim_light_texture_frag";
+                        ret = Shader.ANIM_LIGHT_TEXTURE;
                     }
                 } else{
                     if (isColoured){
-                        shaderIdTemp[0]="shader_anim_light_colors_";
-                        shaderIdTemp[1]="shader_anim_light_colors_vert";
-                        shaderIdTemp[2]="shader_anim_light_colors_frag";
+                        ret = Shader.ANIM_LIGHT_COLORS;
                     } else {
-                        shaderIdTemp[0]="shader_anim_light_";
-                        shaderIdTemp[1]="shader_anim_light_vert";
-                        shaderIdTemp[2]="shader_anim_light_frag";
+                        ret = Shader.ANIM_LIGHT;
                     }
                 }
             } else{
                 if (isTextured){
                     if (isColoured){
-                        shaderIdTemp[0]="shader_anim_texture_colors_";
-                        shaderIdTemp[1]="shader_anim_texture_colors_vert";
-                        shaderIdTemp[2]="shader_anim_texture_colors_frag";
+                        ret = Shader.ANIM_TEXTURE_COLORS;
                     } else {
-                        shaderIdTemp[0]="shader_anim_texture_";
-                        shaderIdTemp[1]="shader_anim_texture_vert";
-                        shaderIdTemp[2]="shader_anim_texture_frag";
+                        ret = Shader.ANIM_TEXTURE;
                     }
                 } else{
                     if (isColoured){
-                        shaderIdTemp[0]="shader_anim_colors_";
-                        shaderIdTemp[1]="shader_anim_colors_vert";
-                        shaderIdTemp[2]="shader_anim_colors_frag";
+                        ret = Shader.ANIM_COLORS;
                     } else {
-                        shaderIdTemp[0]="shader_anim_";
-                        shaderIdTemp[1]="shader_anim_vert";
-                        shaderIdTemp[2]="shader_anim_frag";
+                        ret = Shader.ANIM;
                     }
                 }
             }
@@ -163,50 +144,34 @@ public class RendererFactory {
             if (isUsingLights){
                 if (isTextured){
                     if (isColoured){
-                        shaderIdTemp[0]="shader_light_texture_colors_";
-                        shaderIdTemp[1]="shader_light_texture_colors_vert";
-                        shaderIdTemp[2]="shader_light_texture_colors_frag";
+                        ret = Shader.LIGHT_TEXTURE_COLORS;
                     } else {
-                        shaderIdTemp[0]="shader_light_texture_";
-                        shaderIdTemp[1]="shader_light_texture_vert";
-                        shaderIdTemp[2]="shader_light_texture_frag";
+                        ret = Shader.LIGHT_TEXTURE;
                     }
                 } else{
                     if (isColoured){
-                        shaderIdTemp[0]="shader_light_colors_";
-                        shaderIdTemp[1]="shader_light_colors_vert";
-                        shaderIdTemp[2]="shader_light_colors_frag";
+                        ret = Shader.LIGHT_COLORS;
                     } else {
-                        shaderIdTemp[0]="shader_light_";
-                        shaderIdTemp[1]="shader_light_vert";
-                        shaderIdTemp[2]="shader_light_frag";
+                        ret = Shader.LIGHT;
                     }
                 }
             } else{
                 if (isTextured){
                     if (isColoured){
-                        shaderIdTemp[0]="shader_texture_colors_";
-                        shaderIdTemp[1]="shader_texture_colors_vert";
-                        shaderIdTemp[2]="shader_texture_colors_frag";
+                        ret = Shader.TEXTURE_COLORS;
                     } else{
-                        shaderIdTemp[0]="shader_texture_";
-                        shaderIdTemp[1]="shader_texture_vert";
-                        shaderIdTemp[2]="shader_texture_frag";
+                        ret = Shader.TEXTURE;
                     }
                 } else{
                     if (isColoured){
-                        shaderIdTemp[0]="shader_colors_";
-                        shaderIdTemp[1]="shader_colors_vert";
-                        shaderIdTemp[2]="shader_colors_frag";
+                        ret = Shader.COLORS;
                     } else{
-                        shaderIdTemp[0]="shader_";
-                        shaderIdTemp[1]="shader_vert";
-                        shaderIdTemp[2]="shader_frag";
+                        ret = Shader.SHADER;
                     }
                 }
             }
         }
-        return shaderIdTemp;
+        return ret;
     }
 
     public Renderer getBoundingBoxDrawer() {

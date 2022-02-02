@@ -5,6 +5,7 @@ import android.opengl.Matrix;
 import org.andresoviedo.android_3d_model_engine.animation.JointTransform;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -355,6 +356,15 @@ public class Math3DUtils {
 
     public static float[] add(float[] a, float[] b) {
         return new float[]{a[0] + b[0], a[1] + b[1], a[2] + b[2]};
+    }
+
+    public static float[] mean(List<float[]> normals) {
+        float[] normal_mean = normals.get(0);
+        for (int i=1; i<normals.size() ; i++) {
+            float[] normal_next = normals.get(i);
+            normal_mean = mean(normal_mean, normal_next);
+        }
+        return normal_mean;
     }
 
     public static float[] mean(float[] a, float[] b) {

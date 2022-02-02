@@ -13,13 +13,14 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (10/10/2020)
+News (02/02/2022)
 =================
 
 * /¡\ repo moved to the3deers organization + MIT License 2020
-* New version released 3.1.0
-* Skybox + background extras
-* Collada support improved - fixed #147
+* New version released 3.2.0
+* Repository Explorer improved
+* Smoothing implementation fixed
+* Fixed memory leak
 
 
 
@@ -192,6 +193,10 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.2.0 (02/02/2022)
+  - (i) repository explorer improved - multiple index files
+  - (f) smoothing fixed
+  - (f) fixed renderer memory leak
 - 3.1.1 (28/10/2021)
   - (f) google play required library upgrades
   - (f) spanish menu fixed
