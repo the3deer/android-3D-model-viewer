@@ -94,9 +94,11 @@ Features
   - ray collision detection
   - stereoscopic 3D: anaglyph + cardboard
   - other:
-    - texture loader
-    - lightweight: only 1 Megabyte
     - file explorer
+    - repository explorer
+    - texture loader
+    - lightweight: only 1.3 Megabyte (embedded models excluded)
+
 
 
 Try it
@@ -186,6 +188,7 @@ Assets
  * toyplane     : Editorial Uses Only - https://blog.turbosquid.com/turbosquid-3d-model-license/#Editorial-Usage
  * skybox sea   : https://learnopengl.com/Advanced-OpenGL/Cubemaps
  * skybox sand  : Copyright 2012 Mobialia - https://github.com/mobialia/jmini3d
+ * repository (parts)  : Community contribution (Professsor S)
 
 
 ChangeLog
