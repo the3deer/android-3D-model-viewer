@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.Loader;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -373,5 +372,14 @@ public class ModelActivity extends Activity implements EventListener {
             }
         }
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (immersiveMode) {
+            toggleImmersive();
+        } else {
+            super.onBackPressed();
+        }
     }
 }
