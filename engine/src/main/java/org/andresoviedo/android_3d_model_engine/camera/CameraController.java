@@ -1,54 +1,89 @@
 package org.andresoviedo.android_3d_model_engine.camera;
 
-import android.util.Log;
-
 import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
-import org.andresoviedo.android_3d_model_engine.view.ModelRenderer;
+import org.andresoviedo.android_3d_model_engine.model.Projection;
+import org.andresoviedo.android_3d_model_engine.view.ViewEvent;
 import org.andresoviedo.util.event.EventListener;
 
 import java.util.EventObject;
 
 public final class CameraController implements EventListener {
 
+    private final Camera handlerDefault ;
+    private final Camera handlerIsometric;
+    private final Camera handlerOrtho;
+
     private final Camera camera;
+
+    private Camera handler;
     private int width;
     private int height;
 
     public CameraController(Camera camera) {
         this.camera = camera;
+        this.handlerDefault = new DefaultCamera(camera);
+        this.handlerIsometric = new IsometricCamera(camera);
+        this.handlerOrtho = new OrthographicCamera(camera);
+        this.handler = handlerDefault;
+    }
+
+    private void updateHandler(Projection projection) {
+        switch (projection) {
+            case PERSPECTIVE:
+                this.handler = handlerDefault;
+                break;
+            case ISOMETRIC:
+                this.handler = handlerIsometric;
+                break;
+            case ORTHOGRAPHIC:
+                this.handler = handlerOrtho;
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported projection: "+projection);
+        }
+        this.handler.enable();
     }
 
     @Override
     public boolean onEvent(EventObject event) {
-        if (event instanceof ModelRenderer.ViewEvent){
-            this.width = ((ModelRenderer.ViewEvent) event).getWidth();
-            this.height = ((ModelRenderer.ViewEvent) event).getHeight();
-        }
-        else if (event instanceof TouchEvent) {
+        if (event instanceof ViewEvent) {
+            final ViewEvent viewEvent = (ViewEvent) event;
+            switch (viewEvent.getCode()) {
+                case SURFACE_CREATED:
+                case SURFACE_CHANGED:
+                    this.width = ((ViewEvent) event).getWidth();
+                    this.height = ((ViewEvent) event).getHeight();
+                    break;
+                case PROJECTION_CHANGED:
+                    camera.setProjection(viewEvent.getProjection());
+                    updateHandler(viewEvent.getProjection());
+                    break;
+            }
+        } else if (event instanceof TouchEvent) {
             TouchEvent touchEvent = (TouchEvent) event;
-            switch (touchEvent.getAction()){
+            switch (touchEvent.getAction()) {
                 case CLICK:
                     break;
                 case MOVE:
                     float dx1 = touchEvent.getdX();
                     float dy1 = touchEvent.getdY();
                     float max = Math.max(width, height);
-                    Log.v("CameraController", "Translating camera (dx,dy) '" + dx1 + "','" + dy1 + "'...");
                     dx1 = (float) (dx1 / max * Math.PI * 2);
                     dy1 = (float) (dy1 / max * Math.PI * 2);
-                    camera.translateCamera(dx1, dy1);
+                    handler.translateCamera(dx1, dy1);
                     break;
                 case PINCH:
-                    float zoomFactor = ((TouchEvent) event).getZoom() / 10;
-                    Log.v("CameraController", "Zooming '" + zoomFactor + "'...");
-                    camera.MoveCameraZ(zoomFactor);
+                    final float zoomFactor = ((TouchEvent) event).getZoom();
+                    final float distance = camera.getDistance();
+                    handler.MoveCameraZ(-0.001f * distance * zoomFactor);
+                    break;
+                case ROTATE:
+                    float rotation = touchEvent.getAngle();
+                    handler.Rotate(rotation);
                     break;
                 case SPREAD:
-                    float[] rotation = touchEvent.getRotation();
-                    Log.v("CameraController", "Rotating camera '" + Math.signum(rotation[2]) + "'...");
-                    camera.Rotate((float) (Math.signum(rotation[2]) / Math.PI) / 4);
-                    break;
+                    // TODO:
             }
         }
         return true;

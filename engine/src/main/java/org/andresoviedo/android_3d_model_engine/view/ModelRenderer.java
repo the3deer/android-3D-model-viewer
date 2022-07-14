@@ -14,6 +14,7 @@ import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
 import org.andresoviedo.android_3d_model_engine.model.Element;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
+import org.andresoviedo.android_3d_model_engine.model.Projection;
 import org.andresoviedo.android_3d_model_engine.objects.Axis;
 import org.andresoviedo.android_3d_model_engine.objects.BoundingBox;
 import org.andresoviedo.android_3d_model_engine.objects.Grid;
@@ -31,7 +32,6 @@ import org.andresoviedo.util.event.EventListener;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,53 +41,11 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class ModelRenderer implements GLSurfaceView.Renderer {
 
-    public static class ViewEvent extends EventObject {
-
-        private final Code code;
-        private final int width;
-        private final int height;
-
-        public enum Code {SURFACE_CREATED, SURFACE_CHANGED}
-
-        public ViewEvent(Object source, Code code, int width, int height) {
-            super(source);
-            this.code = code;
-            this.width = width;
-            this.height = height;
-        }
-
-        public Code getCode() {
-            return code;
-        }
-
-        public int getWidth() {
-            return width;
-        }
-
-        public int getHeight() {
-            return height;
-        }
-    }
-
-    public static class FPSEvent extends EventObject {
-
-        private final int fps;
-
-        public FPSEvent(Object source, int fps) {
-            super(source);
-            this.fps = fps;
-        }
-
-        public int getFps() {
-            return fps;
-        }
-    }
-
     private final static String TAG = ModelRenderer.class.getSimpleName();
 
     // grid
-    private static final float GRID_WIDTH = 100f;
-    private static final float GRID_SIZE = 10f;
+    private static final float GRID_WIDTH = 1f;
+    private static final float GRID_SIZE = 0.1f;
     private static final float[] GRID_COLOR = {0.25f, 0.25f, 0.25f, 0.5f};
 
     // blending
@@ -96,7 +54,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     private static final float[] BLENDING_MASK_FORCED = {1.0f, 1.0f, 1.0f, 0.5f};
 
     // frustrum - nearest pixel
-    private static final float near = 1.0f;
+    private static final float near = 1/1000f;
     // frustrum - fartest pixel
     private static final float far = 5000f;
 
@@ -120,6 +78,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     // height of the screen
     private int height;
     private float ratio;
+    // zoom
+    private float zoom = 0.5f;
 
     /**
      * Drawer factory to get right renderer/shader based on object attributes
@@ -159,7 +119,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
     // Decoration
     private final List<Object3DData> extras = new ArrayList<>();
-    private final Object3DData axis = Axis.build().setId("axis").setSolid(false).setScale(new float[]{50, 50, 50});
+    private final Object3DData axis = Axis.build().setId("axis").setSolid(false);
     private final Object3DData gridx = Grid.build(-GRID_WIDTH, 0f, -GRID_WIDTH, GRID_WIDTH, 0f, GRID_WIDTH, GRID_SIZE)
             .setColor(GRID_COLOR).setId("grid-x").setSolid(false);
     private final Object3DData gridy = Grid.build(-GRID_WIDTH, -GRID_WIDTH, 0f, GRID_WIDTH, GRID_WIDTH, 0f, GRID_SIZE)
@@ -205,6 +165,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
      * Switch to akternate drawing of right and left image
      */
     private boolean anaglyphSwitch = false;
+    /**
+     * Switch to alternate projection
+     */
+    private Projection projection = Projection.PERSPECTIVE;
 
     /**
      * Skeleton Animator
@@ -239,6 +203,56 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
     public float getFar() {
         return far;
+    }
+
+    public void toggleProjection() {
+        switch (this.projection) {
+            case PERSPECTIVE:
+                setProjection(Projection.ISOMETRIC);
+                break;
+            case ISOMETRIC:
+                setProjection(Projection.ORTHOGRAPHIC);
+                break;
+            case ORTHOGRAPHIC:
+                setProjection(Projection.PERSPECTIVE);
+                break;
+        }
+    }
+
+    public Projection getProjection(){
+        return this.projection;
+    }
+
+    public void setProjection(Projection projection){
+        Log.d(TAG, "onSurfaceChanged: projection: [" + projection + "]");
+
+        this.projection = projection;
+
+        final ViewEvent eventObject;
+        switch (projection){
+            case PERSPECTIVE:
+                // Each individual eye has a horizontal FOV of about 135 degrees
+                // and a vertical FOV of just over 180 degrees.
+                Matrix.frustumM(projectionMatrix, 0, -ratio*getNear(), ratio*getNear(), -getNear(), getNear(), getNear(), getFar());
+                Matrix.frustumM(projectionMatrixRight, 0, -ratio*getNear(), ratio*getNear(), -getNear(), getNear(), getNear(), getFar());
+                Matrix.frustumM(projectionMatrixLeft, 0, -ratio*getNear(), ratio*getNear(), -getNear(), getNear(), getNear(), getFar());
+                eventObject = new ViewEvent(this, ViewEvent.Code.PROJECTION_CHANGED, width, height);
+                break;
+            case ORTHOGRAPHIC:
+            case ISOMETRIC:
+                //Matrix.orthoM(projectionMatrix, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
+                Matrix.orthoM(projectionMatrix, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
+                Matrix.orthoM(projectionMatrixRight, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
+                Matrix.orthoM(projectionMatrixLeft, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
+                eventObject = new ViewEvent(this, ViewEvent.Code.PROJECTION_CHANGED, width, height);
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+        Log.i("ModelRenderer", "Toggled projection: " + this.projection);
+
+        eventObject.setProjection(this.projection);
+        AndroidUtils.fireEvent(listeners, eventObject);
     }
 
     public void toggleLights() {
@@ -309,14 +323,15 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
         // the projection matrix is the 3D virtual space (cube) that we want to project
         this.ratio = (float) width / height;
-        Log.d(TAG, "onSurfaceChanged: projection: [" + -ratio + "," + ratio + ",-1,1]-near/far[1,10]");
-        Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1, 1, getNear(), getFar());
-        Matrix.frustumM(projectionMatrixRight, 0, -ratio, ratio, -1, 1, getNear(), getFar());
-        Matrix.frustumM(projectionMatrixLeft, 0, -ratio, ratio, -1, 1, getNear(), getFar());
 
-        Matrix.orthoM(projectionMatrixSkyBox, 0, -ratio, ratio, -1, 1, getNear(), getFar());
+        // initialize skybox
+        Matrix.frustumM(projectionMatrixSkyBox, 0, -ratio, ratio, -1, 1, 2f, getFar());
 
+        // fire event
         AndroidUtils.fireEvent(listeners, new ViewEvent(this, ViewEvent.Code.SURFACE_CHANGED, width, height));
+
+        // initialize projection
+        setProjection(Projection.PERSPECTIVE);
     }
 
     @Override
@@ -331,6 +346,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
             // Draw background color
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+            GLES20.glColorMask(true, true, true, true);
 
             if (scene == null) {
                 // scene not ready
@@ -370,7 +386,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                             camera.getzView(), camera.getxUp(), camera.getyUp(), camera.getzUp());
                     Matrix.multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
                 } else {
-                    Camera[] stereoCamera = camera.toStereo(EYE_DISTANCE);
+                    float eyeDistance = EYE_DISTANCE/10;
+                    if (scene.isVRGlasses()){
+                        eyeDistance = EYE_DISTANCE;
+                    }
+                    Camera[] stereoCamera = camera.toStereo(eyeDistance);
                     Camera leftCamera = stereoCamera[0];
                     Camera rightCamera = stereoCamera[1];
 
@@ -384,12 +404,12 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                             rightCamera.getyView(), rightCamera.getzView(), rightCamera.getxUp(), rightCamera.getyUp(), rightCamera.getzUp());
 
                     if (scene.isAnaglyph()) {
-                        Matrix.frustumM(projectionMatrixRight, 0, -ratio, ratio, -1, 1, getNear(), getFar());
-                        Matrix.frustumM(projectionMatrixLeft, 0, -ratio, ratio, -1, 1, getNear(), getFar());
+                        Matrix.frustumM(projectionMatrixRight, 0, -ratio*getNear(), ratio*getNear(), -getNear(), getNear(), getNear(), getFar());
+                        Matrix.frustumM(projectionMatrixLeft, 0, -ratio*getNear(), ratio*getNear(), -getNear(), getNear(), getNear(), getFar());
                     } else if (scene.isVRGlasses()) {
                         float ratio2 = (float) width / 2 / height;
-                        Matrix.frustumM(projectionMatrixRight, 0, -ratio2, ratio2, -1, 1, getNear(), getFar());
-                        Matrix.frustumM(projectionMatrixLeft, 0, -ratio2, ratio2, -1, 1, getNear(), getFar());
+                        Matrix.frustumM(projectionMatrixRight, 0, -ratio2*getNear(), ratio2*getNear(), -getNear(), getNear(), getNear(), getFar());
+                        Matrix.frustumM(projectionMatrixLeft, 0, -ratio2*getNear(), ratio2*getNear(), -getNear(), getNear(), getNear(), getFar());
                     }
                     // Calculate the projection and view transformation
                     Matrix.multiplyMM(viewProjectionMatrixLeft, 0, projectionMatrixLeft, 0, viewMatrixLeft, 0);
@@ -409,14 +429,51 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
             if (scene.isAnaglyph()) {
                 // INFO: switch because blending algorithm doesn't mix colors
-                if (anaglyphSwitch) {
+                //GLES20.glDepthMask(false);
+                // TODO: finish fix
+                if (true) {
+
+
+
+                    //GLES20.glViewport(-160, 0, width, height);
+                    GLES20.glColorMask(true, false, false, true);
                     this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInWorldSpace,
-                            COLOR_RED, cameraPosInWorldSpace);
+                            null, cameraPosInWorldSpace);
+
+                    GLES20.glDepthMask(true);
+                    //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT );
+                    GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT );
+
+                    //GLES20.glEnable(GLES20.GL_BLEND);
+                    //GLES20.glDisable(GLES20.GL_BLEND);
+                    //GLES20.glBlendFunc(GLES20.GL_SRC_COLOR, GLES20.GL_ONE);
+                    //GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE);
+                    //GLES20.glBlendFunc(GLES20.GL_DST_COLOR, GLES20.GL_ONE_MINUS_SRC_COLOR);
+                    //GLES20.glBlendEquationSeparate(GLES20.GL_FUNC_ADD,GLES20.GL_FUNC_ADD);
+                    //GLES20.glBlendEquation(GLES20.GL_BLEND_EQUATION_ALPHA);
+
+                    GLES20.glColorMask(false, false, true, true);
+                    this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInWorldSpace,
+                            null, cameraPosInWorldSpace);
+
+
+
+
+                    //GLES20.glDepthMask(true);
+                    //GLES20.glDisable(GLES20.GL_BLEND);
+                    //GLES20.glBlendFunc(GLES20.GL_DST_ALPHA, GLES20.GL_ONE);
+                    //GLES20.glBlendEquation(GLES20.GL_FUNC_ADD);
+                    //GLES20.glBlendEquationSeparate(GLES20.GL_FUNC_ADD,GLES20.GL_FUNC_ADD);
                 } else {
+                    //GLES20.glViewport(+160, 0, width, height);
                     this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInWorldSpace,
                             COLOR_BLUE, cameraPosInWorldSpace);
+                    //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+                    this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInWorldSpace,
+                            COLOR_RED, cameraPosInWorldSpace);
                 }
                 anaglyphSwitch = !anaglyphSwitch;
+                //GLES20.glDepthMask(true);
                 return;
             }
 
@@ -442,6 +499,18 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         } catch (Error err) {
             Log.e("ModelRenderer", "Fatal error: " + err.getMessage(), err);
             fatalException = true;
+        } finally {
+            if (framesPerSecondTime == -1) {
+                framesPerSecondTime = SystemClock.elapsedRealtime();
+                framesPerSecondCounter++;
+            } else if (SystemClock.elapsedRealtime() > framesPerSecondTime + 1000) {
+                framesPerSecond = framesPerSecondCounter;
+                framesPerSecondCounter = 1;
+                framesPerSecondTime = SystemClock.elapsedRealtime();
+                AndroidUtils.fireEvent(listeners, new FPSEvent(this, framesPerSecond));
+            } else {
+                framesPerSecondCounter++;
+            }
         }
     }
 
@@ -494,7 +563,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     Matrix.rotateM(viewMatrixSkyBox, 0, 90, 1, 0, 0);
                 }
                 Renderer basicShader = drawer.getSkyBoxDrawer();
-                basicShader.draw(skyBoxes3D[skyBoxId], projectionMatrix, viewMatrixSkyBox, skyBoxes3D[skyBoxId].getMaterial().getTextureId(), null, cameraPosInWorldSpace);
+                basicShader.draw(skyBoxes3D[skyBoxId], projectionMatrixSkyBox, viewMatrixSkyBox, skyBoxes3D[skyBoxId].getMaterial().getTextureId(), null, cameraPosInWorldSpace);
             } catch (Throwable ex) {
                 Log.e("ModelRenderer", "Error rendering sky box. " + ex.getMessage(), ex);
                 isDrawSkyBox = false;
@@ -550,18 +619,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         List<Object3DData> guiObjects = scene.getGUIObjects();
         for (int i = 0; i < guiObjects.size(); i++) {
             drawObject(viewMatrix, projectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, doAnimation, drawLighting, drawWireframe, drawTextures, drawColors, guiObjects, i);
-        }
-
-        if (framesPerSecondTime == -1) {
-            framesPerSecondTime = SystemClock.elapsedRealtime();
-            framesPerSecondCounter++;
-        } else if (SystemClock.elapsedRealtime() > framesPerSecondTime + 1000) {
-            framesPerSecond = framesPerSecondCounter;
-            framesPerSecondCounter = 1;
-            framesPerSecondTime = SystemClock.elapsedRealtime();
-            AndroidUtils.fireEvent(listeners, new FPSEvent(this, framesPerSecond));
-        } else {
-            framesPerSecondCounter++;
         }
 
         debugSkeleton = !debugSkeleton;
@@ -776,5 +833,25 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
     public float[] getViewMatrix() {
         return viewMatrix;
+    }
+
+    public float getZoom() {
+        return zoom;
+    }
+
+    public void setZoom(float zoom) {
+        switch (projection){
+            case ORTHOGRAPHIC:
+            case ISOMETRIC:
+                if (zoom > 0 && zoom < 10) {
+                    this.zoom = zoom;
+                    setProjection(this.projection);
+                }
+                break;
+        }
+    }
+
+    public void addZoom(float zoom) {
+        this.setZoom(getZoom() + zoom);
     }
 }

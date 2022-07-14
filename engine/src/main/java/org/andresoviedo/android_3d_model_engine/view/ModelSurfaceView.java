@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 import android.widget.Toast;
 
 import org.andresoviedo.android_3d_model_engine.controller.TouchController;
+import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
 import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
 import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.event.EventListener;
@@ -67,7 +68,7 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		try {
-			return touchController.onTouchEvent(event);
+			return touchController.onMotionEvent(event);
 		} catch (Exception ex) {
 			Log.e("ModelSurfaceView","Exception: "+ ex.getMessage(),ex);
 		}
@@ -84,8 +85,18 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 
 	@Override
 	public boolean onEvent(EventObject event) {
-		fireEvent(event);
+		if (event instanceof TouchEvent &&  ((TouchEvent) event).getAction() == TouchEvent.Action.PINCH){
+			mRenderer.addZoom(-mRenderer.getZoom() * ((TouchEvent) event).getZoom() / 100f);
+		} else {
+			fireEvent(event);
+		}
 		return true;
+	}
+
+	public void toggleProjection() {
+		Log.i("ModelSurfaceView","Toggling projection...");
+		mRenderer.toggleProjection();
+		Toast.makeText(getContext(), "Projection: "+mRenderer.getProjection(), Toast.LENGTH_SHORT).show();
 	}
 
 	public void toggleLights() {

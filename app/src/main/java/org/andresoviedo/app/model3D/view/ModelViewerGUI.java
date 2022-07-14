@@ -10,7 +10,7 @@ import org.andresoviedo.android_3d_model_engine.gui.Rotator;
 import org.andresoviedo.android_3d_model_engine.gui.Text;
 import org.andresoviedo.android_3d_model_engine.gui.Widget;
 import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
-import org.andresoviedo.android_3d_model_engine.view.ModelRenderer;
+import org.andresoviedo.android_3d_model_engine.view.FPSEvent;
 import org.andresoviedo.android_3d_model_engine.view.ModelSurfaceView;
 
 import java.util.ArrayList;
@@ -138,9 +138,9 @@ final class ModelViewerGUI extends GUI {
     @Override
     public boolean onEvent(EventObject event) {
         super.onEvent(event);
-        if (event instanceof ModelRenderer.FPSEvent){
+        if (event instanceof FPSEvent){
             if (fps.isVisible()) {
-                ModelRenderer.FPSEvent fpsEvent = (ModelRenderer.FPSEvent) event;
+                FPSEvent fpsEvent = (FPSEvent) event;
                 fps.update(fpsEvent.getFps() + " fps");
             }
         }

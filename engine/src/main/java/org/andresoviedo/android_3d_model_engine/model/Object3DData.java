@@ -560,7 +560,7 @@ public class Object3DData {
     }
 
     /**
-     * This is the bind shape transform found in sking (ie. {@code <library_controllers><skin><bind_shape_matrix>}
+     * This is the bind shape transform found in skin (ie. {@code <library_controllers><skin><bind_shape_matrix>}
      */
     public void setBindShapeMatrix(float[] matrix) {
         if (matrix == null) return;

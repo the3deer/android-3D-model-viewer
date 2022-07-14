@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.Loader;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,8 +19,8 @@ import org.andresoviedo.android_3d_model_engine.collision.CollisionController;
 import org.andresoviedo.android_3d_model_engine.controller.TouchController;
 import org.andresoviedo.android_3d_model_engine.services.LoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
-import org.andresoviedo.android_3d_model_engine.view.ModelRenderer;
 import org.andresoviedo.android_3d_model_engine.view.ModelSurfaceView;
+import org.andresoviedo.android_3d_model_engine.view.ViewEvent;
 import org.andresoviedo.app.model3D.demo.DemoLoaderTask;
 import org.andresoviedo.dddmodel2.R;
 import org.andresoviedo.util.android.ContentUtils;
@@ -58,7 +57,7 @@ public class ModelActivity extends Activity implements EventListener {
      */
     private float[] backgroundColor = new float[]{0.0f, 0.0f, 0.0f, 1.0f};
 
-    private ModelSurfaceView gLView;
+    private ModelSurfaceView glView;
     private TouchController touchController;
     private SceneLoader scene;
     private ModelViewerGUI gui;
@@ -101,7 +100,7 @@ public class ModelActivity extends Activity implements EventListener {
 
         // Create our 3D scenario
         Log.i("ModelActivity", "Loading Scene...");
-        scene = new SceneLoader(this, paramUri, paramType, gLView);
+        scene = new SceneLoader(this, paramUri, paramType, glView);
         if (paramUri == null) {
             final LoaderTask task = new DemoLoaderTask(this, null, scene);
             task.execute();
@@ -116,10 +115,10 @@ public class ModelActivity extends Activity implements EventListener {
 
         try {
             Log.i("ModelActivity", "Loading GLSurfaceView...");
-            gLView = new ModelSurfaceView(this, backgroundColor, this.scene);
-            gLView.addListener(this);
-            setContentView(gLView);
-            scene.setView(gLView);
+            glView = new ModelSurfaceView(this, backgroundColor, this.scene);
+            glView.addListener(this);
+            setContentView(glView);
+            scene.setView(glView);
         } catch (Exception e) {
             Log.e("ModelActivity", e.getMessage(), e);
             Toast.makeText(this, "Error loading OpenGL view:\n" + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -129,6 +128,7 @@ public class ModelActivity extends Activity implements EventListener {
             Log.i("ModelActivity", "Loading TouchController...");
             touchController = new TouchController(this);
             touchController.addListener(this);
+            touchController.addListener(glView);
         } catch (Exception e) {
             Log.e("ModelActivity", e.getMessage(), e);
             Toast.makeText(this, "Error loading TouchController:\n" + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -136,7 +136,7 @@ public class ModelActivity extends Activity implements EventListener {
 
         try {
             Log.i("ModelActivity", "Loading CollisionController...");
-            collisionController = new CollisionController(gLView, scene);
+            collisionController = new CollisionController(glView, scene);
             collisionController.addListener(scene);
             touchController.addListener(collisionController);
             touchController.addListener(scene);
@@ -148,7 +148,7 @@ public class ModelActivity extends Activity implements EventListener {
         try {
             Log.i("ModelActivity", "Loading CameraController...");
             cameraController = new CameraController(scene.getCamera());
-            gLView.getModelRenderer().addListener(cameraController);
+            glView.getModelRenderer().addListener(cameraController);
             touchController.addListener(cameraController);
         } catch (Exception e) {
             Log.e("ModelActivity", e.getMessage(), e);
@@ -158,9 +158,9 @@ public class ModelActivity extends Activity implements EventListener {
         try {
             // TODO: finish UI implementation
             Log.i("ModelActivity", "Loading GUI...");
-            gui = new ModelViewerGUI(gLView, scene);
+            gui = new ModelViewerGUI(glView, scene);
             touchController.addListener(gui);
-            gLView.addListener(gui);
+            glView.addListener(gui);
             scene.addGUIObject(gui);
         } catch (Exception e) {
             Log.e("ModelActivity", e.getMessage(), e);
@@ -221,6 +221,9 @@ public class ModelActivity extends Activity implements EventListener {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.model_toggle_projection:
+                glView.toggleProjection();
+                break;
             case R.id.model_toggle_wireframe:
                 scene.toggleWireframe();
                 break;
@@ -228,7 +231,7 @@ public class ModelActivity extends Activity implements EventListener {
                 scene.toggleBoundingBox();
                 break;
             case R.id.model_toggle_skybox:
-                gLView.toggleSkyBox();
+                glView.toggleSkyBox();
                 break;
             case R.id.model_toggle_textures:
                 scene.toggleTextures();
@@ -359,11 +362,11 @@ public class ModelActivity extends Activity implements EventListener {
 
     @Override
     public boolean onEvent(EventObject event) {
-        if (event instanceof ModelRenderer.ViewEvent) {
-            ModelRenderer.ViewEvent viewEvent = (ModelRenderer.ViewEvent) event;
-            if (viewEvent.getCode() == ModelRenderer.ViewEvent.Code.SURFACE_CHANGED) {
+        if (event instanceof ViewEvent) {
+            ViewEvent viewEvent = (ViewEvent) event;
+            if (viewEvent.getCode() == ViewEvent.Code.SURFACE_CHANGED) {
                 touchController.setSize(viewEvent.getWidth(), viewEvent.getHeight());
-                gLView.setTouchController(touchController);
+                glView.setTouchController(touchController);
 
                 // process event in GUI
                 if (gui != null) {

@@ -3,6 +3,7 @@ package org.andresoviedo.util.math;
 import android.opengl.Matrix;
 
 import org.andresoviedo.android_3d_model_engine.animation.JointTransform;
+import org.andresoviedo.android_3d_model_engine.model.Constants;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,6 +17,9 @@ import java.util.Locale;
 public class Math3DUtils {
 
     public static final float IDENTITY_MATRIX[] = new float[16];
+    public static final float VECTOR_UNIT_X[] = {1,0,0};
+    public static final float VECTOR_UNIT_Y[] = {0,1,0};
+    public static final float VECTOR_UNIT_Z[] = {0,0,1};
 
     static {
         Matrix.setIdentityM(IDENTITY_MATRIX, 0);
@@ -323,6 +327,12 @@ public class Math3DUtils {
         a[2] = a[2] / length;
     }
 
+    public static float[] normalize2(float[] a) {
+        float[] copy = a.clone();
+        normalize(copy);
+        return copy;
+    }
+
     public static float[] crossProduct(float[] a, float[] b) {
         // AxB = (AyBz − AzBy, AzBx − AxBz, AxBy − AyBx)
         //(r)[0] = (a)[1] * (b)[2] - (b)[1] * (a)[2]; \
@@ -348,6 +358,10 @@ public class Math3DUtils {
     public static float dotProduct(float[] a, float[] b) {
         // a1b1+a2b2+a3b3
         return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    }
+
+    public static void mult(float[] v, float t) {
+        for (int i = 0; i < v.length; i++) v[i] = v[i] * t;
     }
 
     public static float[] multiply(float[] a, float t) {
@@ -608,6 +622,92 @@ public class Math3DUtils {
         // @formatter:on
 
         return matrix;
+    }
+
+    /**
+     * Calculate the angle between the 2 specified vectors
+     *
+     * @param v1
+     * @param v2
+     * @return
+     */
+    public static double calculateAngleBetween(float[] v1, float[] v2){
+        // Using acos
+        //float[] v1n = normalize2(v1);
+        //float[] v2n = normalize2(v2);
+
+        // perp dot-product
+        // https://stackoverflow.com/questions/2150050/finding-signed-angle-between-vectors
+        //return Math.atan2( v1n[0]*v2n[1] - v1n[1]*v2n[0], v1n[0]*v2n[0] + v1n[1]*v2n[1] );
+        return Math.atan2( v1[0]*v2[1] - v1[1]*v2[0], v1[0]*v2[0] + v1[1]*v2[1] );
+
+    }
+
+    public static void createRotationMatrixAroundVector(float[] matrix, int offset, double angle, float[] vector) {
+        createRotationMatrixAroundVector(matrix, offset, angle, vector[0], vector[1], vector[2]);
+    }
+
+    /**
+     *
+     * @param matrix output matrix
+     * @param offset output matrix offset
+     * @param angle in radians
+     * @param x rotation vector x
+     * @param y rotation vector y
+     * @param z rotation vector z
+     */
+    public static void createRotationMatrixAroundVector(float[] matrix, int offset, double angle, float x, float y,
+                                                        float z) {
+        float cos = (float) Math.cos(angle);
+        float sin = (float) Math.sin(angle);
+        float cos_1 = 1 - cos;
+
+        // @formatter:off
+        matrix[offset] = cos_1 * x * x + cos;
+        matrix[offset + 1] = cos_1 * x * y - z * sin;
+        matrix[offset + 2] = cos_1 * z * x + y * sin;
+        matrix[offset + 3] = 0;
+        matrix[offset + 4] = cos_1 * x * y + z * sin;
+        matrix[offset + 5] = cos_1 * y * y + cos;
+        matrix[offset + 6] = cos_1 * y * z - x * sin;
+        matrix[offset + 7] = 0;
+        matrix[offset + 8] = cos_1 * z * x - y * sin;
+        matrix[offset + 9] = cos_1 * y * z + x * sin;
+        matrix[offset + 10] = cos_1 * z * z + cos;
+        matrix[offset + 11] = 0;
+        matrix[offset + 12] = 0;
+        matrix[offset + 13] = 0;
+        matrix[offset + 14] = 0;
+        matrix[offset + 15] = 1;
+
+        // @formatter:on
+    }
+
+    public static void multiplyMMV(float[] result, int retOffset, float[] matrix, int matOffet, float[] vector4Matrix,
+                                   int vecOffset) {
+        for (int i = 0; i < vector4Matrix.length / 4; i++) {
+            Matrix.multiplyMV(result, retOffset + (i * 4), matrix, matOffet, vector4Matrix, vecOffset + (i * 4));
+        }
+    }
+
+    public static void snapToGrid(float[] v) {
+        final float[] TEST_VALUES = {
+                Constants.UNIT_SIN_1, Constants.UNIT_SIN_2, Constants.UNIT_SIN_3, Constants.UNIT_SIN_5,
+                Constants.UNIT_0, Constants.UNIT_1, Constants.UNIT_2, Constants.UNIT_3, Constants.UNIT_5};
+        for (int i = 0; i < v.length; i++) {
+            for (int j = 0; j < TEST_VALUES.length; j++) {
+                final float testValue = TEST_VALUES[j] ;
+                if (v[i] >= (-testValue - Constants.SNAP_TO_GRID_THRESHOLD)
+                        && v[i] <= (-testValue + Constants.SNAP_TO_GRID_THRESHOLD)) {
+                    v[i] = -testValue;
+                    break;
+                } else if (v[i] >= (testValue - Constants.SNAP_TO_GRID_THRESHOLD)
+                        && v[i] <= (testValue + Constants.SNAP_TO_GRID_THRESHOLD)) {
+                    v[i] = testValue;
+                    break;
+                }
+            }
+        }
     }
 }
 

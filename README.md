@@ -196,6 +196,10 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.3.0 (14/06/2022)
+  - (n) isometric + orthographic camera 
+  - (f) fixing stereoscopic rendering... 
+
 - 3.2.0 (02/02/2022)
   - (i) repository explorer improved - multiple index files
   - (f) smoothing fixed

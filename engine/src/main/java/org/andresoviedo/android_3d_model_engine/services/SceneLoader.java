@@ -3,7 +3,6 @@ package org.andresoviedo.android_3d_model_engine.services;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.net.Uri;
-import android.opengl.GLSurfaceView;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
@@ -42,13 +41,25 @@ import java.util.Map;
 public class SceneLoader implements LoadListener, EventListener {
 
     /**
+     * Default max model size for a camera located at 100 distance units
+     * TODO: calculate this value dynamically
+     * https://stackoverflow.com/questions/6653080/in-opengl-how-can-i-determine-the-bounds-of-the-view-at-a-given-depth
+     *   h = height, fieldofview is 45 degrees (because near 1 and width or ratio is 1)
+     *        h = tan(FieldOfView / 2) * a;
+     *        h = tan(45 / 2) * camera_distance;
+     *        h = 0,414213562 * camera_distance
+     *   example: with a near=1.0 unit, width=1.0 unit (height=1.0*ratio),
+     *         if camera at 100 units, then we have 41,421356237 => 82,842712475 total max width to fit viewport
+     *
+     */
+    /**
      * Default max size for dimension on any axis
      */
-    private static final float DEFAULT_MAX_MODEL_SIZE = 100;
+    private static final float DEFAULT_MAX_MODEL_SIZE = 1;
     /**
      * Camera position on Z axis
      */
-    private static final float DEFAULT_CAMERA_POSITION = DEFAULT_MAX_MODEL_SIZE / 2 + 25;
+    private static final float DEFAULT_CAMERA_POSITION = 2;
     /**
      * Parent component
      */
@@ -64,7 +75,7 @@ public class SceneLoader implements LoadListener, EventListener {
     /**
      * OpenGL view
      */
-    private GLSurfaceView glView;
+    private ModelSurfaceView glView;
     /**
      * List of 3D models
      */
@@ -186,7 +197,7 @@ public class SceneLoader implements LoadListener, EventListener {
     private Map<Object3DData, Dimensions> originalDimensions = new HashMap<>();
     private Map<Object3DData, Transform> originalTransforms = new HashMap<>();
 
-    public SceneLoader(Activity main, URI uri, int type, GLSurfaceView glView) {
+    public SceneLoader(Activity main, URI uri, int type, ModelSurfaceView glView) {
         this.parent = main;
         this.uri = uri;
         this.type = type;
@@ -649,7 +660,7 @@ public class SceneLoader implements LoadListener, EventListener {
         fixCoordinateSystem();
     }
 
-    private void rescale(List<Object3DData> objs) {
+    private void rescale(List<Object3DData> objs, float size) {
         Log.v("SceneLoader", "Rescaling objects... " + objs.size());
 
         // get largest object in scene
@@ -664,7 +675,7 @@ public class SceneLoader implements LoadListener, EventListener {
         Log.v("SceneLoader", "Object largest dimension: " + largest);
 
         // rescale objects
-        float ratio = DEFAULT_MAX_MODEL_SIZE / largest;
+        float ratio = size / largest;
         Log.v("SceneLoader", "Scaling " + objs.size() + " objects with factor: " + ratio);
         float[] newScale = new float[]{ratio, ratio, ratio};
         for (Object3DData data : objs) {
