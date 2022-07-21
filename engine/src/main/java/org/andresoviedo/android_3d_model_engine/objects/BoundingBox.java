@@ -7,8 +7,6 @@ import org.andresoviedo.android_3d_model_engine.model.Dimensions;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.util.io.IOUtils;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -81,11 +79,7 @@ public final class BoundingBox {
 
         return new Object3DData(vertices, indexBuffer).setDrawModeList(drawList)
                 .setDrawMode(GLES20.GL_LINE_LOOP)
-                .setLocation(obj.getLocation())
-                .setScale(obj.getScale())
-                .setRotation(obj.getRotation())
                 .setDrawUsingArrays(false)
-                .setBindTransform(obj.getBindTransform())
                 .setId(obj.getId() + "_boundingBox");
     }
 }

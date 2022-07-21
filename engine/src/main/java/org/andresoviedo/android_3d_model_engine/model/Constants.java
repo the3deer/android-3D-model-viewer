@@ -2,6 +2,14 @@ package org.andresoviedo.android_3d_model_engine.model;
 
 public class Constants {
     /**
+     * Default max size for dimension on any axis
+     */
+    public static final float DEFAULT_MAX_MODEL_SIZE = 1;
+    /**
+     * Default camera position on Z axis
+     */
+    public static final float DEFAULT_CAMERA_POSITION = 2;
+    /**
      * The nominal frames per second
      */
     public static final int TOTAL_ANIMATION_FRAMES = 60;

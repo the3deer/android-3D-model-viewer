@@ -16,6 +16,12 @@ import java.util.Arrays;
 import java.util.EventObject;
 import java.util.List;
 
+/**
+ * Collision controller that, based on View settings (width, height and projection matrices)
+ * it can detect a collision between an Object and a Ray casted from the screen to the farthest point
+ *
+ * Collision controller processes {@link TouchEvent} and fires {@link CollisionEvent}
+ */
 public class CollisionController implements EventListener {
 
     private final ModelSurfaceView view;
@@ -64,17 +70,18 @@ public class CollisionController implements EventListener {
                                 (), view.getViewMatrix(), view.getProjectionMatrix(), x, y);
 
                         if (point != null) {
-                            Log.i("CollisionController", "Drawing intersection point: " + Arrays.toString(point));
+                            Log.i("CollisionController", "Building intersection point: " + Arrays.toString(point));
                             point3D = Point.build(point).setColor(new float[]{1.0f, 0f, 0f, 1f});
                         }
                     }
 
                     final CollisionEvent collisionEvent = new CollisionEvent(this, objectHit, x, y, point3D);
                     AndroidUtils.fireEvent(listeners, collisionEvent);
+                    return true;
                 }
             }
         }
-        return true;
+        return false;
     }
 
 }

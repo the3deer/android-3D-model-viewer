@@ -12,6 +12,7 @@ import org.andresoviedo.android_3d_model_engine.collision.CollisionEvent;
 import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
 import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
+import org.andresoviedo.android_3d_model_engine.model.Constants;
 import org.andresoviedo.android_3d_model_engine.model.Dimensions;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.android_3d_model_engine.model.Transform;
@@ -19,10 +20,11 @@ import org.andresoviedo.android_3d_model_engine.objects.Point;
 import org.andresoviedo.android_3d_model_engine.services.collada.ColladaLoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.stl.STLLoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoaderTask;
-import org.andresoviedo.android_3d_model_engine.view.ModelSurfaceView;
 import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.util.event.EventListener;
 import org.andresoviedo.util.io.IOUtils;
+import org.andresoviedo.util.math.Math3DUtils;
+import org.andresoviedo.util.math.Quaternion;
 
 import java.io.IOException;
 import java.net.URI;
@@ -53,14 +55,6 @@ public class SceneLoader implements LoadListener, EventListener {
      *
      */
     /**
-     * Default max size for dimension on any axis
-     */
-    private static final float DEFAULT_MAX_MODEL_SIZE = 1;
-    /**
-     * Camera position on Z axis
-     */
-    private static final float DEFAULT_CAMERA_POSITION = 2;
-    /**
      * Parent component
      */
     protected final Activity parent;
@@ -73,10 +67,6 @@ public class SceneLoader implements LoadListener, EventListener {
      */
     private final int type;
     /**
-     * OpenGL view
-     */
-    private ModelSurfaceView glView;
-    /**
      * List of 3D models
      */
     private List<Object3DData> objects = new ArrayList<>();
@@ -87,7 +77,7 @@ public class SceneLoader implements LoadListener, EventListener {
     /**
      * Point of view camera
      */
-    private Camera camera = new Camera(DEFAULT_CAMERA_POSITION);
+    private Camera camera = new Camera(Constants.DEFAULT_CAMERA_POSITION);
     /**
      * Blender uses different coordinate system.
      * This is a patch to turn camera and SkyBox 90 degree on X axis
@@ -197,13 +187,13 @@ public class SceneLoader implements LoadListener, EventListener {
     private Map<Object3DData, Dimensions> originalDimensions = new HashMap<>();
     private Map<Object3DData, Transform> originalTransforms = new HashMap<>();
 
-    public SceneLoader(Activity main, URI uri, int type, ModelSurfaceView glView) {
+    public SceneLoader(Activity main, URI uri, int type) {
         this.parent = main;
         this.uri = uri;
         this.type = type;
-        this.glView = glView;
 
-        lightBulb.setLocation(new float[]{0, 0, DEFAULT_CAMERA_POSITION});
+        float light_distance = Constants.DEFAULT_MAX_MODEL_SIZE * 2;
+        lightBulb.setLocation(new float[]{light_distance,light_distance,light_distance});
     }
 
     public void init() {
@@ -231,10 +221,12 @@ public class SceneLoader implements LoadListener, EventListener {
         for (int i = 0; i < objects.size(); i++) {
             final Object3DData objData = objects.get(i);
             if (objData.getAuthoringTool() != null && objData.getAuthoringTool().toLowerCase().contains("blender")) {
-                getCamera().rotate(90f, 1, 0, 0);
+                Quaternion quaternion = Quaternion.getQuaternion(new float[]{1, 0, 0}, (float) (Math.PI/2f));
+                quaternion.normalize();
+                objData.setOrientation(quaternion);
                 Log.i("SceneLoader", "Fixed coordinate system to 90 degrees on x axis. object: " + objData.getId());
                 this.isFixCoordinateSystem = true;
-                break;
+                //break;
             }
         }
     }
@@ -262,13 +254,8 @@ public class SceneLoader implements LoadListener, EventListener {
 
         animateLight();
 
-        // smooth camera transition
-        camera.animate();
-
         // initial camera animation. animate if user didn't touch the screen
-        if (!userHasInteracted) {
-            animateCamera();
-        }
+        animateCamera();
 
         if (objects.isEmpty()) return;
 
@@ -286,11 +273,16 @@ public class SceneLoader implements LoadListener, EventListener {
         // animate light - Do a complete rotation every 5 seconds.
         long time = SystemClock.uptimeMillis() % 5000L;
         float angleInDegrees = (360.0f / 5000.0f) * ((int) time);
-        lightBulb.setRotation1(new float[]{0, angleInDegrees, 0});
+        lightBulb.setRotation(new float[]{0, angleInDegrees, 0});
     }
 
     private void animateCamera() {
-        camera.translateCamera(0.0005f, 0f);
+        // smooth camera transition
+        camera.animate();
+
+        if (!userHasInteracted) {
+            camera.translateCamera(0.0005f, 0f);
+        }
     }
 
     public final synchronized void addObject(Object3DData obj) {
@@ -312,12 +304,6 @@ public class SceneLoader implements LoadListener, EventListener {
         guiObjects.add(obj);
 
         // requestRender();
-    }
-
-    private void requestRender() {
-        if (glView != null) {
-            glView.requestRender();
-        }
     }
 
     public final synchronized List<Object3DData> getObjects() {
@@ -361,7 +347,7 @@ public class SceneLoader implements LoadListener, EventListener {
                 makeToastText("Normals", Toast.LENGTH_SHORT);
                 break;
         }
-        requestRender();
+        //requestRender();
     }
 
     public final boolean isDrawWireframe() {
@@ -374,7 +360,7 @@ public class SceneLoader implements LoadListener, EventListener {
 
     public final void toggleBoundingBox() {
         this.drawBoundingBox = !drawBoundingBox;
-        requestRender();
+        //requestRender();
     }
 
     public final boolean isDrawBoundingBox() {
@@ -413,7 +399,7 @@ public class SceneLoader implements LoadListener, EventListener {
             this.rotatingLight = true;
             makeToastText("Light on", Toast.LENGTH_SHORT);
         }
-        requestRender();
+        //requestRender();
     }
 
     public final void toggleAnimation() {
@@ -628,7 +614,6 @@ public class SceneLoader implements LoadListener, EventListener {
 
         // rescale objects so they fit in the viewport
         //rescale(this.getObjects(), DEFAULT_MAX_MODEL_SIZE, new float[3]);
-
     }
 
     @Override
@@ -654,10 +639,16 @@ public class SceneLoader implements LoadListener, EventListener {
         ContentUtils.setThreadActivity(null);
 
         // rescale all object so they fit in the screen
-        rescale(this.getObjects(), DEFAULT_MAX_MODEL_SIZE, new float[3]);
+        //rescale(this.getObjects(), DEFAULT_MAX_MODEL_SIZE, new float[3]);
+        if (this.getObjects().size() == 1){
+            this.getObjects().get(0).setCentered(true);
+        }
 
         // fix coordinate system
         fixCoordinateSystem();
+
+        // rescale objects so they all fit in the viewport
+        rescale(this.getObjects(), Constants.DEFAULT_MAX_MODEL_SIZE, new float[3]);
     }
 
     private void rescale(List<Object3DData> objs, float size) {
@@ -716,31 +707,103 @@ public class SceneLoader implements LoadListener, EventListener {
         return rotatingLight;
     }
 
-    public void setView(ModelSurfaceView view) {
-        this.glView = view;
-    }
-
     @Override
     public boolean onEvent(EventObject event) {
-        //Log.v("SceneLoader","Processing event... "+event);
+        Object3DData selectedObject = getSelectedObject();
         if (event instanceof TouchEvent) {
             userHasInteracted = true;
+            float[] right = camera.getRight();
+            float[] up = camera.getUp();
+            float[] pos = camera.getPos().clone();
+            Math3DUtils.normalize(pos);
+            TouchEvent touch = (TouchEvent) event;
+            if (touch.getAction() == TouchEvent.Action.ROTATE && selectedObject != null) {
+
+                float angle = touch.getAngle();
+                float factor = 1f; //1/360f * touch.getLength();
+
+
+                // Log.v("SceneLoader", "Q: Quaternion angle: " + Math.toDegrees(angle) + " ,dx:" + touch.getdX() + ", dy:" + -touch.getdY());
+                Quaternion q0 = Quaternion.getQuaternion(pos, angle * factor);
+                q0.normalize();
+
+                Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(),q0);
+                selectedObject.setOrientation(multiply);
+            }
+            else if (touch.getAction() == TouchEvent.Action.MOVE && selectedObject != null) {
+
+                    /*if (Math.abs(touch.getdX()) > 2 && Math.abs(touch.getdY()) < 2){
+                        float angle = -touch.getdX() * touch.getLength() / 180f;
+                        Log.v("SceneLoader", "Rotating (axis:up): " + Math.toDegrees(angle) + " ,dx:" + touch.getdX() + ", dy:" + -touch.getdY());
+                        Quaternion q0 = Quaternion.getQuaternion(up, angle);
+                        q0.normalize();
+                        Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(),q0);
+                        multiply.normalize();
+                        selectedObject.setOrientation(multiply);
+                    } else if (Math.abs(touch.getdY()) > 2 && Math.abs(touch.getdX()) < 2){
+                        float angle = -touch.getdY() * touch.getLength() / 180f;
+                        Log.v("SceneLoader", "Rotating (axis:right): " + Math.toDegrees(angle) + " ,dx:" + touch.getdX() + ", dy:" + -touch.getdY());
+                        Quaternion q0 = Quaternion.getQuaternion(right, angle);
+                        q0.normalize();
+                        Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(),q0);
+                        multiply.normalize();
+                        selectedObject.setOrientation(multiply);
+                    } else {*/
+                        float angle = (float) (Math.atan2(-touch.getdY(), touch.getdX()));
+                        Log.v("SceneLoader", "Rotating (axis:var): " + Math.toDegrees(angle) + " ,dx:" + touch.getdX() + ", dy:" + -touch.getdY());
+
+                        float[] rightd = Math3DUtils.multiply(right, touch.getdY());
+                        float[] upd = Math3DUtils.multiply(up, touch.getdX());
+                        float[] rot = Math3DUtils.add(rightd,upd);
+                        if (Math3DUtils.length(rot)>0) {
+                            Math3DUtils.normalize(rot);
+                        } else {
+                            rot = new float[]{1,0,0};
+                        }
+
+                        float angle1 = -touch.getLength() / 360;
+                        Quaternion q1 = Quaternion.getQuaternion(rot, angle1);
+                        q1.normalize();
+
+                        Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(), q1);
+                        multiply.normalize();
+
+                        selectedObject.setOrientation(multiply);
+                        //---------------------------------
+
+                        /*Quaternion qfix = Quaternion.getQuaternion(pos, -angle);
+                        qfix.normalize();
+
+                        Quaternion qright = Quaternion.getQuaternion(right, 0);
+                        qright.normalize();
+
+                        Quaternion q1 = Quaternion.multiply(qright,qfix);
+                        q1.normalize();
+
+                        Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(), q1);
+                        multiply.normalize();
+
+                        selectedObject.setOrientation(q1);
+                        //selectedObject.setOrientation(multiply);*/
+                    //}
+            }
         } else if (event instanceof CollisionEvent) {
+            this.userHasInteracted = true;
             Object3DData objectToSelect = ((CollisionEvent) event).getObject();
             Object3DData point = ((CollisionEvent) event).getPoint();
             if (isCollision() && point != null) {
+                Log.v("SceneLoader", "Adding collision point " + point);
                 addObject(point);
-            } else {
-                if (getSelectedObject() == objectToSelect) {
-                    Log.i("SceneLoader", "Unselected object " + objectToSelect.getId());
-                    Log.d("SceneLoader", "Unselected object " + objectToSelect);
+            }
+                if (selectedObject == objectToSelect) {
+                    Log.v("SceneLoader", "Unselected object " + objectToSelect);
                     setSelectedObject(null);
                 } else {
                     Log.i("SceneLoader", "Selected object " + objectToSelect.getId());
                     Log.d("SceneLoader", "Selected object " + objectToSelect);
                     setSelectedObject(objectToSelect);
                 }
-            }
+
         }
         return true;
     }
@@ -881,7 +944,7 @@ public class SceneLoader implements LoadListener, EventListener {
             Log.v("SceneLoader", "Mew model location: " + Arrays.toString(data.getLocation()));
 
             // center
-            data.translate(globalDifference);
+            //data.translate(globalDifference);
             Log.v("SceneLoader", "Mew model translated: " + Arrays.toString(data.getLocation()));
         }
 
@@ -913,4 +976,15 @@ public class SceneLoader implements LoadListener, EventListener {
     }
 
 
+    public void onOrientationChanged(int orientation) {
+        /*if (orientation == 0 || orientation == 180) {
+                    Log.v("ModelActivity","onOrientationChanged: portrait: "+orientation);
+                } else if (orientation == 90 || orientation == 270) {
+                    Log.v("ModelActivity","onOrientationChanged: landscape: "+orientation);
+                } else {
+                    Log.v("ModelActivity","onOrientationChanged: orientation: "+orientation);
+                }*/
+        Log.v("SceneLoader","onOrientationChanged: orientation: "+orientation);
+        camera.setOrientation(orientation);
+    }
 }

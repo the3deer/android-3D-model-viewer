@@ -153,9 +153,9 @@ public class DemoLoaderTask extends LoaderTask {
                 Object3DData obj53 = new WavefrontLoader(GLES20.GL_TRIANGLE_FAN, new LoadListenerAdapter(){
                     @Override
                     public void onLoad(Object3DData obj53) {
-                        obj53.setLocation(new float[] { 2f, 0f, 0f });
                         obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
                         Rescaler.rescale(obj53, 2f);
+                        obj53.setLocation(new float[] { 2f, 0f, 0f });
                         DemoLoaderTask.this.onLoad(obj53);
                     }
                 }).load(new URI("android://org.andresoviedo.dddmodel2/assets/models/ToyPlane.obj")).get(0);
@@ -171,10 +171,10 @@ public class DemoLoaderTask extends LoaderTask {
                 Object3DData obj53 = new ColladaLoader().load(new URI("android://org.andresoviedo.dddmodel2/assets/models/cowboy.dae"), new LoadListenerAdapter(){
                     @Override
                     public void onLoad(Object3DData obj53) {
-                        obj53.setLocation(new float[] { 0f, -1f, 1f});
                         obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
-                        obj53.setRotation(new float[]{-90,0,0});
                         Rescaler.rescale(obj53, 2f);
+                        obj53.setLocation(new float[] { 0f, 0f, 2f});
+                        obj53.setCentered(true);
                         DemoLoaderTask.this.onLoad(obj53);
                     }
                 }).get(0);

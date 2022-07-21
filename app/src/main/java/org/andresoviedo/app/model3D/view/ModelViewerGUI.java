@@ -2,6 +2,7 @@ package org.andresoviedo.app.model3D.view;
 
 import android.util.Log;
 
+import org.andresoviedo.android_3d_model_engine.drawer.RendererFactory;
 import org.andresoviedo.android_3d_model_engine.gui.CheckList;
 import org.andresoviedo.android_3d_model_engine.gui.GUI;
 import org.andresoviedo.android_3d_model_engine.gui.Glyph;
@@ -9,9 +10,12 @@ import org.andresoviedo.android_3d_model_engine.gui.Menu3D;
 import org.andresoviedo.android_3d_model_engine.gui.Rotator;
 import org.andresoviedo.android_3d_model_engine.gui.Text;
 import org.andresoviedo.android_3d_model_engine.gui.Widget;
+import org.andresoviedo.android_3d_model_engine.model.Camera;
+import org.andresoviedo.android_3d_model_engine.objects.Axis;
 import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
 import org.andresoviedo.android_3d_model_engine.view.FPSEvent;
 import org.andresoviedo.android_3d_model_engine.view.ModelSurfaceView;
+import org.andresoviedo.util.math.Quaternion;
 
 import java.util.ArrayList;
 import java.util.EventObject;
@@ -23,6 +27,7 @@ final class ModelViewerGUI extends GUI {
     private final SceneLoader scene;
 
     private Text fps;
+    private Widget axis;
     private Widget icon;
     private Glyph icon2 = Glyph.build(Glyph.CHECKBOX_ON);
     private Menu3D menu;
@@ -47,6 +52,7 @@ final class ModelViewerGUI extends GUI {
         super.setSize(width, height);
         try {
             initFPS();
+            initAxis();
             //initMenu();
             //initMenu2();
         }catch (Exception e){
@@ -57,6 +63,7 @@ final class ModelViewerGUI extends GUI {
 
     private void initFPS() {
         // frame-per-second
+        if (fps != null) return;
         fps = Text.allocate(7, 1);
         fps.setId("fps");
         fps.setVisible(true);
@@ -67,6 +74,28 @@ final class ModelViewerGUI extends GUI {
 
         fps.setPosition(GUI.POSITION_TOP_LEFT);
         //addBackground(fps).setColor(new float[]{0.25f, 0.25f, 0.25f, 0.25f});
+    }
+
+    private void initAxis(){
+        if (axis != null) return;
+        axis = new Widget(Axis.build()){
+            @Override
+            public void render(RendererFactory rendererFactory, Camera camera, float[] lightPosInWorldSpace, float[] colorMask) {
+                if (camera.hasChanged()){
+                    setOrientation(new Quaternion(camera.getMatrix()));
+                }
+                //Log.v("ModelViewerGUI","projection updated...");
+                super.render(rendererFactory, camera, lightPosInWorldSpace, colorMask);
+            }
+        };
+        axis.setId("gui_axis");
+        axis.setVisible(true);
+        axis.setParent(this);
+        axis.setRelativeScale(new float[]{0.1f,0.1f,0.1f});
+
+        addWidget(axis);
+
+        axis.setPosition(GUI.POSITION_TOP_RIGHT);
     }
 
     private void initMenu2() {

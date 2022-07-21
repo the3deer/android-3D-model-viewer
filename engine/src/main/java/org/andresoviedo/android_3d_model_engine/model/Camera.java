@@ -26,6 +26,9 @@ public class Camera {
     protected float[] view = new float[]{0,0,0,1};
     protected float[] up = new float[]{0,0,0,1};
 
+    // transformation matrix
+    protected float[] matrix = new float[16];
+
     // camera mode
     private Projection projection = Projection.PERSPECTIVE;
 
@@ -186,7 +189,7 @@ public class Camera {
         return new Camera[]{left, right};
     }
 
-    public void rotate(float degrees, float x, float y, float z) {
+    private void rotate(float degrees, float x, float y, float z) {
         Matrix.setIdentityM(buffer, 24); // first matrix
         Matrix.rotateM(buffer, 40, buffer, 24, degrees, x, y, z); // 2nd matrix
         Matrix.multiplyMV(buffer, 0, buffer, 40, pos, 0);
@@ -263,6 +266,10 @@ public class Camera {
         setChanged(true);
     }
 
+    public void set(float[] pos, float[] view, float[] up){
+        this.set(pos[0], pos[1], pos[2],view[0], view[1], view[2], up[0],up[1], up[2]);
+    }
+
     public Projection getProjection() {
         return projection;
     }
@@ -273,5 +280,91 @@ public class Camera {
 
     public float getDistance() {
         return Math3DUtils.length(Math3DUtils.normalize2(Math3DUtils.substract(this.pos, this.view)));
+    }
+
+    public float[] getPos() {
+        return this.pos;
+    }
+
+    public float[] getRight() {
+        return Math3DUtils.crossProduct(this.up, this.pos);
+    }
+
+    public float[] getUp() {
+        return this.up;
+    }
+
+    public float[] getView() {
+        return this.view;
+    }
+
+    // cellphone orientation
+    private int orientation;
+    /**
+     * Rotate using the current view vector
+     *
+     * @param angle angle in degrees
+     */
+    public void setOrientation(int angle) {
+
+        if (angle == this.orientation) return;
+        else if (Math.abs(this.orientation-angle)<5) return;
+            else{
+            int previous = this.orientation;
+            this.orientation = angle;
+            angle = previous - angle;
+        }
+
+        float dX = (float) Math.sin(Math.toRadians(angle));
+        float dY = (float) Math.cos(Math.toRadians(angle));
+        float[] right = Math3DUtils.to4d(getRight());
+
+        // screen orientation vector
+        /*float[] ovector1 = Math3DUtils.multiply(up, dX);
+        float[] ovector2 = Math3DUtils.multiply(getRight(), -dY);
+        float[] ovector = Math3DUtils.add(ovector1,ovector2);
+        Math3DUtils.normalize(ovector);*/
+
+        // rotation matrix
+        float[] matrix = new float[16];
+        Matrix.setIdentityM(matrix,0);
+        Matrix.setRotateM(matrix,0, angle, getxPos(),getyPos(),getzPos());
+
+        float[] newUp = new float[4];
+        Matrix.multiplyMV(newUp,0,matrix,0,up,0);
+        Math3DUtils.normalize(newUp);
+
+        this.up[0] = newUp[0];
+        this.up[1] = newUp[1];
+        this.up[2] = newUp[2];
+
+        setChanged(true);
+
+        /*float rota = -(float) Math.tan(angle-180)/5f; //-angle / 90f;
+
+        float dot = Math.abs(Math3DUtils.dotProduct(up, newUp));
+        if (Math.abs(dot) < 0.1f){
+            Log.v("Camera","angle: "+angle+", rot:"+rota+", dx:"+dX+", dy:"+dY+" HIT! "+Math3DUtils.dotProduct(up,newUp));
+            return;
+        } else {
+            Log.v("Camera","angle: "+angle+", rot:"+rota+", dx:"+dX+", dy:"+dY+" DOT! "+Math3DUtils.dotProduct(up,newUp));
+            //return;
+        }
+
+        Matrix.setIdentityM(matrix,0);
+        Matrix.setRotateM(matrix,0, -angle/90f, getxPos(),getyPos(),getzPos());
+        Matrix.multiplyMV(newUp,0,matrix,0,up,0);
+        Math3DUtils.normalize(newUp);
+
+        this.up[0] = newUp[0];
+        this.up[1] = newUp[1];
+        this.up[2] = newUp[2];
+        setChanged(true);*/
+    }
+
+    public float[] getMatrix() {
+        Matrix.setLookAtM(this.matrix,0,getxPos(),getyPos(),getzPos(),
+                getxView(),getyView(),getzView(),getxUp(),getyUp(),getzUp());
+        return matrix;
     }
 }

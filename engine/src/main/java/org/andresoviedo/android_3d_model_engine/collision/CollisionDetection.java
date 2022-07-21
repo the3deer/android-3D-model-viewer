@@ -1,6 +1,7 @@
 package org.andresoviedo.android_3d_model_engine.collision;
 
 import android.opengl.GLU;
+import android.opengl.Matrix;
 import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.model.BoundingBox;
@@ -34,33 +35,43 @@ public class CollisionDetection {
         float[] farHit = unProject(width, height, modelViewMatrix, modelProjectionMatrix, windowX, windowY, 1);
         float[] direction = Math3DUtils.substract(farHit, nearHit);
         Math3DUtils.normalize(direction);
-        return getBoxIntersection(objects, nearHit, direction);
+        return getBoxIntersection(objects, nearHit, farHit, direction);
     }
 
     /**
      * Get the nearest object intersected by the specified ray or null if no object is intersected
      *
      * @param objects   the list of objects to test
-     * @param p1        the ray start point
+     * @param nearHit        the ray start point
+     * @param farHit the ray far hit
      * @param direction the ray direction
      * @return the object intersected by the specified ray
      */
-    private static Object3DData getBoxIntersection(List<Object3DData> objects, float[] p1, float[] direction) {
+    private static Object3DData getBoxIntersection(List<Object3DData> objects, float[] nearHit, float[] farHit, float[] direction) {
         float min = Float.MAX_VALUE;
         Object3DData ret = null;
         for (Object3DData obj : objects) {
             if ("Point".equals(obj.getId()) || "Line".equals(obj.getId())) {
                 continue;
             }
-            BoundingBox box = obj.getBoundingBox();
-            float[] intersection = getBoxIntersection(p1, direction, box);
+
+            float[] invertedModelMatrix = new float[16];
+            Matrix.invertM(invertedModelMatrix,0, obj.getModelMatrix(),0);
+            float[] nearAA = new float[4];
+            float[] farAA = new float[4];
+            Matrix.multiplyMV(nearAA,0,invertedModelMatrix,0,nearHit,0);
+            Matrix.multiplyMV(farAA,0,invertedModelMatrix,0,farHit,0);
+            float[] dirAA = Math3DUtils.substract(farAA,nearAA);
+            Math3DUtils.normalize(dirAA);
+
+            float[] intersection = getBoxIntersection(nearAA, dirAA, obj.getBoundingBox());
             if (intersection[0] > 0 && intersection[0] <= intersection[1] && intersection[0] < min) {
                 min = intersection[0];
                 ret = obj;
             }
         }
         if (ret != null) {
-            Log.i("CollisionDetection", "Collision detected '" + ret.getId() + "' distance: " + min + ", dimensions: " + ret.getCurrentDimensions());
+            Log.i("CollisionDetection", "Collision detected '" + ret.getId() + "' distance: " + min);
         }
         return ret;
     }
@@ -105,7 +116,7 @@ public class CollisionDetection {
      */
     private static boolean isBoxIntersection(float[] origin, float[] dir, BoundingBox b) {
         float[] intersection = getBoxIntersection(origin, dir, b);
-        return intersection[0] > 0 && intersection[0] < intersection[1];
+        return intersection[0] >= 0 && intersection[0] <= intersection[1];
     }
 
     /**
@@ -196,9 +207,9 @@ public class CollisionDetection {
         float[] farHit = unProject(width, height, modelViewMatrix, modelProjectionMatrix, windowX, windowY, 1);
         float[] direction = Math3DUtils.substract(farHit, nearHit);
         Math3DUtils.normalize(direction);
-        Object3DData intersected = getBoxIntersection(objects, nearHit, direction);
+        Object3DData intersected = getBoxIntersection(objects, nearHit, farHit, direction);
         if (intersected != null) {
-            return getTriangleIntersection(intersected, nearHit, direction);
+            return getTriangleIntersection(intersected, nearHit, farHit, direction);
         }
         return null;
     }
@@ -208,11 +219,12 @@ public class CollisionDetection {
         float[] farHit = unProject(width, height, viewMatrix, projectionMatrix, windowX, windowY, 1);
         float[] direction = Math3DUtils.substract(farHit, nearHit);
         Math3DUtils.normalize(direction);
-        return getTriangleIntersection(hit, nearHit, direction);
+        return getTriangleIntersection(hit, nearHit, farHit, direction);
     }
 
-    private static float[] getTriangleIntersection(final Object3DData hit, float[] nearHit, float[] direction) {
+    private static float[] getTriangleIntersection(final Object3DData hit, float[] nearHit, float[] farHit, float[] direction) {
         Log.d("CollisionDetection", "Getting triangle intersection: " + hit.getId());
+
         Octree octree;
         synchronized (hit) {
             octree = hit.getOctree();
@@ -221,11 +233,24 @@ public class CollisionDetection {
                 hit.setOctree(octree);
             }
         }
-        float intersection = getTriangleIntersectionForOctree(octree, nearHit, direction);
+
+        // invert ray
+        float[] inverted = new float[16];
+        Matrix.invertM(inverted,0, hit.getModelMatrix(),0);
+        float[] nearAA = new float[4];
+        float[] farAA = new float[4];
+        Matrix.multiplyMV(nearAA,0,inverted,0,nearHit,0);
+        Matrix.multiplyMV(farAA,0,inverted,0,farHit,0);
+        float[] dirAA = Math3DUtils.substract(farAA,nearAA);
+        Math3DUtils.normalize(dirAA);
+
+        float intersection = getTriangleIntersectionForOctree(octree, nearAA, dirAA);
         if (intersection != -1) {
-            float[] intersectionPoint = Math3DUtils.add(nearHit, Math3DUtils.multiply(direction, intersection));
-            Log.d("CollisionDetection", "Interaction point: " + Arrays.toString(intersectionPoint));
-            return intersectionPoint;
+            float[] intersectionPoint = Math3DUtils.add(nearAA, Math3DUtils.multiply(dirAA, intersection));
+            float[] realIntersection = new float[4];
+            Matrix.multiplyMV(realIntersection,0, hit.getModelMatrix(),0,Math3DUtils.to4d(intersectionPoint),0);
+            Log.d("CollisionDetection", "Collision point: " + Arrays.toString(realIntersection));
+            return realIntersection;
         } else {
             return null;
         }

@@ -28,6 +28,8 @@ import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.util.android.GLUtil;
 import org.andresoviedo.util.event.EventListener;
+import org.andresoviedo.util.math.Math3DUtils;
+import org.andresoviedo.util.math.Quaternion;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -54,7 +56,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     private static final float[] BLENDING_MASK_FORCED = {1.0f, 1.0f, 1.0f, 0.5f};
 
     // frustrum - nearest pixel
-    private static final float near = 1/1000f;
+    private static final float near = 1/100f;
     // frustrum - fartest pixel
     private static final float far = 5000f;
 
@@ -156,6 +158,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     private final float[] viewMatrixSkyBox = new float[16];
     private SkyBox[] skyBoxes = null;
     private Object3DData[] skyBoxes3D = null;
+    private Quaternion orientation = new Quaternion(0,0,0,1);
 
     /**
      * Whether the info of the model has been written to console log
@@ -224,39 +227,53 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     }
 
     public void setProjection(Projection projection){
-        Log.d(TAG, "onSurfaceChanged: projection: [" + projection + "]");
-
+        Log.d(TAG, "setProjection: projection: [" + projection + "]");
         this.projection = projection;
+        refreshMatrices();
 
-        final ViewEvent eventObject;
-        switch (projection){
-            case PERSPECTIVE:
-                // Each individual eye has a horizontal FOV of about 135 degrees
-                // and a vertical FOV of just over 180 degrees.
-                Matrix.frustumM(projectionMatrix, 0, -ratio*getNear(), ratio*getNear(), -getNear(), getNear(), getNear(), getFar());
-                Matrix.frustumM(projectionMatrixRight, 0, -ratio*getNear(), ratio*getNear(), -getNear(), getNear(), getNear(), getFar());
-                Matrix.frustumM(projectionMatrixLeft, 0, -ratio*getNear(), ratio*getNear(), -getNear(), getNear(), getNear(), getFar());
-                eventObject = new ViewEvent(this, ViewEvent.Code.PROJECTION_CHANGED, width, height);
-                break;
-            case ORTHOGRAPHIC:
-            case ISOMETRIC:
-                //Matrix.orthoM(projectionMatrix, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
-                Matrix.orthoM(projectionMatrix, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
-                Matrix.orthoM(projectionMatrixRight, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
-                Matrix.orthoM(projectionMatrixLeft, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
-                eventObject = new ViewEvent(this, ViewEvent.Code.PROJECTION_CHANGED, width, height);
-                break;
-            default:
-                throw new UnsupportedOperationException();
-        }
-        Log.i("ModelRenderer", "Toggled projection: " + this.projection);
-
+        // fire event
+        final ViewEvent eventObject = new ViewEvent(this, ViewEvent.Code.PROJECTION_CHANGED, width, height);
         eventObject.setProjection(this.projection);
         AndroidUtils.fireEvent(listeners, eventObject);
     }
 
+    public void refreshMatrices(){
+        Log.d(TAG, "updateMatrices: projection: [" + projection + "]");
+
+        if (ratio == 0) return;
+
+        // initialize skybox
+        Matrix.frustumM(projectionMatrixSkyBox, 0, -ratio, ratio, -1, 1, 2f, getFar());
+
+        switch (getProjection()){
+            case PERSPECTIVE:
+                // Each individual eye has a horizontal FOV of about 135 degrees
+                // and a vertical FOV of just over 180 degrees.
+                Matrix.frustumM(projectionMatrix, 0, -ratio*getNear(), ratio*getNear(), -1*getNear(), 1*getNear(), getNear(), getFar());
+                Matrix.frustumM(projectionMatrixRight, 0, -ratio*getNear(), ratio*getNear(), -getNear(), getNear(), getNear(), getFar());
+                Matrix.frustumM(projectionMatrixLeft, 0, -ratio*getNear(), ratio*getNear(), -getNear(), getNear(), getNear(), getFar());
+                break;
+            case ORTHOGRAPHIC:
+            case ISOMETRIC:
+                Matrix.orthoM(projectionMatrix, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
+                Matrix.orthoM(projectionMatrixRight, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
+                Matrix.orthoM(projectionMatrixLeft, 0, -ratio/getZoom(), ratio/getZoom(), -1/getZoom(), 1/getZoom(), getNear(), getFar());
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
+
     public void toggleLights() {
         lightsEnabled = !lightsEnabled;
+    }
+
+    public void setSkyBoxId(int skyBoxId) {
+        isUseskyBoxId = skyBoxId;
+    }
+
+    public int getSkyBoxId(){
+        return isUseskyBoxId;
     }
 
     public void toggleSkyBox() {
@@ -324,14 +341,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         // the projection matrix is the 3D virtual space (cube) that we want to project
         this.ratio = (float) width / height;
 
-        // initialize skybox
-        Matrix.frustumM(projectionMatrixSkyBox, 0, -ratio, ratio, -1, 1, 2f, getFar());
+        // initialize projection
+        refreshMatrices();
 
         // fire event
         AndroidUtils.fireEvent(listeners, new ViewEvent(this, ViewEvent.Code.SURFACE_CHANGED, width, height));
-
-        // initialize projection
-        setProjection(Projection.PERSPECTIVE);
     }
 
     @Override
@@ -347,6 +361,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             // Draw background color
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
             GLES20.glColorMask(true, true, true, true);
+            GLES20.glLineWidth((float) Math.PI);
 
             if (scene == null) {
                 // scene not ready
@@ -374,6 +389,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             cameraPosInWorldSpace[1] = camera.getyPos();
             cameraPosInWorldSpace[2] = camera.getzPos();
             if (camera.hasChanged()) {
+
                 // INFO: Set the camera position (View matrix)
                 // The camera has 3 vectors (the position, the vector where we are looking at, and the up position (sky)
 
@@ -417,12 +433,13 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
                 }
 
-                camera.setChanged(false);
+                //camera.setChanged(false);
             }
 
 
             if (!scene.isStereoscopic()) {
                 this.onDrawFrame(viewMatrix, projectionMatrix, viewProjectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                if(camera.hasChanged()) camera.setChanged(false);
                 return;
             }
 
@@ -522,8 +539,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         final Camera camera = scene.getCamera();
 
         // draw environment
-        int skyBoxId = isUseskyBoxId;
+        int skyBoxId = getSkyBoxId();
         if (skyBoxId == -3){
+            GLES20.glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
             // draw all extra objects
             for (int i = 0; i < extras.size(); i++) {
                 drawObject(viewMatrix, projectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, false, false, false, false, false, extras, i);
@@ -559,11 +577,20 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 }
                 Matrix.setLookAtM(viewMatrixSkyBox, 0, 0, 0, 0, camera.getxView() - camera.getxPos(), camera.getyView() - camera.getyPos(),
                         camera.getzView() - camera.getzPos(), camera.getxUp() - camera.getxPos(), camera.getyUp() - camera.getyPos(), camera.getzUp() - camera.getzPos());
-                if (scene.isFixCoordinateSystem()){
+                /*if (scene.isFixCoordinateSystem()){
                     Matrix.rotateM(viewMatrixSkyBox, 0, 90, 1, 0, 0);
-                }
+                }*/
                 Renderer basicShader = drawer.getSkyBoxDrawer();
                 basicShader.draw(skyBoxes3D[skyBoxId], projectionMatrixSkyBox, viewMatrixSkyBox, skyBoxes3D[skyBoxId].getMaterial().getTextureId(), null, cameraPosInWorldSpace);
+
+                // sensor stuff
+                /*this.orientation.toRotationMatrix(viewMatrixSkyBox);
+                float[] rot = new float[16];
+                Matrix.setRotateM(rot,0,90,1,0,0);
+                float[] mat = new float[16];
+                Matrix.multiplyMM(mat,0,viewMatrixSkyBox,0, rot,0);
+                Renderer basicShader = drawer.getSkyBoxDrawer();
+                basicShader.draw(skyBoxes3D[skyBoxId], projectionMatrixSkyBox, mat, skyBoxes3D[skyBoxId].getMaterial().getTextureId(), null, cameraPosInWorldSpace);*/
             } catch (Throwable ex) {
                 Log.e("ModelRenderer", "Error rendering sky box. " + ex.getMessage(), ex);
                 isDrawSkyBox = false;
@@ -585,7 +612,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
             // Calculate position of the light in world space to support lighting
             if (scene.isRotatingLight()) {
-                Matrix.multiplyMV(tempVector4, 0, scene.getLightBulb().getModelMatrix(), 0, lightPosition, 0);
+                // FIXME: memory leak
+                Matrix.multiplyMV(tempVector4, 0, scene.getLightBulb().getModelMatrix(), 0,
+                        Math3DUtils.to4d(scene.getLightBulb().getLocation()), 0);
                 lightPosInWorldSpace[0] = tempVector4[0];
                 lightPosInWorldSpace[1] = tempVector4[1];
                 lightPosInWorldSpace[2] = tempVector4[2];
@@ -734,7 +763,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     drawerObject.draw(objData, projectionMatrix, viewMatrix
                             , GLES20.GL_POINTS, objData.getDrawSize(),
                             textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
-                    objData.render(drawer, lightPosInWorldSpace, colorMask);
+                    objData.render(drawer, scene.getCamera(), lightPosInWorldSpace, colorMask);
                 }
 
                 // draw skeleton
@@ -766,7 +795,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     }
                     drawerObject.draw(objData, projectionMatrix, viewMatrix,
                             textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
-                    objData.render(drawer, lightPosInWorldSpace, colorMask);
+                    objData.render(drawer, scene.getCamera(), lightPosInWorldSpace, colorMask);
                 }
             }
 
@@ -811,6 +840,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             Log.i("ModelRenderer", "Building bounding box... id: " + objData.getId());
             boundingBoxData = BoundingBox.build(objData);
             boundingBoxData.setColor(COLOR_WHITE);
+            boundingBoxData.setModelMatrix(objData.getModelMatrix());
+            boundingBoxData.setReadOnly(true);
             boundingBoxes.put(objData, boundingBoxData);
             Log.i("ModelRenderer", "Bounding box: " + boundingBoxData);
         }
@@ -853,5 +884,13 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
     public void addZoom(float zoom) {
         this.setZoom(getZoom() + zoom);
+    }
+
+    public Quaternion getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(Quaternion orientation) {
+        this.orientation = orientation;
     }
 }

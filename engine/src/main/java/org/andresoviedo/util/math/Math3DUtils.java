@@ -709,5 +709,9 @@ public class Math3DUtils {
             }
         }
     }
+
+    public static float[] to4d(float[] v3d) {
+        return new float[]{v3d[0], v3d[1], v3d[2], 1};
+    }
 }
 

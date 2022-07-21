@@ -3,7 +3,12 @@ package org.andresoviedo.app.model3D.view;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,14 +16,22 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
+
 import org.andresoviedo.android_3d_model_engine.camera.CameraController;
 import org.andresoviedo.android_3d_model_engine.collision.CollisionController;
+import org.andresoviedo.android_3d_model_engine.collision.CollisionEvent;
 import org.andresoviedo.android_3d_model_engine.controller.TouchController;
+import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
+import org.andresoviedo.android_3d_model_engine.model.Projection;
 import org.andresoviedo.android_3d_model_engine.services.LoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
+import org.andresoviedo.android_3d_model_engine.view.FPSEvent;
 import org.andresoviedo.android_3d_model_engine.view.ModelSurfaceView;
 import org.andresoviedo.android_3d_model_engine.view.ViewEvent;
 import org.andresoviedo.app.model3D.demo.DemoLoaderTask;
@@ -67,9 +80,12 @@ public class ModelActivity extends Activity implements EventListener {
     private Handler handler;
     private CameraController cameraController;
 
+    private SensorManager sensorManager;
+    private Sensor sensor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i("ModelActivity", "Loading activity...");
+        Log.i("ModelActivity", "onCreate: Loading activity... "+savedInstanceState);
         super.onCreate(savedInstanceState);
 
         // Try to get input parameters
@@ -100,7 +116,7 @@ public class ModelActivity extends Activity implements EventListener {
 
         // Create our 3D scenario
         Log.i("ModelActivity", "Loading Scene...");
-        scene = new SceneLoader(this, paramUri, paramType, glView);
+        scene = new SceneLoader(this, paramUri, paramType);
         if (paramUri == null) {
             final LoaderTask task = new DemoLoaderTask(this, null, scene);
             task.execute();
@@ -118,7 +134,7 @@ public class ModelActivity extends Activity implements EventListener {
             glView = new ModelSurfaceView(this, backgroundColor, this.scene);
             glView.addListener(this);
             setContentView(glView);
-            scene.setView(glView);
+//            scene.setView(glView);
         } catch (Exception e) {
             Log.e("ModelActivity", e.getMessage(), e);
             Toast.makeText(this, "Error loading OpenGL view:\n" + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -128,7 +144,7 @@ public class ModelActivity extends Activity implements EventListener {
             Log.i("ModelActivity", "Loading TouchController...");
             touchController = new TouchController(this);
             touchController.addListener(this);
-            touchController.addListener(glView);
+            //touchController.addListener(glView);
         } catch (Exception e) {
             Log.e("ModelActivity", e.getMessage(), e);
             Toast.makeText(this, "Error loading TouchController:\n" + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -137,9 +153,9 @@ public class ModelActivity extends Activity implements EventListener {
         try {
             Log.i("ModelActivity", "Loading CollisionController...");
             collisionController = new CollisionController(glView, scene);
-            collisionController.addListener(scene);
-            touchController.addListener(collisionController);
-            touchController.addListener(scene);
+            collisionController.addListener(this);
+            //touchController.addListener(collisionController);
+            //touchController.addListener(scene);
         } catch (Exception e) {
             Log.e("ModelActivity", e.getMessage(), e);
             Toast.makeText(this, "Error loading CollisionController\n" + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -148,8 +164,8 @@ public class ModelActivity extends Activity implements EventListener {
         try {
             Log.i("ModelActivity", "Loading CameraController...");
             cameraController = new CameraController(scene.getCamera());
-            glView.getModelRenderer().addListener(cameraController);
-            touchController.addListener(cameraController);
+            //glView.getModelRenderer().addListener(cameraController);
+            //touchController.addListener(cameraController);
         } catch (Exception e) {
             Log.e("ModelActivity", e.getMessage(), e);
             Toast.makeText(this, "Error loading CameraController" + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -172,11 +188,83 @@ public class ModelActivity extends Activity implements EventListener {
 
         setupOnSystemVisibilityChangeListener();
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            setupOrientationListener();
+        }
+
         // load model
         scene.init();
 
         Log.i("ModelActivity", "Finished loading");
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void setupOrientationListener() {
+        try {
+            //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+            //sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
+            sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+            if (sensor != null) {
+                sensorManager.registerListener(new SensorEventListener() {
+                                                   @Override
+                                                   public void onSensorChanged(SensorEvent event) {
+                                                       /*Log.v("ModelActivity","sensor: "+ Arrays.toString(event.values));
+                                                           Quaternion orientation = new Quaternion(event.values);
+                                                           orientation.normalize();
+                                                           //scene.getSelectedObject().setOrientation(orientation);
+                                                           glView.setOrientation(orientation);*/
+                                                   }
+
+                                                   @Override
+                                                   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+                                                   }
+                                               }, sensor,
+                        SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
+            }
+            OrientationEventListener mOrientationListener = new OrientationEventListener(
+                    getApplicationContext()) {
+                @Override
+                public void onOrientationChanged(int orientation) {
+                    //scene.onOrientationChanged(orientation);
+                }
+            };
+
+            if (mOrientationListener.canDetectOrientation()) {
+                mOrientationListener.enable();
+            }
+        } catch (Exception e) {
+            Log.e("ModelActivity","There is an issue setting up sensors",e);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putFloatArray("camera.pos",scene.getCamera().getPos());
+        outState.putFloatArray("camera.view",scene.getCamera().getView());
+        outState.putFloatArray("camera.up",scene.getCamera().getUp());
+        outState.putString("renderer.projection",glView.getProjection().name());
+        outState.putInt("renderer.skybox",glView.getSkyBoxId());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle state) {
+        if(state.containsKey("renderer.projection")) {
+            glView.setProjection(Projection.valueOf(state.getString("renderer.projection")));
+        }
+        if(state.containsKey("camera.pos") && state.containsKey("camera.view") && state.containsKey("camera.up")){
+            Log.d("ModelActivity","onRestoreInstanceState: Restoring camera settings...");
+            scene.getCamera().set(
+                    state.getFloatArray("camera.pos"),
+                    state.getFloatArray("camera.view"),
+                    state.getFloatArray("camera.up"));
+        }
+        if(state.containsKey("renderer.skybox")){
+            glView.setSkyBox(state.getInt("renderer.skybox"));
+        }
+    }
+
 
     /**
      * Set up the {@link android.app.ActionBar}, if the API is available.
@@ -362,17 +450,45 @@ public class ModelActivity extends Activity implements EventListener {
 
     @Override
     public boolean onEvent(EventObject event) {
-        if (event instanceof ViewEvent) {
+        Log.v("ModelActivity","Processing event... "+ event);
+        if (event instanceof FPSEvent){
+            gui.onEvent(event);
+        }
+        else if (event.getSource() instanceof MotionEvent){
+            // event coming from glview
+            touchController.onMotionEvent((MotionEvent) event.getSource());
+        }
+        else if (event instanceof CollisionEvent){
+            scene.onEvent(event);
+        }
+        else if (event instanceof TouchEvent){
+            TouchEvent touchEvent = (TouchEvent) event;
+            if (touchEvent.getAction() == TouchEvent.Action.CLICK){
+                if (!collisionController.onEvent(event)){
+                    scene.onEvent(event);
+                }
+            } else {
+                if (scene.getSelectedObject() != null) {
+                    scene.onEvent(event);
+                } else {
+                    cameraController.onEvent(event);
+                    scene.onEvent(event);
+                }
+            }
+        }
+        else if (event instanceof ViewEvent) {
             ViewEvent viewEvent = (ViewEvent) event;
             if (viewEvent.getCode() == ViewEvent.Code.SURFACE_CHANGED) {
-                touchController.setSize(viewEvent.getWidth(), viewEvent.getHeight());
-                glView.setTouchController(touchController);
+                cameraController.onEvent(viewEvent);
+                touchController.onEvent(viewEvent);
 
                 // process event in GUI
                 if (gui != null) {
                     gui.setSize(viewEvent.getWidth(), viewEvent.getHeight());
                     gui.setVisible(true);
                 }
+            } else if (viewEvent.getCode() == ViewEvent.Code.PROJECTION_CHANGED){
+                cameraController.onEvent(event);
             }
         }
         return true;

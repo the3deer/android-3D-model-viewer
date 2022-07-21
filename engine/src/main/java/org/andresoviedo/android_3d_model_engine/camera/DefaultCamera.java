@@ -12,9 +12,6 @@ public class DefaultCamera extends Camera {
 
     private final float[] savePos;
     private final float[] saveUp;
-    // cache
-    private final float[] coordinates = new float[16];
-    private final float[] buffer = new float[12 + 12 + 16 + 16];
 
     public DefaultCamera(Camera delegate) {
         super(delegate);
@@ -36,7 +33,7 @@ public class DefaultCamera extends Camera {
     }
 
     @Override
-    public synchronized void translateCamera(float dX, float dY) {
+    public void translateCamera(float dX, float dY) {
         translateCameraImpl(dX, dY);
     }
 
@@ -47,26 +44,21 @@ public class DefaultCamera extends Camera {
         // First we need to get the direction at which we are looking.
         // The look direction is the view minus the position (where we are).
         // Get the Direction of the view.
+        float[] look = Math3DUtils.substract(view,pos);
+        Math3DUtils.normalize(look);
         float xLook, yLook, zLook;
-        xLook = getxView() - getxPos();
-        yLook = getyView() - getyPos();
-        zLook = getzView() - getzPos();
-        vlen = Matrix.length(xLook, yLook, zLook);
-        xLook /= vlen;
-        yLook /= vlen;
-        zLook /= vlen;
+        xLook = look[0];
+        yLook = look[1];
+        zLook = look[2];
 
         // Arriba is the 3D vector that is **almost** equivalent to the 2D user Y vector
         // Get the direction of the up vector
+        float[] arriba = up.clone(); //Math3DUtils.substract(up,pos);
+        Math3DUtils.normalize(arriba);
         float xArriba, yArriba, zArriba;
-        xArriba = getxUp() - getxPos();
-        yArriba = getyUp() - getyPos();
-        zArriba = getzUp() - getzPos();
-        // Normalize the Right.
-        vlen = Matrix.length(xArriba, yArriba, zArriba);
-        xArriba /= vlen;
-        yArriba /= vlen;
-        zArriba /= vlen;
+        xArriba = arriba[0];
+        yArriba = arriba[1];
+        zArriba = arriba[2];
 
         // Right is the 3D vector that is equivalent to the 2D user X vector
         // In order to calculate the Right vector, we have to calculate the cross product of the
@@ -74,6 +66,9 @@ public class DefaultCamera extends Camera {
 
         // The cross product is defined like:
         // A x B = (a1, a2, a3) x (b1, b2, b3) = (a2 * b3 - b2 * a3 , - a1 * b3 + b1 * a3 , a1 * b2 - b1 * a2)
+        float[] right = Math3DUtils.crossProduct(up, pos);
+        Math3DUtils.normalize(right);
+
         float xRight, yRight, zRight;
         xRight = (yLook * zArriba) - (zLook * yArriba);
         yRight = (zLook * xArriba) - (xLook * zArriba);
@@ -96,6 +91,7 @@ public class DefaultCamera extends Camera {
         zArriba /= vlen;
 
         // coordinates = new float[] { pos[0], pos[1], pos[2], 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
+        final float[] coordinates = new float[12];
         coordinates[0] = getxPos();
         coordinates[1] = getyPos();
         coordinates[2] = getzPos();
@@ -108,6 +104,8 @@ public class DefaultCamera extends Camera {
         coordinates[9] = getyUp();
         coordinates[10] = getzUp();
         coordinates[11] = 1;
+
+        final float[] buffer = new float[16];
 
         if (dX != 0 && dY != 0) {
 
@@ -123,44 +121,45 @@ public class DefaultCamera extends Camera {
             yArriba *= dX;
             zArriba *= dX;
 
-            // Then we add the 2 affected vectors to the the final rotation vector
-            float rotX, rotY, rotZ;
-            rotX = xRight + xArriba;
-            rotY = yRight + yArriba;
-            rotZ = zRight + zArriba;
-            vlen = Matrix.length(rotX, rotY, rotZ);
-            rotX /= vlen;
-            rotY /= vlen;
-            rotZ /= vlen;
+            float[] rightd = Math3DUtils.multiply(right, dY);
+            float[] upd = Math3DUtils.multiply(up, dX);
+            float[] rot = Math3DUtils.add(rightd,upd);
+            float length = Math3DUtils.length(rot);
+            Math3DUtils.normalize(rot);
 
             // in this case we use the vlen angle because the diagonal is not perpendicular
             // to the initial Right and Arriba vectors
-            Math3DUtils.createRotationMatrixAroundVector(buffer, 24, vlen, rotX, rotY, rotZ);
+            Math3DUtils.createRotationMatrixAroundVector(buffer, 0, length, rot[0], rot[1], rot[2]);
         } else if (dX != 0) {
             // in this case the user is drawing an horizontal line: <-- ó -->
-            Math3DUtils.createRotationMatrixAroundVector(buffer, 24, dX, xArriba, yArriba, zArriba);
+            Math3DUtils.createRotationMatrixAroundVector(buffer, 0, dX, xArriba, yArriba, zArriba);
         } else {
             // in this case the user is drawing a vertical line: |^  v|
-            Math3DUtils.createRotationMatrixAroundVector(buffer, 24, dY, xRight, yRight, zRight);
+            Math3DUtils.createRotationMatrixAroundVector(buffer, 0, dY, xRight, yRight, zRight);
         }
-        Math3DUtils.multiplyMMV(buffer, 0, buffer, 24, coordinates, 0);
 
-        if (isOutOfBounds(buffer[0], buffer[1], buffer[2])) return;
+        float[] newBuffer = new float[12];
+        Math3DUtils.multiplyMMV(newBuffer, 0, buffer, 0, coordinates, 0);
 
-        pos[0] = buffer[0] / buffer[3];
-        pos[1] = buffer[1] / buffer[3];
-        pos[2] = buffer[2] / buffer[3];
-        view[0] = buffer[4] / buffer[4 + 3];
-        view[1] = buffer[4 + 1] / buffer[4 + 3];
-        view[2] = buffer[4 + 2] / buffer[4 + 3];
-        up[0] = buffer[8] / buffer[8 + 3];
-        up[1] = buffer[8 + 1] / buffer[8 + 3];
-        up[2] = buffer[8 + 2] / buffer[8 + 3];
+        if (isOutOfBounds(newBuffer[0], newBuffer[1], newBuffer[2])) return;
+
+        pos[0] = newBuffer[0];
+        pos[1] = newBuffer[1];
+        pos[2] = newBuffer[2];
+        //view[0] = newBuffer[4];
+        //view[1] = newBuffer[4 + 1];
+        //view[2] = newBuffer[4 + 2];
+        up[0] = newBuffer[8];
+        up[1] = newBuffer[8 + 1];
+        up[2] = newBuffer[8 + 2];
+        Math3DUtils.normalize(up);
 
         delegate.setChanged(true);
+        save();
     }
 
-    public void MoveCameraZ(float direction) {
+    public  synchronized void MoveCameraZ(float direction) {
+        //if (true) return;
         // Moving the camera requires a little more then adding 1 to the z or
         // subracting 1.
         // First we need to get the direction at which we are looking.
@@ -181,18 +180,21 @@ public class DefaultCamera extends Camera {
         float y = pos[1] + yLookDirection * direction;
         float z = pos[2] + zLookDirection * direction;
 
+
         if (isOutOfBounds(x, y, z)) return;
 
         pos[0] = x;
         pos[1] = y;
         pos[2] = z;
 
-        delegate.setChanged(true);
         save();
+
+        delegate.setChanged(true);
     }
 
     @Override
-    public void Rotate(float angle) {
+    public synchronized void Rotate(float angle) {
+
         if (angle == 0 || Float.isNaN(angle)) {
             Log.w("DefaultCamera", "NaN");
             return;
@@ -205,8 +207,12 @@ public class DefaultCamera extends Camera {
         yLook /= vlen;
         zLook /= vlen;
 
-        Math3DUtils.createRotationMatrixAroundVector(buffer, 24, angle, xLook, yLook, zLook);
+        final float[] buffer = new float[16];
+        Math3DUtils.createRotationMatrixAroundVector(buffer, 0, angle, xLook, yLook, zLook);
         // float[] coordinates = new float[] { xPos, pos[1], pos[2], 1, xView, yView, zView, 1, xUp, yUp, zUp, 1 };
+
+        final float[] coordinates= new float[12];
+
         coordinates[0] = pos[0];
         coordinates[1] = pos[1];
         coordinates[2] = pos[2];
@@ -219,18 +225,21 @@ public class DefaultCamera extends Camera {
         coordinates[9] = getyUp();
         coordinates[10] = getzUp();
         coordinates[11] = 1;
-        Math3DUtils.multiplyMMV(buffer, 0, buffer, 24, coordinates, 0);
 
-        pos[0] = buffer[0];
-        pos[1] = buffer[1];
-        pos[2] = buffer[2];
-        view[0] = buffer[4];
-        view[1] = buffer[4 + 1];
-        view[2] = buffer[4 + 2];
-        up[0] = buffer[8];
-        up[1] = buffer[8 + 1];
-        up[2] = buffer[8 + 2];
+        float[] newBuffer = new float[16];
+        Math3DUtils.multiplyMMV(newBuffer, 0, buffer, 0, coordinates, 0);
+
+        pos[0] = newBuffer[0];
+        pos[1] = newBuffer[1];
+        pos[2] = newBuffer[2];
+        //view[0] = buffer[4];
+        //view[1] = buffer[4 + 1];
+        //view[2] = buffer[4 + 2];
+        up[0] = newBuffer[8];
+        up[1] = newBuffer[8 + 1];
+        up[2] = newBuffer[8 + 2];
 
         delegate.setChanged(true);
+        save();
     }
 }

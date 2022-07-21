@@ -6,11 +6,12 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
-import org.andresoviedo.android_3d_model_engine.controller.TouchController;
 import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
+import org.andresoviedo.android_3d_model_engine.model.Projection;
 import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
 import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.event.EventListener;
+import org.andresoviedo.util.math.Quaternion;
 
 import java.util.ArrayList;
 import java.util.EventObject;
@@ -25,8 +26,6 @@ import java.util.List;
 public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 
 	private final ModelRenderer mRenderer;
-
-	private TouchController touchController;
 
 	private final List<EventListener> listeners = new ArrayList<>();
 
@@ -49,10 +48,6 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 		}
 	}
 
-	public void setTouchController(TouchController touchController){
-		this.touchController = touchController;
-	}
-
 	public void addListener(EventListener listener){
 		listeners.add(listener);
 	}
@@ -67,28 +62,19 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		try {
-			return touchController.onMotionEvent(event);
-		} catch (Exception ex) {
-			Log.e("ModelSurfaceView","Exception: "+ ex.getMessage(),ex);
-		}
-		return false;
+		// propagate event to responsible...
+		AndroidUtils.fireEvent(listeners, new EventObject(event));
+		return true;
 	}
 
-	public ModelRenderer getModelRenderer() {
-		return mRenderer;
-	}
 
-	private void fireEvent(EventObject event) {
-		AndroidUtils.fireEvent(listeners,event);
-	}
 
 	@Override
 	public boolean onEvent(EventObject event) {
 		if (event instanceof TouchEvent &&  ((TouchEvent) event).getAction() == TouchEvent.Action.PINCH){
 			mRenderer.addZoom(-mRenderer.getZoom() * ((TouchEvent) event).getZoom() / 100f);
 		} else {
-			fireEvent(event);
+			AndroidUtils.fireEvent(listeners, event);
 		}
 		return true;
 	}
@@ -99,10 +85,28 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 		Toast.makeText(getContext(), "Projection: "+mRenderer.getProjection(), Toast.LENGTH_SHORT).show();
 	}
 
+
+	public void setProjection(Projection projection) {
+		mRenderer.setProjection(projection);
+	}
+
+	public Projection getProjection(){
+		return mRenderer.getProjection();
+	}
+
 	public void toggleLights() {
 		Log.i("ModelSurfaceView","Toggling lights...");
 		mRenderer.toggleLights();
 	}
+
+	public int getSkyBoxId(){
+		return mRenderer.getSkyBoxId();
+	}
+
+	public void setSkyBox(int skyBoxId) {
+		mRenderer.setSkyBoxId(skyBoxId);
+	}
+
 
 	public void toggleSkyBox() {
 		Log.i("ModelSurfaceView","Toggling sky box...");
@@ -133,4 +137,7 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 		return mRenderer.isLightsEnabled();
 	}
 
+    public void setOrientation(Quaternion orientation) {
+		mRenderer.setOrientation(orientation);
+    }
 }

@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
+import org.andresoviedo.android_3d_model_engine.view.ViewEvent;
 import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.event.EventListener;
 import org.andresoviedo.util.math.Math3DUtils;
@@ -15,7 +16,7 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
-public class TouchController {
+public class TouchController implements EventListener {
 
 	private static final String TAG = TouchController.class.getSimpleName();
 
@@ -190,34 +191,36 @@ public class TouchController {
 
 			// gesture detection
 			isOneFixedAndOneMoving = ((dx1 + dy1) == 0) != (((dx2 + dy2) == 0));
-			fingersAreClosing = !isOneFixedAndOneMoving && (Math.abs(dx1 + dx2) < 5 && Math.abs(dy1 + dy2) < 5);
+			fingersAreClosing = (Math.abs(dx1 + dx2) < 5 && Math.abs(dy1 + dy2) < 5);
 			isRotating = !isOneFixedAndOneMoving && (dx1 != 0 && dy1 != 0 && dx2 != 0 && dy2 != 0);
 		}
 
 		if (pointerCount == 1 && simpleTouch) {
 			fireEvent(new TouchEvent(this, TouchEvent.CLICK, width, height, x1, y1));
-		}
-
-		if (touchDelay > 2) {
-			// INFO: Process gesture
-			if (pointerCount == 1 && currentPress1 > 4.0f) {
-			} else if (pointerCount == 1) {
-				fireEvent(new TouchEvent(this, TouchEvent.MOVE, width, height, previousX1, previousY1,
-						x1, y1, dx1, dy1, 0,
-						0f));
-				touchStatus = TOUCH_STATUS_MOVING_WORLD;
-			} else if (pointerCount == 2) {
-				if (fingersAreClosing) {
-					fireEvent(new TouchEvent(this, TouchEvent.PINCH, width, height, previousX1, previousY1,
-							x1, y1, dx1, dy1, (previousLength - length), 0f));
-					touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
-				}
-				if (isRotating) {
-					final double angle = Math3DUtils.calculateAngleBetween(previousVector, vector);
-					if (Math.abs(angle) >= Math.PI/180) {
-						fireEvent(new TouchEvent(this, TouchEvent.ROTATE, width, height, previousX1, previousY1
-								, x1, y1, dx1, dy1, 0, (float) angle));
-						touchStatus = TOUCH_STATUS_ROTATING_CAMERA;
+		} else {
+			if (touchDelay > 2) {
+				// INFO: Process gesture
+				if (pointerCount == 1 && currentPress1 > 4.0f) {
+				} else if (pointerCount == 1) {
+					Log.v("TouchController","Firing move...");
+					fireEvent(new TouchEvent(this, TouchEvent.MOVE, width, height, previousX1, previousY1,
+							x1, y1, dx1, dy1, 0,
+							0f));
+					touchStatus = TOUCH_STATUS_MOVING_WORLD;
+				} else if (pointerCount == 2) {
+					if (fingersAreClosing && (currentPress1 + currentPress2) > 1f) {
+						Log.v("TouchController","Firing pinch...");
+						fireEvent(new TouchEvent(this, TouchEvent.PINCH, width, height, previousX1, previousY1,
+								x1, y1, dx1, dy1, (previousLength - length), 0f));
+						touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
+						fingersAreClosing = false;
+					} else if (isRotating) {
+						final double angle = Math3DUtils.calculateAngleBetween(previousVector, vector);
+						if (Math.abs(angle) >= Math.PI / 180) {
+							fireEvent(new TouchEvent(this, TouchEvent.ROTATE, width, height, previousX1, previousY1
+									, x1, y1, dx1, dy1, 0, (float) angle));
+							touchStatus = TOUCH_STATUS_ROTATING_CAMERA;
+						}
 					}
 				}
 			}
@@ -234,6 +237,18 @@ public class TouchController {
 
 		if (gestureChanged && touchDelay > 1) {
 			gestureChanged = false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean onEvent(EventObject event) {
+		Log.v("TouchController","Processing event... "+ event);
+		if (event instanceof ViewEvent) {
+			ViewEvent viewEvent = (ViewEvent) event;
+			if (viewEvent.getCode() == ViewEvent.Code.SURFACE_CHANGED) {
+				this.setSize(viewEvent.getWidth(), viewEvent.getHeight());
+			}
 		}
 		return true;
 	}

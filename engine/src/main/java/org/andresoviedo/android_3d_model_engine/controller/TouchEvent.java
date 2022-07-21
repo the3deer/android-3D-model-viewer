@@ -90,6 +90,10 @@ public class TouchEvent extends EventObject {
         return angle;
     }
 
+    public float getLength() {
+        return (float) Math.sqrt(dX * dX + dY * dY);
+    }
+
     @Override
     public String toString() {
         return "TouchEvent{" +

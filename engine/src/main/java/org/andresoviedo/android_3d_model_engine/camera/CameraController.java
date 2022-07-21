@@ -1,5 +1,7 @@
 package org.andresoviedo.android_3d_model_engine.camera;
 
+import android.util.Log;
+
 import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
 import org.andresoviedo.android_3d_model_engine.model.Projection;
@@ -26,6 +28,7 @@ public final class CameraController implements EventListener {
         this.handlerIsometric = new IsometricCamera(camera);
         this.handlerOrtho = new OrthographicCamera(camera);
         this.handler = handlerDefault;
+        this.handler.enable();
     }
 
     private void updateHandler(Projection projection) {
@@ -42,6 +45,7 @@ public final class CameraController implements EventListener {
             default:
                 throw new UnsupportedOperationException("Unsupported projection: "+projection);
         }
+        this.camera.setDelegate(this.handler);
         this.handler.enable();
     }
 
@@ -74,9 +78,9 @@ public final class CameraController implements EventListener {
                     handler.translateCamera(dx1, dy1);
                     break;
                 case PINCH:
-                    final float zoomFactor = ((TouchEvent) event).getZoom();
-                    final float distance = camera.getDistance();
-                    handler.MoveCameraZ(-0.001f * distance * zoomFactor);
+                    final float zoomFactor = ((TouchEvent) event).getZoom() / 100f;
+                    final float distance = camera.getDistance() ;
+                    handler.MoveCameraZ( -zoomFactor * distance );
                     break;
                 case ROTATE:
                     float rotation = touchEvent.getAngle();

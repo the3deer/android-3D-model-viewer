@@ -45,4 +45,11 @@ public class ViewEvent extends EventObject {
     public void setProjection(Projection projection) {
         this.projection = projection;
     }
+
+    @Override
+    public String toString() {
+        return "ViewEvent{" +
+                "code=" + code +
+                '}';
+    }
 }
