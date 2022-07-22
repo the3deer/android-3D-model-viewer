@@ -43,9 +43,9 @@ public class CameraAnimation extends Animation<Camera> {
             float y2 = (Float) args[8];
             float z2 = (Float) args[9];
 
-            float xView = 0;
-            float yView = 0;
-            float zView = 0;
+            float xUp2 = (float) args[10];
+            float yUp2 = (float) args[11];
+            float zUp2 = (float) args[12];
 
             progress = (float)Math.sin(Math.toRadians(progress * 90f / Constants.TOTAL_ANIMATION_FRAMES));
             //progress = progress / 100f;
@@ -85,12 +85,30 @@ public class CameraAnimation extends Animation<Camera> {
                 float zPos = z0 + (z2 - z0) * progress;
 
                 // UP vector was forced
-                xUp = xUp0 + ((float)(args[10]) - xUp0)*progress;
-                yUp = yUp0 + ((float)(args[11]) - yUp0)*progress;
-                zUp = zUp0 + ((float)(args[12]) - zUp0)*progress;
+                xUp = xUp0 + (xUp2 - xUp0)*progress;
+                yUp = yUp0 + (yUp2 - yUp0)*progress;
+                zUp = zUp0 + (zUp2 - zUp0)*progress;
+
+                float xView = getTarget().getxView();
+                float yView = getTarget().getyView();
+                float zView = getTarget().getzView();
+
+                if (args.length > 13) {
+                    float xView0 = (float) args[13];
+                    float yView0 = (float) args[14];
+                    float zView0 = (float) args[15];
+
+                    float xView2 = (float) args[16];
+                    float yView2 = (float) args[17];
+                    float zView2 = (float) args[18];
+
+                    xView = xView0 + (xView2 - xView0)*progress;
+                    yView = yView0 + (yView2 - yView0)*progress;
+                    zView = zView0 + (zView2 - zView0)*progress;
+                }
 
                 getTarget().set(xPos, yPos, zPos,
-                        getTarget().getxView(), getTarget().getyView(), getTarget().getzView(),
+                        xView, yView, zView,
                         xUp, yUp, zUp);
             }
         }

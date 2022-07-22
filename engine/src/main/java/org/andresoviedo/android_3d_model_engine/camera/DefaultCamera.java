@@ -11,12 +11,14 @@ public class DefaultCamera extends Camera {
     private final Camera delegate;
 
     private final float[] savePos;
+    private final float[] saveView;
     private final float[] saveUp;
 
     public DefaultCamera(Camera delegate) {
         super(delegate);
         this.delegate = delegate;
         this.savePos = this.pos.clone();
+        this.saveView = new float[]{0,0,0,0};
         this.saveUp = this.up.clone();
     }
 
@@ -24,7 +26,8 @@ public class DefaultCamera extends Camera {
     public void enable(){
         delegate.setDelegate(this);
         delegate.setAnimation(new CameraAnimation(delegate, new Object[]{"moveTo", getxPos(), getyPos(), getzPos(), getxUp(), getyUp(), getzUp(),
-                this.savePos[0], this.savePos[1], this.savePos[2], this.saveUp[0], this.saveUp[1], this.saveUp[2]}));
+                this.savePos[0], this.savePos[1], this.savePos[2], this.saveUp[0], this.saveUp[1], this.saveUp[2],
+                this.getxView(), this.getyView(), this.getzView(), this.saveView[0], this.saveView[1], this.saveView[2]}));
     }
 
     private void save(){

@@ -32,6 +32,8 @@ public final class Skeleton {
         skeleton.setId(animatedModel.getId() + "-skeleton");
         skeleton.setDrawMode(GLES20.GL_TRIANGLES);
         skeleton.setDrawUsingArrays(true);
+        skeleton.setModelMatrix(animatedModel.getModelMatrix());
+        skeleton.setReadOnly(true);
 
         // log event
         Log.i("Skeleton", "Building skeleton... joints: " + skeleton.getJointCount());

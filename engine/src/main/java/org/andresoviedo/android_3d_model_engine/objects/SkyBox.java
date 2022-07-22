@@ -64,13 +64,6 @@ public class SkyBox {
             1.0f, -1.0f, 1.0f
     };
 
-    static {
-
-        for (int i=0; i<VERTEX_DATA.length; i++){
-            VERTEX_DATA[i] *= 1500;
-        }
-    }
-
     public final URI[] images;
 
     private CubeMap cubeMap = null;

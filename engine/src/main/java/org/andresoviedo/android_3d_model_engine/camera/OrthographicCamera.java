@@ -14,6 +14,7 @@ public class OrthographicCamera extends Camera {
     private boolean initialized = false;
 
     private final float[] savePos;
+    private final float[] saveView;
     private final float[] saveUp;
 
     public OrthographicCamera(Camera delegate) {
@@ -22,6 +23,7 @@ public class OrthographicCamera extends Camera {
 
         // final init
         this.savePos = this.pos.clone();
+        this.saveView = new float[]{0,0,0,1};
         this.saveUp = this.up.clone();
     }
 
@@ -120,7 +122,7 @@ public class OrthographicCamera extends Camera {
         /*delegate.setAnimation(new Object[]{"moveTo", getxPos(), getyPos(), getzPos(), getxUp(), getyUp(), getzUp(),
                 savePos[0], savePos[1], savePos[2], saveUp[0], saveUp[1], saveUp[2]});*/
                 Object[] args = new Object[]{"moveTo", getxPos(), getyPos(), getzPos(), getxUp(), getyUp(), getzUp(),
-                        xp, yp, zp, xu, yu, zu};
+                        xp, yp, zp, xu, yu, zu, getxView(), getyView(), getzView(), saveView[0], saveView[1], saveView[2]};
 
                 savePos[0] = xp;
                 savePos[1] = yp;

@@ -15,6 +15,7 @@ public final class CameraController implements EventListener {
     private final Camera handlerDefault ;
     private final Camera handlerIsometric;
     private final Camera handlerOrtho;
+    private final Camera handlerPOV;
 
     private final Camera camera;
 
@@ -27,6 +28,7 @@ public final class CameraController implements EventListener {
         this.handlerDefault = new DefaultCamera(camera);
         this.handlerIsometric = new IsometricCamera(camera);
         this.handlerOrtho = new OrthographicCamera(camera);
+        this.handlerPOV = new PointOfViewCamera(camera);
         this.handler = handlerDefault;
         this.handler.enable();
     }
@@ -41,6 +43,9 @@ public final class CameraController implements EventListener {
                 break;
             case ORTHOGRAPHIC:
                 this.handler = handlerOrtho;
+                break;
+            case FREE:
+                this.handler = handlerPOV;
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported projection: "+projection);

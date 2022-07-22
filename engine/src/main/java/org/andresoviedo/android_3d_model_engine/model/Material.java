@@ -113,8 +113,10 @@ public class Material {
         if (this.getTextureData() != null){
             return COLOR_WHITE;
         }
-        if (this.color == null && this.diffuse != null){
-            this.color = new float[4];
+        if (this.diffuse != null){
+            if (this.color == null){
+                this.color = new float[4];
+            }
             this.color[0] = this.diffuse[0];
             this.color[1] = this.diffuse[1];
             this.color[2] = this.diffuse[2];

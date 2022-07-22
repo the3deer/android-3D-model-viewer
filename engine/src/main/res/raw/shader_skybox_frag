@@ -10,5 +10,5 @@ varying vec4 v_TexCoordinate;
 
 void main(){
   gl_FragColor = textureCube(u_TextureCube,v_TexCoordinate.xyz);
-  //gl_FragColor = vColor * vColorMask;
+  gl_FragColor = gl_FragColor * vColor * vColorMask;
 }

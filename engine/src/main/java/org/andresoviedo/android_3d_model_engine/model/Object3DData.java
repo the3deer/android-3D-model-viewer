@@ -407,8 +407,9 @@ public class Object3DData {
         return readOnly;
     }
 
-    public void setReadOnly(boolean readOnly) {
+    public Object3DData setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
+        return this;
     }
 
     public boolean isCentered() {
@@ -628,7 +629,6 @@ public class Object3DData {
             Matrix.scaleM(modelMatrix, 0, getScaleX(), getScaleY(), getScaleZ());
         }
 
-        float[] orientationMatrix = new float[16];
         float[] orientationFix = new float[16];
         orientation.toRotationMatrix(orientationMatrix);
         Matrix.multiplyMM(orientationFix,0,modelMatrix,0,orientationMatrix,0);
@@ -826,10 +826,11 @@ public class Object3DData {
         return orientation;
     }
 
-    public void setOrientation(Quaternion orientation) {
+    public Object3DData setOrientation(Quaternion orientation) {
         this.orientation = orientation;
         updateModelMatrix();
         setChanged(true);
+        return this;
     }
 
     @Override

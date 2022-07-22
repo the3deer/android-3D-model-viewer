@@ -1,5 +1,6 @@
 package org.andresoviedo.app.model3D.view;
 
+import android.opengl.Matrix;
 import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.drawer.RendererFactory;
@@ -79,12 +80,15 @@ final class ModelViewerGUI extends GUI {
     private void initAxis(){
         if (axis != null) return;
         axis = new Widget(Axis.build()){
+            final float[] matrix = new float[16];
+            final Quaternion orientation = new Quaternion(matrix);
             @Override
             public void render(RendererFactory rendererFactory, Camera camera, float[] lightPosInWorldSpace, float[] colorMask) {
                 if (camera.hasChanged()){
-                    setOrientation(new Quaternion(camera.getMatrix()));
+                    Matrix.setLookAtM(matrix,0,camera.getxPos(), camera.getyPos(), camera.getzPos(),
+                            0f,0f,0f, camera.getxUp(), camera.getyUp(), camera.getzUp());
+                    setOrientation(orientation);
                 }
-                //Log.v("ModelViewerGUI","projection updated...");
                 super.render(rendererFactory, camera, lightPosInWorldSpace, colorMask);
             }
         };

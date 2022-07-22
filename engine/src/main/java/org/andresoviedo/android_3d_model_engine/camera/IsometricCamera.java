@@ -34,6 +34,7 @@ public class IsometricCamera extends Camera {
     private boolean initialized = false;
 
     private final float[] savePos;
+    private final float[] saveView;
     private final float[] saveUp;
 
     public IsometricCamera(Camera delegate) {
@@ -42,6 +43,7 @@ public class IsometricCamera extends Camera {
 
         // final init
         this.savePos = this.pos.clone();
+        this.saveView = new float[]{0,0,0,1};
         this.saveUp = this.up.clone();
     }
 
@@ -194,7 +196,8 @@ public class IsometricCamera extends Camera {
                 savePos[0], savePos[1], savePos[2], saveUp[0], saveUp[1], saveUp[2]});*/
 
                 Object[] args = new Object[]{"moveTo", getxPos(), getyPos(), getzPos(), getxUp(), getyUp(), getzUp(),
-                        savePos[0], savePos[1], savePos[2], saveUp[0], saveUp[1], saveUp[2]};
+                        savePos[0], savePos[1], savePos[2], saveUp[0], saveUp[1], saveUp[2],
+                getxView(), getyView(), getzView(), saveView[0], saveView[1], saveView[2]};
                 delegate.setAnimation(new CameraAnimation(delegate, args));
             }
         }
