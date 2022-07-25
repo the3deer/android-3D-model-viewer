@@ -394,11 +394,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 float ratio = (float) width / height;
                 // Log.v(TAG, "Camera changed: projection: [" + -ratio + "," + ratio + ",-1,1]-near/far[1,10], ");
 
-                if (!scene.isStereoscopic()) {
-                    Matrix.setLookAtM(viewMatrix, 0, camera.getxPos(), camera.getyPos(), camera.getzPos(), camera.getxView(), camera.getyView(),
-                            camera.getzView(), camera.getxUp(), camera.getyUp(), camera.getzUp());
-                    Matrix.multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
-                } else {
+                Matrix.setLookAtM(viewMatrix, 0, camera.getxPos(), camera.getyPos(), camera.getzPos(), camera.getxView(), camera.getyView(),
+                        camera.getzView(), camera.getxUp(), camera.getyUp(), camera.getzUp());
+                Matrix.multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
+
+                if (scene.isStereoscopic()) {
                     Camera[] stereoCamera = camera.toStereo(Constants.EYE_DISTANCE);
                     Camera leftCamera = stereoCamera[0];
                     Camera rightCamera = stereoCamera[1];

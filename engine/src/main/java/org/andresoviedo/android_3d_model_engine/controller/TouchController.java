@@ -191,23 +191,23 @@ public class TouchController implements EventListener {
 
 			// gesture detection
 			isOneFixedAndOneMoving = ((dx1 + dy1) == 0) != (((dx2 + dy2) == 0));
-			fingersAreClosing = (Math.abs(dx1 + dx2) < 5 && Math.abs(dy1 + dy2) < 5);
+			fingersAreClosing = (Math.abs(dx1 + dx2) < 10 && Math.abs(dy1 + dy2) < 10);
 			isRotating = !isOneFixedAndOneMoving && (dx1 != 0 && dy1 != 0 && dx2 != 0 && dy2 != 0);
 		}
 
 		if (pointerCount == 1 && simpleTouch) {
 			fireEvent(new TouchEvent(this, TouchEvent.CLICK, width, height, x1, y1));
 		} else {
-			if (touchDelay > 2) {
+			//if (touchDelay > 1) {
 				// INFO: Process gesture
-				if (pointerCount == 1 && currentPress1 > 4.0f) {
-				} else if (pointerCount == 1) {
+				/*if (pointerCount == 1 && currentPress1 > 4.0f) {
+				} else */if (pointerCount == 1) {
 					fireEvent(new TouchEvent(this, TouchEvent.MOVE, width, height, previousX1, previousY1,
 							x1, y1, dx1, dy1, 0,
 							0f));
 					touchStatus = TOUCH_STATUS_MOVING_WORLD;
 				} else if (pointerCount == 2) {
-					if (fingersAreClosing && (currentPress1 + currentPress2) > 1f) {
+				if (fingersAreClosing) {
 						fireEvent(new TouchEvent(this, TouchEvent.PINCH, width, height, previousX1, previousY1,
 								x1, y1, dx1, dy1, (previousLength - length), 0f));
 						touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
@@ -221,7 +221,7 @@ public class TouchController implements EventListener {
 						}
 					}
 				}
-			}
+			//}
 		}
 
 		previousX1 = x1;

@@ -500,4 +500,13 @@ public class ModelActivity extends Activity implements EventListener {
         }
         return true;
     }
+
+    @Override
+    public void onBackPressed() {
+        if (immersiveMode) {
+            toggleImmersive();
+        } else {
+            super.onBackPressed();
+        }
+    }
 }
