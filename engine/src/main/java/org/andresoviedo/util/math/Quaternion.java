@@ -21,7 +21,12 @@ package org.andresoviedo.util.math;
  */
 public class Quaternion {
 
+    private float[] matrix;
     private float x, y, z, w;
+
+    public Quaternion(float[] matrix){
+        this.matrix = matrix;
+    }
 
     public Quaternion() {
         this(0,0,0,1);
@@ -67,6 +72,11 @@ public class Quaternion {
      * this quaternion.
      */
     public float[] toRotationMatrix(float[] matrix) {
+        if (this.matrix != null){
+            System.arraycopy(this.matrix,0,matrix,0,matrix.length);
+            return matrix;
+        }
+
         final float xy = x * y;
         final float xz = x * z;
         final float xw = x * w;
@@ -222,4 +232,106 @@ public class Quaternion {
 
         return  new float[]{roll, pitch, yaw, 1};
     }
+
+    /**
+     * Returns the conjugate quaternion of the instance.
+     *
+     * @return the conjugate quaternion
+     */
+    public Quaternion getConjugate() {
+        return new Quaternion(-this.x, -this.y, -this.z, this.w);
+    }
+
+    /**
+     * Returns the Hamilton product of two quaternions.
+     *
+     * @param q1 First quaternion.
+     * @param q2 Second quaternion.
+     * @return the product {@code q1} and {@code q2}, in that order.
+     */
+    public static Quaternion multiply(final Quaternion q1, final Quaternion q2) {
+        // Components of the first quaternion.
+        final double q1a = q1.getW();
+        final double q1b = q1.getX();
+        final double q1c = q1.getY();
+        final double q1d = q1.getZ();
+
+        // Components of the second quaternion.
+        final double q2a = q2.getW();
+        final double q2b = q2.getX();
+        final double q2c = q2.getY();
+        final double q2d = q2.getZ();
+
+        // Components of the product.
+        final double w = q1a * q2a - q1b * q2b - q1c * q2c - q1d * q2d;
+        final double x = q1a * q2b + q1b * q2a + q1c * q2d - q1d * q2c;
+        final double y = q1a * q2c - q1b * q2d + q1c * q2a + q1d * q2b;
+        final double z = q1a * q2d + q1b * q2c - q1c * q2b + q1d * q2a;
+
+        return new Quaternion((float)x, (float)y, (float)z, (float)w);
+    }
+
+    public static Quaternion getQuaternion(float[] axis, float angle) {
+        float w = (float) Math.cos(angle / 2f);
+        float x = (float) (axis[0] * Math.sin(angle / 2f));
+        float y = (float) (axis[1] * Math.sin(angle / 2f));
+        float z = (float) (axis[2] * Math.sin(angle / 2f));
+        return new Quaternion(x,y,z,w);
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
+
+    public float getZ() {
+        return z;
+    }
+
+    public void setZ(float z) {
+        this.z = z;
+    }
+
+    public float getW() {
+        return w;
+    }
+
+    public float[] toAxisAngle(){
+        if (w > 1) normalize(); // if w>1 acos and sqrt will produce errors, this cant happen if quaternion is normalised
+
+        double angle = 2 * Math.acos(w);
+
+        float[] ret = new float[]{x,y,z, (float) Math.toDegrees(angle)};
+
+        double s = Math.sqrt(1-w*w); // assuming quaternion normalised then w is less than 1, so term always positive.
+        if (s >= 0.001) { // test to avoid divide by zero, s is always positive due to sqrt
+            Math3DUtils.normalize(ret);
+        } else {
+            // if s close to zero then direction of axis not important
+            //x = q1.x; // if it is important that axis is normalised then replace with x=1; y=z=0;
+            //y = q1.y;
+            //z = q1.z;
+        }
+        return ret;
+    }
+
+    public float getAngle(){
+        return (float) (2*Math.acos(w));
+    }
+
+    public Quaternion getInverse() {
+        return new Quaternion(-this.x, -this.y, -this.z, this.w);
+    }
+
 }

@@ -10,9 +10,9 @@ import java.nio.FloatBuffer;
 public class Rescaler {
 
     public static void rescale(Object3DData object3DData, float maxSize) {
-        float leftPt = Float.MAX_VALUE, rightPt = Float.MIN_VALUE; // on x-axis
-        float topPt = Float.MIN_VALUE, bottomPt = Float.MAX_VALUE; // on y-axis
-        float farPt = Float.MAX_VALUE, nearPt = Float.MIN_VALUE; // on z-axis
+        float leftPt = Float.MAX_VALUE, rightPt = -Float.MAX_VALUE; // on x-axis
+        float topPt = -Float.MAX_VALUE, bottomPt = Float.MAX_VALUE; // on y-axis
+        float farPt = Float.MAX_VALUE, nearPt = -Float.MAX_VALUE; // on z-axis
 
         FloatBuffer vertexBuffer = object3DData.getVertexBuffer();
         if (vertexBuffer == null) {
@@ -20,7 +20,7 @@ public class Rescaler {
             return;
         }
 
-        Log.i("Rescaler", "Calculating dimensions for '" + object3DData.getId() + "...");
+        Log.i("Rescaler", "Rescaling '" + object3DData.getId() + "...");
         for (int i = 0; i < vertexBuffer.capacity(); i += 3) {
             if (vertexBuffer.get(i) > rightPt)
                 rightPt = vertexBuffer.get(i);

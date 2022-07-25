@@ -13,16 +13,12 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (02/02/2022)
+News (25/07/2022)
 =================
 
-* /¡\ repo moved to the3deers organization + MIT License 2020
-* New version released 3.2.0
-* Repository Explorer improved
-* Smoothing implementation fixed
-* Fixed memory leak
-
-
+* New version released 3.3.0
+* New orthographic, isometric and free camera views
+* Interactive object orientation
 
 Demo
 ====
@@ -75,7 +71,7 @@ Features
   - OpenGL ES 2.0 API
   - Formats: OBJ (wavefront), STL (STereoLithography) & DAE (Collada-BETA)
   - calculation of normals
-  - transformations: scaling, rotation, translation
+  - transformations: scaling, rotation, translation, orientation
   - colors
   - textures
   - lighting
@@ -86,6 +82,7 @@ Features
   - skybox
   - object pick
   - camera support
+    - perspective, orthographic and isometric views
     - tap to select object
     - drag to move camera
     - rotate with 2 fingers to rotate camera
@@ -195,6 +192,13 @@ ChangeLog
 =========
 
 (f) fixed, (i) improved, (n) new feature
+
+- 3.3.0 (23/06/2022)
+  - (n) interactive object orientation
+  - (n) isometric, orthographic and free camera view
+  - (n) New gui axis + gui info
+  - (f) fixed FPS counter
+  - (i) some user options are being saved (camera settings)
 
 - 3.2.0 (02/02/2022)
   - (i) repository explorer improved - multiple index files

@@ -63,16 +63,17 @@ public class Octree {
             // vertex array contains vertex in sequence
             final FloatBuffer buffer = object.getVertexBuffer().asReadOnlyBuffer();
             final List<float[]> triangles = new ArrayList<>(buffer.capacity() / 3 * 4);
-            final float[] modelMatrix = object.getModelMatrix();
+            //final float[] modelMatrix = object.getModelMatrix();
+            //final float[] modelMatrix = Math3DUtils.IDENTITY_MATRIX;
             buffer.position(0);
             for (int i = 0; i < buffer.capacity(); i += 9) {
                 float[] triangle = new float[]{buffer.get(), buffer.get(), buffer.get(), 1,
                         buffer.get(), buffer.get(), buffer.get(), 1,
                         buffer.get(), buffer.get(), buffer.get(), 1
                 };
-                Matrix.multiplyMV(triangle, 0, modelMatrix, 0, triangle, 0);
-                Matrix.multiplyMV(triangle, 4, modelMatrix, 0, triangle, 4);
-                Matrix.multiplyMV(triangle, 8, modelMatrix, 0, triangle, 8);
+                //Matrix.multiplyMV(triangle, 0, modelMatrix, 0, triangle, 0);
+                //Matrix.multiplyMV(triangle, 4, modelMatrix, 0, triangle, 4);
+                //Matrix.multiplyMV(triangle, 8, modelMatrix, 0, triangle, 8);
                 triangles.add(triangle);
             }
             ret.pending.addAll(triangles);
@@ -81,16 +82,17 @@ public class Octree {
             final IntBuffer drawOrder = object.getDrawOrder().asReadOnlyBuffer();
             final FloatBuffer buffer = object.getVertexBuffer().asReadOnlyBuffer();
             final List<float[]> triangles = new ArrayList<>(drawOrder.capacity() / 3 * 4);
-            final float[] modelMatrix = object.getModelMatrix();
+            //final float[] modelMatrix = object.getModelMatrix();
+            //final float[] modelMatrix = Math3DUtils.IDENTITY_MATRIX;
             for (int i = 0; i < drawOrder.capacity(); i += 3) {
                 float[] triangle = new float[]{
                         buffer.get(drawOrder.get(i)), buffer.get(drawOrder.get(i)+1), buffer.get(drawOrder.get(i)+2), 1,
                         buffer.get(drawOrder.get(i+1)), buffer.get(drawOrder.get(i+1)+1), buffer.get(drawOrder.get(i+1)+2), 1,
                         buffer.get(drawOrder.get(i+2)), buffer.get(drawOrder.get(i+2)+1), buffer.get(drawOrder.get(i+2)+2), 1,
                 };
-                Matrix.multiplyMV(triangle, 0, modelMatrix, 0, triangle, 0);
-                Matrix.multiplyMV(triangle, 4, modelMatrix, 0, triangle, 4);
-                Matrix.multiplyMV(triangle, 8, modelMatrix, 0, triangle, 8);
+                //Matrix.multiplyMV(triangle, 0, modelMatrix, 0, triangle, 0);
+                //Matrix.multiplyMV(triangle, 4, modelMatrix, 0, triangle, 4);
+                //Matrix.multiplyMV(triangle, 8, modelMatrix, 0, triangle, 8);
                 triangles.add(triangle);
             }
             ret.pending.addAll(triangles);

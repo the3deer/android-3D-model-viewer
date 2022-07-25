@@ -7,16 +7,18 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
+import org.andresoviedo.android_3d_model_engine.view.ViewEvent;
 import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.event.EventListener;
+import org.andresoviedo.util.math.Math3DUtils;
 
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
-public class TouchController {
+public class TouchController implements EventListener {
 
-	private static final String TAG = TouchController.class.getName();
+	private static final String TAG = TouchController.class.getSimpleName();
 
 	private static final int TOUCH_STATUS_ZOOMING_CAMERA = 1;
 	private static final int TOUCH_STATUS_ROTATING_CAMERA = 4;
@@ -63,16 +65,15 @@ public class TouchController {
 	private float previousY2;
     private float[] previousVector = new float[4];
     private float[] vector = new float[4];
-    private float[] rotationVector = new float[4];
 	private float previousRotationSquare;
 
 	public TouchController(Activity parent) {
 		super();
 		try {
 			if (!AndroidUtils.supportsMultiTouch(parent.getPackageManager())) {
-				Log.w("ModelActivity","Multitouch not supported. Some app features may not be available");
+				Log.w(TAG,"Multitouch not supported. Some app features may not be available");
 			} else {
-				Log.i("ModelActivity","Initializing TouchController...");
+				Log.i(TAG,"Initializing TouchController...");
 			}
 		}catch (Exception e){
 			Toast.makeText(parent, "Error loading Touch Controller:\n" +e.getMessage(), Toast.LENGTH_LONG).show();
@@ -92,9 +93,9 @@ public class TouchController {
 		AndroidUtils.fireEvent(listeners, eventObject);
 	}
 
-	public boolean onTouchEvent(MotionEvent motionEvent) {
+	public boolean onMotionEvent(MotionEvent motionEvent) {
 
-		Log.v("TouchController","Processing MotionEvent...");
+		Log.v(TAG,"Processing MotionEvent...");
 		final int pointerCount = motionEvent.getPointerCount();
 
 		switch (motionEvent.getActionMasked()) {
@@ -173,14 +174,6 @@ public class TouchController {
 			dx2 = x2 - previousX2;
 			dy2 = y2 - previousY2;
 
-			rotationVector[0] = (previousVector[1] * vector[2]) - (previousVector[2] * vector[1]);
-			rotationVector[1] = (previousVector[2] * vector[0]) - (previousVector[0] * vector[2]);
-			rotationVector[2] = (previousVector[0] * vector[1]) - (previousVector[1] * vector[0]);
-			len = Matrix.length(rotationVector[0], rotationVector[1], rotationVector[2]);
-			rotationVector[0] /= len;
-			rotationVector[1] /= len;
-			rotationVector[2] /= len;
-
 			previousLength = (float) Math
 					.sqrt(Math.pow(previousX2 - previousX1, 2) + Math.pow(previousY2 - previousY1, 2));
 			length = (float) Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -198,35 +191,37 @@ public class TouchController {
 
 			// gesture detection
 			isOneFixedAndOneMoving = ((dx1 + dy1) == 0) != (((dx2 + dy2) == 0));
-			fingersAreClosing = !isOneFixedAndOneMoving && (Math.abs(dx1 + dx2) < 10 && Math.abs(dy1 + dy2) < 10);
-			isRotating = !isOneFixedAndOneMoving && (dx1 != 0 && dy1 != 0 && dx2 != 0 && dy2 != 0)
-					&& rotationVector[2] != 0;
+			fingersAreClosing = (Math.abs(dx1 + dx2) < 10 && Math.abs(dy1 + dy2) < 10);
+			isRotating = !isOneFixedAndOneMoving && (dx1 != 0 && dy1 != 0 && dx2 != 0 && dy2 != 0);
 		}
 
 		if (pointerCount == 1 && simpleTouch) {
 			fireEvent(new TouchEvent(this, TouchEvent.CLICK, width, height, x1, y1));
-		}
-
-		if (touchDelay > 1) {
-			// INFO: Process gesture
-			if (pointerCount == 1 && currentPress1 > 4.0f) {
-			} else if (pointerCount == 1) {
-				fireEvent(new TouchEvent(this, TouchEvent.MOVE, width, height, previousX1, previousY1,
-						x1, y1, dx1, dy1, 0,
-						null));
-				touchStatus = TOUCH_STATUS_MOVING_WORLD;
-			} else if (pointerCount == 2) {
+		} else {
+			//if (touchDelay > 1) {
+				// INFO: Process gesture
+				/*if (pointerCount == 1 && currentPress1 > 4.0f) {
+				} else */if (pointerCount == 1) {
+					fireEvent(new TouchEvent(this, TouchEvent.MOVE, width, height, previousX1, previousY1,
+							x1, y1, dx1, dy1, 0,
+							0f));
+					touchStatus = TOUCH_STATUS_MOVING_WORLD;
+				} else if (pointerCount == 2) {
 				if (fingersAreClosing) {
-					fireEvent(new TouchEvent(this, TouchEvent.PINCH, width, height, previousX1, previousY1,
-							x1, y1, dx1, dy1, (length - previousLength), null));
-					touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
+						fireEvent(new TouchEvent(this, TouchEvent.PINCH, width, height, previousX1, previousY1,
+								x1, y1, dx1, dy1, (previousLength - length), 0f));
+						touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
+						fingersAreClosing = false;
+					} else if (isRotating) {
+						final double angle = Math3DUtils.calculateAngleBetween(previousVector, vector);
+						if (Math.abs(angle) >= Math.PI / 180) {
+							fireEvent(new TouchEvent(this, TouchEvent.ROTATE, width, height, previousX1, previousY1
+									, x1, y1, dx1, dy1, 0, (float) angle));
+							touchStatus = TOUCH_STATUS_ROTATING_CAMERA;
+						}
+					}
 				}
-				if (isRotating) {
-					fireEvent(new TouchEvent(this, TouchEvent.ROTATE, width, height, previousX1, previousY1
-							, x1, y1, dx1, dy1, 0, rotationVector));
-					touchStatus = TOUCH_STATUS_ROTATING_CAMERA;
-				}
-			}
+			//}
 		}
 
 		previousX1 = x1;
@@ -240,7 +235,21 @@ public class TouchController {
 
 		if (gestureChanged && touchDelay > 1) {
 			gestureChanged = false;
-			Log.v(TAG, "Fin");
+		}
+		return true;
+	}
+
+	@Override
+	public boolean onEvent(EventObject event) {
+		Log.v("TouchController","Processing event... "+ event);
+		if (event.getSource() instanceof MotionEvent){
+			return onMotionEvent((MotionEvent) event.getSource());
+		}
+		else if (event instanceof ViewEvent) {
+			ViewEvent viewEvent = (ViewEvent) event;
+			if (viewEvent.getCode() == ViewEvent.Code.SURFACE_CHANGED) {
+				this.setSize(viewEvent.getWidth(), viewEvent.getHeight());
+			}
 		}
 		return true;
 	}

@@ -12,8 +12,10 @@ import org.andresoviedo.android_3d_model_engine.drawer.Renderer;
 import org.andresoviedo.android_3d_model_engine.drawer.RendererFactory;
 import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
+import org.andresoviedo.android_3d_model_engine.model.Constants;
 import org.andresoviedo.android_3d_model_engine.model.Element;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
+import org.andresoviedo.android_3d_model_engine.model.Projection;
 import org.andresoviedo.android_3d_model_engine.objects.Axis;
 import org.andresoviedo.android_3d_model_engine.objects.BoundingBox;
 import org.andresoviedo.android_3d_model_engine.objects.Grid;
@@ -23,15 +25,17 @@ import org.andresoviedo.android_3d_model_engine.objects.Skeleton;
 import org.andresoviedo.android_3d_model_engine.objects.SkyBox;
 import org.andresoviedo.android_3d_model_engine.objects.Wireframe;
 import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
+import org.andresoviedo.android_3d_model_engine.util.Rescaler;
 import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.util.android.GLUtil;
 import org.andresoviedo.util.event.EventListener;
+import org.andresoviedo.util.math.Math3DUtils;
+import org.andresoviedo.util.math.Quaternion;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,72 +45,12 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class ModelRenderer implements GLSurfaceView.Renderer {
 
-    public static class ViewEvent extends EventObject {
-
-        private final Code code;
-        private final int width;
-        private final int height;
-
-        public enum Code {SURFACE_CREATED, SURFACE_CHANGED}
-
-        public ViewEvent(Object source, Code code, int width, int height) {
-            super(source);
-            this.code = code;
-            this.width = width;
-            this.height = height;
-        }
-
-        public Code getCode() {
-            return code;
-        }
-
-        public int getWidth() {
-            return width;
-        }
-
-        public int getHeight() {
-            return height;
-        }
-    }
-
-    public static class FPSEvent extends EventObject {
-
-        private final int fps;
-
-        public FPSEvent(Object source, int fps) {
-            super(source);
-            this.fps = fps;
-        }
-
-        public int getFps() {
-            return fps;
-        }
-    }
-
     private final static String TAG = ModelRenderer.class.getSimpleName();
-
-    // grid
-    private static final float GRID_WIDTH = 100f;
-    private static final float GRID_SIZE = 10f;
-    private static final float[] GRID_COLOR = {0.25f, 0.25f, 0.25f, 0.5f};
 
     // blending
     private static final float[] BLENDING_MASK_DEFAULT = {1.0f, 1.0f, 1.0f, 1.0f};
     // Add 0.5f to the alpha component to the global shader so we can see through the skin
     private static final float[] BLENDING_MASK_FORCED = {1.0f, 1.0f, 1.0f, 0.5f};
-
-    // frustrum - nearest pixel
-    private static final float near = 1.0f;
-    // frustrum - fartest pixel
-    private static final float far = 5000f;
-
-    // stereoscopic variables
-    private static float EYE_DISTANCE = 0.64f;
-    private static final float[] COLOR_RED = {1.0f, 0.0f, 0.0f, 1f};
-    private static final float[] COLOR_BLUE = {0.0f, 1.0f, 0.0f, 1f};
-    private static final float[] COLOR_WHITE = {1f, 1f, 1f, 1f};
-    private static final float[] COLOR_HALF_TRANSPARENT = {1f, 1f, 1f, 0.5f};
-    private static final float[] COLOR_ALMOST_TRANSPARENT = {1f, 1f, 1f, 0.1f};
 
     private final float[] backgroundColor;
     private final SceneLoader scene;
@@ -120,6 +64,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     // height of the screen
     private int height;
     private float ratio;
+    // zoom
+    private float zoom = 1f;
 
     /**
      * Drawer factory to get right renderer/shader based on object attributes
@@ -150,6 +96,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     private final float[] viewMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
     private final float[] viewProjectionMatrix = new float[16];
+    {
+        Matrix.setIdentityM(viewMatrix,0);
+        Matrix.setIdentityM(projectionMatrix,0);
+    }
 
     // light
     private final float[] tempVector4 = new float[4];
@@ -159,13 +109,17 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
     // Decoration
     private final List<Object3DData> extras = new ArrayList<>();
-    private final Object3DData axis = Axis.build().setId("axis").setSolid(false).setScale(new float[]{50, 50, 50});
-    private final Object3DData gridx = Grid.build(-GRID_WIDTH, 0f, -GRID_WIDTH, GRID_WIDTH, 0f, GRID_WIDTH, GRID_SIZE)
-            .setColor(GRID_COLOR).setId("grid-x").setSolid(false);
-    private final Object3DData gridy = Grid.build(-GRID_WIDTH, -GRID_WIDTH, 0f, GRID_WIDTH, GRID_WIDTH, 0f, GRID_SIZE)
-            .setColor(GRID_COLOR).setId("grid-y").setSolid(false);
-    private final Object3DData gridz = Grid.build(0, -GRID_WIDTH, -GRID_WIDTH, 0, GRID_WIDTH, GRID_WIDTH, GRID_SIZE)
-            .setColor(GRID_COLOR).setId("grid-z").setSolid(false);
+    private final Object3DData axis = Axis.build().setId("axis").setSolid(false)
+            .setScale(Constants.UNIT,Constants.UNIT,Constants.UNIT);
+    private final Object3DData gridx = Grid.build(-Constants.GRID_WIDTH, 0f, -Constants.GRID_WIDTH, Constants.GRID_WIDTH, 0f, Constants.GRID_WIDTH, Constants.GRID_SIZE)
+            .setColor(Constants.COLOR_RED_TRANSLUCENT).setId("grid-x").setSolid(false)
+            .setScale(Constants.UNIT,Constants.UNIT,Constants.UNIT);;
+    private final Object3DData gridy = Grid.build(-Constants.GRID_WIDTH, -Constants.GRID_WIDTH, 0f, Constants.GRID_WIDTH, Constants.GRID_WIDTH, 0f, Constants.GRID_SIZE)
+            .setColor(Constants.COLOR_GREEN_TRANSLUCENT).setId("grid-y").setSolid(false)
+            .setScale(Constants.UNIT,Constants.UNIT,Constants.UNIT);;
+    private final Object3DData gridz = Grid.build(0, -Constants.GRID_WIDTH, -Constants.GRID_WIDTH, 0, Constants.GRID_WIDTH, Constants.GRID_WIDTH, Constants.GRID_SIZE)
+            .setColor(Constants.COLOR_BLUE_TRANSLUCENT).setId("grid-z").setSolid(false)
+            .setScale(Constants.UNIT,Constants.UNIT,Constants.UNIT);
 
     {
         extras.add(axis);
@@ -196,6 +150,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     private final float[] viewMatrixSkyBox = new float[16];
     private SkyBox[] skyBoxes = null;
     private Object3DData[] skyBoxes3D = null;
+    private Quaternion orientation = new Quaternion(0,0,0,1);
 
     /**
      * Whether the info of the model has been written to console log
@@ -205,6 +160,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
      * Switch to akternate drawing of right and left image
      */
     private boolean anaglyphSwitch = false;
+    /**
+     * Switch to alternate projection
+     */
+    private Projection projection = Projection.PERSPECTIVE;
 
     /**
      * Skeleton Animator
@@ -234,15 +193,81 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     }
 
     public float getNear() {
-        return near;
+        return Constants.near;
     }
 
     public float getFar() {
-        return far;
+        return Constants.far;
+    }
+
+    public void toggleProjection() {
+        switch (this.projection) {
+            case PERSPECTIVE:
+                setProjection(Projection.ISOMETRIC);
+                break;
+            case ISOMETRIC:
+                setProjection(Projection.ORTHOGRAPHIC);
+                break;
+            case ORTHOGRAPHIC:
+                setProjection(Projection.FREE);
+                break;
+            case FREE:
+                setProjection(Projection.PERSPECTIVE);
+                break;
+        }
+    }
+
+    public Projection getProjection(){
+        return this.projection;
+    }
+
+    public void setProjection(Projection projection){
+        Log.d(TAG, "setProjection: projection: [" + projection + "]");
+        this.projection = projection;
+
+        // fire event
+        final ViewEvent eventObject = new ViewEvent(this, ViewEvent.Code.PROJECTION_CHANGED, width, height);
+        eventObject.setProjection(this.projection);
+        AndroidUtils.fireEvent(listeners, eventObject);
+    }
+
+    public void refreshMatrices(){
+
+        if (ratio == 0) return;
+
+        // initialize skybox
+        //Matrix.frustumM(projectionMatrixSkyBox, 0, -ratio, ratio, -1, 1, 2f, getFar());
+        Matrix.frustumM(projectionMatrixSkyBox, 0, -ratio, ratio, -1, 1, getNear(), getFar());
+
+        switch (getProjection()){
+            case ORTHOGRAPHIC:
+            case ISOMETRIC:
+                Matrix.orthoM(projectionMatrix, 0, -ratio * Constants.UNIT /getZoom(), ratio* Constants.UNIT /getZoom(), -Constants.UNIT /getZoom(), Constants.UNIT /getZoom(), getNear(), getFar());
+                Matrix.orthoM(projectionMatrixSkyBox, 0, -ratio * Constants.UNIT /getZoom(), ratio* Constants.UNIT /getZoom(), -Constants.UNIT /getZoom(), Constants.UNIT /getZoom(), getNear(), getFar());
+                Matrix.orthoM(projectionMatrixRight, 0, -ratio * Constants.UNIT /getZoom(), ratio* Constants.UNIT /getZoom(), -Constants.UNIT /getZoom(), Constants.UNIT /getZoom(), getNear(), getFar());
+                Matrix.orthoM(projectionMatrixLeft, 0, -ratio * Constants.UNIT /getZoom(), ratio* Constants.UNIT /getZoom(), -Constants.UNIT /getZoom(), Constants.UNIT /getZoom(), getNear(), getFar());
+                break;
+            default:
+                // Each individual eye has a horizontal FOV of about 135 degrees
+                // and a vertical FOV of just over 180 degrees.
+                Matrix.frustumM(projectionMatrix, 0, -ratio * getNear(), ratio * getNear(), -1 * getNear(), 1 * getNear(), getNear(),  getFar());
+                Matrix.frustumM(projectionMatrixSkyBox, 0, -ratio * getNear(), ratio * getNear(), -1 * getNear(), 1 * getNear(), getNear(),  getFar());
+                Matrix.frustumM(projectionMatrixRight, 0, -ratio * getNear(), ratio * getNear(), -1 * getNear(), 1 * getNear(), getNear(),  getFar());
+                Matrix.frustumM(projectionMatrixLeft, 0, -ratio * getNear(), ratio * getNear(), -1 * getNear(), 1 * getNear(), getNear(),  getFar());
+                break;
+        }
     }
 
     public void toggleLights() {
         lightsEnabled = !lightsEnabled;
+    }
+
+    public void setSkyBoxId(int skyBoxId) {
+        isUseskyBoxId = skyBoxId;
+    }
+
+    public int getSkyBoxId(){
+        return isUseskyBoxId;
     }
 
     public void toggleSkyBox() {
@@ -309,13 +334,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
         // the projection matrix is the 3D virtual space (cube) that we want to project
         this.ratio = (float) width / height;
-        Log.d(TAG, "onSurfaceChanged: projection: [" + -ratio + "," + ratio + ",-1,1]-near/far[1,10]");
-        Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1, 1, getNear(), getFar());
-        Matrix.frustumM(projectionMatrixRight, 0, -ratio, ratio, -1, 1, getNear(), getFar());
-        Matrix.frustumM(projectionMatrixLeft, 0, -ratio, ratio, -1, 1, getNear(), getFar());
 
-        Matrix.orthoM(projectionMatrixSkyBox, 0, -ratio, ratio, -1, 1, getNear(), getFar());
+        // initialize projection
+        refreshMatrices();
 
+        // fire event
         AndroidUtils.fireEvent(listeners, new ViewEvent(this, ViewEvent.Code.SURFACE_CHANGED, width, height));
     }
 
@@ -331,6 +354,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
             // Draw background color
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+            GLES20.glColorMask(true, true, true, true);
+            GLES20.glLineWidth((float) Math.PI);
 
             if (scene == null) {
                 // scene not ready
@@ -349,6 +374,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 GLES20.glDisable(GLES20.GL_BLEND);
             }
 
+            // refresh matrices
+            refreshMatrices();
+
             // animate scene
             scene.onDrawFrame();
 
@@ -358,6 +386,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             cameraPosInWorldSpace[1] = camera.getyPos();
             cameraPosInWorldSpace[2] = camera.getzPos();
             if (camera.hasChanged()) {
+
                 // INFO: Set the camera position (View matrix)
                 // The camera has 3 vectors (the position, the vector where we are looking at, and the up position (sky)
 
@@ -365,12 +394,12 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 float ratio = (float) width / height;
                 // Log.v(TAG, "Camera changed: projection: [" + -ratio + "," + ratio + ",-1,1]-near/far[1,10], ");
 
-                if (!scene.isStereoscopic()) {
-                    Matrix.setLookAtM(viewMatrix, 0, camera.getxPos(), camera.getyPos(), camera.getzPos(), camera.getxView(), camera.getyView(),
-                            camera.getzView(), camera.getxUp(), camera.getyUp(), camera.getzUp());
-                    Matrix.multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
-                } else {
-                    Camera[] stereoCamera = camera.toStereo(EYE_DISTANCE);
+                Matrix.setLookAtM(viewMatrix, 0, camera.getxPos(), camera.getyPos(), camera.getzPos(), camera.getxView(), camera.getyView(),
+                        camera.getzView(), camera.getxUp(), camera.getyUp(), camera.getzUp());
+                Matrix.multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
+
+                if (scene.isStereoscopic()) {
+                    Camera[] stereoCamera = camera.toStereo(Constants.EYE_DISTANCE);
                     Camera leftCamera = stereoCamera[0];
                     Camera rightCamera = stereoCamera[1];
 
@@ -382,39 +411,49 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     Matrix.setLookAtM(viewMatrixRight, 0, rightCamera.getxPos(), rightCamera.getyPos(), rightCamera.getzPos(), rightCamera
                                     .getxView(),
                             rightCamera.getyView(), rightCamera.getzView(), rightCamera.getxUp(), rightCamera.getyUp(), rightCamera.getzUp());
-
-                    if (scene.isAnaglyph()) {
-                        Matrix.frustumM(projectionMatrixRight, 0, -ratio, ratio, -1, 1, getNear(), getFar());
-                        Matrix.frustumM(projectionMatrixLeft, 0, -ratio, ratio, -1, 1, getNear(), getFar());
-                    } else if (scene.isVRGlasses()) {
-                        float ratio2 = (float) width / 2 / height;
-                        Matrix.frustumM(projectionMatrixRight, 0, -ratio2, ratio2, -1, 1, getNear(), getFar());
-                        Matrix.frustumM(projectionMatrixLeft, 0, -ratio2, ratio2, -1, 1, getNear(), getFar());
-                    }
-                    // Calculate the projection and view transformation
-                    Matrix.multiplyMM(viewProjectionMatrixLeft, 0, projectionMatrixLeft, 0, viewMatrixLeft, 0);
-                    Matrix.multiplyMM(viewProjectionMatrixRight, 0, projectionMatrixRight, 0, viewMatrixRight, 0);
-
                 }
 
-                camera.setChanged(false);
+                //camera.setChanged(false);
             }
+
+            drawSkyBox(viewMatrix, projectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
 
 
             if (!scene.isStereoscopic()) {
                 this.onDrawFrame(viewMatrix, projectionMatrix, viewProjectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                if(camera.hasChanged()) camera.setChanged(false);
                 return;
             }
 
 
             if (scene.isAnaglyph()) {
                 // INFO: switch because blending algorithm doesn't mix colors
+                int correction = -0;
                 if (anaglyphSwitch) {
-                    this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInWorldSpace,
-                            COLOR_RED, cameraPosInWorldSpace);
-                } else {
+
+                   GLES20.glColorMask(false, true, true, true);
+                    GLES20.glViewport(-correction, 0, width-correction, height);
                     this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInWorldSpace,
-                            COLOR_BLUE, cameraPosInWorldSpace);
+                            colorMask, cameraPosInWorldSpace);
+
+                    GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT);
+                    GLES20.glColorMask(true, false, false, true);
+                    GLES20.glViewport(correction, 0, width+correction, height);
+                    this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInWorldSpace,
+                            colorMask, cameraPosInWorldSpace);
+
+                } else {
+
+                    GLES20.glColorMask(true, false, false, true);
+                    GLES20.glViewport(correction, 0, width+correction, height);
+                    this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInWorldSpace,
+                            colorMask, cameraPosInWorldSpace);
+
+                    GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT);
+                    GLES20.glColorMask(false, true, true, true);
+                    GLES20.glViewport(-correction, 0, width-correction, height);
+                    this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInWorldSpace,
+                            colorMask, cameraPosInWorldSpace);
                 }
                 anaglyphSwitch = !anaglyphSwitch;
                 return;
@@ -442,6 +481,18 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         } catch (Error err) {
             Log.e("ModelRenderer", "Fatal error: " + err.getMessage(), err);
             fatalException = true;
+        } finally {
+            if (framesPerSecondTime == -1) {
+                framesPerSecondTime = SystemClock.elapsedRealtime();
+                framesPerSecondCounter++;
+            } else if (SystemClock.elapsedRealtime() > framesPerSecondTime + 1000) {
+                framesPerSecond = framesPerSecondCounter;
+                framesPerSecondCounter = 1;
+                framesPerSecondTime = SystemClock.elapsedRealtime();
+                AndroidUtils.fireEvent(listeners, new FPSEvent(this, framesPerSecond));
+            } else {
+                framesPerSecondCounter++;
+            }
         }
     }
 
@@ -451,56 +502,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
         // set up camera
         final Camera camera = scene.getCamera();
-
-        // draw environment
-        int skyBoxId = isUseskyBoxId;
-        if (skyBoxId == -3){
-            // draw all extra objects
-            for (int i = 0; i < extras.size(); i++) {
-                drawObject(viewMatrix, projectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, false, false, false, false, false, extras, i);
-            }
-        }
-        else if (skyBoxId == -2){
-            GLES20.glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
-            // Draw background color
-            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        }
-        else if (skyBoxId == -1){
-            // invert background color
-            GLES20.glClearColor(1-backgroundColor[0], 1-backgroundColor[1], 1-backgroundColor[2], 1-backgroundColor[3]);
-            // Draw background color
-            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        }
-        else if (isDrawSkyBox && skyBoxId >= 0 && skyBoxId < skyBoxes3D.length) {
-            GLES20.glDepthMask(false);
-            try {
-                //skyBoxId = 1;
-                // lazy building of the 3d object
-                if (skyBoxes3D[skyBoxId] == null) {
-                    Log.i("ModelRenderer", "Loading sky box textures to GPU... skybox: " + skyBoxId);
-                    int textureId = GLUtil.loadCubeMap(skyBoxes[skyBoxId].getCubeMap());
-                    Log.d("ModelRenderer", "Loaded textures to GPU... id: " + textureId);
-                    if (textureId != -1) {
-                        skyBoxes3D[skyBoxId] = SkyBox.build(skyBoxes[skyBoxId]);
-                    } else {
-                        Log.e("ModelRenderer", "Error loading sky box textures to GPU. ");
-                        isDrawSkyBox = false;
-                    }
-
-                }
-                Matrix.setLookAtM(viewMatrixSkyBox, 0, 0, 0, 0, camera.getxView() - camera.getxPos(), camera.getyView() - camera.getyPos(),
-                        camera.getzView() - camera.getzPos(), camera.getxUp() - camera.getxPos(), camera.getyUp() - camera.getyPos(), camera.getzUp() - camera.getzPos());
-                if (scene.isFixCoordinateSystem()){
-                    Matrix.rotateM(viewMatrixSkyBox, 0, 90, 1, 0, 0);
-                }
-                Renderer basicShader = drawer.getSkyBoxDrawer();
-                basicShader.draw(skyBoxes3D[skyBoxId], projectionMatrix, viewMatrixSkyBox, skyBoxes3D[skyBoxId].getMaterial().getTextureId(), null, cameraPosInWorldSpace);
-            } catch (Throwable ex) {
-                Log.e("ModelRenderer", "Error rendering sky box. " + ex.getMessage(), ex);
-                isDrawSkyBox = false;
-            }
-            GLES20.glDepthMask(true);
-        }
 
 
         // draw light
@@ -516,7 +517,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
             // Calculate position of the light in world space to support lighting
             if (scene.isRotatingLight()) {
-                Matrix.multiplyMV(tempVector4, 0, scene.getLightBulb().getModelMatrix(), 0, lightPosition, 0);
+                // FIXME: memory leak
+                Matrix.multiplyMV(tempVector4, 0, scene.getLightBulb().getModelMatrix(), 0,
+                        Math3DUtils.to4d(scene.getLightBulb().getLocation()), 0);
                 lightPosInWorldSpace[0] = tempVector4[0];
                 lightPosInWorldSpace[1] = tempVector4[1];
                 lightPosInWorldSpace[2] = tempVector4[2];
@@ -547,24 +550,75 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         }
 
         // draw all GUI objects
+        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT);
         List<Object3DData> guiObjects = scene.getGUIObjects();
         for (int i = 0; i < guiObjects.size(); i++) {
             drawObject(viewMatrix, projectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, doAnimation, drawLighting, drawWireframe, drawTextures, drawColors, guiObjects, i);
         }
 
-        if (framesPerSecondTime == -1) {
-            framesPerSecondTime = SystemClock.elapsedRealtime();
-            framesPerSecondCounter++;
-        } else if (SystemClock.elapsedRealtime() > framesPerSecondTime + 1000) {
-            framesPerSecond = framesPerSecondCounter;
-            framesPerSecondCounter = 1;
-            framesPerSecondTime = SystemClock.elapsedRealtime();
-            AndroidUtils.fireEvent(listeners, new FPSEvent(this, framesPerSecond));
-        } else {
-            framesPerSecondCounter++;
-        }
-
         debugSkeleton = !debugSkeleton;
+    }
+
+    private void drawSkyBox(float[] viewMatrix, float[] projectionMatrix, float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPosInWorldSpace) {
+        // draw environment
+        int skyBoxId = getSkyBoxId();
+        if (skyBoxId == -3){
+            GLES20.glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
+            // draw all extra objects
+            for (int i = 0; i < extras.size(); i++) {
+                drawObject(viewMatrix, projectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, false, false, false, false, true, extras, i);
+            }
+        }
+        else if (skyBoxId == -2){
+            GLES20.glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
+            // Draw background color
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        }
+        else if (skyBoxId == -1){
+            // invert background color
+            GLES20.glClearColor(1-backgroundColor[0], 1-backgroundColor[1], 1-backgroundColor[2], 1-backgroundColor[3]);
+            // Draw background color
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        }
+        else if (isDrawSkyBox && skyBoxId >= 0 && skyBoxId < skyBoxes3D.length) {
+            // GLES20.glDepthMask(false);
+            GLES20.glClearColor(0, 0, 0, 1);
+            try {
+                //skyBoxId = 1;
+                // lazy building of the 3d object
+                if (skyBoxes3D[skyBoxId] == null) {
+                    Log.i("ModelRenderer", "Loading sky box textures to GPU... skybox: " + skyBoxId);
+                    int textureId = GLUtil.loadCubeMap(skyBoxes[skyBoxId].getCubeMap());
+                    Log.d("ModelRenderer", "Loaded textures to GPU... id: " + textureId);
+                    if (textureId != -1) {
+                        skyBoxes3D[skyBoxId] = SkyBox.build(skyBoxes[skyBoxId]);
+                        Rescaler.rescale(skyBoxes3D[skyBoxId], 1f);
+                        final float scale = Constants.SKYBOX_SIZE; //getFar()/skyBoxes3D[skyBoxId].getDimensions().getLargest()/20;
+                        skyBoxes3D[skyBoxId].setScale(scale, scale, scale);
+                    } else {
+                        Log.e("ModelRenderer", "Error loading sky box textures to GPU. ");
+                        isDrawSkyBox = false;
+                    }
+
+                }
+                Renderer basicShader = drawer.getSkyBoxDrawer();
+                skyBoxes3D[skyBoxId].setColor(Constants.COLOR_BIT_TRANSPARENT);
+                basicShader.draw(skyBoxes3D[skyBoxId], projectionMatrixSkyBox, viewMatrix, skyBoxes3D[skyBoxId].getMaterial().getTextureId(), null, cameraPosInWorldSpace);
+
+                // sensor stuff
+                /*this.orientation.toRotationMatrix(viewMatrixSkyBox);
+                float[] rot = new float[16];
+                Matrix.setRotateM(rot,0,90,1,0,0);
+                float[] mat = new float[16];
+                Matrix.multiplyMM(mat,0,viewMatrixSkyBox,0, rot,0);
+                Renderer basicShader = drawer.getSkyBoxDrawer();
+                basicShader.draw(skyBoxes3D[skyBoxId], projectionMatrixSkyBox, mat, skyBoxes3D[skyBoxId].getMaterial().getTextureId(), null, cameraPosInWorldSpace);*/
+            } catch (Throwable ex) {
+                Log.e("ModelRenderer", "Error rendering sky box. " + ex.getMessage(), ex);
+                isDrawSkyBox = false;
+            }
+            //GLES20.glDepthMask(true);
+        }
     }
 
     private void drawObject(float[] viewMatrix, float[] projectionMatrix, float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPosInWorldSpace, boolean doAnimation, boolean drawLighting, boolean drawWireframe, boolean drawTextures, boolean drawColors, List<Object3DData> objects, int i) {
@@ -677,7 +731,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     drawerObject.draw(objData, projectionMatrix, viewMatrix
                             , GLES20.GL_POINTS, objData.getDrawSize(),
                             textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
-                    objData.render(drawer, lightPosInWorldSpace, colorMask);
+                    objData.render(drawer, scene.getCamera(), lightPosInWorldSpace, colorMask);
                 }
 
                 // draw skeleton
@@ -685,7 +739,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                         .getAnimation() != null) {
 
                     // draw the original object a bit transparent
-                    drawerObject.draw(objData, projectionMatrix, viewMatrix,  textureId, lightPosInWorldSpace, COLOR_HALF_TRANSPARENT, cameraPosInWorldSpace);
+                    drawerObject.draw(objData, projectionMatrix, viewMatrix,  textureId, lightPosInWorldSpace, Constants.COLOR_HALF_TRANSPARENT, cameraPosInWorldSpace);
 
                     // draw skeleton on top of it
                     GLES20.glDisable(GLES20.GL_DEPTH_TEST);
@@ -709,7 +763,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     }
                     drawerObject.draw(objData, projectionMatrix, viewMatrix,
                             textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
-                    objData.render(drawer, lightPosInWorldSpace, colorMask);
+                    objData.render(drawer, scene.getCamera(), lightPosInWorldSpace, colorMask);
                 }
             }
 
@@ -750,12 +804,17 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
     private void drawBoundingBox(float[] viewMatrix, float[] projectionMatrix, float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPosInWorldSpace, Object3DData objData, boolean changed) {
         Object3DData boundingBoxData = boundingBoxes.get(objData);
-        if (boundingBoxData == null || changed) {
+        if (boundingBoxData == null) {
             Log.i("ModelRenderer", "Building bounding box... id: " + objData.getId());
             boundingBoxData = BoundingBox.build(objData);
-            boundingBoxData.setColor(COLOR_WHITE);
+            boundingBoxData.setModelMatrix(objData.getModelMatrix());
+            boundingBoxData.setReadOnly(true);
             boundingBoxes.put(objData, boundingBoxData);
             Log.i("ModelRenderer", "Bounding box: " + boundingBoxData);
+        }
+        boundingBoxData.setColor(Constants.COLOR_GRAY);
+        if(scene.getSelectedObject() == objData){
+            boundingBoxData.setColor(Constants.COLOR_WHITE);
         }
         Renderer boundingBoxDrawer = drawer.getBoundingBoxDrawer();
         boundingBoxDrawer.draw(boundingBoxData, projectionMatrix, viewMatrix, -1,
@@ -776,5 +835,33 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
     public float[] getViewMatrix() {
         return viewMatrix;
+    }
+
+    public float getZoom() {
+        return zoom;
+    }
+
+    public void setZoom(float zoom) {
+        switch (projection){
+            case ORTHOGRAPHIC:
+            case ISOMETRIC:
+                if (zoom > 0 && zoom < 10) {
+                    this.zoom = zoom;
+                    setProjection(this.projection);
+                }
+                break;
+        }
+    }
+
+    public void addZoom(float zoom) {
+        this.setZoom(getZoom() + zoom);
+    }
+
+    public Quaternion getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(Quaternion orientation) {
+        this.orientation = orientation;
     }
 }

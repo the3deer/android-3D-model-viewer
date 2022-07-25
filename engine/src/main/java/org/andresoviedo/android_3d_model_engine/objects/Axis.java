@@ -17,7 +17,7 @@ public final class Axis {
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, // z-
 
             0.95f, 0.05f, 0, 1, 0, 0, 0.95f, -0.05f, 0, 1, 0f, 0f, // Arrow X (>)
-            -0.95f, 0.05f, 0, -1, 0, 0, -0.95f, -0.05f, 0, -1, 0f, 0f, // Arrow X (<)
+            // -0.95f, 0.05f, 0, -1, 0, 0, -0.95f, -0.05f, 0, -1, 0f, 0f, // Arrow X (<)
             -0.05f, 0.95f, 0, 0, 1, 0, 0.05f, 0.95f, 0, 0, 1f, 0f, // Arrox Y (^)
             -0.05f, 0, 0.95f, 0, 0, 1, 0.05f, 0, 0.95f, 0, 0, 1, // Arrox z (v)
 
@@ -28,8 +28,31 @@ public final class Axis {
             //@formatter:on
     };
 
+    private final static float[] axisColorLinesData = new float[]{
+            //@formatter:off
+            1, 0, 0, 1,   1, 0, 0, 1, // right
+            1, 0, 0, 1,   1, 0, 0, 1, // left
+            0, 1, 0, 1,   0, 1, 0, 1, // up
+            0, 1, 0, 1,   0, 1, 0, 1, // down
+            0, 0, 1, 1,   0, 0, 1, 1, // z+
+            0, 0, 1, 1,   0, 0, 1, 1, // z-
+
+            1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1, // Arrow X (>)
+            // 1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1, // Arrow X (<)
+            0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1, // Arrow X (^)
+            0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1, // Arrow X (v)
+
+
+            1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1,   1, 0, 0, 1, // Letter X
+            0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1,   0, 1, 0, 1, // Letter Y
+            0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1,   0, 0, 1, 1,
+            0, 0, 1, 1,   0, 0, 1, 1, // letter z
+            //@formatter:on
+    };
+
     public static Object3DData build() {
         return new Object3DData(IOUtils.createFloatBuffer(axisVertexLinesData.length).put(axisVertexLinesData))
-                .setDrawMode(GLES20.GL_LINES);
+                .setDrawMode(GLES20.GL_LINES).
+                setColorsBuffer(IOUtils.createFloatBuffer(axisColorLinesData.length).put(axisColorLinesData));
     }
 }

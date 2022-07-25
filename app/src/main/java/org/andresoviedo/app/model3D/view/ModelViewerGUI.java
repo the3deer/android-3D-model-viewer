@@ -1,7 +1,10 @@
 package org.andresoviedo.app.model3D.view;
 
+import android.opengl.Matrix;
 import android.util.Log;
 
+import org.andresoviedo.android_3d_model_engine.drawer.RendererFactory;
+import org.andresoviedo.android_3d_model_engine.event.SelectedObjectEvent;
 import org.andresoviedo.android_3d_model_engine.gui.CheckList;
 import org.andresoviedo.android_3d_model_engine.gui.GUI;
 import org.andresoviedo.android_3d_model_engine.gui.Glyph;
@@ -9,13 +12,18 @@ import org.andresoviedo.android_3d_model_engine.gui.Menu3D;
 import org.andresoviedo.android_3d_model_engine.gui.Rotator;
 import org.andresoviedo.android_3d_model_engine.gui.Text;
 import org.andresoviedo.android_3d_model_engine.gui.Widget;
+import org.andresoviedo.android_3d_model_engine.model.Camera;
+import org.andresoviedo.android_3d_model_engine.model.Object3DData;
+import org.andresoviedo.android_3d_model_engine.objects.Axis;
 import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
-import org.andresoviedo.android_3d_model_engine.view.ModelRenderer;
+import org.andresoviedo.android_3d_model_engine.view.FPSEvent;
 import org.andresoviedo.android_3d_model_engine.view.ModelSurfaceView;
+import org.andresoviedo.util.math.Quaternion;
 
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
+import java.util.Locale;
 
 final class ModelViewerGUI extends GUI {
 
@@ -23,6 +31,8 @@ final class ModelViewerGUI extends GUI {
     private final SceneLoader scene;
 
     private Text fps;
+    private Text info;
+    private Widget axis;
     private Widget icon;
     private Glyph icon2 = Glyph.build(Glyph.CHECKBOX_ON);
     private Menu3D menu;
@@ -33,6 +43,7 @@ final class ModelViewerGUI extends GUI {
         this.glView = glView;
         this.scene = scene;
         setColor(new float[]{1, 1, 1, 0f});
+        setPadding(Widget.PADDING_01);
     }
 
     /**
@@ -47,6 +58,8 @@ final class ModelViewerGUI extends GUI {
         super.setSize(width, height);
         try {
             initFPS();
+            initInfo();
+            initAxis();
             //initMenu();
             //initMenu2();
         }catch (Exception e){
@@ -57,6 +70,7 @@ final class ModelViewerGUI extends GUI {
 
     private void initFPS() {
         // frame-per-second
+        if (fps != null) return;
         fps = Text.allocate(7, 1);
         fps.setId("fps");
         fps.setVisible(true);
@@ -65,8 +79,49 @@ final class ModelViewerGUI extends GUI {
 
         addWidget(fps);
 
-        fps.setPosition(GUI.POSITION_TOP_LEFT);
+        fps.setPosition(Widget.POSITION_TOP_LEFT);
         //addBackground(fps).setColor(new float[]{0.25f, 0.25f, 0.25f, 0.25f});
+    }
+
+    private void initInfo() {
+        // model info
+        if (info != null) return;
+        info = Text.allocate(15, 3, Text.PADDING_01);
+        info.setId("info");
+        info.setVisible(true);
+        info.setParent(this);
+        //info.setRelativeScale(new float[]{0.85f,0.85f,0.85f});
+        info.setRelativeScale(new float[]{0.25f,0.25f,0.25f});
+
+        addWidget(info);
+
+        info.setPosition(Widget.POSITION_BOTTOM);
+        //addBackground(fps).setColor(new float[]{0.25f, 0.25f, 0.25f, 0.25f});
+    }
+
+    private void initAxis(){
+        if (axis != null) return;
+        axis = new Widget(Axis.build()){
+            final float[] matrix = new float[16];
+            final Quaternion orientation = new Quaternion(matrix);
+            @Override
+            public void render(RendererFactory rendererFactory, Camera camera, float[] lightPosInWorldSpace, float[] colorMask) {
+                if (camera.hasChanged()){
+                    Matrix.setLookAtM(matrix,0,camera.getxPos(), camera.getyPos(), camera.getzPos(),
+                            0f,0f,0f, camera.getxUp(), camera.getyUp(), camera.getzUp());
+                    setOrientation(orientation);
+                }
+                super.render(rendererFactory, camera, lightPosInWorldSpace, colorMask);
+            }
+        };
+        axis.setId("gui_axis");
+        axis.setVisible(true);
+        axis.setParent(this);
+        axis.setRelativeScale(new float[]{0.1f,0.1f,0.1f});
+
+        addWidget(axis);
+
+        axis.setPosition(Widget.POSITION_TOP_RIGHT);
     }
 
     private void initMenu2() {
@@ -97,7 +152,7 @@ final class ModelViewerGUI extends GUI {
         icon.setParent(this);
         icon.setRelativeScale(new float[]{0.1f,0.1f,0.1f});
         super.addWidget(icon);
-        icon.setPosition(GUI.POSITION_TOP_LEFT);
+        icon.setPosition(Widget.POSITION_TOP_LEFT);
         icon.setVisible(true);
         //super.addBackground(icon).setColor(new float[]{0.25f, 0.25f, 0.25f, 0.25f});
 
@@ -122,7 +177,7 @@ final class ModelViewerGUI extends GUI {
         //icon.addListener(menu);
 
         super.addWidget(menu);
-        menu.setPosition(GUI.POSITION_MIDDLE);
+        menu.setPosition(Widget.POSITION_MIDDLE);
         super.addBackground(menu).setColor(new float[]{0.5f, 0f, 0f, 0.25f});
 
         // menu rotator
@@ -138,10 +193,34 @@ final class ModelViewerGUI extends GUI {
     @Override
     public boolean onEvent(EventObject event) {
         super.onEvent(event);
-        if (event instanceof ModelRenderer.FPSEvent){
+        if (event instanceof FPSEvent){
             if (fps.isVisible()) {
-                ModelRenderer.FPSEvent fpsEvent = (ModelRenderer.FPSEvent) event;
+                FPSEvent fpsEvent = (FPSEvent) event;
                 fps.update(fpsEvent.getFps() + " fps");
+            }
+        }
+        else if (event instanceof SelectedObjectEvent){
+            if (this.info.isVisible()){
+                final Object3DData selected = ((SelectedObjectEvent) event).getSelected();
+                final StringBuilder info = new StringBuilder();
+                if (selected != null) {
+                    if (selected.getId().indexOf('/') == -1){
+                        info.append(selected.getId());
+                    } else {
+                        info.append(selected.getId().substring(selected.getId().lastIndexOf('/')+1));
+                    }
+                    info.append('\n');
+                    info.append("size: ");
+                    info.append(String.format(Locale.getDefault(), "%.2f",selected.getDimensions().getLargest()));
+                    info.append('\n');
+                    info.append("scale: ");
+                    info.append(String.format(Locale.getDefault(), "%.2f",selected.getScaleX()));
+                    //final DecimalFormat df = new DecimalFormat("0.##");
+                    //info.append(df.format(selected.getScaleX()));
+                    info.append("x");
+                }
+                Log.v("ModelViewerGUI","Selected object info: "+info);
+                this.info.update(info.toString().toLowerCase());
             }
         }
         else if (event instanceof Menu3D.ItemSelected) {

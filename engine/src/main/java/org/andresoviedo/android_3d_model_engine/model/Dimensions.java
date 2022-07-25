@@ -1,6 +1,6 @@
 package org.andresoviedo.android_3d_model_engine.model;
 
-import org.andresoviedo.util.math.Math3DUtils;
+import android.opengl.Matrix;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -13,9 +13,9 @@ public class Dimensions {
     private float farPt = Float.MAX_VALUE, nearPt = -Float.MAX_VALUE; // on z-axis
 
     // min max center
-    private final float[] center = new float[]{0,0,0};
-    private final float[] min = new float[]{0,0,0};
-    private final float[] max = new float[]{0,0,0};
+    private final float[] center = new float[]{0,0,0,1};
+    private final float[] min = new float[]{0,0,0,1};
+    private final float[] max = new float[]{0,0,0,1};
 
     // whether at least 1 vertex was processed
     private boolean initialized = false;
@@ -27,6 +27,26 @@ public class Dimensions {
         //();
     }
 
+    public Dimensions(Dimensions original, float[] matrix){
+        float[] newMin = new float[4];
+        float[] newMax = new float[4];
+        Matrix.multiplyMV(newMin,0,matrix,0,original.getMin(),0);
+        Matrix.multiplyMV(newMax,0,matrix,0,original.getMax(),0);
+        float[][] points = new float[8][4];
+        points[0] = new float[]{newMin[0], newMin[1], newMin[2], newMin[3]};
+        points[1] = new float[]{newMax[0], newMin[1], newMin[2], newMin[3]};
+        points[2] = new float[]{newMin[0], newMax[1], newMin[2], newMin[3]};
+        points[3] = new float[]{newMin[0], newMin[1], newMax[2], newMin[3]};
+
+        points[4] = new float[]{newMax[0], newMax[1], newMax[2], newMax[3]};
+        points[5] = new float[]{newMin[0], newMax[1], newMax[2], newMax[3]};
+        points[6] = new float[]{newMax[0], newMin[1], newMax[2], newMax[3]};
+        points[7] = new float[]{newMax[0], newMax[1], newMin[2], newMax[3]};
+        for (int i=0; i<points.length; i++){
+            update(points[i][0],points[i][1],points[i][2]);
+        }
+    }
+
     public Dimensions(float leftPt, float rightPt, float topPt, float bottomPt, float nearPt, float farPt) {
         this.leftPt = leftPt;
         this.rightPt = rightPt;
@@ -34,6 +54,7 @@ public class Dimensions {
         this.bottomPt = bottomPt;
         this.nearPt = nearPt;
         this.farPt = farPt;
+        initialized = true;
         refresh();
     }
 

@@ -22,15 +22,15 @@ public class TouchEvent extends EventObject {
     private final float dX;
     private final float dY;
     private final float zoom;
-    private final float[] rotation;
+    private final float angle;
 
     TouchEvent(Object source, Action action, int width, int height, float x, float y) {
-        this(source, action, width, height, x, y, 0, 0, 0, 0, 0, null);
+        this(source, action, width, height, x, y, 0, 0, 0, 0, 0, 0f);
     }
 
     TouchEvent(Object source, Action action, int width, int height, float x, float y,
                float x2, float y2, float dX,
-               float dY, float zoom, float[] rotation) {
+               float dY, float zoom, float angle) {
         super(source);
         this.width = width;
         this.height = height;
@@ -42,7 +42,7 @@ public class TouchEvent extends EventObject {
         this.x2 = x2;
         this.y2 = y2;
         this.zoom = zoom;
-        this.rotation = rotation;
+        this.angle = angle;
     }
 
     public int getWidth() {
@@ -86,8 +86,12 @@ public class TouchEvent extends EventObject {
         return zoom;
     }
 
-    public float[] getRotation() {
-        return rotation;
+    public float getAngle() {
+        return angle;
+    }
+
+    public float getLength() {
+        return (float) Math.sqrt(dX * dX + dY * dY);
     }
 
     @Override

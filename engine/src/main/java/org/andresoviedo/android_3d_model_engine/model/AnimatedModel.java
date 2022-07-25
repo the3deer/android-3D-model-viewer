@@ -147,53 +147,6 @@ public class AnimatedModel extends Object3DData {
         getJointTransforms()[joint.getIndex()] = joint.getAnimatedTransform();
     }
 
-    public Dimensions getCurrentDimensions() {
-
-        // FIXME: dimensions when model is animated are different. what we can do ??
-        if (true) return super.getCurrentDimensions();
-
-        if (this.currentDimensions == null) {
-            final float[] location = new float[4];
-            final float[] ret = new float[4];
-
-            final Dimensions newDimensions = new Dimensions();
-
-            Log.i("AnimatedModel", "Calculating current dimensions...");
-            Log.i("AnimatedModel", "id:" + getId() + ", elements:" + elements);
-            if (this.elements == null || this.elements.isEmpty()) {
-                for (int i = 0; i < vertexBuffer.capacity(); i += 3) {
-                    location[0] = vertexBuffer.get(i);
-                    location[1] = vertexBuffer.get(i + 1);
-                    location[2] = vertexBuffer.get(i + 2);
-                    location[3] = 1;
-                    final float[] temp = new float[4];
-                    Matrix.multiplyMV(temp, 0, this.getBindShapeMatrix(), 0, location, 0);
-                    Matrix.multiplyMV(ret, 0, this.getModelMatrix(), 0, temp, 0);
-                    newDimensions.update(ret[0], ret[1], ret[2]);
-                }
-            } else {
-                for (Element element : getElements()) {
-                    final IntBuffer indexBuffer = element.getIndexBuffer();
-                    for (int i = 0; i < indexBuffer.capacity(); i++) {
-                        final int idx = indexBuffer.get(i);
-                        location[0] = vertexBuffer.get(idx * 3);
-                        location[1] = vertexBuffer.get(idx * 3 + 1);
-                        location[2] = vertexBuffer.get(idx * 3 + 2);
-                        location[3] = 1;
-                        final float[] temp = new float[4];
-                        Matrix.multiplyMV(temp, 0, this.getBindShapeMatrix(), 0, location, 0);
-                        Matrix.multiplyMV(ret, 0, this.getModelMatrix(), 0, temp, 0);
-                        newDimensions.update(ret[0], ret[1], ret[2]);
-                    }
-                }
-            }
-            this.currentDimensions = newDimensions;
-
-            Log.d("AnimatedModel", "Calculated current dimensions for '" + getId() + "': " + this.currentDimensions);
-        }
-        return currentDimensions;
-    }
-
     @Override
     public AnimatedModel clone() {
         final AnimatedModel ret = new AnimatedModel();

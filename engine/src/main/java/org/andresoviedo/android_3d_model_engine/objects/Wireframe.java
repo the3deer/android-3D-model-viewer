@@ -93,10 +93,8 @@ public class Wireframe {
                     .setColorsBuffer(objData.getColorsBuffer())
                     .setColor(objData.getColor())
                     .setTextureBuffer(objData.getTextureBuffer())
-                    .setLocation(objData.getLocation())
-                    .setRotation(objData.getRotation())
-                    .setScale(objData.getScale())
-                    .setBindTransform(objData.getBindTransform())
+                    .setModelMatrix(objData.getModelMatrix())
+                    .setReadOnly(true)
                     .setDrawMode(GLES20.GL_LINES)
                     .setDrawUsingArrays(false)
                     .setId(objData.getId() + "_wireframe");
