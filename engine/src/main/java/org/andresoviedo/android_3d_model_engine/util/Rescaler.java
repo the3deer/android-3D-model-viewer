@@ -69,7 +69,6 @@ public class Rescaler {
 
         // modify the model's vertices
         if (object3DData instanceof AnimatedModel) {
-            //object3DData.setLocation(new fl0oat[]{xc*scaleFactor, yc*scaleFactor, zc*scaleFactor});
             object3DData.setScale(new float[]{scaleFactor, scaleFactor, scaleFactor});
         } else {
             for (int i = 0; i < vertexBuffer.capacity(); i += 3) {

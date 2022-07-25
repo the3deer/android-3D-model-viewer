@@ -18,41 +18,10 @@ import java.util.EventObject;
 
 public class GUI extends Widget implements EventListener {
 
-    public static final int POSITION_TOP_LEFT = 0;
-    public static final int POSITION_MIDDLE = 4;
-    public static final int POSITION_TOP_RIGHT = 2;
-
     public GUI(){
         super();
         addListener(this);
     }
-
-    // set position based on layout:
-    // top-left, top-middle, top-right       =   0 1 2
-    // middle-left, middle, middle-right     =   3 4 5
-    // bottom-left, bottom, bottom-right     =   6 7 8
-    /*public void addWidget(Widget widget) {
-        super.addWidget(widget);
-        widget.setRatio(ratio);
-        Log.i("GUI","Widget added: "+widget);
-    }*/
-
-    /*public void render(RendererFactory rendererFactory, float[] lightPosInWorldSpace, float[] colorMask) {
-        super.render(rendererFactory, lightPosInWorldSpace, colorMask);
-        for (int i = 0; i < widgets.size(); i++) {
-            renderWidget(rendererFactory, widgets.get(i), lightPosInWorldSpace, colorMask);
-        }
-    }
-
-    private void renderWidget(RendererFactory rendererFactory, Widget widget, float[] lightPosInWorldSpace, float[]
-            colorMask) {
-        if (!widget.isVisible()) return;
-        widget.onDrawFrame();
-        Renderer drawer = rendererFactory.getDrawer(widget, false, false, false, false, true);
-
-        GLES20.glLineWidth(2.0f);
-        drawer.draw(widget, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosition);
-    }*/
 
     @Override
     public boolean onEvent(EventObject event) {

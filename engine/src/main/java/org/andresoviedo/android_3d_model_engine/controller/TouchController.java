@@ -202,14 +202,12 @@ public class TouchController implements EventListener {
 				// INFO: Process gesture
 				if (pointerCount == 1 && currentPress1 > 4.0f) {
 				} else if (pointerCount == 1) {
-					Log.v("TouchController","Firing move...");
 					fireEvent(new TouchEvent(this, TouchEvent.MOVE, width, height, previousX1, previousY1,
 							x1, y1, dx1, dy1, 0,
 							0f));
 					touchStatus = TOUCH_STATUS_MOVING_WORLD;
 				} else if (pointerCount == 2) {
 					if (fingersAreClosing && (currentPress1 + currentPress2) > 1f) {
-						Log.v("TouchController","Firing pinch...");
 						fireEvent(new TouchEvent(this, TouchEvent.PINCH, width, height, previousX1, previousY1,
 								x1, y1, dx1, dy1, (previousLength - length), 0f));
 						touchStatus = TOUCH_STATUS_ZOOMING_CAMERA;
@@ -244,7 +242,10 @@ public class TouchController implements EventListener {
 	@Override
 	public boolean onEvent(EventObject event) {
 		Log.v("TouchController","Processing event... "+ event);
-		if (event instanceof ViewEvent) {
+		if (event.getSource() instanceof MotionEvent){
+			return onMotionEvent((MotionEvent) event.getSource());
+		}
+		else if (event instanceof ViewEvent) {
 			ViewEvent viewEvent = (ViewEvent) event;
 			if (viewEvent.getCode() == ViewEvent.Code.SURFACE_CHANGED) {
 				this.setSize(viewEvent.getWidth(), viewEvent.getHeight());

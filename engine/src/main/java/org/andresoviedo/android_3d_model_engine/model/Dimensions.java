@@ -2,8 +2,6 @@ package org.andresoviedo.android_3d_model_engine.model;
 
 import android.opengl.Matrix;
 
-import org.andresoviedo.util.math.Math3DUtils;
-
 import java.text.DecimalFormat;
 import java.util.Arrays;
 

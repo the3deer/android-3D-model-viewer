@@ -42,6 +42,8 @@ public class PointOfViewCamera extends Camera {
         // get current view and right
         float[] view = Math3DUtils.to4d(Math3DUtils.substract(this.view, this.pos));
         float[] right = Math3DUtils.to4d(Math3DUtils.crossProduct(view, this.up));
+        if (Math3DUtils.length(right) == 0) return;
+
         Math3DUtils.normalize(right);
 
         // add deltas
@@ -111,6 +113,30 @@ public class PointOfViewCamera extends Camera {
         view[0] += xLookDirection * direction;
         view[1] += yLookDirection * direction;
         view[2] += zLookDirection * direction;
+
+        save();
+
+        delegate.setChanged(true);
+    }
+
+    @Override
+    public void Rotate(float angle) {
+
+        if (angle == 0) return;
+
+        // get current view and right
+        float[] view = Math3DUtils.to4d(Math3DUtils.substract(this.view, this.pos));
+        Math3DUtils.normalize(view);
+
+        // transform
+        float[] matrix = new float[16];
+        Matrix.setRotateM(matrix, 0, (float) -Math.toDegrees(angle), view[0], view[1], view[2]);
+
+        final float[] newUp = new float[4];
+        Matrix.multiplyMV(newUp,0,matrix,0, this.up,0);
+        this.up[0] = newUp[0];
+        this.up[1] = newUp[1];
+        this.up[2] = newUp[2];
 
         save();
 

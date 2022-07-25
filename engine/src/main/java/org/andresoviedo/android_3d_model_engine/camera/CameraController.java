@@ -1,9 +1,9 @@
 package org.andresoviedo.android_3d_model_engine.camera;
 
-import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
+import org.andresoviedo.android_3d_model_engine.model.Constants;
 import org.andresoviedo.android_3d_model_engine.model.Projection;
 import org.andresoviedo.android_3d_model_engine.view.ViewEvent;
 import org.andresoviedo.util.event.EventListener;
@@ -83,9 +83,8 @@ public final class CameraController implements EventListener {
                     handler.translateCamera(dx1, dy1);
                     break;
                 case PINCH:
-                    final float zoomFactor = ((TouchEvent) event).getZoom() / 100f;
-                    final float distance = camera.getDistance() ;
-                    handler.MoveCameraZ( -zoomFactor * distance );
+                    final float zoomFactor = ((TouchEvent) event).getZoom();
+                    handler.MoveCameraZ((float) (-zoomFactor * Constants.near * Math.log(camera.getDistance())));
                     break;
                 case ROTATE:
                     float rotation = touchEvent.getAngle();

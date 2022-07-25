@@ -693,7 +693,11 @@ public class Math3DUtils {
     public static void snapToGrid(float[] v) {
         final float[] TEST_VALUES = {
                 Constants.UNIT_SIN_1, Constants.UNIT_SIN_2, Constants.UNIT_SIN_3, Constants.UNIT_SIN_5,
-                Constants.UNIT_0, Constants.UNIT_1, Constants.UNIT_2, Constants.UNIT_3, Constants.UNIT_5};
+                Constants.UNIT_SIN_1 * Constants.UNIT, Constants.UNIT_SIN_2 * Constants.UNIT,
+                Constants.UNIT_SIN_3 * Constants.UNIT, Constants.UNIT_SIN_5 * Constants.UNIT,
+                Constants.UNIT_0, Constants.UNIT_1, Constants.UNIT_2, Constants.UNIT_3, Constants.UNIT_5,
+                Constants.UNIT_0 * Constants.UNIT, Constants.UNIT_1 * Constants.UNIT, Constants.UNIT_2 * Constants.UNIT,
+                Constants.UNIT_3 * Constants.UNIT, Constants.UNIT_5 * Constants.UNIT};
         for (int i = 0; i < v.length; i++) {
             for (int j = 0; j < TEST_VALUES.length; j++) {
                 final float testValue = TEST_VALUES[j] ;

@@ -10,6 +10,7 @@ import android.widget.Toast;
 import org.andresoviedo.android_3d_model_engine.animation.Animator;
 import org.andresoviedo.android_3d_model_engine.collision.CollisionEvent;
 import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
+import org.andresoviedo.android_3d_model_engine.event.SelectedObjectEvent;
 import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
 import org.andresoviedo.android_3d_model_engine.model.Constants;
@@ -20,6 +21,7 @@ import org.andresoviedo.android_3d_model_engine.objects.Point;
 import org.andresoviedo.android_3d_model_engine.services.collada.ColladaLoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.stl.STLLoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoaderTask;
+import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.util.event.EventListener;
 import org.andresoviedo.util.io.IOUtils;
@@ -187,13 +189,23 @@ public class SceneLoader implements LoadListener, EventListener {
     private Map<Object3DData, Dimensions> originalDimensions = new HashMap<>();
     private Map<Object3DData, Transform> originalTransforms = new HashMap<>();
 
+    private List<EventListener> listeners = new ArrayList<>();
+
+    public SceneLoader(Activity main) {
+        this(main, null, -1);
+    }
+
     public SceneLoader(Activity main, URI uri, int type) {
         this.parent = main;
         this.uri = uri;
         this.type = type;
 
-        float light_distance = Constants.DEFAULT_MAX_MODEL_SIZE * 2;
-        lightBulb.setLocation(new float[]{light_distance,light_distance,light_distance});
+        float light_distance = Constants.SKYBOX_SIZE;
+        lightBulb.setLocation(new float[]{light_distance,light_distance/2,0});
+    }
+
+    public void addListener(EventListener listener){
+        this.listeners.add(listener);
     }
 
     public void init() {
@@ -417,12 +429,13 @@ public class SceneLoader implements LoadListener, EventListener {
 
     public final void toggleSmooth() {
         for (int i = 0; i < getObjects().size(); i++) {
+            if (getObjects().get(i).getMeshData() == null) continue;
             if (!this.isSmooth) {
-                getObjects().get(0).getMeshData().smooth();
+                getObjects().get(i).getMeshData().smooth();
             } else {
-                getObjects().get(0).getMeshData().unSmooth();
+                getObjects().get(i).getMeshData().unSmooth();
             }
-            getObjects().get(0).getMeshData().refreshNormalsBuffer();
+            getObjects().get(i).getMeshData().refreshNormalsBuffer();
         }
         this.isSmooth = !this.isSmooth;
     }
@@ -648,7 +661,7 @@ public class SceneLoader implements LoadListener, EventListener {
         fixCoordinateSystem();
 
         // rescale objects so they all fit in the viewport
-        rescale(this.getObjects(), Constants.DEFAULT_MAX_MODEL_SIZE, new float[3]);
+        rescale(this.getObjects(), Constants.UNIT, new float[3]);
     }
 
     private void rescale(List<Object3DData> objs, float size) {
@@ -688,6 +701,7 @@ public class SceneLoader implements LoadListener, EventListener {
 
     private void setSelectedObject(Object3DData selectedObject) {
         this.selectedObject = selectedObject;
+        AndroidUtils.fireEvent(listeners, new SelectedObjectEvent(this, selectedObject));
     }
 
     public void loadTexture(Object3DData obj, Uri uri) throws IOException {
@@ -725,67 +739,34 @@ public class SceneLoader implements LoadListener, EventListener {
 
                 // Log.v("SceneLoader", "Q: Quaternion angle: " + Math.toDegrees(angle) + " ,dx:" + touch.getdX() + ", dy:" + -touch.getdY());
                 Quaternion q0 = Quaternion.getQuaternion(pos, angle * factor);
-                q0.normalize();
+                //q0.normalize();
 
                 Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(),q0);
                 selectedObject.setOrientation(multiply);
             }
             else if (touch.getAction() == TouchEvent.Action.MOVE && selectedObject != null) {
 
-                    /*if (Math.abs(touch.getdX()) > 2 && Math.abs(touch.getdY()) < 2){
-                        float angle = -touch.getdX() * touch.getLength() / 180f;
-                        Log.v("SceneLoader", "Rotating (axis:up): " + Math.toDegrees(angle) + " ,dx:" + touch.getdX() + ", dy:" + -touch.getdY());
-                        Quaternion q0 = Quaternion.getQuaternion(up, angle);
-                        q0.normalize();
-                        Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(),q0);
-                        multiply.normalize();
-                        selectedObject.setOrientation(multiply);
-                    } else if (Math.abs(touch.getdY()) > 2 && Math.abs(touch.getdX()) < 2){
-                        float angle = -touch.getdY() * touch.getLength() / 180f;
-                        Log.v("SceneLoader", "Rotating (axis:right): " + Math.toDegrees(angle) + " ,dx:" + touch.getdX() + ", dy:" + -touch.getdY());
-                        Quaternion q0 = Quaternion.getQuaternion(right, angle);
-                        q0.normalize();
-                        Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(),q0);
-                        multiply.normalize();
-                        selectedObject.setOrientation(multiply);
-                    } else {*/
-                        float angle = (float) (Math.atan2(-touch.getdY(), touch.getdX()));
-                        Log.v("SceneLoader", "Rotating (axis:var): " + Math.toDegrees(angle) + " ,dx:" + touch.getdX() + ", dy:" + -touch.getdY());
+                float angle = (float) (Math.atan2(-touch.getdY(), touch.getdX()));
+                Log.v("SceneLoader", "Rotating (axis:var): " + Math.toDegrees(angle) + " ,dx:" + touch.getdX() + ", dy:" + -touch.getdY());
 
-                        float[] rightd = Math3DUtils.multiply(right, touch.getdY());
-                        float[] upd = Math3DUtils.multiply(up, touch.getdX());
-                        float[] rot = Math3DUtils.add(rightd,upd);
-                        if (Math3DUtils.length(rot)>0) {
-                            Math3DUtils.normalize(rot);
-                        } else {
-                            rot = new float[]{1,0,0};
-                        }
+                float[] rightd = Math3DUtils.multiply(right, touch.getdY());
+                float[] upd = Math3DUtils.multiply(up, touch.getdX());
+                float[] rot = Math3DUtils.add(rightd,upd);
+                if (Math3DUtils.length(rot)>0) {
+                    Math3DUtils.normalize(rot);
+                } else {
+                    rot = new float[]{1,0,0};
+                }
 
-                        float angle1 = -touch.getLength() / 360;
-                        Quaternion q1 = Quaternion.getQuaternion(rot, angle1);
-                        q1.normalize();
+                float angle1 = -touch.getLength() / 360;
+                Quaternion q1 = Quaternion.getQuaternion(rot, angle1);
+                //q1.normalize();
 
-                        Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(), q1);
-                        multiply.normalize();
+                Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(), q1);
+                //multiply.normalize();
 
-                        selectedObject.setOrientation(multiply);
-                        //---------------------------------
+                selectedObject.setOrientation(multiply);
 
-                        /*Quaternion qfix = Quaternion.getQuaternion(pos, -angle);
-                        qfix.normalize();
-
-                        Quaternion qright = Quaternion.getQuaternion(right, 0);
-                        qright.normalize();
-
-                        Quaternion q1 = Quaternion.multiply(qright,qfix);
-                        q1.normalize();
-
-                        Quaternion multiply = Quaternion.multiply(selectedObject.getOrientation(), q1);
-                        multiply.normalize();
-
-                        selectedObject.setOrientation(q1);
-                        //selectedObject.setOrientation(multiply);*/
-                    //}
             }
         } else if (event instanceof CollisionEvent) {
             this.userHasInteracted = true;
@@ -904,6 +885,10 @@ public class SceneLoader implements LoadListener, EventListener {
         final float[] finalScale = new float[]{scaleFactor, scaleFactor, scaleFactor};
         Log.d("SceneLoader", "New scale: " + scaleFactor);
 
+        if (scaleFactor > 0.5f && scaleFactor < 1.5f){
+            return;
+        }
+
         // calculate the global center
         float centerX = (maxRight + maxLeft) / 2;
         float centerY = (maxTop + maxBottom) / 2;
@@ -986,5 +971,9 @@ public class SceneLoader implements LoadListener, EventListener {
                 }*/
         Log.v("SceneLoader","onOrientationChanged: orientation: "+orientation);
         camera.setOrientation(orientation);
+    }
+
+    public void setCamera(Camera camera) {
+        this.camera = camera;
     }
 }

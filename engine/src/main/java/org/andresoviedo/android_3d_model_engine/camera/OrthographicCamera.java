@@ -10,6 +10,12 @@ import java.util.Arrays;
 
 public class OrthographicCamera extends Camera {
 
+    /**
+     * The distance between the origin and the orthographic coordinate
+     * This should be greater than the near view so it's not clipped
+     */
+    public static final float UNIT = Constants.UNIT * 2f; // Constants.UNIT_SIN_3;
+
     private final Camera delegate;
     private boolean initialized = false;
 
@@ -31,11 +37,12 @@ public class OrthographicCamera extends Camera {
         if (!initialized) {
             this.savePos[0] = Constants.UNIT_0;
             this.savePos[1] = Constants.UNIT_0;
-            this.savePos[2] = Constants.UNIT_1;
+            this.savePos[2] = UNIT;
             this.saveUp[0] = Constants.UNIT_0;
             this.saveUp[1] = Constants.UNIT_1;
             this.saveUp[2] = -Constants.UNIT_0;
             initialized = true;
+            return true;
         }
         return false;
     }
@@ -57,17 +64,17 @@ public class OrthographicCamera extends Camera {
             float[] right = Math3DUtils.crossProduct(-savePos[0], -savePos[1], -savePos[2], saveUp[0], saveUp[1], saveUp[2]);
             Math3DUtils.normalize(right);
             Math3DUtils.snapToGrid(right);
-            saveAndAnimate(right[0] * Constants.UNIT_1, right[1] * Constants.UNIT_1, right[2] * Constants.UNIT_1);
+            saveAndAnimate(right[0] * UNIT, right[1] * UNIT, right[2] * UNIT);
         } else if (dX > 0 && dXabs > dYabs) {
             // float[] left = Math3DUtils.crossProduct(getxUp(), getyUp(), getzUp(), -getxPos(), -getyPos(), -getzPos());
             float[] left = Math3DUtils.crossProduct(saveUp[0], saveUp[1], saveUp[2],-savePos[0], -savePos[1], -savePos[2]);
             Math3DUtils.normalize(left);
             Math3DUtils.snapToGrid(left);
-            saveAndAnimate(left[0] * Constants.UNIT_1, left[1] * Constants.UNIT_1, left[2] * Constants.UNIT_1);
+            saveAndAnimate(left[0] * UNIT, left[1] * UNIT, left[2] * UNIT);
         } else if (dY > 0 && dYabs > dXabs) {
-            saveAndAnimate(saveUp[0] * Constants.UNIT_1, saveUp[1] * Constants.UNIT_1, saveUp[2] * Constants.UNIT_1);
+            saveAndAnimate(saveUp[0] * UNIT, saveUp[1] * UNIT, saveUp[2] * UNIT);
         } else if (dY < 0 && dYabs > dXabs) {
-            saveAndAnimate(-saveUp[0] * Constants.UNIT_1, -saveUp[1] * Constants.UNIT_1, -saveUp[2] * Constants.UNIT_1);
+            saveAndAnimate(-saveUp[0] * UNIT, -saveUp[1] * UNIT, -saveUp[2] * UNIT);
         }
     }
 

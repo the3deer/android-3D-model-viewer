@@ -102,6 +102,7 @@ public class Widget extends Object3DData implements EventListener {
     public static final int POSITION_TOP = 1;
     public static final int POSITION_MIDDLE = 4;
     public static final int POSITION_RIGHT = 5;
+    public static final int POSITION_LEFT = 3;
     public static final int POSITION_TOP_RIGHT = 2;
     public static final int POSITION_BOTTOM = 7;
 
@@ -133,6 +134,11 @@ public class Widget extends Object3DData implements EventListener {
 
     protected Object3DData source;
 
+    public static final float PADDING_01 = 0.1f;
+    public static final float PADDING_02 = 0.2f;
+
+    private float padding;
+
     protected Widget(){
 
     }
@@ -142,7 +148,6 @@ public class Widget extends Object3DData implements EventListener {
         setVertexBuffer(source.getVertexBuffer());
         setDrawMode(source.getDrawMode());
         setColorsBuffer(source.getColorsBuffer());
-        //setOrientation(source.getOrientation());
     }
 
     @Override
@@ -248,12 +253,9 @@ public class Widget extends Object3DData implements EventListener {
         Dimensions parentDim = getParent().getCurrentDimensions();
         float relScale = parentDim.getRelationTo(getCurrentDimensions());
         Log.v("Widget","Relative    scale ("+getId()+"): "+relScale);
-        Log.v("Widget","parent dimensions ("+getId()+") "+getParent().getCurrentDimensions());
-        Log.v("Widget","this   dimensions ("+getId()+") "+getCurrentDimensions());
         float[] newScale = Math3DUtils.multiply(scale, relScale);
 
         super.setScale(newScale);
-        Log.v("Widget","this   dimensions ("+getId()+") "+getCurrentDimensions());
         return this;
 
     }
@@ -276,53 +278,17 @@ public class Widget extends Object3DData implements EventListener {
         return initialPosition;
     }
 
-    static float[] calculatePosition_2(int relativePosition, Dimensions dimensions, float newScale, float ratio){
+    float[] calculatePosition(int relativePosition, Dimensions dimensions, float newScale, float ratio){
 
         float x, y, z = 0;
         switch (relativePosition) {
             case POSITION_TOP_LEFT:
                 x = -ratio;
-                y = 1 - dimensions.getHeight() * newScale;
+                y = 1- dimensions.getHeight()/2f - dimensions.getCenter()[1];
                 break;
             case POSITION_TOP:
-                x = -(dimensions.getWidth() * newScale / 2);
-                y = 1 - dimensions.getHeight() * newScale;
-                break;
-            case POSITION_TOP_RIGHT:
-                x = ratio - (dimensions.getMax()[0]);
-                y = 1 - dimensions.getHeight();
-                break;
-            case POSITION_MIDDLE:
-                x = -(dimensions.getWidth() * newScale / 2);
-                y = -(dimensions.getHeight() * newScale / 2);
-                break;
-            case POSITION_RIGHT:
-                x = ratio -(dimensions.getWidth() * newScale);
-                y = -(dimensions.getHeight() * newScale / 2);
-                break;
-            case POSITION_BOTTOM:
-                x = -(dimensions.getWidth() * newScale / 2);
-                y = -1 + (dimensions.getHeight() * newScale / 2);
-                y -= (dimensions.getCenter()[1] * newScale);
-                break;
-            default:
-                throw new UnsupportedOperationException();
-        }
-        return new float[]{x, y, z};
-    }
-
-    static float[] calculatePosition(int relativePosition, Dimensions dimensions, float newScale, float ratio){
-
-        float x, y, z = 0;
-        switch (relativePosition) {
-            case POSITION_TOP_LEFT:
-                x = -ratio;
-                y = 1-dimensions.getHeight();
-                Log.d("Widget","calculated from dimensions:"+dimensions+", scale: "+newScale);
-                break;
-            case POSITION_TOP:
-                x = -(dimensions.getWidth() * newScale / 2);
-                y = 1 - dimensions.getHeight() * newScale;
+                x = -dimensions.getCenter()[0] / 2;
+                y = 1- dimensions.getHeight()/2f - dimensions.getCenter()[1];
                 break;
             case POSITION_TOP_RIGHT:
                 x = ratio - dimensions.getMax()[0];
@@ -336,10 +302,13 @@ public class Widget extends Object3DData implements EventListener {
                 x = ratio -(dimensions.getWidth() * newScale);
                 y = -(dimensions.getHeight() * newScale / 2);
                 break;
+            case POSITION_LEFT:
+                x = - ratio ;
+                y = -(dimensions.getHeight() / 2);
+                break;
             case POSITION_BOTTOM:
-                x = -(dimensions.getWidth() * newScale / 2);
-                y = -1 + (dimensions.getHeight() * newScale / 2);
-                y -= (dimensions.getCenter()[1] * newScale);
+                x = -dimensions.getCenter()[0];
+                y = - 1 + dimensions.getHeight() / 2 - dimensions.getCenter()[1] + padding ;
                 break;
             default:
                 throw new UnsupportedOperationException();
@@ -392,28 +361,6 @@ public class Widget extends Object3DData implements EventListener {
         Renderer drawer = rendererFactory.getDrawer(this, false, false, false, false, true);
         drawer.draw(this, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosition);
     }
-
-    /*@Override
-    public void render(RendererFactory rendererFactory, Camera camera, float[] lightPosInWorldSpace, float[] colorMask) {
-        super.render(rendererFactory, camera, lightPosInWorldSpace, colorMask);
-        this.renderImpl(rendererFactory,lightPosInWorldSpace,colorMask);
-        for (int i = 0; i < widgets.size(); i++) {
-            widgets.get(i).render(rendererFactory, camera, lightPosInWorldSpace, colorMask);
-        }
-        for (int i = 0; i < widgets.size(); i++) {
-            widgets.get(i).renderImpl(rendererFactory, lightPosInWorldSpace, colorMask);
-        }
-    }
-
-    protected void renderImpl(RendererFactory rendererFactory, float[] lightPosInWorldSpace, float[]
-            colorMask) {
-        if (!isVisible()) return;
-        onDrawFrame();
-        Renderer drawer = rendererFactory.getDrawer(this, false, false, false, false, true);
-
-        GLES20.glLineWidth(2.0f);
-        drawer.draw(this, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosition);
-    }*/
 
     public void onDrawFrame(){
         if (animation != null) animation.run();
@@ -482,5 +429,13 @@ public class Widget extends Object3DData implements EventListener {
         widget.setRatio(ratio);
         if (widget.getParent() == null) widget.setParent(this);
         Log.i("Widget","New widget: "+widget);
+    }
+
+    public float getPadding() {
+        return padding;
+    }
+
+    public void setPadding(float padding) {
+        this.padding = padding;
     }
 }

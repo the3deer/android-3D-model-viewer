@@ -607,7 +607,7 @@ public class Object3DData {
 
     private void updateModelMatrix() {
 
-        if (readOnly) return;
+        if (isReadOnly()) return;
 
         Matrix.setIdentityM(modelMatrix, 0);
 

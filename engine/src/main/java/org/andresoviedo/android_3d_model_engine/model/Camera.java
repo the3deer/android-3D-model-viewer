@@ -189,25 +189,6 @@ public class Camera {
         return new Camera[]{left, right};
     }
 
-    private void rotate(float degrees, float x, float y, float z) {
-        Matrix.setIdentityM(buffer, 24); // first matrix
-        Matrix.rotateM(buffer, 40, buffer, 24, degrees, x, y, z); // 2nd matrix
-        Matrix.multiplyMV(buffer, 0, buffer, 40, pos, 0);
-        pos[0] = buffer[0];
-		pos[1] = buffer[1];
-		pos[2] = buffer[2];
-        Matrix.multiplyMV(buffer, 0, buffer, 40, view, 0);
-        view[0] = buffer[0];
-        view[1] = buffer[1];
-        view[2] = buffer[2];
-        Matrix.multiplyMV(buffer, 0, buffer, 40, up, 0);
-        up[0] = buffer[0];
-        up[1] = buffer[1];
-        up[2] = buffer[2];
-
-		setChanged(true);
-    }
-
     public float getxView() {
         return view[0];
     }
@@ -279,7 +260,7 @@ public class Camera {
     }
 
     public float getDistance() {
-        return Math3DUtils.length(Math3DUtils.normalize2(Math3DUtils.substract(this.pos, this.view)));
+        return Math3DUtils.length(this.pos);
     }
 
     public float[] getPos() {
@@ -287,7 +268,7 @@ public class Camera {
     }
 
     public float[] getRight() {
-        return Math3DUtils.crossProduct(this.up, this.pos);
+        return Math3DUtils.normalize2(Math3DUtils.crossProduct(this.up, this.pos));
     }
 
     public float[] getUp() {

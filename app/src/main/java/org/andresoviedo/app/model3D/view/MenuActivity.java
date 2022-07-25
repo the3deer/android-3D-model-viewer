@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import org.andresoviedo.android_3d_model_engine.services.collada.ColladaLoader;
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoader;
+import org.andresoviedo.app.model3D.demo.GlyphsDemoActivity;
 import org.andresoviedo.dddmodel2.R;
 import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.android.AssetUtils;
@@ -51,7 +52,7 @@ public class MenuActivity extends ListActivity {
 
 
     private enum Action {
-        LOAD_MODEL, CARGAR_MODELO, GITHUB, SETTINGS, HELP, AYUDA, ABOUT, ACERCA, EXIT, SALIR, UNKNOWN, DEMO
+        LOAD_MODEL, CARGAR_MODELO, GITHUB, SETTINGS, HELP, AYUDA, ABOUT, ACERCA, EXIT, SALIR, UNKNOWN, DEMO, DEMOS
     }
 
     /**
@@ -78,7 +79,9 @@ public class MenuActivity extends ListActivity {
     public void onListItemClick(ListView l, View v, int position, long id) {
         String selectedItem = (String) getListView().getItemAtPosition(position);
         // Toast.makeText(getApplicationContext(), "Click ListItem '" + selectedItem + "'", Toast.LENGTH_LONG).show();
-        String selectedAction = selectedItem.replace(' ', '_').toUpperCase(Locale.getDefault());
+        String selectedAction = selectedItem.replace(' ', '_')
+                .replaceAll("\\.", "")
+        .toUpperCase(Locale.getDefault());
         Action action = Action.UNKNOWN;
         try {
             action = Action.valueOf(selectedAction);
@@ -87,6 +90,21 @@ public class MenuActivity extends ListActivity {
         }
         try {
             switch (action) {
+                case DEMOS:
+                    ContentUtils.showListDialog(this, "Demos List", new String[]{"Random Objects", "GUI"}, (DialogInterface dialog, int which) -> {
+                        if (which == 0) {
+                            Intent demoIntent = new Intent(MenuActivity.this.getApplicationContext(), ModelActivity.class);
+                            demoIntent.putExtra("immersiveMode", "false");
+                            demoIntent.putExtra("backgroundColor", "0 0 0 1");
+                            MenuActivity.this.startActivity(demoIntent);
+                        } else if (which == 1) {
+                            Intent demoIntent = new Intent(MenuActivity.this.getApplicationContext(), GlyphsDemoActivity.class);
+                            MenuActivity.this.startActivity(demoIntent);
+                        } else {
+                            // TODO:
+                        }
+                    });
+                    break;
                 case DEMO:
                     Intent demoIntent = new Intent(MenuActivity.this.getApplicationContext(), ModelActivity.class);
                     demoIntent.putExtra("immersiveMode", "false");

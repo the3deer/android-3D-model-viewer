@@ -28,6 +28,7 @@ import org.andresoviedo.android_3d_model_engine.collision.CollisionController;
 import org.andresoviedo.android_3d_model_engine.collision.CollisionEvent;
 import org.andresoviedo.android_3d_model_engine.controller.TouchController;
 import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
+import org.andresoviedo.android_3d_model_engine.event.SelectedObjectEvent;
 import org.andresoviedo.android_3d_model_engine.model.Projection;
 import org.andresoviedo.android_3d_model_engine.services.LoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
@@ -117,6 +118,7 @@ public class ModelActivity extends Activity implements EventListener {
         // Create our 3D scenario
         Log.i("ModelActivity", "Loading Scene...");
         scene = new SceneLoader(this, paramUri, paramType);
+        scene.addListener(this);
         if (paramUri == null) {
             final LoaderTask task = new DemoLoaderTask(this, null, scene);
             task.execute();
@@ -450,8 +452,10 @@ public class ModelActivity extends Activity implements EventListener {
 
     @Override
     public boolean onEvent(EventObject event) {
-        Log.v("ModelActivity","Processing event... "+ event);
         if (event instanceof FPSEvent){
+            gui.onEvent(event);
+        }
+        else if (event instanceof SelectedObjectEvent){
             gui.onEvent(event);
         }
         else if (event.getSource() instanceof MotionEvent){
@@ -473,6 +477,9 @@ public class ModelActivity extends Activity implements EventListener {
                 } else {
                     cameraController.onEvent(event);
                     scene.onEvent(event);
+                    if (((TouchEvent) event).getAction() == TouchEvent.Action.PINCH) {
+                        glView.onEvent(event);
+                    }
                 }
             }
         }

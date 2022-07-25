@@ -9,9 +9,12 @@ import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Element;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.util.android.GLUtil;
+import org.andresoviedo.util.io.IOUtils;
 
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -434,12 +437,24 @@ class GLES20Renderer implements Renderer {
                     }
                 }
 
+                if(drawUsingUnsignedInt == false){
+                    ShortBuffer indexShortBuffer = null;
+                    drawOrderBuffer.position(0);
+                    if (indexShortBuffer == null && drawOrderBuffer != null) {
+                        indexShortBuffer = IOUtils.createShortBuffer(((IntBuffer) drawOrderBuffer).capacity());
+                        for (int j = 0; j < indexShortBuffer.capacity(); j++) {
+                            indexShortBuffer.put((short) ((IntBuffer) drawOrderBuffer).get(j));
+                        }
+                        drawOrderBuffer = indexShortBuffer;
+                    }
+                }
+
                 // draw element
                 drawOrderBuffer.position(0);
                 GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), drawBufferType,
                         drawOrderBuffer);
-                GLUtil.checkGlError("glDrawElements");
-                if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
+                boolean error = GLUtil.checkGlError("glDrawElements");
+                if (drawUsingUnsignedInt && error) {
                     drawUsingUnsignedInt = false;
                 }
 
@@ -455,10 +470,10 @@ class GLES20Renderer implements Renderer {
             for (int i = 0; i < drawOrderBuffer.capacity(); i += drawSize) {
                 drawOrderBuffer.position(i);
                 GLES20.glDrawElements(drawMode, drawSize, drawBufferType, drawOrderBuffer);
-                GLUtil.checkGlError("glDrawElements");
-            }
-            if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
-                drawUsingUnsignedInt = false;
+                boolean error = GLUtil.checkGlError("glDrawElements");
+                if (drawUsingUnsignedInt && error) {
+                    drawUsingUnsignedInt = false;
+                }
             }
         }
     }
@@ -472,8 +487,8 @@ class GLES20Renderer implements Renderer {
             int drawSizePolygon = drawPart[2];
             drawOrderBuffer.position(vertexPos);
             GLES20.glDrawElements(drawModePolygon, drawSizePolygon, drawBufferType, drawOrderBuffer);
-            GLUtil.checkGlError("glDrawElements");
-            if (drawUsingUnsignedInt && GLUtil.checkGlError("glDrawElements")) {
+            boolean error = GLUtil.checkGlError("glDrawElements");
+            if (drawUsingUnsignedInt && error) {
                 drawUsingUnsignedInt = false;
             }
         }

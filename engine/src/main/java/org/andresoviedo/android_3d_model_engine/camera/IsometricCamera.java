@@ -28,7 +28,7 @@ public class IsometricCamera extends Camera {
      * The distance between the origin and the isometric coordinate
      * This should be greater than the near view so it's not clipped
      */
-    public static final float UNIT = Constants.UNIT_SIN_3;
+    public static final float UNIT = Constants.UNIT; // Constants.UNIT_SIN_3;
 
     private final Camera delegate;
     private boolean initialized = false;
@@ -101,12 +101,17 @@ public class IsometricCamera extends Camera {
 
     private void translateCameraIsometricDown() {
         // saveAndAnimate(-getxUp(), -getyUp(), -getzUp(), getxPos(), getyPos(), getzPos());
-        saveAndAnimate(-saveUp[0], -saveUp[1], -saveUp[2], savePos[0], savePos[1], savePos[2]);
+        float length = Math3DUtils.length(savePos);
+        saveAndAnimate(-saveUp[0] * UNIT, -saveUp[1] * UNIT, -saveUp[2] * UNIT,
+                savePos[0]/length, savePos[1]/length, savePos[2]/length);
     }
 
     private void translateCameraIsometricUp() {
         // saveAndAnimate(getxUp(), getyUp(), getzUp(), -getxPos(), -getyPos(), -getzPos());
-        saveAndAnimate(saveUp[0], saveUp[1], saveUp[2],-savePos[0], -savePos[1], -savePos[2]);
+        // saveAndAnimate(saveUp[0], saveUp[1], saveUp[2],-savePos[0], -savePos[1], -savePos[2]);
+        float length = Math3DUtils.length(savePos);
+        saveAndAnimate(saveUp[0] * UNIT, saveUp[1] * UNIT, saveUp[2] * UNIT,
+                -savePos[0]/length, -savePos[1]/length, -savePos[2]/length);
     }
 
     private void translateCameraIsometricRight() {
@@ -161,8 +166,8 @@ public class IsometricCamera extends Camera {
 
         float[] newPos = new float[4];
         Matrix.multiplyMV(newPos, 0, rotMatrix, 0, this.pos, 0);
-        Math3DUtils.normalize(newPos);
-        Math3DUtils.mult(newPos, UNIT);
+        //Math3DUtils.normalize(newPos);
+        //Math3DUtils.mult(newPos, UNIT);
         Math3DUtils.snapToGrid(newPos);
 
         float[] newUp = new float[4];
