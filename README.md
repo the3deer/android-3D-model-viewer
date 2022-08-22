@@ -29,6 +29,7 @@ Checkout this to see the features of the application: https://www.youtube.com/wa
 Android Market
 ==============
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="125" alt="Get in on F-Droid">](https://f-droid.org/en/packages/org.andresoviedo.dddmodel2/)
 [<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" width="323" height="125">](https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2)
 
 
