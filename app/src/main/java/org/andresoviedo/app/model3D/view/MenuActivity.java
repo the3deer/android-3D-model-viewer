@@ -19,6 +19,7 @@ import android.widget.Toast;
 import org.andresoviedo.android_3d_model_engine.services.collada.ColladaLoader;
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoader;
 import org.andresoviedo.app.model3D.demo.GlyphsDemoActivity;
+import org.andresoviedo.app.model3D.demo.EarCutDemoActivity;
 import org.andresoviedo.dddmodel2.R;
 import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.android.AssetUtils;
@@ -28,6 +29,7 @@ import org.andresoviedo.util.view.TextActivity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.the3deers.polybool.demo.WebActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,7 +102,7 @@ public class MenuActivity extends ListActivity {
         try {
             switch (action) {
                 case DEMOS:
-                    ContentUtils.showListDialog(this, "Demos List", new String[]{"Random Objects", "GUI"}, (DialogInterface dialog, int which) -> {
+                    ContentUtils.showListDialog(this, "Demos List", new String[]{"Random Objects", "GUI", "EarCut Algebra", "PolyBool Algebra"}, (DialogInterface dialog, int which) -> {
                         if (which == 0) {
                             Intent demoIntent = new Intent(MenuActivity.this.getApplicationContext(), ModelActivity.class);
                             demoIntent.putExtra("immersiveMode", "false");
@@ -108,6 +110,12 @@ public class MenuActivity extends ListActivity {
                             MenuActivity.this.startActivity(demoIntent);
                         } else if (which == 1) {
                             Intent demoIntent = new Intent(MenuActivity.this.getApplicationContext(), GlyphsDemoActivity.class);
+                            MenuActivity.this.startActivity(demoIntent);
+                        } else if (which == 2) {
+                            Intent demoIntent = new Intent(MenuActivity.this.getApplicationContext(), EarCutDemoActivity.class);
+                            MenuActivity.this.startActivity(demoIntent);
+                        } else if (which == 3) {
+                            Intent demoIntent = new Intent(MenuActivity.this.getApplicationContext(), WebActivity.class);
                             MenuActivity.this.startActivity(demoIntent);
                         } else {
                             // TODO:

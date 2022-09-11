@@ -3,6 +3,7 @@ package org.andresoviedo.android_3d_model_engine.services;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 
@@ -59,6 +60,7 @@ public abstract class LoaderTask extends AsyncTask<Void, String, List<Object3DDa
             callback.onLoadComplete();
 			return  data;
 		} catch (Exception ex) {
+			Log.e("LoaderTask",ex.getMessage(),ex);
             callback.onLoadError(ex);
 			return null;
 		}

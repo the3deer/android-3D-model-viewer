@@ -3,12 +3,12 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "org.andresoviedo.dddmodel2"
         minSdk 16
-        targetSdk 31
+        targetSdk 33
     }
 
     signingConfigs {
@@ -37,6 +37,11 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core:1.7.0'
+    implementation 'androidx.core:core:1.8.0'
+    implementation 'androidx.navigation:navigation-fragment:2.5.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
+    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'com.google.code.gson:gson:2.9.1'
     implementation project(':engine')
 }

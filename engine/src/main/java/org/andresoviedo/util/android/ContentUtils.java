@@ -84,7 +84,7 @@ public class ContentUtils {
                         //documentsProvided.put(document, Uri.parse("android://"+activity().getPackageName()+"/assets/models/" + document));
                         final Uri assetUri = Uri.parse("android://" + activity.getPackageName() + "/assets/" + directory + "/" + document);
                         addUri(directory + "/" + document, assetUri);
-                        // TODO: please remove this line. We would need to implement "relative" file lookup
+                        // FIXME: remove this
                         addUri("/" + directory + "/" + document, assetUri);
                     } else {
                         Log.i("ContentUtils", "Listing directory... " + directory);
