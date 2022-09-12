@@ -197,6 +197,7 @@ ChangeLog
 
 - 3.3.1 (12/09/2022)
   - (f) fixed texture issue + color issue + blending issue. fixed #214
+  - (f) fixed texture issue #204
 - 3.3.0 (23/06/2022)
   - (n) interactive object orientation
   - (n) isometric, orthographic and free camera view

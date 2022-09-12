@@ -10,10 +10,13 @@ uniform sampler2D u_Texture;
 varying vec2 v_TexCoordinate;
 
 void main(){
-    if (u_Textured){
-        gl_FragColor = vColor * texture2D(u_Texture, v_TexCoordinate) * vColorMask;
+    vec4 color = vColor;
+    if (u_Textured && length(vec3(color)) > 0.0){
+        gl_FragColor = color * texture2D(u_Texture, v_TexCoordinate) * vColorMask;
+    } else if (u_Textured){
+        gl_FragColor = texture2D(u_Texture, v_TexCoordinate) * vColorMask;
     } else {
-        gl_FragColor = vColor * vColorMask;
+        gl_FragColor = color * vColorMask;
     }
-    gl_FragColor[3] = vColor[3];
+    gl_FragColor[3] = color[3];
 }
