@@ -98,7 +98,7 @@ public final class STLLoaderTask extends LoaderTask {
             super.onLoad(data);
 
             return Collections.singletonList(data);
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.e("STLLoaderTask", "Face '" + counter + "'" + e.getMessage(), e);
             throw e;
         } finally {

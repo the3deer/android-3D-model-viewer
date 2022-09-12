@@ -367,7 +367,7 @@ class STLASCIIParser extends STLParser
         {
             isAscii = parse(reader);
         }
-        catch(InterruptedIOException e)
+        catch(InterruptedIOException | IllegalArgumentException e)
         {
             // should never happen
             e.printStackTrace();
