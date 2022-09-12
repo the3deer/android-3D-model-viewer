@@ -87,7 +87,7 @@ public class Element {
             this.indexBuffer = IOUtils.createIntBuffer(indicesArray.size());
             this.indexBuffer.position(0);
             for (int i = 0; i < indicesArray.size(); i++) {
-                this.indexBuffer.put(indicesArray.get(i));
+                this.indexBuffer.put(i, indicesArray.get(i));
             }
         }
         return indexBuffer;

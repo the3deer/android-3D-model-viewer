@@ -161,7 +161,7 @@ public class MaterialLoader {
 
             // parse color
             float[] color = null;
-            float alpha = -1;
+            float alpha = 1;
             if (colorNode != null) {
                 String[] colorData = colorNode.getData().trim().replace(',', '.').split("\\s+");
                 color = new float[]{Float.parseFloat(colorData[0]), Float.parseFloat(colorData[1]), Float.parseFloat(colorData[2]), Float

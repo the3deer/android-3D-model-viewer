@@ -13,12 +13,13 @@ The application does not use any third party library.
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 
 
-News (25/07/2022)
+News (12/09/2022)
 =================
 
-* New version released 3.3.0
+* New version released 3.3.1
 * New orthographic, isometric and free camera views
 * Interactive object orientation
+* Texture issues fixed
 
 Demo
 ====
@@ -194,6 +195,8 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.3.1 (12/09/2022)
+  - (f) fixed texture issue + color issue + blending issue. fixed #214
 - 3.3.0 (23/06/2022)
   - (n) interactive object orientation
   - (n) isometric, orthographic and free camera view

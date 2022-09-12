@@ -107,21 +107,20 @@ public class Material {
     }
 
     public float[] getColor(){
-
-        // if there is texture, we don't take into account color
-        // some models have color black so we need to x 1.0f
-        if (this.getTextureData() != null){
-            return COLOR_WHITE;
+        if (this.color == null){
+            this.color = new float[]{1f,1f,1f,1f};
         }
         if (this.diffuse != null){
-            if (this.color == null){
-                this.color = new float[4];
-            }
             this.color[0] = this.diffuse[0];
             this.color[1] = this.diffuse[1];
             this.color[2] = this.diffuse[2];
-            this.color[3] = this.alpha;
         }
+        if (this.ambient != null){
+            this.color[0] += this.ambient[0];
+            this.color[1] += this.ambient[1];
+            this.color[2] += this.ambient[2];
+        }
+        this.color[3] = this.alpha;
         return color;
     }
 

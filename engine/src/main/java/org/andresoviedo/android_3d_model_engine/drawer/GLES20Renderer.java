@@ -166,9 +166,11 @@ class GLES20Renderer implements Renderer {
 
         // pass in texture UV buffer
         int mTextureHandle = -1;
-        if (textureId != -1 && supportsTextures()) {
-            setTexture(textureId);
-            mTextureHandle = setVBO("a_TexCoordinate", obj.getTextureBuffer(), TEXTURE_COORDS_PER_VERTEX);
+        if (supportsTextures()) {
+            if (textureId != -1) {
+                setTexture(textureId);
+                mTextureHandle = setVBO("a_TexCoordinate", obj.getTextureBuffer(), TEXTURE_COORDS_PER_VERTEX);
+            }
         }
 
         // pass in the SkyBox texture
@@ -275,6 +277,14 @@ class GLES20Renderer implements Renderer {
         return features.contains("a_TexCoordinate");
     }
 
+    private void setTextured(boolean textured) {
+        int handle = GLES20.glGetUniformLocation(mProgram, "u_Textured");
+        GLUtil.checkGlError("glGetUniformLocation");
+
+        GLES20.glUniform1i(handle, textured? 1 : 0);
+        GLUtil.checkGlError("glUniform1i");
+    }
+
     private void setTexture(int textureId) {
         int mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, "u_Texture");
         GLUtil.checkGlError("glGetUniformLocation");
@@ -291,6 +301,8 @@ class GLES20Renderer implements Renderer {
         GLES20.glUniform1i(mTextureUniformHandle, 0);
         GLUtil.checkGlError("glUniform1i");
 
+        // toggle texture feature on
+        setTextured(true);
     }
 
     private void setTextureCube(int textureId) {
@@ -407,64 +419,46 @@ class GLES20Renderer implements Renderer {
                 }
             }*/
 
+            int size = obj.getElements().size();
             if (id != flags.get(obj.getElements())) {
                 Log.i("GLES20Renderer", "Rendering elements... obj: " + obj.getId()
-                        + ", total:" + obj.getElements().size());
+                        + ", total:" + size);
                 flags.put(obj.getElements(), this.id);
             }
 
-            for (int i = 0; i < obj.getElements().size(); i++) {
+            // draw rest
+            for (int i = 0; i < size; i++) {
 
                 // get next element
                 Element element = obj.getElements().get(i);
-                drawOrderBuffer = element.getIndexBuffer();
 
-
-                // log event
-                if (id != flags.get(element)) {
-                    Log.v("GLES20Renderer", "Rendering element " + i + "....  " + element);
-                }
-
-                // FIXME: there may be element without texture. so a Different shader should be used
-
-                // set-up materials
-                if (element.getMaterial() != null) {
-                    if (!supportsColors()) {
-                        setUniform4(element.getMaterial().getColor() != null ? element.getMaterial().getColor() :
-                                obj.getColor() != null ? obj.getColor() : DEFAULT_COLOR, "vColor");
-                    }
-                    if (element.getMaterial().getTextureId() != -1 && supportsTextures()) {
-                        setTexture(element.getMaterial().getTextureId());
-                    }
-                }
-
-                if(drawUsingUnsignedInt == false){
-                    ShortBuffer indexShortBuffer = null;
-                    drawOrderBuffer.position(0);
-                    if (indexShortBuffer == null && drawOrderBuffer != null) {
-                        indexShortBuffer = IOUtils.createShortBuffer(((IntBuffer) drawOrderBuffer).capacity());
-                        for (int j = 0; j < indexShortBuffer.capacity(); j++) {
-                            indexShortBuffer.put((short) ((IntBuffer) drawOrderBuffer).get(j));
-                        }
-                        drawOrderBuffer = indexShortBuffer;
-                    }
-                }
-
-                // draw element
-                drawOrderBuffer.position(0);
-                GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), drawBufferType,
-                        drawOrderBuffer);
-                boolean error = GLUtil.checkGlError("glDrawElements");
-                if (drawUsingUnsignedInt && error) {
-                    drawUsingUnsignedInt = false;
-                }
-
-                // log event
-                if (id != flags.get(element)) {
-                    Log.v("GLES20Renderer", "Rendering element " + i + " finished");
-                    flags.put(element, this.id);
+                if (element.getMaterial() == null) {
+                    drawObjectElement(obj, drawMode, drawBufferType, size, i, element);
                 }
             }
+
+            // draw opaque elements
+            for (int i = 0; i < size; i++) {
+
+                // get next element
+                Element element = obj.getElements().get(i);
+                if (element.getMaterial() != null && element.getMaterial().getAlpha() == 1.0f) {
+                    drawObjectElement(obj, drawMode, drawBufferType, size, i, element);
+                }
+            }
+
+            // draw translucent elements
+            for (int i = 0; i < size; i++) {
+
+                // get next element
+                Element element = obj.getElements().get(i);
+
+                if (element.getMaterial() != null && element.getMaterial().getAlpha() < 1.0f) {
+                    drawObjectElement(obj, drawMode, drawBufferType, size, i, element);
+                }
+            }
+
+
 
         } else {
             //Log.d(obj.getId(),"Drawing single elements of size '"+drawSize+"'...");
@@ -476,6 +470,57 @@ class GLES20Renderer implements Renderer {
                     drawUsingUnsignedInt = false;
                 }
             }
+        }
+    }
+
+    private void drawObjectElement(Object3DData obj, int drawMode, int drawBufferType, int size, int i, Element element) {
+        Buffer drawOrderBuffer = element.getIndexBuffer();
+
+        // log event
+        if (id != flags.get(element)) {
+            Log.v("GLES20Renderer", "Rendering element " + i + "....  " + element);
+        }
+
+        // default is no textured
+        if (supportsTextures()){
+            setTextured(false);
+        }
+
+        if (element.getMaterial() != null) {
+            if (!supportsColors()) {
+                setUniform4(element.getMaterial().getColor() != null ? element.getMaterial().getColor() :
+                        obj.getColor() != null ? obj.getColor() : DEFAULT_COLOR, "vColor");
+            }
+            if (element.getMaterial().getTextureId() != -1 && supportsTextures()) {
+                setTexture(element.getMaterial().getTextureId());
+            }
+        }
+
+        if(drawUsingUnsignedInt == false){
+            ShortBuffer indexShortBuffer = null;
+            drawOrderBuffer.position(0);
+            if (indexShortBuffer == null && drawOrderBuffer != null) {
+                indexShortBuffer = IOUtils.createShortBuffer(((IntBuffer) drawOrderBuffer).capacity());
+                for (int j = 0; j < indexShortBuffer.capacity(); j++) {
+                    indexShortBuffer.put((short) ((IntBuffer) drawOrderBuffer).get(j));
+                }
+                drawOrderBuffer = indexShortBuffer;
+            }
+        }
+
+        // draw element
+        drawOrderBuffer.position(0);
+        GLES20.glDrawElements(drawMode, drawOrderBuffer.capacity(), drawBufferType,
+                drawOrderBuffer);
+        boolean error = GLUtil.checkGlError("glDrawElements");
+        if (drawUsingUnsignedInt && error) {
+            drawUsingUnsignedInt = false;
+        }
+
+        // log event
+        if (id != flags.get(element)) {
+            Log.v("GLES20Renderer", "Rendering element " + i + " finished");
+            flags.put(element, this.id);
         }
     }
 

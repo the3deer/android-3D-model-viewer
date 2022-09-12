@@ -38,6 +38,7 @@ import java.util.zip.ZipInputStream;
 
 public class ContentUtils {
 
+    public static final String MODELS_FOLDER = "models";
     /**
      * Documents opened by the user. This list helps finding the relative filenames found in the model
      */
@@ -66,13 +67,29 @@ public class ContentUtils {
     }
 
     public static void provideAssets(Activity activity) {
+        Log.i("ContentUtils", "Registering assets... ");
         documentsProvided.clear();
+        provideAssets(activity, MODELS_FOLDER);
+        Log.i("ContentUtils", "Assets found: "+ documentsProvided.size()/2);
+    }
+
+    private static void provideAssets(Activity activity, String directory) {
         try {
-            for (String document : activity.getAssets().list("models")) {
-                //documentsProvided.put(document, Uri.parse("android://"+activity().getPackageName()+"/assets/models/" + document));
-                addUri("/models/"+document, Uri.parse("android://"+activity.getPackageName()+"/assets/models/" + document));
-                // TODO: please remove this line. We would need to implement "relative" file lookup
-                addUri(document, Uri.parse("android://"+activity.getPackageName()+"/assets/models/" + document));
+            final String[] files = activity.getAssets().list(directory);
+            if (files.length > 0) {
+                for (String document : files) {
+                    final String[] files2 = activity.getAssets().list(directory + "/" + document);
+                    if (files2.length == 0) {
+                        //documentsProvided.put(document, Uri.parse("android://"+activity().getPackageName()+"/assets/models/" + document));
+                        final Uri assetUri = Uri.parse("android://" + activity.getPackageName() + "/assets/" + directory + "/" + document);
+                        addUri(directory + "/" + document, assetUri);
+                        // TODO: please remove this line. We would need to implement "relative" file lookup
+                        addUri("/" + directory + "/" + document, assetUri);
+                    } else {
+                        Log.i("ContentUtils", "Listing directory... " + directory);
+                        provideAssets(activity, directory + "/"+document);
+                    }
+                }
             }
 
         } catch (IOException ex) {
@@ -98,14 +115,20 @@ public class ContentUtils {
      */
     public static InputStream getInputStream(String path) throws IOException {
         Uri uri = getUri(path);
+        if (uri == null) {
+            uri = getUri("models/"+path);
+        }
+        if (uri == null) {
+            uri = getUri("models/"+path.replaceAll("\\\\","/"));
+        }
         if (uri == null && currentDir != null) {
             uri = Uri.parse("file://" + new File(currentDir, path).getAbsolutePath());
         }
         if (uri != null) {
             return getInputStream(uri);
         }
-        Log.w("ContentUtils", "Media not found: " + path);
-        Log.w("ContentUtils", "Available media: " + documentsProvided);
+        Log.e("ContentUtils", "Media not found: " + path);
+        Log.d("ContentUtils", "Available media: " + documentsProvided);
         throw new FileNotFoundException("File not found: " + path);
     }
 
@@ -114,6 +137,9 @@ public class ContentUtils {
     }
 
     public static InputStream getInputStream(Uri uri) throws IOException {
+        if (getCurrentActivity() == null){
+            throw new IllegalStateException("There is no context configured. Did you call #setContext() before?");
+        }
         Log.i("ContentUtils", "Opening stream ..." + uri);
         if (uri.getScheme().equals("android")) {
             if (uri.getPath().startsWith("/assets/")) {
