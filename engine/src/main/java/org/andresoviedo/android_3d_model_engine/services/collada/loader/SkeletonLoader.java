@@ -234,10 +234,10 @@ public class SkeletonLoader {
 				if (bind_material != null){
 					XmlNode technique_common = bind_material.getChild("technique_common");
 					if (technique_common != null){
-						XmlNode instance_material = technique_common.getChild("instance_material");
-						if (instance_material != null){
-							String material_symbol = instance_material.getAttribute("symbol");
-							String material_name = instance_material.getAttribute("target").substring(1);
+						List<XmlNode> materialNodes = technique_common.getChildren("instance_material");
+						for (XmlNode materialNode :materialNodes) {
+							String material_symbol = materialNode.getAttribute("symbol");
+							String material_name = materialNode.getAttribute("target").substring(1);
 							materials.put(material_symbol,material_name);
 							Log.v("SkeletonLoader",String.format("Loaded material: " +
 									"%s->%s",material_symbol,material_name));
