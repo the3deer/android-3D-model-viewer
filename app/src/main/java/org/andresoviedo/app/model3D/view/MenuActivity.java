@@ -166,7 +166,7 @@ public class MenuActivity extends ListActivity {
     }
 
     private void loadModelFromAssets() {
-        AssetUtils.createChooserDialog(this, "Select file", null, "models", "(?i).*\\.(obj|stl|dae)",
+        AssetUtils.createChooserDialog(this, "Select file", null, "models", SUPPORTED_FILE_TYPES_REGEX,
                 (String file) -> {
                     if (file != null) {
                         ContentUtils.provideAssets(this);
@@ -390,6 +390,8 @@ public class MenuActivity extends ListActivity {
             askForRelatedFiles(1);
         } else if (uri.toString().toLowerCase().endsWith(".dae")) {
             askForRelatedFiles(2);
+        } if (uri.toString().toLowerCase().endsWith(".gltf")) {
+            askForRelatedFiles(3);
         } else {
             // no model type from filename, ask user...
             ContentUtils.showListDialog(this, "Select type", new String[]{"Wavefront (*.obj)", "Stereolithography (*" +

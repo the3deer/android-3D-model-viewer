@@ -290,10 +290,10 @@ public class MeshData {
         try {
             Math3DUtils.normalize(normal);
         } catch (Exception e) {
-            Log.e("MeshData", "Error calculating normal. " + e.getMessage()
+            Log.w("MeshData", "Error calculating normal. " + e.getMessage()
                     + "," + Math3DUtils.toString(v1)
                     + "," + Math3DUtils.toString(v2)
-                    + "," + Math3DUtils.toString(v3), e);
+                    + "," + Math3DUtils.toString(v3));
             normal = WRONG_NORMAL;
         }
         return normal;
@@ -482,6 +482,8 @@ public class MeshData {
 
         int counter = 0;
         for (Element element : getElements()) {
+
+            if (element.getIndices().size() % 3 != 0) continue;
 
             for (int i = 0; i < element.getIndices().size(); i += 3) {
 
@@ -747,7 +749,7 @@ public class MeshData {
             if (Float.isNaN(normal[2])) throw new IllegalArgumentException("NaN");
 
             if (Math3DUtils.length(normal) < 0.9f) {
-                throw new IllegalArgumentException("Wrong normal. Length < 1.0");
+                Log.e("MeshData","Wrong normal. Length < 0.9");
             }
         }
 
@@ -760,7 +762,7 @@ public class MeshData {
 
                 // check normals
                 if (vertexAttribute.getNormalIndex() < 0 || vertexAttribute.getNormalIndex() >= normals.size()) {
-                    throw new IllegalArgumentException("Wrong normal index: " + vertexAttribute.getNormalIndex());
+                    //throw new IllegalArgumentException("Wrong normal index: " + vertexAttribute.getNormalIndex());
                 }
             }
         }

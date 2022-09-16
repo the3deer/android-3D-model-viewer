@@ -19,6 +19,7 @@ import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.android_3d_model_engine.model.Transform;
 import org.andresoviedo.android_3d_model_engine.objects.Point;
 import org.andresoviedo.android_3d_model_engine.services.collada.ColladaLoaderTask;
+import org.andresoviedo.android_3d_model_engine.services.gltf.GltfLoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.stl.STLLoaderTask;
 import org.andresoviedo.android_3d_model_engine.services.wavefront.WavefrontLoaderTask;
 import org.andresoviedo.util.android.AndroidUtils;
@@ -225,6 +226,9 @@ public class SceneLoader implements LoadListener, EventListener {
         } else if (uri.toString().toLowerCase().endsWith(".dae") || type == 2) {
             Log.i("SceneLoader", "Loading Collada object from: " + uri);
             new ColladaLoaderTask(parent, uri, this).execute();
+        } else if (uri.toString().toLowerCase().endsWith(".gltf") || type == 3) {
+            Log.i("SceneLoader", "Loading GLTF object from: " + uri);
+            new GltfLoaderTask(parent, uri, this).execute();
         }
     }
 
