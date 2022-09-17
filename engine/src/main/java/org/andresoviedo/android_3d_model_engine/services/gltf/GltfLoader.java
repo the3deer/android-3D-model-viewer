@@ -169,7 +169,35 @@ public final class GltfLoader {
                 Log.i("GltfLoader", "Decoding bitmap... " + materialModel.getBaseColorTexture().getName());
                 try {
                     Bitmap bitmap = GLUtil.loadBitmap(new ByteBufferInputStream(imageData));
-                    material.setBitmap(bitmap);
+                    material.setColorTexture(bitmap);
+                } catch (Exception e) {
+                    Log.i("GltfLoader", "Issue decoding bitmap... " + materialModel.getBaseColorTexture().getName());
+                }
+            }
+
+            // map normal map
+            if (materialModel.getNormalTexture() != null) {
+                ByteBuffer imageData = materialModel.getNormalTexture().getImageModel().getImageData();
+
+                Log.i("GltfLoader", "Decoding bitmap... " + materialModel.getNormalTexture().getName());
+                try {
+                    Bitmap bitmap = GLUtil.loadBitmap(new ByteBufferInputStream(imageData));
+                    material.setNormalTexture(bitmap);
+                } catch (Exception e) {
+                    Log.i("GltfLoader", "Issue decoding bitmap... " + materialModel.getBaseColorTexture().getName());
+                }
+            }
+
+            // map emmissive map
+
+            // map normal map
+            if (materialModel.getEmissiveTexture() != null) {
+                ByteBuffer imageData = materialModel.getEmissiveTexture().getImageModel().getImageData();
+
+                Log.i("GltfLoader", "Decoding bitmap... " + materialModel.getEmissiveTexture().getName());
+                try {
+                    Bitmap bitmap = GLUtil.loadBitmap(new ByteBufferInputStream(imageData));
+                    material.setEmissiveTexture(bitmap);
                 } catch (Exception e) {
                     Log.i("GltfLoader", "Issue decoding bitmap... " + materialModel.getBaseColorTexture().getName());
                 }

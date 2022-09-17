@@ -664,17 +664,43 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                         // pre-conditions
                         if (element.getMaterial() == null) continue;
 
+                        // load normal map
+                        if (element.getMaterial().getNormalTextureId() == -1 &&
+                                element.getMaterial().getNormalTexture() != null){
+
+                            // log event
+                            Log.i("ModelRenderer", "Binding normal map... " + element.getMaterial().getName());
+
+                            // bind bitmap
+                            int handler = GLUtil.loadTexture(element.getMaterial().getNormalTexture());
+
+                            element.getMaterial().setNormalTextureId(handler);
+                        }
+
+                        // load normal map
+                        if (element.getMaterial().getEmissiveTextureId() == -1 &&
+                                element.getMaterial().getEmissiveTexture() != null){
+
+                            // log event
+                            Log.i("ModelRenderer", "Binding normal map... " + element.getMaterial().getName());
+
+                            // bind bitmap
+                            int handler = GLUtil.loadTexture(element.getMaterial().getEmissiveTexture());
+
+                            element.getMaterial().setEmissiveTextureId(handler);
+                        }
+
                         // check if the texture was already bound
                         textureId = textures.get(element.getMaterial());
                         if (textureId != null) continue;
 
-                        if (element.getMaterial().getBitmap() != null){
+                        if (element.getMaterial().getColorTexture() != null){
 
                             // log event
                             Log.i("ModelRenderer", "Binding material... " + element.getMaterial());
 
                             // bind bitmap
-                            textureId = GLUtil.loadTexture(element.getMaterial().getBitmap());
+                            textureId = GLUtil.loadTexture(element.getMaterial().getColorTexture());
                         }
                         else if (element.getMaterial().getTextureData() != null){
 

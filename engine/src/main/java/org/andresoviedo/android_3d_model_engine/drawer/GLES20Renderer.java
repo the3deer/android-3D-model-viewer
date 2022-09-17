@@ -169,8 +169,9 @@ class GLES20Renderer implements Renderer {
         int mTextureHandle = -1;
         if (supportsTextures()) {
             if (textureId != -1) {
-                setTexture(textureId);
+                setTexture(textureId, "u_Texture", 0);
                 mTextureHandle = setVBO("a_TexCoordinate", obj.getTextureBuffer(), TEXTURE_COORDS_PER_VERTEX);
+                setFeatureFlag("u_Textured", true);
             }
         }
 
@@ -278,20 +279,20 @@ class GLES20Renderer implements Renderer {
         return features.contains("a_TexCoordinate");
     }
 
-    private void setTextured(boolean textured) {
-        int handle = GLES20.glGetUniformLocation(mProgram, "u_Textured");
+    private void setFeatureFlag(String variableName, boolean enabled) {
+        int handle = GLES20.glGetUniformLocation(mProgram, variableName);
         GLUtil.checkGlError("glGetUniformLocation");
 
-        GLES20.glUniform1i(handle, textured? 1 : 0);
+        GLES20.glUniform1i(handle, enabled ? 1 : 0);
         GLUtil.checkGlError("glUniform1i");
     }
 
-    private void setTexture(int textureId) {
-        int mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, "u_Texture");
+    private void setTexture(int textureId, String variableName, int shaderIndex) {
+        int mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, variableName);
         GLUtil.checkGlError("glGetUniformLocation");
 
         // Set the active texture unit to texture unit 0.
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + shaderIndex);
         GLUtil.checkGlError("glActiveTexture");
 
         // Bind to the texture in OpenGL
@@ -299,11 +300,8 @@ class GLES20Renderer implements Renderer {
         GLUtil.checkGlError("glBindTexture");
 
         // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
-        GLES20.glUniform1i(mTextureUniformHandle, 0);
+        GLES20.glUniform1i(mTextureUniformHandle, shaderIndex);
         GLUtil.checkGlError("glUniform1i");
-
-        // toggle texture feature on
-        setTextured(true);
     }
 
     private void setTextureCube(int textureId) {
@@ -484,7 +482,7 @@ class GLES20Renderer implements Renderer {
 
         // default is no textured
         if (supportsTextures()){
-            setTextured(false);
+            setFeatureFlag("u_Textured", false);
         }
 
         if (element.getMaterial() != null) {
@@ -493,7 +491,19 @@ class GLES20Renderer implements Renderer {
                         obj.getColor() != null ? obj.getColor() : DEFAULT_COLOR, "vColor");
             }
             if (element.getMaterial().getTextureId() != -1 && supportsTextures()) {
-                setTexture(element.getMaterial().getTextureId());
+                setTexture(element.getMaterial().getTextureId(), "u_Texture", 0);
+                setFeatureFlag("u_Textured",true);
+            }
+
+            if (element.getMaterial().getNormalTextureId() != -1 && supportsTextures()) {
+                setTexture(element.getMaterial().getNormalTextureId(), "u_NormalTexture", 1);
+                setFeatureFlag("u_NormalTextured",true);
+            }
+
+            if (obj.getMaterial().getEmissiveTextureId() != -1){
+                // set normal texture
+                setTexture(obj.getMaterial().getEmissiveTextureId(), "u_EmissiveTexture", 2);
+                setFeatureFlag("u_EmissiveTextured", true);
             }
         }
 

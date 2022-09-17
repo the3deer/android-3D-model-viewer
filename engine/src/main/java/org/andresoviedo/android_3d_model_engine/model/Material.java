@@ -20,12 +20,16 @@ public class Material {
     private float alpha = 1.0f;
 
     // texture info
-    private Bitmap bitmap;
+    private Bitmap colorTexture;
     private String textureFile;
     private byte[] textureData;
+    private Bitmap normalTexture;
+    private Bitmap emissiveTexture;
 
     // // Loaded by ModelRenderer (GLThread)
     private int textureId = -1;
+    private int normalTextureId = -1;
+    private int emissiveTextureId = -1;
     private float[] color;
 
     public Material() {
@@ -85,12 +89,20 @@ public class Material {
         this.specular = specular;
     }
 
-    public void setBitmap(Bitmap bitmap){
-        this.bitmap = bitmap;
+    public void setColorTexture(Bitmap colorTexture){
+        this.colorTexture = colorTexture;
     }
 
-    public Bitmap getBitmap() {
-        return this.bitmap;
+    public Bitmap getColorTexture() {
+        return this.colorTexture;
+    }
+
+    public Bitmap getNormalTexture() {
+        return normalTexture;
+    }
+
+    public void setNormalTexture(Bitmap normalTexture) {
+        this.normalTexture = normalTexture;
     }
 
     public String getTextureFile() {
@@ -115,6 +127,30 @@ public class Material {
 
     public void setTextureId(int textureId) {
         this.textureId = textureId;
+    }
+
+    public int getNormalTextureId() {
+        return normalTextureId;
+    }
+
+    public void setNormalTextureId(int normalTextureId) {
+        this.normalTextureId = normalTextureId;
+    }
+
+    public Bitmap getEmissiveTexture() {
+        return emissiveTexture;
+    }
+
+    public void setEmissiveTexture(Bitmap emissiveTexture) {
+        this.emissiveTexture = emissiveTexture;
+    }
+
+    public int getEmissiveTextureId() {
+        return emissiveTextureId;
+    }
+
+    public void setEmissiveTextureId(int emissiveTextureId) {
+        this.emissiveTextureId = emissiveTextureId;
     }
 
     public float[] getColor(){

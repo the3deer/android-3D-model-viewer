@@ -86,11 +86,11 @@ public class RendererFactory {
         vertexShaderCode = vertexShaderCode.replace("const int MAX_JOINTS = 60;","const int MAX_JOINTS = gl_MaxVertexUniformVectors > 60 ? 60 : gl_MaxVertexUniformVectors;");
 
         // create drawer
-        Log.v("RendererFactory", "\n---------- Vertex shader ----------\n");
+        /*Log.v("RendererFactory", "\n---------- Vertex shader ----------\n");
         Log.v("RendererFactory", vertexShaderCode);
         Log.v("RendererFactory", "---------- Fragment shader ----------\n");
         Log.v("RendererFactory", fragmentShaderCode);
-        Log.v("RendererFactory", "-------------------------------------\n");
+        Log.v("RendererFactory", "-------------------------------------\n");*/
         drawer = GLES20Renderer.getInstance(shader.id, vertexShaderCode, fragmentShaderCode);
 
         // cache drawer
