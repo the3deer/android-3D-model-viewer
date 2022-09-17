@@ -4,22 +4,22 @@ Android 3D Model Viewer
 ![travis-ci badge](https://travis-ci.org/the3deers/android-3D-model-viewer.svg?branch=master)
 
 This is a demo of OpenGL ES 2.0.
-It is basically an android application with a 3D engine that can load Wavefront OBJ, STL & DAE files.
+It is basically an android application with a 3D engine that can load Wavefront OBJ, STL, DAE & GLTF files.
 The purpose of this application is to learn and share how to draw using OpenGL language.
 The application does not use any third party library.
 
 * Wafefront format (OBJ): https://en.wikipedia.org/wiki/Wavefront_.obj_file
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
+* GLTF format (gltf): https://www.khronos.org/gltf/
 
 
-News (12/09/2022)
+News (17/09/2022)
 =================
 
-* New version released 3.3.1
+* New version released 3.4.0
 * New orthographic, isometric and free camera views
-* Interactive object orientation
-* Texture issues fixed
+* GLTF basic support :)
 
 Demo
 ====
@@ -69,37 +69,43 @@ Whats next
 Features
 ========
 
-  - Supports >= Android 4.0.1 (Ice Cream Sandwich) - Min API Level 14 -> Target API Level 28
-  - OpenGL ES 2.0 API
-  - Formats: OBJ (wavefront), STL (STereoLithography) & DAE (Collada-BETA)
-  - calculation of normals
-  - transformations: scaling, rotation, translation, orientation
-  - colors
-  - textures
-  - lighting
-  - wireframe + points mode
-  - holes
-  - smoothing
-  - bounding box
-  - skybox
-  - object pick
-  - camera support
-    - perspective, orthographic and isometric views
-    - tap to select object
-    - drag to move camera
-    - rotate with 2 fingers to rotate camera
-    - pinch & spread to zoom in/out the camera
-  - skeletal animations (collada dae)
-  - ray collision detection
-  - stereoscopic 3D: anaglyph + cardboard
-  - other:
-    - file explorer
-    - repository explorer
-    - texture loader
-    - lightweight: only 1.3 Megabyte (embedded models excluded)
+  - [x] Supports >= Android 4.1 (Ice Cream Sandwich) - Min API Level 16 -> Target API Level 31
+  - [x] OpenGL ES 2.0 API
+  - [x] Multiple Formats: 
+    - [x] OBJ (wavefront)
+    - [x] STL (STereoLithography)
+    - [x] DAE (Collada-BETA)
+    - [x] GLTF (GL Transmission Format)
+  - [x] Vertex Normals support
+  - [x] Transformation support: scaling, rotation, translation, orientation
+  - [x] Colors support
+  - [x] Textures support
+  - [x] Lighting support
+  - [x] Multiple Rendering Modes 
+    - [x] triangles
+    - [x] wireframe
+    - [x] point cloud
+    - [x] skeleton
+  - [x] camera support
+    - [x] perspective
+    - [x] orthographic
+    - [x] isometric views
+    - [x] free
+  - [x] skeletal animations (collada dae)
+  - [x] ray collision detection
+  - [x] stereoscopic 3D: anaglyph + cardboard
+  - [x] other:
+     - [x] Polygon with holes
+     - [x] Smoothing
+     - [x] Bounding box
+     - [x] Skybox
+     - [x] Object picking
+     - [x] file explorer
+     - [x] repository explorer
+     - [x] texture loader
+     - [x] lightweight: only 1.3 Megabyte (embedded models excluded)
 
-
-
+  
 Try it
 ======
 
@@ -128,6 +134,7 @@ Screenshots
 ![Screenshot3](screenshots/screenshot3.png)
 ![Screenshot4](screenshots/screenshot4.png)
 ![Screenshot5](screenshots/screenshot5.png)
+![Screenshot6](screenshots/screenshot_gltf.png)
 ![cowboy.gif](screenshots/cowboy.gif)
 ![stormtrooper.gif](screenshots/stormtrooper.gif)
 ![Screenshot6](screenshots/screenshot6-3d.png)
@@ -166,6 +173,7 @@ Acknowledgement
 * For teaching how animation engine works: https://github.com/TheThinMatrix/OpenGL-Animation
 * To the lot of user's feedback: https://github.com/the3deers/android-3D-model-viewer/issues
 * To the many infinite educational resources found in Internet for free :)
+* For the GLTF parser https://github.com/javagl/JglTF
 
 
 Licenses
@@ -175,8 +183,9 @@ The following copyright notice and this permission notice shall be included in a
 copies or substantial portions of the Software.
 
 
-    MIT License - Copyright (c) 2020 The 3Deers - https://github.com/the3deers
+    MIT License - Copyright (c) 2022 The 3Deers - https://github.com/the3deers
     GNU LGPL v2.1 Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski - STL Parser
+    MIT License - https://github.com/javagl/JglTF - GLTF Parser    
     ISC License - Earcut - https://github.com/the3deers/earcut
 
 
@@ -195,6 +204,8 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.4.0 (17/09/2022)
+  - (n) GLTF basic support
 - 3.3.1 (12/09/2022)
   - (f) fixed texture issue + color issue + blending issue. fixed #214
   - (f) fixed texture issue #204

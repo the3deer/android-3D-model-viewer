@@ -14,6 +14,7 @@ import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
 import org.andresoviedo.android_3d_model_engine.model.Constants;
 import org.andresoviedo.android_3d_model_engine.model.Element;
+import org.andresoviedo.android_3d_model_engine.model.Material;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.android_3d_model_engine.model.Projection;
 import org.andresoviedo.android_3d_model_engine.objects.Axis;
@@ -81,7 +82,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     // The wireframe associated shape (it should be made of lines only)
     private Map<Object3DData, Object3DData> wireframes = new HashMap<>();
     // The loaded textures
-    private Map<Object, Integer> textures = new HashMap<>();
+    private Map<Material, Integer> textures = new HashMap<>();
     // The corresponding opengl bounding boxes and drawer
     private Map<Object3DData, Object3DData> boundingBoxes = new HashMap<>();
     // The corresponding opengl bounding boxes
@@ -595,6 +596,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                         Rescaler.rescale(skyBoxes3D[skyBoxId], 1f);
                         final float scale = Constants.SKYBOX_SIZE; //getFar()/skyBoxes3D[skyBoxId].getDimensions().getLargest()/20;
                         skyBoxes3D[skyBoxId].setScale(scale, scale, scale);
+                        skyBoxes3D[skyBoxId].setColor(Constants.COLOR_BIT_TRANSPARENT);
                     } else {
                         Log.e("ModelRenderer", "Error loading sky box textures to GPU. ");
                         isDrawSkyBox = false;
@@ -655,39 +657,56 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 if (objData.getElements() != null) {
 
                     for (int e = 0; e < objData.getElements().size(); e++) {
+
+                        // element
                         Element element = objData.getElements().get(e);
 
-                        // check required info
-                        if (element.getMaterial() == null || element.getMaterial().getTextureData() == null)
-                            continue;
+                        // pre-conditions
+                        if (element.getMaterial() == null) continue;
 
-                        // check if texture is already binded
-                        textureId = textures.get(element.getMaterial().getTextureData());
+                        // check if the texture was already bound
+                        textureId = textures.get(element.getMaterial());
                         if (textureId != null) continue;
 
-                        // bind texture
-                        Log.i("ModelRenderer", "Loading material texture for element... '" + element);
-                        textureId = GLUtil.loadTexture(element.getMaterial().getTextureData());
+                        if (element.getMaterial().getBitmap() != null){
+
+                            // log event
+                            Log.i("ModelRenderer", "Binding material... " + element.getMaterial());
+
+                            // bind bitmap
+                            textureId = GLUtil.loadTexture(element.getMaterial().getBitmap());
+                        }
+                        else if (element.getMaterial().getTextureData() != null){
+
+                            // log event
+                            Log.i("ModelRenderer", "Binding material... " + element.getMaterial());
+
+
+                            // parse bitmap + bind bitmap
+                            textureId = GLUtil.loadTexture(element.getMaterial().getTextureData());
+                        } else {
+                            continue;
+                        }
+
+                        // update material
                         element.getMaterial().setTextureId(textureId);
 
                         // cache texture
-                        textures.put(element.getMaterial().getTextureData(), textureId);
+                        textures.put(element.getMaterial(), textureId);
 
                         // log event
-                        Log.i("ModelRenderer", "Loaded material texture for element. id: " + textureId);
-
-                        // FIXME: we have to set this, otherwise the RendererFactory won't return textured shader
-                        objData.setTextureData(element.getMaterial().getTextureData());
+                        Log.i("ModelRenderer", "Material bound... " + textureId);
                     }
                 } else {
-                    textureId = textures.get(objData.getTextureData());
+                    // DEPRECATED
+                    textureId = textures.get(objData.getMaterial());
                     if (textureId == null && objData.getTextureData() != null) {
                         Log.i("ModelRenderer", "Loading texture for obj: '" + objData.getId() + "'... bytes: " + objData.getTextureData().length);
                         ByteArrayInputStream textureIs = new ByteArrayInputStream(objData.getTextureData());
                         textureId = GLUtil.loadTexture(textureIs);
                         textureIs.close();
-                        textures.put(objData.getTextureData(), textureId);
                         objData.getMaterial().setTextureId(textureId);
+                        textures.put(objData.getMaterial(), textureId);
 
                         Log.i("ModelRenderer", "Loaded texture OK. id: " + textureId);
                     }
@@ -738,11 +757,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 else if (scene.isDrawSkeleton() && objData instanceof AnimatedModel && ((AnimatedModel) objData)
                         .getAnimation() != null) {
 
-                    // draw the original object a bit transparent
-                    drawerObject.draw(objData, projectionMatrix, viewMatrix,  textureId, lightPosInWorldSpace, Constants.COLOR_HALF_TRANSPARENT, cameraPosInWorldSpace);
+
 
                     // draw skeleton on top of it
-                    GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+                   // GLES20.glDisable(GLES20.GL_DEPTH_TEST);
                     Object3DData skeleton = this.skeleton.get(objData);
                     if (skeleton == null || changed) {
                         skeleton = Skeleton.build((AnimatedModel) objData);
@@ -750,7 +768,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     }
                     final Renderer skeletonDrawer = drawer.getDrawer(skeleton, false, false, drawLighting, doAnimation, drawColors);
                     skeletonDrawer.draw(skeleton, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
-                    GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+                    //GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+
+                    // draw the original object a bit transparent
+                    drawerObject.draw(objData, projectionMatrix, viewMatrix,  textureId, lightPosInWorldSpace, Constants.COLOR_HALF_TRANSPARENT, cameraPosInWorldSpace);
                 }
 
                 // draw solids

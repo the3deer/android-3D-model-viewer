@@ -62,11 +62,10 @@ public class RendererFactory {
         boolean isAnimated = usingAnimation && obj instanceof AnimatedModel
                 && ((AnimatedModel) obj).getAnimation() != null && (((AnimatedModel) obj).getAnimation()).isInitialized();
         boolean isUsingLights = usingLights && (obj.getNormalsBuffer() != null || obj.getNormalsBuffer() != null);
-        boolean isTextured = usingTextures && obj.getTextureData() != null && obj.getTextureBuffer() != null;
         boolean isColoured = drawColors && obj != null && (obj.getColorsBuffer() != null || obj
                 .getColorsBuffer() != null);
 
-        final Shader shader = getShader(usingSkyBox, isAnimated, isUsingLights, isTextured, isColoured);
+        final Shader shader = getShader(usingSkyBox, isAnimated, isUsingLights, usingTextures, isColoured);
 
         // get cached drawer
         GLES20Renderer drawer = drawers.get(shader);

@@ -126,10 +126,11 @@ class GLES20Renderer implements Renderer {
                      float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPos) {
 
         // log event once
-        if (id != flags.get(obj.getId())) {
-            Log.d("GLES20Renderer", "Rendering with shader: " + id + "vert... obj: " + obj);
+        // FIXME: this was flooding the system out!
+        /*if (id != flags.get(obj.getId())) {
+            //Log.d("GLES20Renderer", "Rendering with shader: " + id + "vert... obj: " + obj);
             flags.put(obj.getId(), this.id);
-        }
+        }*/
 
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);

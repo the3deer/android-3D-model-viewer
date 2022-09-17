@@ -115,6 +115,16 @@ public final class GLUtil {
     public static int loadTexture(final InputStream is) {
         Log.v("GLUtil", "Loading texture from stream...");
 
+        final Bitmap bitmap = loadBitmap(is);
+        int ret = loadTexture(bitmap);
+        bitmap.recycle();
+
+        return ret;
+    }
+
+    public static int loadTexture(final Bitmap bitmap) {
+        Log.v("GLUtil", "Loading texture from stream...");
+
         final int[] textureHandle = new int[1];
 
         GLES20.glGenTextures(1, textureHandle, 0);
@@ -124,8 +134,6 @@ public final class GLUtil {
         }
 
         Log.v("GLUtil", "Handler: " + textureHandle[0]);
-
-        final Bitmap bitmap = loadBitmap(is);
 
         // Bind to the texture in OpenGL
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
@@ -155,7 +163,7 @@ public final class GLUtil {
         return bitmap;
     }
 
-    private static Bitmap loadBitmap(InputStream is) {
+    public static Bitmap loadBitmap(InputStream is) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         // By default, Android applies pre-scaling to bitmaps depending on the resolution of your device and which
         // resource folder you placed the image in. We don’t want Android to scale our bitmap at all, so to be sure,

@@ -871,7 +871,7 @@ public class Object3DData {
                 ", dimensions: " + this.dimensions +
                 //", current dimensions: " + this.currentDimensions +
                 ", material=" + getMaterial() +
-                ", elements=" + getElements() +
+                ", elements=" + this.elements +
                 '}';
     }
 }

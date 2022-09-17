@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -350,6 +351,15 @@ public class ContentUtils {
             return readLines(new URL(url));
         } catch (MalformedURLException ex) {
             Log.e("ContentUtils", "Error", ex);
+            return null;
+        }
+    }
+
+    public static String read(URL url) {
+        try (InputStream is = url.openStream()){
+            return new Scanner(is).useDelimiter("\\Z").next();
+        } catch (IOException ex) {
+            Log.e("ContentUtils", "Error reading from " + url, ex);
             return null;
         }
     }

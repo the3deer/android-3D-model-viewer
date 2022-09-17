@@ -1,5 +1,7 @@
 package org.andresoviedo.android_3d_model_engine.model;
 
+import android.graphics.Bitmap;
+
 import java.util.Arrays;
 
 public class Material {
@@ -18,6 +20,7 @@ public class Material {
     private float alpha = 1.0f;
 
     // texture info
+    private Bitmap bitmap;
     private String textureFile;
     private byte[] textureData;
 
@@ -80,6 +83,14 @@ public class Material {
 
     public void setSpecular(float[] specular) {
         this.specular = specular;
+    }
+
+    public void setBitmap(Bitmap bitmap){
+        this.bitmap = bitmap;
+    }
+
+    public Bitmap getBitmap() {
+        return this.bitmap;
     }
 
     public String getTextureFile() {

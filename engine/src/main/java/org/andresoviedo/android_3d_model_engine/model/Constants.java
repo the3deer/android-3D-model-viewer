@@ -59,7 +59,7 @@ public class Constants {
     public static final float[] COLOR_BLACK = {0, 0, 0, 1};
     public static final float[] COLOR_GRAY = {0.5f, 0.5f, 0.5f, 1f};
     public static final float[] COLOR_HALF_TRANSPARENT = {1f, 1f, 1f, 0.5f};
-    private static final float[] COLOR_ALMOST_TRANSPARENT = {1f, 1f, 1f, 0.1f};
+    public static final float[] COLOR_ALMOST_TRANSPARENT = {1f, 1f, 1f, 0.1f};
     public static final float[] COLOR_BIT_TRANSPARENT = {1f, 1f, 1f, 0.9f};
     // stereoscopic variables
     public static float EYE_DISTANCE = 6.4f;

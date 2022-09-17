@@ -18,5 +18,5 @@ void main(){
     } else {
         gl_FragColor = color * vColorMask;
     }
-    gl_FragColor[3] = color[3];
+    gl_FragColor[3] = color[3] * vColorMask[3];
 }

@@ -25,6 +25,9 @@ import org.andresoviedo.util.android.AssetUtils;
 import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.util.android.FileUtils;
 import org.andresoviedo.util.view.TextActivity;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,14 +35,20 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import de.javagl.jgltf.model.io.IO;
+
 public class MenuActivity extends ListActivity {
 
     private static final URL REPO_URL = createURL("https://github.com/the3deers/android-3D-model-viewer/raw/master/models/index");
+    private static final URL REPO_KHRONOS_URL = createURL("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/model-index.json");
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1000;
     private static final int REQUEST_INTERNET_ACCESS = 1001;
     private static final int REQUEST_READ_CONTENT_PROVIDER = 1002;
@@ -48,7 +57,7 @@ public class MenuActivity extends ListActivity {
     private static final int REQUEST_CODE_OPEN_MATERIAL = 1102;
     private static final int REQUEST_CODE_OPEN_TEXTURE = 1103;
     private static final int REQUEST_CODE_ADD_FILES = 1200;
-    private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae|index)";
+    private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae|gltf|index)";
 
 
     private enum Action {
@@ -155,7 +164,7 @@ public class MenuActivity extends ListActivity {
             if (which == 0) {
                 loadModelFromAssets();
             } else if (which == 1) {
-                loadModelFromRepository(REPO_URL);
+                loadModelFromRepository();
             } else if (which == 2) {
                 loadModelFromContentProvider();
             } else {
@@ -163,6 +172,31 @@ public class MenuActivity extends ListActivity {
             }
         });
 
+    }
+
+    private void loadModelFromRepository() {
+
+        if (true){
+            if (AndroidUtils.checkPermission(this, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
+                new LoadRepoIndexTask().execute(REPO_URL);
+            }
+            return;
+        }
+
+        // testing purposes only
+        ContentUtils.showListDialog(this, "Choose Repository",
+                new String[]{"android-3D-model-viewer", "Khronos glTF-Sample-Models"},
+                (DialogInterface dialog, int which) -> {
+            if (which == 0) {
+                if (AndroidUtils.checkPermission(this, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
+                    new LoadRepoIndexTask().execute(REPO_URL);
+                }
+            } else if (which == 1) {
+                if (AndroidUtils.checkPermission(this, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
+                    new LoadRepoKhronos().execute(REPO_KHRONOS_URL);
+                }
+            }
+        });
     }
 
     private void loadModelFromAssets() {
@@ -178,6 +212,77 @@ public class MenuActivity extends ListActivity {
     private void loadModelFromRepository(URL url) {
         if (AndroidUtils.checkPermission(this, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
             new LoadRepoIndexTask().execute(url);
+        }
+    }
+
+    class LoadRepoKhronos extends AsyncTask<URL, Integer, List<String>> {
+
+        private final ProgressDialog dialog;
+        private AlertDialog.Builder chooser;
+
+        public LoadRepoKhronos() {
+            this.dialog = new ProgressDialog(MenuActivity.this);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            this.dialog.setMessage("Loading...");
+            this.dialog.setCancelable(false);
+            this.dialog.show();
+        }
+
+        @Override
+        protected List<String> doInBackground(URL... urls) {
+
+            try {
+                // read json
+                final String json = ContentUtils.read(urls[0]);
+
+                // parse json
+                final JSONArray jsonArray = new JSONArray(json);
+
+                final List<String> files = new ArrayList<>();
+                for (int i=0; i < jsonArray.length(); i++){
+                    final JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    final String name = jsonObject.getString("name");
+                    JSONObject variants = jsonObject.getJSONObject("variants");
+                    for (Iterator<String> it = variants.keys(); it.hasNext(); ) {
+                        final String variant = it.next();
+                        final URI baseUri = IO.getParent(urls[0].toURI());
+                        final String filename = variants.getString(variant);
+                        final String uri = baseUri
+                                + name + "/"+ variant + "/" + filename;
+                        files.add(uri);
+                    }
+                }
+
+                // chooser
+                chooser = ContentUtils.createChooserDialog(MenuActivity.this, "Select file", null,
+                        files, null, SUPPORTED_FILE_TYPES_REGEX,
+                        (String file) -> {
+                            if (file != null) {
+                                launchModelRendererActivity(Uri.parse(file));
+                            }
+                        });
+                return files;
+            } catch (JSONException | URISyntaxException e) {
+                e.printStackTrace();
+                return Collections.emptyList();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<String> strings) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            if (strings == null) {
+                Toast.makeText(MenuActivity.this, "Couldn't load repo index", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            chooser.create().show();
         }
     }
 
@@ -291,7 +396,7 @@ public class MenuActivity extends ListActivity {
                     loadModelFromContentProvider();
                     break;
                 case REQUEST_INTERNET_ACCESS:
-                    loadModelFromRepository(REPO_URL);
+                    loadModelFromRepository();
                     break;
                 case REQUEST_CODE_LOAD_MODEL:
                     if (resultCode != RESULT_OK) {
