@@ -11,6 +11,7 @@ attribute vec4 a_Color;
 varying vec4 v_Color;
 
 // textures
+uniform bool u_Textured;
 attribute vec2 a_TexCoordinate;
 varying vec2 v_TexCoordinate;
 
@@ -59,6 +60,8 @@ void main(){
     v_Color = a_Color * min((diffuse + specular + ambient),1.0);
     v_Color[3] = a_Color[3]; // correct alpha
 
-    // pass texture coord to fragment shader
-    v_TexCoordinate = a_TexCoordinate;
+    // pass texture to fragment shader
+    if (u_Textured) {
+        v_TexCoordinate = a_TexCoordinate;
+    }
 }

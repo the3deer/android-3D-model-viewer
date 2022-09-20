@@ -104,9 +104,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
     // light
     private final float[] tempVector4 = new float[4];
-    private final float[] lightPosInWorldSpace = new float[3];
-    private final float[] cameraPosInWorldSpace = new float[3];
-    private final float[] lightPosition = new float[]{0, 0, 0, 1};
+    private final float[] lightPosInWorldSpace = new float[4];
+    private final float[] cameraPosInWorldSpace = new float[4];
+    // private final float[] lightPosition = new float[]{0, 0, 0, 1};
 
     // Decoration
     private final List<Object3DData> extras = new ArrayList<>();
@@ -114,10 +114,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             .setScale(Constants.UNIT,Constants.UNIT,Constants.UNIT);
     private final Object3DData gridx = Grid.build(-Constants.GRID_WIDTH, 0f, -Constants.GRID_WIDTH, Constants.GRID_WIDTH, 0f, Constants.GRID_WIDTH, Constants.GRID_SIZE)
             .setColor(Constants.COLOR_RED_TRANSLUCENT).setId("grid-x").setSolid(false)
-            .setScale(Constants.UNIT,Constants.UNIT,Constants.UNIT);;
+            .setScale(Constants.UNIT,Constants.UNIT,Constants.UNIT);
     private final Object3DData gridy = Grid.build(-Constants.GRID_WIDTH, -Constants.GRID_WIDTH, 0f, Constants.GRID_WIDTH, Constants.GRID_WIDTH, 0f, Constants.GRID_SIZE)
             .setColor(Constants.COLOR_GREEN_TRANSLUCENT).setId("grid-y").setSolid(false)
-            .setScale(Constants.UNIT,Constants.UNIT,Constants.UNIT);;
+            .setScale(Constants.UNIT,Constants.UNIT,Constants.UNIT);
     private final Object3DData gridz = Grid.build(0, -Constants.GRID_WIDTH, -Constants.GRID_WIDTH, 0, Constants.GRID_WIDTH, Constants.GRID_WIDTH, Constants.GRID_SIZE)
             .setColor(Constants.COLOR_BLUE_TRANSLUCENT).setId("grid-z").setSolid(false)
             .setScale(Constants.UNIT,Constants.UNIT,Constants.UNIT);
@@ -518,9 +518,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
             // Calculate position of the light in world space to support lighting
             if (scene.isRotatingLight()) {
-                // FIXME: memory leak
                 Matrix.multiplyMV(tempVector4, 0, scene.getLightBulb().getModelMatrix(), 0,
-                        Math3DUtils.to4d(scene.getLightBulb().getLocation()), 0);
+                        Constants.LIGHT_BULB_LOCATION, 0);
                 lightPosInWorldSpace[0] = tempVector4[0];
                 lightPosInWorldSpace[1] = tempVector4[1];
                 lightPosInWorldSpace[2] = tempVector4[2];
@@ -804,8 +803,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 else {
                     if (!infoLogged.containsKey(objData.getId() + "render")) {
                         Log.i("ModelRenderer", "Rendering object... " + objData.getId());
-                        Log.d("ModelRenderer", objData.toString());
-                        Log.d("ModelRenderer", drawerObject.toString());
+                        Log.d("ModelRenderer", objData.getId()+": "+objData);
+                        Log.d("ModelRenderer",objData.getId()+": "+ drawerObject);
                         infoLogged.put(objData.getId() + "render", true);
                     }
                     drawerObject.draw(objData, projectionMatrix, viewMatrix,

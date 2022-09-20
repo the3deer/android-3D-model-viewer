@@ -168,7 +168,8 @@ class GLES20Renderer implements Renderer {
         // pass in texture UV buffer
         int mTextureHandle = -1;
         if (supportsTextures()) {
-            if (textureId != -1) {
+            setFeatureFlag("u_Textured", false);
+            if (textureId != -1 && obj.getTextureBuffer() != null) {
                 setTexture(textureId, "u_Texture", 0);
                 mTextureHandle = setVBO("a_TexCoordinate", obj.getTextureBuffer(), TEXTURE_COORDS_PER_VERTEX);
                 setFeatureFlag("u_Textured", true);
@@ -500,9 +501,8 @@ class GLES20Renderer implements Renderer {
                 setFeatureFlag("u_NormalTextured",true);
             }
 
-            if (obj.getMaterial().getEmissiveTextureId() != -1){
-                // set normal texture
-                setTexture(obj.getMaterial().getEmissiveTextureId(), "u_EmissiveTexture", 2);
+            if (element.getMaterial().getEmissiveTextureId() != -1 && supportsTextures()){
+                setTexture(element.getMaterial().getEmissiveTextureId(), "u_EmissiveTexture", 2);
                 setFeatureFlag("u_EmissiveTextured", true);
             }
         }
@@ -530,7 +530,7 @@ class GLES20Renderer implements Renderer {
 
         // log event
         if (id != flags.get(element)) {
-            Log.v("GLES20Renderer", "Rendering element " + i + " finished");
+            Log.i("GLES20Renderer", "Rendering element " + i + " finished");
             flags.put(element, this.id);
         }
     }

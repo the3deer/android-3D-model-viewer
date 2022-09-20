@@ -169,7 +169,7 @@ public class SceneLoader implements LoadListener, EventListener {
     /**
      * Light bulb 3d data
      */
-    private final Object3DData lightBulb = Point.build(new float[]{0, 0, 0}).setId("light");
+    private final Object3DData lightBulb = Point.build(Constants.LIGHT_BULB_LOCATION).setId("light");
     /**
      * Animator
      */
@@ -201,8 +201,9 @@ public class SceneLoader implements LoadListener, EventListener {
         this.uri = uri;
         this.type = type;
 
-        float light_distance = Constants.SKYBOX_SIZE;
-        lightBulb.setLocation(new float[]{light_distance,light_distance/2,0});
+        float light_distance = Constants.UNIT;
+        lightBulb.setLocation(new float[]{light_distance/2,light_distance,0});
+        lightBulb.setColor(Constants.COLOR_WHITE);
     }
 
     public void addListener(EventListener listener){
@@ -286,9 +287,9 @@ public class SceneLoader implements LoadListener, EventListener {
     private void animateLight() {
         if (!rotatingLight) return;
 
-        // animate light - Do a complete rotation every 5 seconds.
-        long time = SystemClock.uptimeMillis() % 5000L;
-        float angleInDegrees = (360.0f / 5000.0f) * ((int) time);
+        // animate light - Do a complete rotation every 60 seconds.
+        long time = SystemClock.uptimeMillis() % 60000L;
+        float angleInDegrees = (360.0f / 60000.0f) * ((int) time);
         lightBulb.setRotation(new float[]{0, angleInDegrees, 0});
     }
 
@@ -926,9 +927,9 @@ public class SceneLoader implements LoadListener, EventListener {
             Log.v("SceneLoader", "Mew model scale: " + Arrays.toString(data.getScale()));
 
             // relocate
-            float localTranlactionX = original.getLocation()[0] * scaleFactor;
-            float localTranlactionY = original.getLocation()[1] * scaleFactor;
-            float localTranlactionZ = original.getLocation()[2] * scaleFactor;
+            float localTranlactionX = original.getLocation()[0] * scaleFactor + globalDifference[0];
+            float localTranlactionY = original.getLocation()[1] * scaleFactor + globalDifference[1];
+            float localTranlactionZ = original.getLocation()[2] * scaleFactor + globalDifference[2];
             data.setLocation(new float[]{localTranlactionX, localTranlactionY, localTranlactionZ});
             Log.v("SceneLoader", "Mew model location: " + Arrays.toString(data.getLocation()));
 

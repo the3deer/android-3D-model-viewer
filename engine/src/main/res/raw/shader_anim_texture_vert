@@ -10,6 +10,7 @@ uniform mat4 u_PMatrix;
 attribute vec4 a_Position;
 
 // textures
+uniform bool u_Textured;
 attribute vec2 a_TexCoordinate;
 varying vec2 v_TexCoordinate;
 
@@ -45,5 +46,7 @@ void main(){
     gl_Position = u_MVPMatrix * totalLocalPos;
 
     // pass texture to fragment shader
-    v_TexCoordinate = a_TexCoordinate;
+    if (u_Textured) {
+        v_TexCoordinate = a_TexCoordinate;
+    }
 }

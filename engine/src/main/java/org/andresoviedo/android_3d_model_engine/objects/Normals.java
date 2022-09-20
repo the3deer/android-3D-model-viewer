@@ -125,10 +125,12 @@ public final class Normals {
         normalsObj.setVertexBuffer(IOUtils.createFloatBuffer(normalsVertexArray, 3));
         normalsObj.setNormalsBuffer(IOUtils.createFloatBuffer(normalsNormalsArray, 3));
         normalsObj.setDrawMode(GLES20.GL_LINES).setColor(new float[]{1f, 1f, 1f, 1f});
-        normalsObj.setScale(obj.getScale());
+        /*normalsObj.setScale(obj.getScale());
         normalsObj.setRotation(obj.getRotation());
         normalsObj.setLocation(obj.getLocation());
-        normalsObj.setBindTransform(obj.getBindTransform());
+        normalsObj.setBindTransform(obj.getBindTransform());*/
+        normalsObj.setModelMatrix(obj.getModelMatrix());
+        normalsObj.setReadOnly(true);
         normalsObj.setElements(normalsElements);
         normalsObj.setDrawUsingArrays(false);
 
@@ -219,10 +221,12 @@ public final class Normals {
         normalsObj.setVertexBuffer(IOUtils.createFloatBuffer(newVertexArray, 3));
         normalsObj.setNormalsBuffer(IOUtils.createFloatBuffer(newNormalsArray, 3));
         normalsObj.setDrawMode(GLES20.GL_LINES);
-        normalsObj.setScale(obj.getScale());
+        /*normalsObj.setScale(obj.getScale());
         normalsObj.setRotation(obj.getRotation());
         normalsObj.setLocation(obj.getLocation());
-        normalsObj.setBindTransform(obj.getBindTransform());
+        normalsObj.setBindTransform(obj.getBindTransform());*/
+        normalsObj.setModelMatrix(obj.getModelMatrix());
+        normalsObj.setReadOnly(true);
         normalsObj.setElements(newElements);
         normalsObj.setDrawUsingArrays(false);
         normalsObj.doAnimation(obj.getAnimation());
@@ -278,10 +282,12 @@ public final class Normals {
 
         Object3DData normalsObj = new Object3DData(normalsLines);
         normalsObj.setDrawMode(GLES20.GL_LINES).setColor(new float[]{1f, 0f, 0f, 1f});
-        normalsObj.setScale(obj.getScale());
+       /* normalsObj.setScale(obj.getScale());
         normalsObj.setRotation(obj.getRotation());
         normalsObj.setLocation(obj.getLocation());
-        normalsObj.setBindTransform(obj.getBindTransform());
+        normalsObj.setBindTransform(obj.getBindTransform());*/
+        normalsObj.setModelMatrix(obj.getModelMatrix());
+        normalsObj.setReadOnly(true);
 
         Log.i("Normals", "New face normal lines object created");
         return normalsObj;
@@ -309,10 +315,12 @@ public final class Normals {
 
         Object3DData normalsObj = new Object3DData(normalsLines);
         normalsObj.setDrawMode(GLES20.GL_LINES).setColor(new float[]{1f, 0f, 0f, 1f});
-        normalsObj.setScale(obj.getScale());
+        /*normalsObj.setScale(obj.getScale());
         normalsObj.setRotation(obj.getRotation());
         normalsObj.setLocation(obj.getLocation());
-        normalsObj.setBindTransform(obj.getBindTransform());
+        normalsObj.setBindTransform(obj.getBindTransform());*/
+        normalsObj.setModelMatrix(obj.getModelMatrix());
+        normalsObj.setReadOnly(true);
 
         Log.i("Normals", "New face normal lines object created");
 
@@ -351,10 +359,12 @@ public final class Normals {
 
         Object3DData normalsObj = new Object3DData(normalsLines);
         normalsObj.setDrawMode(GLES20.GL_LINES).setColor(new float[]{1f, 1f, 1f, 1f});
-        normalsObj.setScale(obj.getScale());
+        /*normalsObj.setScale(obj.getScale());
         normalsObj.setRotation(obj.getRotation());
         normalsObj.setLocation(obj.getLocation());
-        normalsObj.setBindTransform(obj.getBindTransform());
+        normalsObj.setBindTransform(obj.getBindTransform());*/
+        normalsObj.setModelMatrix(obj.getModelMatrix());
+        normalsObj.setReadOnly(true);
 
         Log.v("Normals", "New face normal lines object created. vertices: " + normalsLines.capacity() / 3);
         return normalsObj;

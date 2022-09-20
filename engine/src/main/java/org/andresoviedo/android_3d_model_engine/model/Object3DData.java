@@ -430,11 +430,6 @@ public class Object3DData {
         // set color only if valid data
         if (color != null) {
 
-            // assert
-            if (color.length != 4) {
-                throw new IllegalArgumentException("color should be RGBA");
-            }
-
             // color variable when using single color
             this.getMaterial().setDiffuse(color);
             this.getMaterial().setAlpha(color[3]);

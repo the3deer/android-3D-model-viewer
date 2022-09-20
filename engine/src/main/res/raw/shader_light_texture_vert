@@ -9,6 +9,7 @@ uniform mat4 u_PMatrix;
 attribute vec4 a_Position;
 
 // textures
+uniform bool u_Textured;
 attribute vec2 a_TexCoordinate;
 varying vec2 v_TexCoordinate;
 
@@ -43,6 +44,8 @@ void main(){
     vec3 lightVector = normalize(u_LightPos - modelVertex);
     v_Light = lightVector;
 
-    // pass texture coord to fragment shader
-    v_TexCoordinate = a_TexCoordinate;
+    // pass texture to fragment shader
+    if (u_Textured) {
+        v_TexCoordinate = a_TexCoordinate;
+    }
 }

@@ -204,6 +204,8 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.4.1 (20/09/2022)
+  - (f) bug fixing: lighting, textures, etc
 - 3.4.0 (17/09/2022)
   - (n) GLTF basic support
 - 3.3.1 (12/09/2022)
