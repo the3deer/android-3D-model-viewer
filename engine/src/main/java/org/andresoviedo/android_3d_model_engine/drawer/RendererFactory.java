@@ -35,7 +35,7 @@ public class RendererFactory {
      * shader code loaded from raw resources
      * resources are cached on activity thread
      */
-    private Map<String, String> shadersCode = new HashMap<>();
+    private Map<Integer, String> shadersIds = new HashMap<>();
     /**
      * list of opengl drawers
      */
@@ -51,9 +51,9 @@ public class RendererFactory {
             int shaderResId = fields[count].getInt(fields[count]);
             byte[] shaderBytes = IOUtils.read(context.getResources().openRawResource(shaderResId));
             String shaderCode = new String(shaderBytes);
-            shadersCode.put(shaderId, shaderCode);
+            shadersIds.put(shaderResId, shaderCode);
         }
-        Log.i("RendererFactory", "Shaders loaded: " + shadersCode.size());
+        Log.i("RendererFactory", "Shaders loaded: " + shadersIds.size());
     }
 
     public Renderer getDrawer(Object3DData obj, boolean usingSkyBox, boolean usingTextures, boolean usingLights, boolean usingAnimation, boolean drawColors) {
@@ -72,15 +72,10 @@ public class RendererFactory {
         if (drawer != null) return drawer;
 
         // build drawer
-        String vertexShaderCode = shadersCode.get(shader.vertexShaderCode);
-        String fragmentShaderCode = shadersCode.get(shader.fragmentShaderCode);
-        if (vertexShaderCode == null || fragmentShaderCode == null) {
-            Log.e("RendererFactory", "Shaders not found for " + shader.id);
-            return null;
-        }
+        String vertexShaderCode;
 
         // experimental: inject glPointSize
-        vertexShaderCode = vertexShaderCode.replace("void main(){", "void main(){\n\tgl_PointSize = 5.0;");
+        vertexShaderCode = shadersIds.get(shader.vertexShaderResourceId).replace("void main(){", "void main(){\n\tgl_PointSize = 5.0;");
 
         // use opengl constant to dynamically set up array size in shaders. That should be >=120
         vertexShaderCode = vertexShaderCode.replace("const int MAX_JOINTS = 60;","const int MAX_JOINTS = gl_MaxVertexUniformVectors > 60 ? 60 : gl_MaxVertexUniformVectors;");
@@ -91,7 +86,7 @@ public class RendererFactory {
         Log.v("RendererFactory", "---------- Fragment shader ----------\n");
         Log.v("RendererFactory", fragmentShaderCode);
         Log.v("RendererFactory", "-------------------------------------\n");*/
-        drawer = GLES20Renderer.getInstance(shader.id, vertexShaderCode, fragmentShaderCode);
+        drawer = GLES20Renderer.getInstance(shader.id, vertexShaderCode, shadersIds.get(shader.fragmentShaderResourceId));
 
         // cache drawer
         drawers.put(shader, drawer);

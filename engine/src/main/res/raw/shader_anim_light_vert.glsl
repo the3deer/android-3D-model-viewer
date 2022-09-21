@@ -1,0 +1,84 @@
+precision highp float;
+
+const int MAX_JOINTS = 60;
+//const int MAX_WEIGHTS = 3;
+
+// MVP matrices
+uniform mat4 u_MMatrix;
+uniform mat4 u_VMatrix;
+uniform mat4 u_PMatrix;
+
+// mesh
+attribute vec4 a_Position;
+
+// colors
+uniform vec4 vColor;
+varying vec4 v_Color;
+
+// lights
+uniform vec3 u_LightPos;
+uniform vec3 u_cameraPos;
+attribute vec3 a_Normal;
+
+// animation
+attribute vec3 in_jointIndices;
+attribute vec3 in_weights;
+uniform mat4 u_BindShapeMatrix;
+uniform mat4 jointTransforms[MAX_JOINTS];
+
+void main(){
+
+    vec4 bindPos = u_BindShapeMatrix * a_Position;
+
+    vec4 totalLocalPos = vec4(0.0);
+
+    mat4 jointTransform = jointTransforms[int(in_jointIndices[0])];
+    vec4 posePosition = jointTransform * bindPos;
+    totalLocalPos += posePosition * in_weights[0];
+
+    jointTransform = jointTransforms[int(in_jointIndices[1])];
+    posePosition = jointTransform * bindPos;
+    totalLocalPos += posePosition * in_weights[1];
+
+    jointTransform = jointTransforms[int(in_jointIndices[2])];
+    posePosition = jointTransform * bindPos;
+    totalLocalPos += posePosition * in_weights[2];
+
+    // calculate MVP matrix
+    mat4 u_MVMatrix = u_VMatrix * u_MMatrix;
+    mat4 u_MVPMatrix = u_PMatrix * u_MVMatrix;
+
+    // calculate rendered position
+    gl_Position = u_MVPMatrix * totalLocalPos;
+
+    // Transform the vertex into eye space.
+    vec3 modelVertex = vec3(u_MMatrix * totalLocalPos);
+
+    // Transform the normal's orientation into eye space.
+    vec3 modelNormal = normalize(vec3(u_MMatrix * vec4(a_Normal, 0.0)));
+
+    // Get a lighting direction vector from the light to the vertex.
+    vec3 lightVector = normalize(u_LightPos - modelVertex);
+
+    // Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
+    // pointing in the same direction then it will get max illumination.
+    // float diffuse = max(dot(lightVector, modelNormal),0.0); // --> lights only on camera in front of face
+    float diffuse = max(dot(lightVector, modelNormal),0.0);
+
+    // Attenuate the light based on distance.
+    float distance = distance(u_LightPos,modelVertex);
+    distance = 1.0 / (1.0 + distance * 0.05);
+    diffuse = diffuse * distance;
+
+    // specular light
+    vec3 viewDir = normalize(u_cameraPos - modelVertex);
+    vec3 reflectDir = reflect(-lightVector, modelNormal);
+    float specular = pow(max(dot(reflectDir, viewDir),0.0),32.0);
+
+    // ambient light
+    float ambient = 0.5;
+
+    // Multiply the color by the illumination level. It will be interpolated across the triangle.
+    v_Color = vColor * min((diffuse + specular + ambient),1.0);
+    v_Color[3] = vColor[3]; // correct alpha
+}

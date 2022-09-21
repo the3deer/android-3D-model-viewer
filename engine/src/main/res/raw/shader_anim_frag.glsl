@@ -1,0 +1,11 @@
+precision highp float;
+
+precision mediump float;
+
+// colors
+uniform vec4 vColorMask;
+uniform vec4 vColor;
+
+void main(){
+    gl_FragColor = vColor * vColorMask;
+}
