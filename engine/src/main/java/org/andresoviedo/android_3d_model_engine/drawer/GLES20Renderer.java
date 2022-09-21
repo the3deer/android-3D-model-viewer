@@ -11,6 +11,8 @@ import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.util.android.GLUtil;
 import org.andresoviedo.util.io.IOUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -111,19 +113,7 @@ class GLES20Renderer implements Renderer {
     }
 
     @Override
-    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPosInWorldSpace, float[] cameraPos) {
-        this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPosInWorldSpace, null, cameraPos);
-    }
-
-    @Override
-    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPosInWorldSpace, float[]
-            colorMask, float[] cameraPos) {
-        this.draw(obj, pMatrix, vMatrix, obj.getDrawMode(), obj.getDrawSize(), textureId, lightPosInWorldSpace, colorMask, cameraPos);
-    }
-
-    @Override
-    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int drawMode, int drawSize, int textureId,
-                     float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPos) {
+    public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPos, int drawMode, int drawSize) {
 
         // log event once
         // FIXME: this was flooding the system out!
@@ -150,7 +140,7 @@ class GLES20Renderer implements Renderer {
 
         // pass in normals buffer for lighting
         int mNormalHandle = -1;
-        if (supportsNormals()) {
+        if (supportsNormals() && obj.getNormalsBuffer() != null) {
             mNormalHandle = setVBO("a_Normal", obj.getNormalsBuffer(), COORDS_PER_VERTEX);
         }
 
@@ -168,11 +158,77 @@ class GLES20Renderer implements Renderer {
         // pass in texture UV buffer
         int mTextureHandle = -1;
         if (supportsTextures()) {
+
             setFeatureFlag("u_Textured", false);
-            if (textureId != -1 && obj.getTextureBuffer() != null) {
-                setTexture(textureId, "u_Texture", 0);
+
+            // load color map
+            if (obj.getMaterial().getTextureId() == -1 &&
+                    obj.getMaterial().getColorTexture() != null){
+
+                // bind bitmap
+                textureId = GLUtil.loadTexture(obj.getMaterial().getColorTexture());
+
+                obj.getMaterial().setTextureId(textureId);
+            }
+
+            // load normal map
+            if (obj.getMaterial().getNormalTextureId() == -1 &&
+                    obj.getMaterial().getNormalTexture() != null){
+
+                // log event
+                Log.i("ModelRenderer", "Binding normal map... " + obj.getMaterial().getName());
+
+                // bind bitmap
+                int handler = GLUtil.loadTexture(obj.getMaterial().getNormalTexture());
+
+                obj.getMaterial().setNormalTextureId(handler);
+            }
+
+            // load emissive map
+            if (obj.getMaterial().getEmissiveTextureId() == -1 &&
+                    obj.getMaterial().getEmissiveTexture() != null){
+
+                // log event
+                Log.i("ModelRenderer", "Binding normal map... " + obj.getMaterial().getName());
+
+                // bind bitmap
+                int handler = GLUtil.loadTexture(obj.getMaterial().getEmissiveTexture());
+
+                obj.getMaterial().setEmissiveTextureId(handler);
+            }
+
+            if (obj.getMaterial().getTextureId() == -1 && obj.getTextureData() != null) {
+                Log.i("ModelRenderer", "Loading texture for obj: '" + obj.getId() + "'... bytes: " + obj.getTextureData().length);
+                ByteArrayInputStream textureIs = new ByteArrayInputStream(obj.getTextureData());
+                textureId = GLUtil.loadTexture(textureIs);
+                try {
+                    textureIs.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                obj.getMaterial().setTextureId(textureId);
+                //textures.put(obj.getMaterial(), textureId);
+
+                Log.i("ModelRenderer", "Loaded texture OK. id: " + textureId);
+            }
+
+            if (obj.getTextureBuffer() != null) {
                 mTextureHandle = setVBO("a_TexCoordinate", obj.getTextureBuffer(), TEXTURE_COORDS_PER_VERTEX);
-                setFeatureFlag("u_Textured", true);
+            }
+
+            if (obj.getMaterial().getTextureId() != -1) {
+                setTexture(obj.getMaterial().getTextureId(), "u_Texture", 0);
+                setFeatureFlag("u_Textured",true);
+            }
+
+            if (obj.getMaterial().getNormalTextureId() != -1) {
+                setTexture(obj.getMaterial().getNormalTextureId(), "u_NormalTexture", 1);
+                setFeatureFlag("u_NormalTextured",true);
+            }
+
+            if (obj.getMaterial().getEmissiveTextureId() != -1){
+                setTexture(obj.getMaterial().getEmissiveTextureId(), "u_EmissiveTexture", 2);
+                setFeatureFlag("u_EmissiveTextured", true);
             }
         }
 
@@ -288,12 +344,12 @@ class GLES20Renderer implements Renderer {
         GLUtil.checkGlError("glUniform1i");
     }
 
-    private void setTexture(int textureId, String variableName, int shaderIndex) {
+    private void setTexture(int textureId, String variableName, int textureIndex) {
         int mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, variableName);
         GLUtil.checkGlError("glGetUniformLocation");
 
         // Set the active texture unit to texture unit 0.
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + shaderIndex);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + textureIndex);
         GLUtil.checkGlError("glActiveTexture");
 
         // Bind to the texture in OpenGL
@@ -301,7 +357,7 @@ class GLES20Renderer implements Renderer {
         GLUtil.checkGlError("glBindTexture");
 
         // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
-        GLES20.glUniform1i(mTextureUniformHandle, shaderIndex);
+        GLES20.glUniform1i(mTextureUniformHandle, textureIndex);
         GLUtil.checkGlError("glUniform1i");
     }
 
@@ -490,6 +546,57 @@ class GLES20Renderer implements Renderer {
             if (!supportsColors()) {
                 setUniform4(element.getMaterial().getColor() != null ? element.getMaterial().getColor() :
                         obj.getColor() != null ? obj.getColor() : DEFAULT_COLOR, "vColor");
+            }
+            // load color map
+            if (element.getMaterial().getTextureId() == -1 &&
+                    element.getMaterial().getColorTexture() != null){
+
+                // log event
+                Log.i("ModelRenderer", "Binding texture map... " + element.getMaterial().getName());
+
+                // bind bitmap
+                int handler = GLUtil.loadTexture(element.getMaterial().getColorTexture());
+
+                element.getMaterial().setTextureId(handler);
+            }
+
+            // load normal map
+            if (element.getMaterial().getNormalTextureId() == -1 &&
+                    element.getMaterial().getNormalTexture() != null){
+
+                // log event
+                Log.i("ModelRenderer", "Binding normal map... " + element.getMaterial().getName());
+
+                // bind bitmap
+                int handler = GLUtil.loadTexture(element.getMaterial().getNormalTexture());
+
+                element.getMaterial().setNormalTextureId(handler);
+            }
+
+            // load emissive map
+            if (element.getMaterial().getEmissiveTextureId() == -1 &&
+                    element.getMaterial().getEmissiveTexture() != null){
+
+                // log event
+                Log.i("ModelRenderer", "Binding emmissive map... " + element.getMaterial().getName());
+
+                // bind bitmap
+                int handler = GLUtil.loadTexture(element.getMaterial().getEmissiveTexture());
+
+                element.getMaterial().setEmissiveTextureId(handler);
+            }
+
+            // load color map
+            if (element.getMaterial().getTextureId() == -1 &&
+                    element.getMaterial().getTextureData() != null){
+
+                // log event
+                Log.i("ModelRenderer", "Binding texture data... " + element.getMaterial().getName());
+
+                // bind bitmap
+                int handler = GLUtil.loadTexture(element.getMaterial().getTextureData());
+
+                element.getMaterial().setTextureId(handler);
             }
             if (element.getMaterial().getTextureId() != -1 && supportsTextures()) {
                 setTexture(element.getMaterial().getTextureId(), "u_Texture", 0);

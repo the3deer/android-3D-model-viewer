@@ -525,7 +525,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 lightPosInWorldSpace[2] = tempVector4[2];
 
                 // Draw a point that represents the light bulb
-                basicShader.draw(scene.getLightBulb(), projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                basicShader.draw(scene.getLightBulb(), projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace,scene.getLightBulb().getDrawMode(), scene.getLightBulb().getDrawSize());
                 //basicShader.draw(Point.build(lightPosInWorldSpace), projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
             } else {
                 lightPosInWorldSpace[0] = cameraPosInWorldSpace[0];
@@ -535,11 +535,12 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
             // FIXME: memory leak
             if (scene.isDrawNormals()) {
-                basicShader.draw(Line.build(new float[]{lightPosInWorldSpace[0],
-                                lightPosInWorldSpace[1], lightPosInWorldSpace[2], 0, 0, 0}).setId("light_line"), projectionMatrix,
+                Object3DData light_line = Line.build(new float[]{lightPosInWorldSpace[0],
+                        lightPosInWorldSpace[1], lightPosInWorldSpace[2], 0, 0, 0}).setId("light_line");
+                basicShader.draw(light_line, projectionMatrix,
                         viewMatrix, -1,
                         lightPosInWorldSpace,
-                        colorMask, cameraPosInWorldSpace);
+                        colorMask, cameraPosInWorldSpace, light_line.getDrawMode(), light_line.getDrawSize());
             }
         }
 
@@ -604,7 +605,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 }
                 Renderer basicShader = drawer.getSkyBoxDrawer();
                 skyBoxes3D[skyBoxId].setColor(Constants.COLOR_BIT_TRANSPARENT);
-                basicShader.draw(skyBoxes3D[skyBoxId], projectionMatrixSkyBox, viewMatrix, skyBoxes3D[skyBoxId].getMaterial().getTextureId(), null, cameraPosInWorldSpace);
+                basicShader.draw(skyBoxes3D[skyBoxId], projectionMatrixSkyBox, viewMatrix, skyBoxes3D[skyBoxId].getMaterial().getTextureId(), null, null, cameraPosInWorldSpace, skyBoxes3D[skyBoxId].getDrawMode(), skyBoxes3D[skyBoxId].getDrawSize());
 
                 // sensor stuff
                 /*this.orientation.toRotationMatrix(viewMatrixSkyBox);
@@ -649,7 +650,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             objData.setChanged(false);
 
             // load textures
-            Integer textureId = null;
+            /*Integer textureId = null;
             if (drawTextures) {
 
                 // TODO: move texture loading to Renderer
@@ -736,15 +737,13 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                         Log.i("ModelRenderer", "Loaded texture OK. id: " + textureId);
                     }
                 }
-            }
-            if (textureId == null) {
-                textureId = -1;
-            }
+            }*/
+            Integer textureId = -1;
 
             // draw points
             if (objData.getDrawMode() == GLES20.GL_POINTS) {
                 Renderer basicDrawer = drawer.getBasicShader();
-                basicDrawer.draw(objData, projectionMatrix, viewMatrix, GLES20.GL_POINTS, lightPosInWorldSpace, cameraPosInWorldSpace);
+                basicDrawer.draw(objData, projectionMatrix, viewMatrix, GLES20.GL_POINTS, lightPosInWorldSpace, null, cameraPosInWorldSpace, objData.getDrawMode(), objData.getDrawSize());
             } else {
 
                 // draw wireframe
@@ -763,7 +762,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                             Log.i("ModelRenderer", "Wireframe build: " + wireframe);
                         }
                         animator.update(wireframe, scene.isShowBindPose());
-                        drawerObject.draw(wireframe, projectionMatrix, viewMatrix, wireframe.getDrawMode(), wireframe.getDrawSize(), textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                        drawerObject.draw(wireframe, projectionMatrix, viewMatrix, textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, wireframe.getDrawMode(), wireframe.getDrawSize());
                         //objData.render(drawer, lightPosInWorldSpace, colorMask);
                     } catch (Error e) {
                         Log.e("ModelRenderer", e.getMessage(), e);
@@ -773,8 +772,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 // draw points
                 else if (scene.isDrawPoints()) {
                     drawerObject.draw(objData, projectionMatrix, viewMatrix
-                            , GLES20.GL_POINTS, objData.getDrawSize(),
-                            textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                            , textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, GLES20.GL_POINTS, objData.getDrawSize());
                     objData.render(drawer, scene.getCamera(), lightPosInWorldSpace, colorMask);
                 }
 
@@ -792,23 +790,24 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                         this.skeleton.put(objData, skeleton);
                     }
                     final Renderer skeletonDrawer = drawer.getDrawer(skeleton, false, false, drawLighting, doAnimation, drawColors);
-                    skeletonDrawer.draw(skeleton, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                    skeletonDrawer.draw(skeleton, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, skeleton.getDrawMode(), skeleton.getDrawSize());
                     //GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
                     // draw the original object a bit transparent
-                    drawerObject.draw(objData, projectionMatrix, viewMatrix,  textureId, lightPosInWorldSpace, Constants.COLOR_HALF_TRANSPARENT, cameraPosInWorldSpace);
+                    drawerObject.draw(objData, projectionMatrix, viewMatrix,  textureId, lightPosInWorldSpace, Constants.COLOR_HALF_TRANSPARENT, cameraPosInWorldSpace, objData.getDrawMode(), objData.getDrawSize());
                 }
 
                 // draw solids
                 else {
                     if (!infoLogged.containsKey(objData.getId() + "render")) {
                         Log.i("ModelRenderer", "Rendering object... " + objData.getId());
-                        Log.d("ModelRenderer", objData.getId()+": "+objData);
-                        Log.d("ModelRenderer",objData.getId()+": "+ drawerObject);
+                        Log.d("ModelRenderer", objData.toString());
+                        Log.d("ModelRenderer", drawerObject.toString());
                         infoLogged.put(objData.getId() + "render", true);
                     }
                     drawerObject.draw(objData, projectionMatrix, viewMatrix,
-                            textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                            textureId, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace,
+                            objData.getDrawMode(), objData.getDrawSize());
                     objData.render(drawer, scene.getCamera(), lightPosInWorldSpace, colorMask);
                 }
             }
@@ -834,7 +833,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                             false);
                     animator.update(normalData, scene.isShowBindPose());
                     normalsDrawer.draw(normalData, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask
-                            , cameraPosInWorldSpace);
+                            , cameraPosInWorldSpace, normalData.getDrawMode(), normalData.getDrawSize());
                 }
             }
 
@@ -864,7 +863,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         }
         Renderer boundingBoxDrawer = drawer.getBoundingBoxDrawer();
         boundingBoxDrawer.draw(boundingBoxData, projectionMatrix, viewMatrix, -1,
-                lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                lightPosInWorldSpace, colorMask, cameraPosInWorldSpace,
+                boundingBoxData.getDrawMode(), boundingBoxData.getDrawSize());
     }
 
     public int getWidth() {
