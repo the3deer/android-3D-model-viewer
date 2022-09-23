@@ -1,7 +1,9 @@
 package org.andresoviedo.android_3d_model_engine.drawer;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
+
 import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.R;
@@ -16,18 +18,17 @@ import java.util.Map;
 
 /**
  * Copyright 2013-2020 andresoviedo.org
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  */
 public class RendererFactory {
 
@@ -56,20 +57,32 @@ public class RendererFactory {
         Log.i("RendererFactory", "Shaders loaded: " + shadersIds.size());
     }
 
-    public Renderer getDrawer(Object3DData obj, boolean usingSkyBox, boolean usingTextures, boolean usingLights, boolean usingAnimation, boolean drawColors) {
+    public Renderer getDrawer(Object3DData obj, boolean usingSkyBox, boolean usingTextures, boolean usingLights, boolean usingAnimation) {
 
         // double check features
-        boolean isAnimated = usingAnimation && obj instanceof AnimatedModel
-                && ((AnimatedModel) obj).getAnimation() != null && (((AnimatedModel) obj).getAnimation()).isInitialized();
-        boolean isUsingLights = usingLights && (obj.getNormalsBuffer() != null || obj.getNormalsBuffer() != null);
-        boolean isColoured = drawColors && obj != null && (obj.getColorsBuffer() != null || obj
-                .getColorsBuffer() != null);
+        final boolean animationOK = obj instanceof AnimatedModel
+                && ((AnimatedModel) obj).getAnimation() != null
+                && (((AnimatedModel) obj).getAnimation()).isInitialized();
+        final boolean isAnimated = usingAnimation && animationOK;
+        final boolean isLighted = usingLights && obj.getNormalsBuffer() != null;
+        final boolean isTextured = usingTextures && obj.getTextureBuffer() != null;
 
-        final Shader shader = getShader(usingSkyBox, isAnimated, isUsingLights, usingTextures, isColoured);
+        // match shaders
+        final Shader shader;
+        if (usingSkyBox){
+            shader = Shader.SKYBOX;
+        } else {
+            shader = getShader(isTextured, isLighted, isAnimated);
+        }
 
-        // get cached drawer
-        GLES20Renderer drawer = drawers.get(shader);
-        if (drawer != null) return drawer;
+        // get cached shaders
+        GLES20Renderer renderer = drawers.get(shader);
+        if (renderer != null) {
+            renderer.setTexturesEnabled(isTextured);
+            renderer.setLightingEnabled(isLighted);
+            renderer.setAnimationEnabled(isAnimated);
+            return renderer;
+        }
 
         // build drawer
         String vertexShaderCode;
@@ -78,7 +91,7 @@ public class RendererFactory {
         vertexShaderCode = shadersIds.get(shader.vertexShaderResourceId).replace("void main(){", "void main(){\n\tgl_PointSize = 5.0;");
 
         // use opengl constant to dynamically set up array size in shaders. That should be >=120
-        vertexShaderCode = vertexShaderCode.replace("const int MAX_JOINTS = 60;","const int MAX_JOINTS = gl_MaxVertexUniformVectors > 60 ? 60 : gl_MaxVertexUniformVectors;");
+        vertexShaderCode = vertexShaderCode.replace("const int MAX_JOINTS = 60;", "const int MAX_JOINTS = gl_MaxVertexUniformVectors > 60 ? 60 : gl_MaxVertexUniformVectors;");
 
         // create drawer
         /*Log.v("RendererFactory", "\n---------- Vertex shader ----------\n");
@@ -86,101 +99,43 @@ public class RendererFactory {
         Log.v("RendererFactory", "---------- Fragment shader ----------\n");
         Log.v("RendererFactory", fragmentShaderCode);
         Log.v("RendererFactory", "-------------------------------------\n");*/
-        drawer = GLES20Renderer.getInstance(shader.id, vertexShaderCode, shadersIds.get(shader.fragmentShaderResourceId));
+        renderer = GLES20Renderer.getInstance(shader.id, vertexShaderCode, shadersIds.get(shader.fragmentShaderResourceId));
+        renderer.setTexturesEnabled(isTextured);
+        renderer.setLightingEnabled(isLighted);
+        renderer.setAnimationEnabled(isAnimated);
 
         // cache drawer
-        drawers.put(shader, drawer);
+        drawers.put(shader, renderer);
 
         // return drawer
-        return drawer;
+        return renderer;
     }
 
     @NonNull
-    private Shader getShader(boolean isUsingSkyBox, boolean isAnimated, boolean isUsingLights, boolean isTextured, boolean
-            isColoured) {
+    private Shader getShader(boolean isTextured, boolean isLighted, boolean isAnimated) {
 
-        if (isUsingSkyBox){
-            return Shader.SKYBOX;
-        }
-
-        Shader ret = null;
-        if (isAnimated){
-            if (isUsingLights){
-                if (isTextured){
-                    if (isColoured){
-                        ret = Shader.ANIM_LIGHT_TEXTURE_COLORS;
-                    } else {
-                        ret = Shader.ANIM_LIGHT_TEXTURE;
-                    }
-                } else{
-                    if (isColoured){
-                        ret = Shader.ANIM_LIGHT_COLORS;
-                    } else {
-                        ret = Shader.ANIM_LIGHT;
-                    }
-                }
-            } else{
-                if (isTextured){
-                    if (isColoured){
-                        ret = Shader.ANIM_TEXTURE_COLORS;
-                    } else {
-                        ret = Shader.ANIM_TEXTURE;
-                    }
-                } else{
-                    if (isColoured){
-                        ret = Shader.ANIM_COLORS;
-                    } else {
-                        ret = Shader.ANIM;
-                    }
-                }
-            }
+        final Shader ret;
+        if (isAnimated || isTextured || isLighted){
+            ret = Shader.ANIMATED;
         } else {
-            if (isUsingLights){
-                if (isTextured){
-                    if (isColoured){
-                        ret = Shader.LIGHT_TEXTURE_COLORS;
-                    } else {
-                        ret = Shader.LIGHT_TEXTURE;
-                    }
-                } else{
-                    if (isColoured){
-                        ret = Shader.LIGHT_COLORS;
-                    } else {
-                        ret = Shader.LIGHT;
-                    }
-                }
-            } else{
-                if (isTextured){
-                    if (isColoured){
-                        ret = Shader.TEXTURE_COLORS;
-                    } else{
-                        ret = Shader.TEXTURE;
-                    }
-                } else{
-                    if (isColoured){
-                        ret = Shader.COLORS;
-                    } else{
-                        ret = Shader.SHADER;
-                    }
-                }
-            }
+            ret = Shader.BASIC;
         }
         return ret;
     }
 
     public Renderer getBoundingBoxDrawer() {
-        return getDrawer(null, false, false, false, false, false);
+        return getDrawer(null, false, false, false, false);
     }
 
     public Renderer getFaceNormalsDrawer() {
-        return getDrawer(null, false, false, false, false, false);
+        return getDrawer(null, false, false, false, false);
     }
 
     public Renderer getBasicShader() {
-        return getDrawer(null, false, false, false, false, false);
+        return getDrawer(null, false, false, false, false);
     }
 
     public Renderer getSkyBoxDrawer() {
-        return getDrawer(null, true, false, false, false, false);
+        return getDrawer(null, true, false, false, false);
     }
 }

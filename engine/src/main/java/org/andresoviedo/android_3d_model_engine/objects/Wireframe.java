@@ -97,6 +97,7 @@ public class Wireframe {
                     .setReadOnly(true)
                     .setDrawMode(GLES20.GL_LINES)
                     .setDrawUsingArrays(false)
+                    .setMaterial(objData.getMaterial())
                     .setId(objData.getId() + "_wireframe");
             return ret;
         } catch (Exception ex) {

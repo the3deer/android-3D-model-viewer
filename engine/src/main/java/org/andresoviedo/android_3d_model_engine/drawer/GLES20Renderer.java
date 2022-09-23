@@ -44,7 +44,7 @@ class GLES20Renderer implements Renderer {
     private static final int TEXTURE_COORDS_PER_VERTEX = 2;
     private static final int COLOR_COORDS_PER_VERTEX = 4;
 
-    private final static float[] DEFAULT_COLOR = {1.0f, 1.0f, 1.0f, 1.0f};
+    private final static float[] DEFAULT_COLOR = {0.0f, 1.0f, 1.0f, 1.0f};
     private final static float[] NO_COLOR_MASK = {1.0f, 1.0f, 1.0f, 1.0f};
 
     // specification
@@ -75,6 +75,10 @@ class GLES20Renderer implements Renderer {
      */
     private static Map<Object, Object> flags = new HashMap<>();
 
+    private boolean texturesEnabled = true;
+    private boolean lightingEnabled = true;
+    private boolean animationEnabled = true;
+
     static GLES20Renderer getInstance(String id, String vertexShaderCode, String fragmentShaderCode) {
         Set<String> shaderFeatures = new HashSet<>();
         testShaderFeature(shaderFeatures, vertexShaderCode, "u_MMatrix");
@@ -83,6 +87,7 @@ class GLES20Renderer implements Renderer {
         testShaderFeature(shaderFeatures, vertexShaderCode, "a_Color");
         testShaderFeature(shaderFeatures, vertexShaderCode, "a_TexCoordinate");
         testShaderFeature(shaderFeatures, vertexShaderCode, "u_LightPos");
+        testShaderFeature(shaderFeatures, fragmentShaderCode, "u_LightPos");
         testShaderFeature(shaderFeatures, vertexShaderCode, "in_jointIndices");
         testShaderFeature(shaderFeatures, vertexShaderCode, "in_weights");
         testShaderFeature(shaderFeatures, fragmentShaderCode, "u_TextureCube");
@@ -112,6 +117,18 @@ class GLES20Renderer implements Renderer {
         Log.d("GLES20Renderer", "Compiled 3D Drawer (" + id + ") with id " + mProgram);
     }
 
+    public void setTexturesEnabled(boolean texturesEnabled) {
+        this.texturesEnabled = texturesEnabled;
+    }
+
+    public void setLightingEnabled(boolean lightingEnabled) {
+        this.lightingEnabled = lightingEnabled;
+    }
+
+    public void setAnimationEnabled(boolean animationEnabled) {
+        this.animationEnabled = animationEnabled;
+    }
+
     @Override
     public void draw(Object3DData obj, float[] pMatrix, float[] vMatrix, int textureId, float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPos, int drawMode, int drawSize) {
 
@@ -127,6 +144,8 @@ class GLES20Renderer implements Renderer {
         if (GLUtil.checkGlError("glUseProgram")) {
             return;
         }
+
+        //setFeatureFlag("u_Debug",false);
 
         // mvp matrix for position + lighting + animation
         if(supportsMMatrix()) {
@@ -146,8 +165,12 @@ class GLES20Renderer implements Renderer {
 
         // pass in color or colors array
         int mColorHandle = -1;
-        if (supportsColors()) {
-            mColorHandle = setVBO("a_Color", obj.getColorsBuffer(), COLOR_COORDS_PER_VERTEX);
+        if (supportsColors()){
+            setFeatureFlag("u_Coloured",false);
+            if (obj.getColorsBuffer() != null) {
+                mColorHandle = setVBO("a_Color", obj.getColorsBuffer(), COLOR_COORDS_PER_VERTEX);
+                setFeatureFlag("u_Coloured", true);
+            }
         } else {
             setUniform4(obj.getColor() != null? obj.getColor() : DEFAULT_COLOR,"vColor");
         }
@@ -158,8 +181,9 @@ class GLES20Renderer implements Renderer {
         // pass in texture UV buffer
         int mTextureHandle = -1;
         if (supportsTextures()) {
-
-            setFeatureFlag("u_Textured", false);
+            setFeatureFlag("u_Textured", texturesEnabled);
+        }
+        if (supportsTextures() && obj.getTextureBuffer() != null) {
 
             // load color map
             if (obj.getMaterial().getTextureId() == -1 &&
@@ -238,7 +262,9 @@ class GLES20Renderer implements Renderer {
         }
 
         // pass in light position for lighting
-        if (lightPosInWorldSpace != null && supportsLighting()) {
+        if (supportsLighting()) {
+            boolean toggle = lightingEnabled && obj.getNormalsBuffer() != null;
+            setFeatureFlag("u_Lighted", toggle);
             setUniform3(lightPosInWorldSpace,"u_LightPos");
             setUniform3(cameraPos,"u_cameraPos");
         }
@@ -246,11 +272,15 @@ class GLES20Renderer implements Renderer {
         // pass in joint transformation for animated model
         int in_weightsHandle = -1;
         int in_jointIndicesHandle = -1;
-        if (supportsJoints() && obj instanceof AnimatedModel) {
-            in_weightsHandle = setVBO("in_weights", ((AnimatedModel) obj).getVertexWeights(), COORDS_PER_VERTEX);
-            in_jointIndicesHandle = setVBO("in_jointIndices", ((AnimatedModel) obj).getJointIds(), COORDS_PER_VERTEX);
-            setUniformMatrix4(((AnimatedModel) obj).getBindShapeMatrix(), "u_BindShapeMatrix");
-            setJointTransforms((AnimatedModel) obj);
+        if (supportsJoints()){
+            boolean toggle = this.animationEnabled && obj instanceof AnimatedModel;
+            if(toggle) {
+                in_weightsHandle = setVBO("in_weights", ((AnimatedModel) obj).getVertexWeights(), COORDS_PER_VERTEX);
+                in_jointIndicesHandle = setVBO("in_jointIndices", ((AnimatedModel) obj).getJointIds(), COORDS_PER_VERTEX);
+                setUniformMatrix4(((AnimatedModel) obj).getBindShapeMatrix(), "u_BindShapeMatrix");
+                setJointTransforms((AnimatedModel) obj);
+            }
+            setFeatureFlag("u_Animated", toggle);
         }
 
         // draw mesh
@@ -537,16 +567,28 @@ class GLES20Renderer implements Renderer {
             Log.v("GLES20Renderer", "Rendering element " + i + "....  " + element);
         }
 
+        if (element.getMaterial() != null && element.getMaterial().getColor() != null){
+            setUniform4(element.getMaterial().getColor(), "vColor");
+        } else if (obj.getColor() != null){
+            setUniform4(obj.getColor(), "vColor");
+        } else {
+            setUniform4(DEFAULT_COLOR, "vColor");
+        }
+
+        // default is no textured
+        if (supportsColors()){
+            setFeatureFlag("u_Coloured", obj.getColorsBuffer() != null);
+        }
+
         // default is no textured
         if (supportsTextures()){
-            setFeatureFlag("u_Textured", false);
+            setFeatureFlag("u_Textured", obj.getTextureBuffer() != null
+                    && element.getMaterial() != null && element.getMaterial().getTextureId() != -1
+                    && texturesEnabled);
         }
 
         if (element.getMaterial() != null) {
-            if (!supportsColors()) {
-                setUniform4(element.getMaterial().getColor() != null ? element.getMaterial().getColor() :
-                        obj.getColor() != null ? obj.getColor() : DEFAULT_COLOR, "vColor");
-            }
+
             // load color map
             if (element.getMaterial().getTextureId() == -1 &&
                     element.getMaterial().getColorTexture() != null){
@@ -600,17 +642,17 @@ class GLES20Renderer implements Renderer {
             }
             if (element.getMaterial().getTextureId() != -1 && supportsTextures()) {
                 setTexture(element.getMaterial().getTextureId(), "u_Texture", 0);
-                setFeatureFlag("u_Textured",true);
+                setFeatureFlag("u_Textured",texturesEnabled);
             }
 
             if (element.getMaterial().getNormalTextureId() != -1 && supportsTextures()) {
                 setTexture(element.getMaterial().getNormalTextureId(), "u_NormalTexture", 1);
-                setFeatureFlag("u_NormalTextured",true);
+                setFeatureFlag("u_NormalTextured",texturesEnabled);
             }
 
             if (element.getMaterial().getEmissiveTextureId() != -1 && supportsTextures()){
                 setTexture(element.getMaterial().getEmissiveTextureId(), "u_EmissiveTexture", 2);
-                setFeatureFlag("u_EmissiveTextured", true);
+                setFeatureFlag("u_EmissiveTextured", texturesEnabled);
             }
         }
 

@@ -13,7 +13,6 @@ import org.andresoviedo.android_3d_model_engine.drawer.RendererFactory;
 import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
 import org.andresoviedo.android_3d_model_engine.model.Constants;
-import org.andresoviedo.android_3d_model_engine.model.Element;
 import org.andresoviedo.android_3d_model_engine.model.Material;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.android_3d_model_engine.model.Projection;
@@ -31,10 +30,8 @@ import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.android.ContentUtils;
 import org.andresoviedo.util.android.GLUtil;
 import org.andresoviedo.util.event.EventListener;
-import org.andresoviedo.util.math.Math3DUtils;
 import org.andresoviedo.util.math.Quaternion;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -244,7 +241,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             case ORTHOGRAPHIC:
             case ISOMETRIC:
                 Matrix.orthoM(projectionMatrix, 0, -ratio * Constants.UNIT /getZoom(), ratio* Constants.UNIT /getZoom(), -Constants.UNIT /getZoom(), Constants.UNIT /getZoom(), getNear(), getFar());
-                Matrix.orthoM(projectionMatrixSkyBox, 0, -ratio * Constants.UNIT /getZoom(), ratio* Constants.UNIT /getZoom(), -Constants.UNIT /getZoom(), Constants.UNIT /getZoom(), getNear(), getFar());
+                //Matrix.orthoM(projectionMatrixSkyBox, 0, -ratio * Constants.UNIT /getZoom(), ratio* Constants.UNIT /getZoom(), -Constants.UNIT /getZoom(), Constants.UNIT /getZoom(), getNear(), getFar());
+                Matrix.frustumM(projectionMatrixSkyBox, 0, -ratio * getNear(), ratio * getNear(), -1 * getNear(), 1 * getNear(), getNear(),  getFar());
                 Matrix.orthoM(projectionMatrixRight, 0, -ratio * Constants.UNIT /getZoom(), ratio* Constants.UNIT /getZoom(), -Constants.UNIT /getZoom(), Constants.UNIT /getZoom(), getNear(), getFar());
                 Matrix.orthoM(projectionMatrixLeft, 0, -ratio * Constants.UNIT /getZoom(), ratio* Constants.UNIT /getZoom(), -Constants.UNIT /getZoom(), Constants.UNIT /getZoom(), getNear(), getFar());
                 break;
@@ -417,11 +415,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 //camera.setChanged(false);
             }
 
-            drawSkyBox(viewMatrix, projectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+            drawSkyBox(viewMatrix, projectionMatrix, cameraPosInWorldSpace, colorMask);
 
 
             if (!scene.isStereoscopic()) {
-                this.onDrawFrame(viewMatrix, projectionMatrix, viewProjectionMatrix, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                this.onDrawFrame(viewMatrix, projectionMatrix, colorMask);
                 if(camera.hasChanged()) camera.setChanged(false);
                 return;
             }
@@ -434,27 +432,27 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
                    GLES20.glColorMask(false, true, true, true);
                     GLES20.glViewport(-correction, 0, width-correction, height);
-                    this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInWorldSpace,
-                            colorMask, cameraPosInWorldSpace);
+                    this.onDrawFrame(viewMatrixRight, projectionMatrixRight,
+                            colorMask);
 
                     GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT);
                     GLES20.glColorMask(true, false, false, true);
                     GLES20.glViewport(correction, 0, width+correction, height);
-                    this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInWorldSpace,
-                            colorMask, cameraPosInWorldSpace);
+                    this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft,
+                            colorMask);
 
                 } else {
 
                     GLES20.glColorMask(true, false, false, true);
                     GLES20.glViewport(correction, 0, width+correction, height);
-                    this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInWorldSpace,
-                            colorMask, cameraPosInWorldSpace);
+                    this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft,
+                            colorMask);
 
                     GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT);
                     GLES20.glColorMask(false, true, true, true);
                     GLES20.glViewport(-correction, 0, width-correction, height);
-                    this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInWorldSpace,
-                            colorMask, cameraPosInWorldSpace);
+                    this.onDrawFrame(viewMatrixRight, projectionMatrixRight,
+                            colorMask);
                 }
                 anaglyphSwitch = !anaglyphSwitch;
                 return;
@@ -465,14 +463,14 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 // draw left eye image
                 GLES20.glViewport(0, 0, width / 2, height);
                 GLES20.glScissor(0, 0, width / 2, height);
-                this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft, viewProjectionMatrixLeft, lightPosInWorldSpace,
-                        null, cameraPosInWorldSpace);
+                this.onDrawFrame(viewMatrixLeft, projectionMatrixLeft,
+                        null);
 
                 // draw right eye image
                 GLES20.glViewport(width / 2, 0, width / 2, height);
                 GLES20.glScissor(width / 2, 0, width / 2, height);
-                this.onDrawFrame(viewMatrixRight, projectionMatrixRight, viewProjectionMatrixRight, lightPosInWorldSpace,
-                        null, cameraPosInWorldSpace);
+                this.onDrawFrame(viewMatrixRight, projectionMatrixRight,
+                        null);
             }
 
 
@@ -497,13 +495,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    private void onDrawFrame(float[] viewMatrix, float[] projectionMatrix, float[] viewProjectionMatrix,
-                             float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPosInWorldSpace) {
-
-
-        // set up camera
-        final Camera camera = scene.getCamera();
-
+    private void onDrawFrame(float[] viewMatrix, float[] projectionMatrix,
+                             float[] colorMask) {
 
         // draw light
         boolean doAnimation = scene.isDoAnimation() && animationEnabled;
@@ -560,7 +553,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         debugSkeleton = !debugSkeleton;
     }
 
-    private void drawSkyBox(float[] viewMatrix, float[] projectionMatrix, float[] lightPosInWorldSpace, float[] colorMask, float[] cameraPosInWorldSpace) {
+    private void drawSkyBox(float[] viewMatrix, float[] projectionMatrix, float[] cameraPosInWorldSpace, float[] colorMask) {
         // draw environment
         int skyBoxId = getSkyBoxId();
         if (skyBoxId == -3){
@@ -637,7 +630,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             }
 
 
-            Renderer drawerObject = drawer.getDrawer(objData, false, drawTextures, drawLighting, doAnimation, drawColors);
+            Renderer drawerObject = drawer.getDrawer(objData, false, drawTextures, drawLighting, doAnimation);
             if (drawerObject == null) {
                 if (!infoLogged.containsKey(objData.getId() + "drawer")) {
                     Log.e("ModelRenderer", "No drawer for " + objData.getId());
@@ -789,7 +782,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                         skeleton = Skeleton.build((AnimatedModel) objData);
                         this.skeleton.put(objData, skeleton);
                     }
-                    final Renderer skeletonDrawer = drawer.getDrawer(skeleton, false, false, drawLighting, doAnimation, drawColors);
+                    final Renderer skeletonDrawer = drawer.getDrawer(skeleton, false, false, drawLighting, doAnimation);
                     skeletonDrawer.draw(skeleton, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, skeleton.getDrawMode(), skeleton.getDrawSize());
                     //GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
@@ -829,8 +822,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     }
                 }
                 if (normalData != null) {
-                    Renderer normalsDrawer = drawer.getDrawer(normalData, false, false, false, doAnimation,
-                            false);
+                    Renderer normalsDrawer = drawer.getDrawer(normalData, false, false, false, doAnimation
+                    );
                     animator.update(normalData, scene.isShowBindPose());
                     normalsDrawer.draw(normalData, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask
                             , cameraPosInWorldSpace, normalData.getDrawMode(), normalData.getDrawSize());

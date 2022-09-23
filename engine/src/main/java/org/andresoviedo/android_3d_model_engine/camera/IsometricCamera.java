@@ -155,10 +155,10 @@ public class IsometricCamera extends Camera {
         final float[] cross2 = Math3DUtils.crossProduct(posN, cross);
         final double dot = Math3DUtils.dotProduct(axis, cross2);
 
-        Log.v("IsometricCamera", "rotateWithMatrix. dot: " + dot
+        /*Log.v("IsometricCamera", "rotateWithMatrix. dot: " + dot
                 + ", axis: " + Arrays.toString(axis)
                 + ", cross: " + Arrays.toString(cross)
-                + ", angle: " + Math3DUtils.calculateAngleBetween(axis, cross));
+                + ", angle: " + Math3DUtils.calculateAngleBetween(axis, cross));*/
         final double angle = Math.signum(dot) * Math.PI / 2;
 
         final float[] rotMatrix = new float[16];
@@ -177,7 +177,7 @@ public class IsometricCamera extends Camera {
 
         saveAndAnimate(newPos[0], newPos[1], newPos[2], newUp[0], newUp[1], newUp[2]);
 
-        Log.v("IsometricCamera", "Rotating... action: " + delegate.getAnimation());
+        //Log.v("IsometricCamera", "Rotating... action: " + delegate.getAnimation());
     }
 
     private void saveAndAnimate(float xp, float yp, float zp, float xu, float yu, float zu) {

@@ -140,7 +140,7 @@ public class Object3DData {
     // whether the object has changed
     private boolean changed;
 
-    // defines wheter this object matrix can be changed
+    // defines whether this object matrix can be changed
     private boolean readOnly;
 
     // defines whether the transformations are relative to it's mass center
@@ -267,8 +267,9 @@ public class Object3DData {
         return material;
     }
 
-    public void setMaterial(Material material) {
+    public Object3DData setMaterial(Material material) {
         this.material = material;
+        return this;
     }
 
     public Materials getMaterials() {
@@ -857,7 +858,7 @@ public class Object3DData {
                 "id='" + id + "'" +
                 ", name=" + getName() +
                 ", isVisible=" + isVisible +
-                ", color=" + Arrays.toString(getMaterial().getColor()) +
+                ", color=" + (getColorsBuffer() != null? getColorsBuffer().toString() : Arrays.toString(getMaterial().getColor())) +
                 ", position=" + Arrays.toString(location) +
                 ", scale=" + Arrays.toString(scale) +
                 ", indexed=" + !isDrawUsingArrays() +
