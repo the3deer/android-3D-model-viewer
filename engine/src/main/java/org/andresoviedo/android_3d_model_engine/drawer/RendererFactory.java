@@ -57,22 +57,24 @@ public class RendererFactory {
         Log.i("RendererFactory", "Shaders loaded: " + shadersIds.size());
     }
 
-    public Renderer getDrawer(Object3DData obj, boolean usingSkyBox, boolean usingTextures, boolean usingLights, boolean usingAnimation) {
+    public Renderer getDrawer(Object3DData obj, boolean usingSkyBox,
+                              boolean usingTextures, boolean usingLights,
+                              boolean usingAnimation, boolean isShadow, boolean isUsingShadows) {
 
         // double check features
         final boolean animationOK = obj instanceof AnimatedModel
                 && ((AnimatedModel) obj).getAnimation() != null
                 && (((AnimatedModel) obj).getAnimation()).isInitialized();
-        final boolean isAnimated = usingAnimation && animationOK;
-        final boolean isLighted = usingLights && obj.getNormalsBuffer() != null;
-        final boolean isTextured = usingTextures && obj.getTextureBuffer() != null;
+        final boolean isAnimated = usingAnimation && (obj == null || animationOK);
+        final boolean isLighted = usingLights && obj != null && obj.getNormalsBuffer() != null;
+        final boolean isTextured = usingTextures && obj != null && obj.getTextureBuffer() != null;
 
         // match shaders
         final Shader shader;
         if (usingSkyBox){
             shader = Shader.SKYBOX;
         } else {
-            shader = getShader(isTextured, isLighted, isAnimated);
+            shader = getShader(isTextured, isLighted, isAnimated, isShadow, isUsingShadows);
         }
 
         // get cached shaders
@@ -112,10 +114,14 @@ public class RendererFactory {
     }
 
     @NonNull
-    private Shader getShader(boolean isTextured, boolean isLighted, boolean isAnimated) {
+    private Shader getShader(boolean isTextured, boolean isLighted, boolean isAnimated, boolean isShadow, boolean isUsingShadows) {
 
         final Shader ret;
-        if (isAnimated || isTextured || isLighted){
+        if (isShadow) {
+            return Shader.SHADOW;
+        } else if (isUsingShadows){
+            return Shader.SHADOWED;
+        } else if (isAnimated || isTextured || isLighted){
             ret = Shader.ANIMATED;
         } else {
             ret = Shader.BASIC;
@@ -124,18 +130,27 @@ public class RendererFactory {
     }
 
     public Renderer getBoundingBoxDrawer() {
-        return getDrawer(null, false, false, false, false);
+        return getDrawer(null, false, false, false, false, false, false);
     }
 
     public Renderer getFaceNormalsDrawer() {
-        return getDrawer(null, false, false, false, false);
+        return getDrawer(null, false, false, false, false, false, false);
     }
 
     public Renderer getBasicShader() {
-        return getDrawer(null, false, false, false, false);
+        return getDrawer(null, false, false, false, false, false, false);
     }
 
     public Renderer getSkyBoxDrawer() {
-        return getDrawer(null, true, false, false, false);
+        return getDrawer(null, true, false, false, false, false, false);
     }
+
+    public Renderer getShadowRenderer(){
+        return getDrawer(null, false, false, false, true, true, false);
+    }
+
+    public Renderer getShadowRenderer2(Object3DData obj){
+        return getDrawer(obj, false, true, true, true, false, true);
+    }
+
 }

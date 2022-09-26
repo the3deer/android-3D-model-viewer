@@ -6,9 +6,6 @@ import java.util.Arrays;
 
 public class Material {
 
-    // constants
-    private static final float[] COLOR_WHITE = {1f, 1f, 1f, 1f};
-
     // material name
     private String name;
 
@@ -155,7 +152,7 @@ public class Material {
 
     public float[] getColor(){
         if (this.color == null){
-            this.color = new float[]{1f,1f,1f,1f};
+            this.color = Constants.COLOR_WHITE.clone();
         }
         if (this.diffuse != null){
             this.color[0] = this.diffuse[0];

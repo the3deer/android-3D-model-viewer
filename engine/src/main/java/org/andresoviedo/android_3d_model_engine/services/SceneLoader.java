@@ -658,15 +658,24 @@ public class SceneLoader implements LoadListener, EventListener {
 
         // rescale all object so they fit in the screen
         //rescale(this.getObjects(), DEFAULT_MAX_MODEL_SIZE, new float[3]);
-        if (this.getObjects().size() == 1){
-            this.getObjects().get(0).setCentered(true);
+        //if (this.getObjects().stream().filter(obj->obj.isPinned()).count() == 1){
+        final List<Object3DData> list = new ArrayList<>();
+        for (int i=0; i<getObjects().size(); i++){
+            if (getObjects().get(i).isPinned()) continue;
+            list.add(getObjects().get(i));
+        }
+        if (list.size() == 1){
+            for (int i=0; i<getObjects().size(); i++){
+                if (getObjects().get(i).isPinned()) continue;
+                getObjects().get(i).setCentered(true);
+            }
         }
 
         // fix coordinate system
         fixCoordinateSystem();
 
         // rescale objects so they all fit in the viewport
-        rescale(this.getObjects(), Constants.UNIT, new float[3]);
+        rescale(list, Constants.UNIT, new float[3]);
     }
 
     private void rescale(List<Object3DData> objs, float size) {

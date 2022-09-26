@@ -133,7 +133,7 @@ public final class GLUtil {
             throw new RuntimeException("Error loading texture.");
         }
 
-        Log.v("GLUtil", "Handler: " + textureHandle[0]);
+        Log.v("GLUtil", "New texture: " + textureHandle[0]);
 
         // Bind to the texture in OpenGL
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
