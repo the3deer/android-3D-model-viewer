@@ -358,7 +358,7 @@ public class Widget extends Object3DData implements EventListener {
     protected void renderImpl(RendererFactory rendererFactory, float[] lightPosInWorldSpace, float[] colorMask) {
         if (!isVisible()) return;
         onDrawFrame();
-        Renderer drawer = rendererFactory.getDrawer(this, false, false, false, false);
+        Renderer drawer = rendererFactory.getDrawer(this, false, false, false, false, false, false);
         drawer.draw(this, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosition, this.getDrawMode(), this.getDrawSize());
     }
 

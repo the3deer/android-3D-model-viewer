@@ -91,7 +91,6 @@ public class Wireframe {
             ret
                     .setNormalsBuffer(objData.getNormalsBuffer())
                     .setColorsBuffer(objData.getColorsBuffer())
-                    .setColor(objData.getColor())
                     .setTextureBuffer(objData.getTextureBuffer())
                     .setModelMatrix(objData.getModelMatrix())
                     .setReadOnly(true)

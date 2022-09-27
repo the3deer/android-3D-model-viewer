@@ -70,6 +70,7 @@ public class Object3DData {
     private boolean isVisible = true;
 
     private boolean isSolid = true;
+
     /**
      * The minimum thing we can draw in space is a vertex (or point).
      * This drawing mode uses the vertexBuffer
@@ -142,6 +143,9 @@ public class Object3DData {
 
     // defines whether this object matrix can be changed
     private boolean readOnly;
+
+    // fixed place
+    private boolean pinned;
 
     // defines whether the transformations are relative to it's mass center
     private boolean centered;
@@ -420,6 +424,14 @@ public class Object3DData {
     public void setCentered(boolean centered) {
         this.centered = centered;
         updateModelMatrix();
+    }
+
+    public boolean isPinned() {
+        return pinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        this.pinned = pinned;
     }
 
     public float[] getColor() {

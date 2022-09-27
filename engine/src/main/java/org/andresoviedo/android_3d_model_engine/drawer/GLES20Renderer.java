@@ -6,6 +6,7 @@ import android.util.Log;
 import android.util.SparseArray;
 
 import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
+import org.andresoviedo.android_3d_model_engine.model.Constants;
 import org.andresoviedo.android_3d_model_engine.model.Element;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
 import org.andresoviedo.util.android.GLUtil;
@@ -44,8 +45,8 @@ class GLES20Renderer implements Renderer {
     private static final int TEXTURE_COORDS_PER_VERTEX = 2;
     private static final int COLOR_COORDS_PER_VERTEX = 4;
 
-    private final static float[] DEFAULT_COLOR = {0.0f, 1.0f, 1.0f, 1.0f};
-    private final static float[] NO_COLOR_MASK = {1.0f, 1.0f, 1.0f, 1.0f};
+    private final static float[] DEFAULT_COLOR = Constants.COLOR_WHITE;
+    private final static float[] NO_COLOR_MASK = Constants.COLOR_WHITE;
 
     // specification
     private final String id;
@@ -79,6 +80,8 @@ class GLES20Renderer implements Renderer {
     private boolean lightingEnabled = true;
     private boolean animationEnabled = true;
 
+    private boolean autoUseProgram = true;
+
     static GLES20Renderer getInstance(String id, String vertexShaderCode, String fragmentShaderCode) {
         Set<String> shaderFeatures = new HashSet<>();
         testShaderFeature(shaderFeatures, vertexShaderCode, "u_MMatrix");
@@ -87,9 +90,9 @@ class GLES20Renderer implements Renderer {
         testShaderFeature(shaderFeatures, vertexShaderCode, "a_Color");
         testShaderFeature(shaderFeatures, vertexShaderCode, "a_TexCoordinate");
         testShaderFeature(shaderFeatures, vertexShaderCode, "u_LightPos");
-        testShaderFeature(shaderFeatures, fragmentShaderCode, "u_LightPos");
         testShaderFeature(shaderFeatures, vertexShaderCode, "in_jointIndices");
         testShaderFeature(shaderFeatures, vertexShaderCode, "in_weights");
+        testShaderFeature(shaderFeatures, fragmentShaderCode, "u_LightPos");
         testShaderFeature(shaderFeatures, fragmentShaderCode, "u_TextureCube");
         return new GLES20Renderer(id, vertexShaderCode, fragmentShaderCode, shaderFeatures);
     }
@@ -117,6 +120,25 @@ class GLES20Renderer implements Renderer {
         Log.d("GLES20Renderer", "Compiled 3D Drawer (" + id + ") with id " + mProgram);
     }
 
+    @Override
+    public void setAutoUseProgram(boolean autoUseProgram) {
+        this.autoUseProgram = autoUseProgram;
+    }
+
+    @Override
+    public void useProgram() {
+        // Add program to OpenGL environment
+        GLES20.glUseProgram(mProgram);
+        if (GLUtil.checkGlError("glUseProgram")) {
+            //return;
+        }
+    }
+
+    @Override
+    public int getProgram() {
+        return mProgram;
+    }
+
     public void setTexturesEnabled(boolean texturesEnabled) {
         this.texturesEnabled = texturesEnabled;
     }
@@ -139,10 +161,8 @@ class GLES20Renderer implements Renderer {
             flags.put(obj.getId(), this.id);
         }*/
 
-        // Add program to OpenGL environment
-        GLES20.glUseProgram(mProgram);
-        if (GLUtil.checkGlError("glUseProgram")) {
-            return;
+        if (this.autoUseProgram){
+            useProgram();
         }
 
         //setFeatureFlag("u_Debug",false);
@@ -164,6 +184,13 @@ class GLES20Renderer implements Renderer {
         }
 
         // pass in color or colors array
+        if (obj.getColor() != null){
+            setUniform4(obj.getColor(), "vColor");
+        } else {
+            setUniform4(DEFAULT_COLOR, "vColor");
+        }
+
+        // colors
         int mColorHandle = -1;
         if (supportsColors()){
             setFeatureFlag("u_Coloured",false);
@@ -171,8 +198,6 @@ class GLES20Renderer implements Renderer {
                 mColorHandle = setVBO("a_Color", obj.getColorsBuffer(), COLOR_COORDS_PER_VERTEX);
                 setFeatureFlag("u_Coloured", true);
             }
-        } else {
-            setUniform4(obj.getColor() != null? obj.getColor() : DEFAULT_COLOR,"vColor");
         }
 
         // pass in color mask - i.e. stereoscopic
@@ -182,12 +207,10 @@ class GLES20Renderer implements Renderer {
         int mTextureHandle = -1;
         if (supportsTextures()) {
             setFeatureFlag("u_Textured", texturesEnabled);
-        }
-        if (supportsTextures() && obj.getTextureBuffer() != null) {
 
             // load color map
             if (obj.getMaterial().getTextureId() == -1 &&
-                    obj.getMaterial().getColorTexture() != null){
+                    obj.getMaterial().getColorTexture() != null) {
 
                 // bind bitmap
                 textureId = GLUtil.loadTexture(obj.getMaterial().getColorTexture());
@@ -197,7 +220,7 @@ class GLES20Renderer implements Renderer {
 
             // load normal map
             if (obj.getMaterial().getNormalTextureId() == -1 &&
-                    obj.getMaterial().getNormalTexture() != null){
+                    obj.getMaterial().getNormalTexture() != null) {
 
                 // log event
                 Log.i("ModelRenderer", "Binding normal map... " + obj.getMaterial().getName());
@@ -210,7 +233,7 @@ class GLES20Renderer implements Renderer {
 
             // load emissive map
             if (obj.getMaterial().getEmissiveTextureId() == -1 &&
-                    obj.getMaterial().getEmissiveTexture() != null){
+                    obj.getMaterial().getEmissiveTexture() != null) {
 
                 // log event
                 Log.i("ModelRenderer", "Binding normal map... " + obj.getMaterial().getName());
@@ -238,21 +261,22 @@ class GLES20Renderer implements Renderer {
 
             if (obj.getTextureBuffer() != null) {
                 mTextureHandle = setVBO("a_TexCoordinate", obj.getTextureBuffer(), TEXTURE_COORDS_PER_VERTEX);
-            }
 
-            if (obj.getMaterial().getTextureId() != -1) {
-                setTexture(obj.getMaterial().getTextureId(), "u_Texture", 0);
-                setFeatureFlag("u_Textured",true);
-            }
 
-            if (obj.getMaterial().getNormalTextureId() != -1) {
-                setTexture(obj.getMaterial().getNormalTextureId(), "u_NormalTexture", 1);
-                setFeatureFlag("u_NormalTextured",true);
-            }
+                if (obj.getMaterial().getTextureId() != -1) {
+                    setTexture(obj.getMaterial().getTextureId(), "u_Texture", 0);
+                    setFeatureFlag("u_Textured", true);
+                }
 
-            if (obj.getMaterial().getEmissiveTextureId() != -1){
-                setTexture(obj.getMaterial().getEmissiveTextureId(), "u_EmissiveTexture", 2);
-                setFeatureFlag("u_EmissiveTextured", true);
+                if (obj.getMaterial().getNormalTextureId() != -1) {
+                    setTexture(obj.getMaterial().getNormalTextureId(), "u_NormalTexture", 1);
+                    setFeatureFlag("u_NormalTextured", true);
+                }
+
+                if (obj.getMaterial().getEmissiveTextureId() != -1) {
+                    setTexture(obj.getMaterial().getEmissiveTextureId(), "u_EmissiveTexture", 2);
+                    setFeatureFlag("u_EmissiveTextured", true);
+                }
             }
         }
 
@@ -273,7 +297,10 @@ class GLES20Renderer implements Renderer {
         int in_weightsHandle = -1;
         int in_jointIndicesHandle = -1;
         if (supportsJoints()){
-            boolean toggle = this.animationEnabled && obj instanceof AnimatedModel;
+            final boolean animationOK = obj instanceof AnimatedModel
+                    && ((AnimatedModel) obj).getAnimation() != null
+                    && (((AnimatedModel) obj).getAnimation()).isInitialized();
+            boolean toggle = this.animationEnabled && animationOK;
             if(toggle) {
                 in_weightsHandle = setVBO("in_weights", ((AnimatedModel) obj).getVertexWeights(), COORDS_PER_VERTEX);
                 in_jointIndicesHandle = setVBO("in_jointIndices", ((AnimatedModel) obj).getJointIds(), COORDS_PER_VERTEX);
@@ -506,11 +533,11 @@ class GLES20Renderer implements Renderer {
             }*/
 
             int size = obj.getElements().size();
-            if (id != flags.get(obj.getElements())) {
+            /*if (id != flags.get(obj.getElements())) {
                 Log.i("GLES20Renderer", "Rendering elements... obj: " + obj.getId()
                         + ", total:" + size);
                 flags.put(obj.getElements(), this.id);
-            }
+            }*/
 
             // draw rest
             for (int i = 0; i < size; i++) {
@@ -563,14 +590,13 @@ class GLES20Renderer implements Renderer {
         Buffer drawOrderBuffer = element.getIndexBuffer();
 
         // log event
-        if (id != flags.get(element)) {
+        /*if (id != flags.get(element)) {
             Log.v("GLES20Renderer", "Rendering element " + i + "....  " + element);
-        }
+            flags.put(element, id);
+        }*/
 
         if (element.getMaterial() != null && element.getMaterial().getColor() != null){
             setUniform4(element.getMaterial().getColor(), "vColor");
-        } else if (obj.getColor() != null){
-            setUniform4(obj.getColor(), "vColor");
         } else {
             setUniform4(DEFAULT_COLOR, "vColor");
         }
@@ -678,10 +704,10 @@ class GLES20Renderer implements Renderer {
         }
 
         // log event
-        if (id != flags.get(element)) {
+        /*if (id != flags.get(element)) {
             Log.i("GLES20Renderer", "Rendering element " + i + " finished");
             flags.put(element, this.id);
-        }
+        }*/
     }
 
     private void drawPolygonsUsingIndex(Buffer drawOrderBuffer, int drawBufferType, List<int[]> polygonsList) {

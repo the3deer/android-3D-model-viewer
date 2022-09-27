@@ -21,10 +21,12 @@ import org.andresoviedo.android_3d_model_engine.objects.BoundingBox;
 import org.andresoviedo.android_3d_model_engine.objects.Grid;
 import org.andresoviedo.android_3d_model_engine.objects.Line;
 import org.andresoviedo.android_3d_model_engine.objects.Normals;
+import org.andresoviedo.android_3d_model_engine.objects.Plane2;
 import org.andresoviedo.android_3d_model_engine.objects.Skeleton;
 import org.andresoviedo.android_3d_model_engine.objects.SkyBox;
 import org.andresoviedo.android_3d_model_engine.objects.Wireframe;
 import org.andresoviedo.android_3d_model_engine.services.SceneLoader;
+import org.andresoviedo.android_3d_model_engine.shadow.ShadowsRenderer;
 import org.andresoviedo.android_3d_model_engine.util.Rescaler;
 import org.andresoviedo.util.android.AndroidUtils;
 import org.andresoviedo.util.android.ContentUtils;
@@ -94,6 +96,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     private final float[] viewMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
     private final float[] viewProjectionMatrix = new float[16];
+
     {
         Matrix.setIdentityM(viewMatrix,0);
         Matrix.setIdentityM(projectionMatrix,0);
@@ -172,6 +175,12 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
      */
     private boolean fatalException = false;
 
+    // shadowing
+    private boolean doShadowing = false;
+    private ShadowsRenderer shadowsRenderer;
+    final Object3DData plane2 = Plane2.build();
+    final Object3DData plane3 = Plane2.build();
+    private final float[] lightViewMatrix = new float[16];
     /**
      * Construct a new renderer for the specified surface view
      *
@@ -183,6 +192,9 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         this.backgroundColor = backgroundColor;
         this.scene = scene;
         this.drawer = new RendererFactory(parent);
+        if (doShadowing) {
+            this.shadowsRenderer = new ShadowsRenderer(parent);
+        }
     }
 
     public ModelRenderer addListener(EventListener listener) {
@@ -321,6 +333,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         ContentUtils.setThreadActivity(main.getContext());
         skyBoxes = new SkyBox[]{SkyBox.getSkyBox1(), SkyBox.getSkyBox2()};
         skyBoxes3D = new Object3DData[skyBoxes.length];
+        // setup shadow rendering
+        if (doShadowing) {
+            shadowsRenderer.onSurfaceCreated(unused, config);
+        }
     }
 
     @Override
@@ -339,6 +355,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
         // fire event
         AndroidUtils.fireEvent(listeners, new ViewEvent(this, ViewEvent.Code.SURFACE_CHANGED, width, height));
+        // setup shadow rendering
+        if (doShadowing) {
+            shadowsRenderer.onSurfaceChanged(unused, width, height);
+        }
     }
 
     @Override
@@ -359,6 +379,15 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             if (scene == null) {
                 // scene not ready
                 return;
+            }
+
+            // shadows
+            if (doShadowing && scene.getObjects().size() > 0 && !scene.getObjects().contains(plane2)) {
+                scene.getLightBulb().setLocation(new float[]{25f, 200f, 0f});
+                plane2.setColor(Constants.COLOR_GRAY);
+                plane2.setLocation(new float[]{0f, -50f, 0f});
+                plane2.setPinned(true);
+                scene.addObject(plane2);
             }
 
             float[] colorMask = BLENDING_MASK_DEFAULT;
@@ -415,9 +444,46 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 //camera.setChanged(false);
             }
 
+            final Renderer basicShader = drawer.getBasicShader();
+
+            // calculate light position
+            Matrix.multiplyMV(tempVector4, 0, scene.getLightBulb().getModelMatrix(), 0,
+                    Constants.LIGHT_BULB_LOCATION, 0);
+            lightPosInWorldSpace[0] = tempVector4[0];
+            lightPosInWorldSpace[1] = tempVector4[1];
+            lightPosInWorldSpace[2] = tempVector4[2];
+
+            // Calculate position of the light in world space to support lighting
+            if (!scene.isRotatingLight()) {
+                lightPosInWorldSpace[0] = cameraPosInWorldSpace[0];
+                lightPosInWorldSpace[1] = cameraPosInWorldSpace[1];
+                lightPosInWorldSpace[2] = cameraPosInWorldSpace[2];
+            }
+
+            // render shadow
+            if (doShadowing){
+                shadowsRenderer.onPrepareFrame(unused, projectionMatrix, viewMatrix, lightPosInWorldSpace, scene);
+            }
+
             drawSkyBox(viewMatrix, projectionMatrix, cameraPosInWorldSpace, colorMask);
 
 
+            if (scene.isDrawLighting()) {
+                if (scene.isRotatingLight()) {
+                    // Draw a point that represents the light bulb
+                    basicShader.draw(scene.getLightBulb(), projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, scene.getLightBulb().getDrawMode(), scene.getLightBulb().getDrawSize());
+                    //basicShader.draw(Point.build(lightPosInWorldSpace), projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
+                }
+            }
+
+            // render with shadows
+            if (doShadowing && scene.getObjects().size() > 0) {
+                // shadowsRenderer.onPrepareFrame(unused, projectionMatrix, viewMatrix, lightPosInWorldSpace, scene);
+                shadowsRenderer.onDrawFrame(unused, projectionMatrix, viewMatrix, lightPosInWorldSpace, scene);
+                return;
+            }
+
+            // render
             if (!scene.isStereoscopic()) {
                 this.onDrawFrame(viewMatrix, projectionMatrix, colorMask);
                 if(camera.hasChanged()) camera.setChanged(false);
@@ -509,7 +575,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
 
             Renderer basicShader = drawer.getBasicShader();
 
-            // Calculate position of the light in world space to support lighting
+            /*// Calculate position of the light in world space to support lighting
             if (scene.isRotatingLight()) {
                 Matrix.multiplyMV(tempVector4, 0, scene.getLightBulb().getModelMatrix(), 0,
                         Constants.LIGHT_BULB_LOCATION, 0);
@@ -524,7 +590,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 lightPosInWorldSpace[0] = cameraPosInWorldSpace[0];
                 lightPosInWorldSpace[1] = cameraPosInWorldSpace[1];
                 lightPosInWorldSpace[2] = cameraPosInWorldSpace[2];
-            }
+            }*/
 
             // FIXME: memory leak
             if (scene.isDrawNormals()) {
@@ -554,6 +620,12 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     }
 
     private void drawSkyBox(float[] viewMatrix, float[] projectionMatrix, float[] cameraPosInWorldSpace, float[] colorMask) {
+
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+
+        GLES20.glDisable(GLES20.GL_CULL_FACE);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
         // draw environment
         int skyBoxId = getSkyBoxId();
         if (skyBoxId == -3){
@@ -630,7 +702,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             }
 
 
-            Renderer drawerObject = drawer.getDrawer(objData, false, drawTextures, drawLighting, doAnimation);
+            Renderer drawerObject = drawer.getDrawer(objData, false, drawTextures, drawLighting, doAnimation, false, false);
             if (drawerObject == null) {
                 if (!infoLogged.containsKey(objData.getId() + "drawer")) {
                     Log.e("ModelRenderer", "No drawer for " + objData.getId());
@@ -750,7 +822,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                         if (wireframe == null || changed) {
                             Log.i("ModelRenderer", "Building wireframe model...");
                             wireframe = Wireframe.build(objData);
-                            wireframe.setColor(objData.getColor());
                             wireframes.put(objData, wireframe);
                             Log.i("ModelRenderer", "Wireframe build: " + wireframe);
                         }
@@ -782,7 +853,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                         skeleton = Skeleton.build((AnimatedModel) objData);
                         this.skeleton.put(objData, skeleton);
                     }
-                    final Renderer skeletonDrawer = drawer.getDrawer(skeleton, false, false, drawLighting, doAnimation);
+                    final Renderer skeletonDrawer = drawer.getDrawer(skeleton, false, false, drawLighting, doAnimation, false, false);
                     skeletonDrawer.draw(skeleton, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, skeleton.getDrawMode(), skeleton.getDrawSize());
                     //GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
@@ -822,8 +893,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     }
                 }
                 if (normalData != null) {
-                    Renderer normalsDrawer = drawer.getDrawer(normalData, false, false, false, doAnimation
-                    );
+                    Renderer normalsDrawer = drawer.getDrawer(normalData, false, false, false, doAnimation, false, false);
                     animator.update(normalData, scene.isShowBindPose());
                     normalsDrawer.draw(normalData, projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask
                             , cameraPosInWorldSpace, normalData.getDrawMode(), normalData.getDrawSize());

@@ -21,6 +21,7 @@ void main(){
 
     // calculate rendered position
     gl_Position = u_MVPMatrix * a_Position;
+    gl_PointSize = 15.0;
 
     // pass color to fragment shader
     if (u_Coloured){
