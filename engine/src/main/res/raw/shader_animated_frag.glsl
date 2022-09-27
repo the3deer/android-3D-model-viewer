@@ -2,9 +2,8 @@ precision highp float;
 
 // data
 uniform mat4 u_MMatrix;
-varying vec3 v_Position;
 uniform vec3 u_cameraPos;
-uniform bool u_Debug;
+varying vec3 v_Position;
 
 // color
 uniform vec4 vColor;
@@ -19,7 +18,7 @@ uniform bool u_Textured;
 uniform sampler2D u_Texture;
 varying vec2 v_TexCoordinate;
 
-// lights
+// light
 uniform bool u_Lighted;
 uniform vec3 u_LightPos;
 varying vec3 v_Normal;
@@ -104,11 +103,6 @@ void main(){
     }
 
     // calculate final color
-    gl_FragColor = color * tex * light * vColorMask;
+    gl_FragColor = color * tex * vColorMask * light;
     gl_FragColor[3] = color[3] * vColorMask[3];
-
-    // debug
-    if (u_Debug){
-        gl_FragColor = vec4(nmap,1.0);
-    }
 }

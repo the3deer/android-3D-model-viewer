@@ -144,7 +144,7 @@ public class Object3DData {
     // defines whether this object matrix can be changed
     private boolean readOnly;
 
-    // fixed size - not dynamic
+    // fixed place
     private boolean pinned;
 
     // defines whether the transformations are relative to it's mass center

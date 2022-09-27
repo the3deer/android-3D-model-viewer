@@ -17,22 +17,21 @@ uniform bool u_Coloured;
 attribute vec4 a_Color;
 varying vec4 v_Color;
 
-// textures
+// texture
 uniform bool u_Textured;
 attribute vec2 a_TexCoordinate;
 varying vec2 v_TexCoordinate;
 
-// normals
+// light
 uniform bool u_Lighted;
-//uniform mat3 u_MMatrix_Normal;
 attribute vec3 a_Normal;
 varying vec3 v_Normal;
 
-// normal Map
+// normalMap
 uniform bool u_NormalTextured;
 uniform sampler2D u_NormalTexture;
 
-// emissive Map
+// emissiveMap
 uniform bool u_EmissiveTextured;
 uniform sampler2D u_EmissiveTexture;
 

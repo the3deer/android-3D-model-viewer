@@ -176,7 +176,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
     private boolean fatalException = false;
 
     // shadowing
-    private boolean doShadowing = true;
+    private boolean doShadowing = false;
     private ShadowsRenderer shadowsRenderer;
     final Object3DData plane2 = Plane2.build();
     final Object3DData plane3 = Plane2.build();
@@ -381,16 +381,14 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 return;
             }
 
-            // FIXME: ground plane
-
-            if (scene.getObjects().size() > 0 && !scene.getObjects().contains(plane2)) {
+            // shadows
+            if (doShadowing && scene.getObjects().size() > 0 && !scene.getObjects().contains(plane2)) {
                 scene.getLightBulb().setLocation(new float[]{25f, 200f, 0f});
                 plane2.setColor(Constants.COLOR_GRAY);
                 plane2.setLocation(new float[]{0f, -50f, 0f});
                 plane2.setPinned(true);
                 scene.addObject(plane2);
             }
-
 
             float[] colorMask = BLENDING_MASK_DEFAULT;
             if (scene.isBlendingEnabled()) {
@@ -456,14 +454,10 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
             lightPosInWorldSpace[2] = tempVector4[2];
 
             // Calculate position of the light in world space to support lighting
-            doShadowing = false;
-            if (scene.isRotatingLight()) {
-                doShadowing = true;
-            } else {
+            if (!scene.isRotatingLight()) {
                 lightPosInWorldSpace[0] = cameraPosInWorldSpace[0];
                 lightPosInWorldSpace[1] = cameraPosInWorldSpace[1];
                 lightPosInWorldSpace[2] = cameraPosInWorldSpace[2];
-                doShadowing = true;
             }
 
             // render shadow
@@ -471,8 +465,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                 shadowsRenderer.onPrepareFrame(unused, projectionMatrix, viewMatrix, lightPosInWorldSpace, scene);
             }
 
-
             drawSkyBox(viewMatrix, projectionMatrix, cameraPosInWorldSpace, colorMask);
+
 
             if (scene.isDrawLighting()) {
                 if (scene.isRotatingLight()) {
@@ -480,23 +474,16 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
                     basicShader.draw(scene.getLightBulb(), projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace, scene.getLightBulb().getDrawMode(), scene.getLightBulb().getDrawSize());
                     //basicShader.draw(Point.build(lightPosInWorldSpace), projectionMatrix, viewMatrix, -1, lightPosInWorldSpace, colorMask, cameraPosInWorldSpace);
                 }
-
-
-                Object3DData data = Line.build(new float[]{lightPosInWorldSpace[0],
-                        lightPosInWorldSpace[1], lightPosInWorldSpace[2], 0, 0, 0}).setId("light_line");
-                basicShader.draw(data, projectionMatrix,
-                        viewMatrix, -1,
-                        lightPosInWorldSpace,
-                        colorMask, cameraPosInWorldSpace, data.getDrawMode(), data.getDrawSize());
             }
 
-            // FIXME: integrate this
+            // render with shadows
             if (doShadowing && scene.getObjects().size() > 0) {
                 // shadowsRenderer.onPrepareFrame(unused, projectionMatrix, viewMatrix, lightPosInWorldSpace, scene);
                 shadowsRenderer.onDrawFrame(unused, projectionMatrix, viewMatrix, lightPosInWorldSpace, scene);
                 return;
             }
 
+            // render
             if (!scene.isStereoscopic()) {
                 this.onDrawFrame(viewMatrix, projectionMatrix, colorMask);
                 if(camera.hasChanged()) camera.setChanged(false);

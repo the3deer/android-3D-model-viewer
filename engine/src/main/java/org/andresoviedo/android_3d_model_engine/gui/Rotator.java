@@ -22,7 +22,7 @@ public class Rotator extends Widget {
             final FloatBuffer vertexBuffer = IOUtils.createFloatBuffer(10 * 3);
             final FloatBuffer colorBuffer = IOUtils.createFloatBuffer(10 * 4);
             // build
-            build(vertexBuffer, colorBuffer, getMaterial().getColor(), widget_dimensions);
+            build(vertexBuffer, colorBuffer, getColor(), widget_dimensions);
             // setup
             setVertexBuffer(vertexBuffer);
             setColorsBuffer(colorBuffer);
