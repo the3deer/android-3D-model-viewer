@@ -24,6 +24,7 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 
 import org.andresoviedo.android_3d_model_engine.camera.CameraController;
+import org.andresoviedo.android_3d_model_engine.cloth.ClothController;
 import org.andresoviedo.android_3d_model_engine.collision.CollisionController;
 import org.andresoviedo.android_3d_model_engine.collision.CollisionEvent;
 import org.andresoviedo.android_3d_model_engine.controller.TouchController;
@@ -76,6 +77,7 @@ public class ModelActivity extends Activity implements EventListener {
     private SceneLoader scene;
     private ModelViewerGUI gui;
     private CollisionController collisionController;
+    private ClothController clothController;
 
 
     private Handler handler;
@@ -174,6 +176,14 @@ public class ModelActivity extends Activity implements EventListener {
         }
 
         try {
+            Log.i("ModelActivity", "Loading ClothController...");
+            clothController = new ClothController(this, scene);
+        } catch (Exception e) {
+            Log.e("ModelActivity", e.getMessage(), e);
+            Toast.makeText(this, "Error loading ClothController\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        try {
             // TODO: finish UI implementation
             Log.i("ModelActivity", "Loading GUI...");
             gui = new ModelViewerGUI(glView, scene);
@@ -196,6 +206,10 @@ public class ModelActivity extends Activity implements EventListener {
 
         // load model
         scene.init();
+
+        if(clothController != null) {
+            clothController.start();
+        }
 
         Log.i("ModelActivity", "Finished loading");
     }
@@ -276,6 +290,12 @@ public class ModelActivity extends Activity implements EventListener {
         // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
         // getActionBar().setDisplayHomeAsUpEnabled(true);
         // }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        clothController.stop();
     }
 
     @Override

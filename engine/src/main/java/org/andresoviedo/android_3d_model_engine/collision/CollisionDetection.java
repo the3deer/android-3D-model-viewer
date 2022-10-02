@@ -6,9 +6,11 @@ import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.model.BoundingBox;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
+import org.andresoviedo.android_3d_model_engine.model.Triangle;
 import org.andresoviedo.util.math.Math3DUtils;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -16,7 +18,7 @@ import java.util.List;
  *
  * @author andresoviedo
  */
-public class CollisionDetection {
+public class  CollisionDetection {
 
     /**
      * Get the nearest object intersected by the specified window coordinates
@@ -47,7 +49,7 @@ public class CollisionDetection {
      * @param direction the ray direction
      * @return the object intersected by the specified ray
      */
-    private static Object3DData getBoxIntersection(List<Object3DData> objects, float[] nearHit, float[] farHit, float[] direction) {
+    public static Object3DData getBoxIntersection(List<Object3DData> objects, float[] nearHit, float[] farHit, float[] direction) {
         float min = Float.MAX_VALUE;
         Object3DData ret = null;
         for (Object3DData obj : objects) {
@@ -71,7 +73,7 @@ public class CollisionDetection {
             }
         }
         if (ret != null) {
-            Log.i("CollisionDetection", "Collision detected '" + ret.getId() + "' distance: " + min);
+            //Log.i("CollisionDetection", "Collision detected '" + ret.getId() + "' distance: " + min);
         }
         return ret;
     }
@@ -127,6 +129,7 @@ public class CollisionDetection {
      * @param b      the bounding box
      * @return the intersection points of the near and far plane
      */
+    private static float[] boxIntersection = new float[2];
     public static float[] getBoxIntersection(float[] origin, float[] dir, BoundingBox b) {
         float[] tMin = Math3DUtils.divide(Math3DUtils.substract(b.getMin(), origin), dir);
         float[] tMax = Math3DUtils.divide(Math3DUtils.substract(b.getMax(), origin), dir);
@@ -134,7 +137,9 @@ public class CollisionDetection {
         float[] t2 = Math3DUtils.max(tMin, tMax);
         float tNear = Math.max(Math.max(t1[0], t1[1]), t1[2]);
         float tFar = Math.min(Math.min(t2[0], t2[1]), t2[2]);
-        return new float[]{tNear, tFar};
+        boxIntersection[0] = tNear;
+        boxIntersection[1] = tFar;
+        return boxIntersection;
     }
 
     /**
@@ -202,7 +207,7 @@ public class CollisionDetection {
         return null;
     }*/
 
-    public static float[] getTriangleIntersection(List<Object3DData> objects, int width, int height, float[] modelViewMatrix, float[] modelProjectionMatrix, float windowX, float windowY) {
+    public static Collision getTriangleIntersection(List<Object3DData> objects, int width, int height, float[] modelViewMatrix, float[] modelProjectionMatrix, float windowX, float windowY) {
         float[] nearHit = unProject(width, height, modelViewMatrix, modelProjectionMatrix, windowX, windowY, 0);
         float[] farHit = unProject(width, height, modelViewMatrix, modelProjectionMatrix, windowX, windowY, 1);
         float[] direction = Math3DUtils.substract(farHit, nearHit);
@@ -214,7 +219,7 @@ public class CollisionDetection {
         return null;
     }
 
-    public static float[] getTriangleIntersection(Object3DData hit, int width, int height, float[] viewMatrix, float[] projectionMatrix, float windowX, float windowY) {
+    public static Collision getTriangleIntersection(Object3DData hit, int width, int height, float[] viewMatrix, float[] projectionMatrix, float windowX, float windowY) {
         float[] nearHit = unProject(width, height, viewMatrix, projectionMatrix, windowX, windowY, 0);
         float[] farHit = unProject(width, height, viewMatrix, projectionMatrix, windowX, windowY, 1);
         float[] direction = Math3DUtils.substract(farHit, nearHit);
@@ -222,9 +227,8 @@ public class CollisionDetection {
         return getTriangleIntersection(hit, nearHit, farHit, direction);
     }
 
-    private static float[] getTriangleIntersection(final Object3DData hit, float[] nearHit, float[] farHit, float[] direction) {
-        Log.d("CollisionDetection", "Getting triangle intersection: " + hit.getId());
-
+    public static Collision getTriangleIntersection(final Object3DData hit, float[] nearHit, float[] farHit, float[] direction) {
+        //Log.d("CollisionDetection", "Getting triangle intersection: " + hit.getId());
         Octree octree;
         synchronized (hit) {
             octree = hit.getOctree();
@@ -244,77 +248,140 @@ public class CollisionDetection {
         float[] dirAA = Math3DUtils.substract(farAA,nearAA);
         Math3DUtils.normalize(dirAA);
 
-        float intersection = getTriangleIntersectionForOctree(octree, nearAA, dirAA);
-        if (intersection != -1) {
-            float[] intersectionPoint = Math3DUtils.add(nearAA, Math3DUtils.multiply(dirAA, intersection));
-            float[] realIntersection = new float[4];
-            Matrix.multiplyMV(realIntersection,0, hit.getModelMatrix(),0,Math3DUtils.to4d(intersectionPoint),0);
-            Log.d("CollisionDetection", "Collision point: " + Arrays.toString(realIntersection));
-            return realIntersection;
-        } else {
-            return null;
-        }
+        return getTriangleIntersectionForOctree(octree, nearAA, dirAA);
     }
 
-    private static float getTriangleIntersectionForOctree(Octree octree, float[] rayOrigin, float[] rayDirection) {
+    public static Collision getTriangleIntersection2(final Object3DData hit, float[] position, float[] direction) {
+        //Log.d("CollisionDetection", "Getting triangle intersection: " + hit.getId());
+        Octree octree;
+        //synchronized (hit) {
+            octree = hit.getOctree();
+            if (octree == null) {
+                octree = Octree.build(hit);
+                hit.setOctree(octree);
+            }
+        //}
+        return getTriangleIntersectionForOctree2(octree, position, direction);
+    }
+
+    static float[] vertex0 = new float[3];
+    static float[] vertex1 = new float[3];
+    static float[] vertex2 = new float[3];
+    private static Collision getTriangleIntersectionForOctree(Octree octree, float[] rayOrigin, float[] rayDirection) {
         //Log.v("CollisionDetection","Testing octree "+octree);
         if (!isBoxIntersection(rayOrigin, rayDirection, octree.boundingBox)) {
-            Log.d("CollisionDetection", "No octree intersection");
-            return -1;
+            //Log.d("CollisionDetection", "No octree intersection");
+            return null;
         }
         Octree selected = null;
+        Collision minCollision = null;
         float min = Float.MAX_VALUE;
-        for (Octree child : octree.getChildren()) {
-            if (child == null) {
-                continue;
-            }
-            float intersection = getTriangleIntersectionForOctree(child, rayOrigin, rayDirection);
-            if (intersection != -1 && intersection < min) {
-                Log.d("CollisionDetection", "Octree intersection: " + intersection);
-                min = intersection;
+        for (int i=0; i<octree.children.length; i++){
+            final Octree child = octree.children[i];
+            Collision intersection = getTriangleIntersectionForOctree(child, rayOrigin, rayDirection);
+            if (intersection != null && (minCollision == null || intersection.getDistance() < minCollision.getDistance() ) ) {
+                //Log.d("CollisionDetection", "Octree intersection: " + intersection);
+                minCollision = intersection;
+                min = intersection.getDistance();
                 selected = child;
             }
         }
-        float[] selectedTriangle = null;
-        for (float[] triangle : octree.getTriangles()) {
-            float[] vertex0 = new float[]{triangle[0], triangle[1], triangle[2]};
-            float[] vertex1 = new float[]{triangle[4], triangle[5], triangle[6]};
-            float[] vertex2 = new float[]{triangle[8], triangle[9], triangle[10]};
-            float intersection = getTriangleIntersection(rayOrigin, rayDirection, vertex0, vertex1, vertex2);
+        Triangle selectedTriangle = null;
+        for (int i=0; i< octree.triangles.size(); i++) {
+            // for (float[] triangle : octree.getTriangles()) {
+            final Triangle triangle = octree.triangles.get(i);
+            float intersection = getTriangleIntersection(rayOrigin, rayDirection, triangle.v1, triangle.v2, triangle.v3);
             if (intersection != -1 && intersection < min) {
                 min = intersection;
                 selectedTriangle = triangle;
                 selected = octree;
+            }
+        }
+        if (min != Float.MAX_VALUE) {
+            //Log.d("CollisionDetection", "Intersection at distance: " + min);
+            //Log.d("CollisionDetection", "Intersection at triangle: " + Arrays.toString(selectedTriangle));
+            //Log.d("CollisionDetection", "Intersection at octree: " + selected);
+            float[] intersectionPoint = Math3DUtils.add(rayOrigin, Math3DUtils.multiply(rayDirection, min));
+            return new Collision(min,intersectionPoint, selectedTriangle);
+        }
+        return null;
+    }
+
+    private static Collision getTriangleIntersectionForOctree2(Octree octree, float[] position, float[] direction) {
+        //Log.v("CollisionDetection","Testing octree "+octree);
+        //if (!octree.bsphere.insideBounds(position) || !octree.boundingBox.insideBounds(position[0],position[1],position[2])) {
+        if (!isBoxIntersection(position, direction, octree.boundingBox)) {
+            //Log.d("CollisionDetection", "No octree intersection");
+            return null;
+        }
+        Octree selected = null;
+        Collision minCollision = null;
+        float min = Float.MAX_VALUE;
+        Triangle selectedTriangle = null;
+        // for (Octree child : octree.getChildren()) {
+
+        if (octree.children != null) {
+            for (int i = 0; i < octree.children.length; i++) {
+                Octree child = octree.children[i];
+                if (!isBoxIntersection(position, direction, child.boundingBox)) {
+                    //Log.d("CollisionDetection", "No octree intersection");
+                    continue;
+                }
+                Collision intersection = getTriangleIntersectionForOctree2(child, position, direction);
+                if (intersection != null && (minCollision == null || intersection.getDistance() < minCollision.getDistance())) {
+                    //Log.d("CollisionDetection", "Octree intersection: " + intersection);
+                    minCollision = intersection;
+                    min = intersection.getDistance();
+                    selectedTriangle = intersection.getTriangle();
+                    selected = child;
+                }
+                //break;
+            }
+        } else {
+            for (Iterator<Triangle> it = octree.triangles.iterator(); it.hasNext(); ) {
+                final Triangle triangle = it.next();
+                //if (triangle.bsphere.insideBounds(position) && triangle.bbox.insideBounds(position)) {
+                    float intersection = getTriangleIntersection(position, direction, triangle.v1, triangle.v2, triangle.v3);
+                    if (intersection != -1 && intersection < min) {
+                        min = intersection;
+                        selectedTriangle = triangle;
+                        selected = octree;
+                    }
 
             }
         }
         if (min != Float.MAX_VALUE) {
-            Log.d("CollisionDetection", "Intersection at distance: " + min);
-            Log.d("CollisionDetection", "Intersection at triangle: " + Arrays.toString(selectedTriangle));
-            Log.d("CollisionDetection", "Intersection at octree: " + selected);
-            return min;
+            //Log.d("CollisionDetection", "Intersection at distance: " + min);
+            //Log.d("CollisionDetection", "Intersection at triangle: " + Arrays.toString(selectedTriangle));
+            //Log.d("CollisionDetection", "Intersection at octree: " + selected);
+            float[] intersectionPoint = Math3DUtils.add(position, Math3DUtils.multiply(direction, min));
+            return new Collision(min,intersectionPoint, selectedTriangle);
         }
-        return -1;
+        return null;
     }
 
-    private static float getTriangleIntersection(float[] rayOrigin,
+    private static float[] edge1 = {0,0,0};
+    private static float[] edge2 = {0,0,0};
+    private static float[] h = {0,0,0};
+    private static float[] s = {0,0,0};
+    private static float[] q = {0,0,0};
+    public static float getTriangleIntersection(float[] rayOrigin,
                                                  float[] rayVector,
                                                  float[] vertex0, float[] vertex1, float[] vertex2) {
         float EPSILON = 0.0000001f;
-        float[] edge1, edge2, h, s, q;
         float a, f, u, v;
-        edge1 = Math3DUtils.substract(vertex1, vertex0);
-        edge2 = Math3DUtils.substract(vertex2, vertex0);
-        h = Math3DUtils.crossProduct(rayVector, edge2);
+        edge1 = Math3DUtils.substract(vertex1, vertex0, edge1);
+        edge2 = Math3DUtils.substract(vertex2, vertex0, edge2);
+        h = Math3DUtils.crossProduct(rayVector, edge2, h);
         a = Math3DUtils.dotProduct(edge1, h);
         if (a > -EPSILON && a < EPSILON)
             return -1;
         f = 1 / a;
-        s = Math3DUtils.substract(rayOrigin, vertex0);
+        s = Math3DUtils.substract(rayOrigin, vertex0, s);
         u = f * Math3DUtils.dotProduct(s, h);
         if (u < 0.0 || u > 1.0)
             return -1;
-        q = Math3DUtils.crossProduct(s, edge1);
+        q = Math3DUtils.crossProduct(s, edge1, q);
         v = f * Math3DUtils.dotProduct(rayVector, q);
         if (v < 0.0 || u + v > 1.0)
             return -1;
@@ -322,10 +389,18 @@ public class CollisionDetection {
         float t = f * Math3DUtils.dotProduct(edge2, q);
         if (t > EPSILON) // ray intersection
         {
-            Log.d("CollisionDetection", "Triangle intersection at: " + t);
+            //Log.d("CollisionDetection", "Triangle intersection at: " + t);
             return t;
         } else // This means that there is a line intersection but not a ray intersection.
             return -1;
     }
+
+    /*public static boolean isPointInsideSphere(float[] point, float[] sphere) {
+        // we are using multiplications because is faster than calling Math.pow
+        var distance = Math.sqrt((point.x - sphere.x) * (point.x - sphere.x) +
+                (point.y - sphere.y) * (point.y - sphere.y) +
+                (point.z - sphere.z) * (point.z - sphere.z));
+        return distance < sphere.radius;
+    }*/
 }
 

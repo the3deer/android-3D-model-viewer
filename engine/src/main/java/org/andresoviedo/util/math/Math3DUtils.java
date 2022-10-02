@@ -269,6 +269,20 @@ public class Math3DUtils {
     }
 
     /**
+     * Substract 2 vertex: a-b
+     *
+     * @param a
+     * @param b
+     * @return a-b
+     */
+    public static float[] substract(float[] a, float[] b, float[] result) {
+        result[0] = a[0] - b[0];
+        result[1] = a[1] - b[1];
+        result[2] = a[2] - b[2];
+        return result;
+    }
+
+    /**
      * Divide 2 vertex: a/b
      *
      * @param a
@@ -342,6 +356,17 @@ public class Math3DUtils {
         float y = a[2] * b[0] - a[0] * b[2];
         float z = a[0] * b[1] - a[1] * b[0];
         return new float[]{x, y, z};
+    }
+
+    public static float[] crossProduct(float[] a, float[] b, float[] result) {
+        // AxB = (AyBz − AzBy, AzBx − AxBz, AxBy − AyBx)
+        //(r)[0] = (a)[1] * (b)[2] - (b)[1] * (a)[2]; \
+        //(r)[1] = (a)[2] * (b)[0] - (b)[2] * (a)[0]; \
+        //(r)[2] = (a)[0] * (b)[1] - (b)[0] * (a)[1];
+        result[0] = a[1] * b[2] - a[2] * b[1];
+        result[1] = a[2] * b[0] - a[0] * b[2];
+        result[2] = a[0] * b[1] - a[1] * b[0];
+        return result;
     }
 
     public static float[] crossProduct(float ax, float ay, float az, float bx, float by, float bz) {

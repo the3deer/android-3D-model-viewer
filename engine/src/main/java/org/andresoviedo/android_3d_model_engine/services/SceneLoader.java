@@ -13,6 +13,7 @@ import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
 import org.andresoviedo.android_3d_model_engine.event.SelectedObjectEvent;
 import org.andresoviedo.android_3d_model_engine.model.AnimatedModel;
 import org.andresoviedo.android_3d_model_engine.model.Camera;
+import org.andresoviedo.android_3d_model_engine.model.Cloth3D;
 import org.andresoviedo.android_3d_model_engine.model.Constants;
 import org.andresoviedo.android_3d_model_engine.model.Dimensions;
 import org.andresoviedo.android_3d_model_engine.model.Object3DData;
@@ -211,6 +212,10 @@ public class SceneLoader implements LoadListener, EventListener {
     }
 
     public void init() {
+
+//        this.drawTextures = false;
+//        this.drawLighting = false;
+///        this.drawWireframe = true;
 
         camera.setChanged(true); // force first draw
 
@@ -685,6 +690,7 @@ public class SceneLoader implements LoadListener, EventListener {
         float largest = 1;
         for (int i = 0; i < objs.size(); i++) {
             Object3DData data = objs.get(i);
+            if (data instanceof Cloth3D) continue;
             float candidate = data.getCurrentDimensions().getLargest();
             if (candidate > largest) {
                 largest = candidate;
@@ -697,6 +703,7 @@ public class SceneLoader implements LoadListener, EventListener {
         Log.v("SceneLoader", "Scaling " + objs.size() + " objects with factor: " + ratio);
         float[] newScale = new float[]{ratio, ratio, ratio};
         for (Object3DData data : objs) {
+            if (data instanceof Cloth3D) continue;
             // data.center();
             data.setScale(newScale);
         }
@@ -814,7 +821,12 @@ public class SceneLoader implements LoadListener, EventListener {
 
         Log.d("SceneLoader", "Scaling datas... total: " + datas.size());
         // calculate the global max length
-        final Object3DData firstObject = datas.get(0);
+        Object3DData firstObject = null;
+        for (int i=0; i<objects.size();i++){
+            if (objects.get(i) instanceof Cloth3D) continue;
+            firstObject = objects.get(i);
+            break;
+        }
         final Dimensions currentDimensions;
         if (this.originalDimensions.containsKey(firstObject)) {
             currentDimensions = this.originalDimensions.get(firstObject);
@@ -842,6 +854,7 @@ public class SceneLoader implements LoadListener, EventListener {
         for (int i = 1; i < datas.size(); i++) {
 
             final Object3DData obj = datas.get(i);
+            if (objects.get(i) instanceof Cloth3D) continue;
 
             final Dimensions original;
             if (this.originalDimensions.containsKey(obj)) {
@@ -918,7 +931,7 @@ public class SceneLoader implements LoadListener, EventListener {
 
 
         for (Object3DData data : datas) {
-
+            if (data instanceof Cloth3D) continue;
             final Transform original;
             if (this.originalTransforms.containsKey(data)) {
                 original = this.originalTransforms.get(data);

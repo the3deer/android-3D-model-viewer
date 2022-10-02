@@ -1,6 +1,5 @@
 package org.andresoviedo.android_3d_model_engine.collision;
 
-import android.transition.Scene;
 import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
@@ -66,12 +65,12 @@ public class CollisionController implements EventListener {
                     if (this.scene.isCollision()) {
 
                         Log.i("CollisionController", "Collision. Getting triangle intersection... " + objectHit.getId());
-                        float[] point = CollisionDetection.getTriangleIntersection(objectHit, view.getWidth(), view.getHeight
+                        Collision point = CollisionDetection.getTriangleIntersection(objectHit, view.getWidth(), view.getHeight
                                 (), view.getViewMatrix(), view.getProjectionMatrix(), x, y);
 
                         if (point != null) {
-                            Log.i("CollisionController", "Building intersection point: " + Arrays.toString(point));
-                            point3D = Point.build(point).setColor(new float[]{1.0f, 0f, 0f, 1f});
+                            Log.i("CollisionController", "Building intersection point: " + Arrays.toString(point.getPoint()));
+                            point3D = Point.build(point.getPoint()).setColor(new float[]{1.0f, 0f, 0f, 1f});
                         }
                     }
 

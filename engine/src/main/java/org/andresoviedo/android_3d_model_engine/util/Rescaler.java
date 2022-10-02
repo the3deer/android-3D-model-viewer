@@ -9,6 +9,13 @@ import java.nio.FloatBuffer;
 
 public class Rescaler {
 
+    public static void resize(final Object3DData obj, final float scaleFactor) {
+        final FloatBuffer vertexBuffer = obj.getVertexBuffer();
+        for (int i = 0; i < vertexBuffer.capacity(); i++) {
+            vertexBuffer.put(i, vertexBuffer.get(i)*scaleFactor);
+        }
+    }
+
     public static void rescale(Object3DData object3DData, float maxSize) {
         float leftPt = Float.MAX_VALUE, rightPt = -Float.MAX_VALUE; // on x-axis
         float topPt = -Float.MAX_VALUE, bottomPt = Float.MAX_VALUE; // on y-axis
