@@ -5,7 +5,11 @@ package org.andresoviedo.android_3d_model_engine.model;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import org.andresoviedo.android_3d_model_engine.controller.TouchEvent;
+import org.andresoviedo.android_3d_model_engine.view.ViewEvent;
 import org.andresoviedo.util.math.Math3DUtils;
+
+import java.util.EventObject;
 
 public class Camera {
 

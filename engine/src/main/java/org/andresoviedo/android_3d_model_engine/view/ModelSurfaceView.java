@@ -64,10 +64,13 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 	public boolean onTouchEvent(MotionEvent event) {
 		// propagate event to responsible...
 		AndroidUtils.fireEvent(listeners, new EventObject(event));
-		return true;
+		return super.onTouchEvent(event);
 	}
 
-
+	@Override
+	public boolean performClick() {
+		return super.performClick();
+	}
 
 	@Override
 	public boolean onEvent(EventObject event) {

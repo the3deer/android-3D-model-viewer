@@ -1,11 +1,13 @@
 package org.andresoviedo.util.math;
 
 import android.opengl.Matrix;
+import android.util.Log;
 
 import org.andresoviedo.android_3d_model_engine.animation.JointTransform;
 import org.andresoviedo.android_3d_model_engine.model.Constants;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -716,6 +718,64 @@ public class Math3DUtils {
 
     public static float[] to4d(float[] v3d) {
         return new float[]{v3d[0], v3d[1], v3d[2], 1};
+    }
+
+    public static boolean lineEquals(float[] v1, float[] v2, float[] v3, float[] v4) {
+        return equals(v1,v3) && equals(v2,v4) || equals(v1,v4) && equals(v2,v3);
+    }
+
+    public static boolean equals(float[] v1, float[] v2) {
+        if (v1 == v2) return true;
+        if (v1 == null || v2 == null) return false;
+
+        //if (v1 != null && v2 == null) return false;
+        //if (v1 == null) return false;
+        return v1[0] == v2[0] && v1[1] == v2[1] && v1[2] == v2[2];
+    }
+
+    public static void round(float[] v, int factor) {
+        v[0] = (float)Math.round(v[0]*factor)/factor;
+        v[1] = (float)Math.round(v[1]*factor)/factor;
+        v[2] = (float)Math.round(v[2]*factor)/factor;
+    }
+
+    public static float dot(float[] a, float[] b){
+        // a1b1+a2b2+a3b3
+        return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+    }
+
+    public static float[] cross(float[] a, float[] b){
+        // AxB = (AyBz − AzBy, AzBx − AxBz, AxBy − AyBx)
+        //(r)[0] = (a)[1] * (b)[2] - (b)[1] * (a)[2]; \
+        //(r)[1] = (a)[2] * (b)[0] - (b)[2] * (a)[0]; \
+        //(r)[2] = (a)[0] * (b)[1] - (b)[0] * (a)[1];
+        float x = a[1]*b[2] - a[2]*b[1];
+        float y = a[2]*b[0] - a[0]*b[2];
+        float z = a[0]*b[1] - a[1]*b[0];
+        return new float[]{x,y,z};
+    }
+
+    public static float[] getRotation(float[] v1, float[] v2, float[] v3, float[] newOrientation){
+        // calculate polygon normal
+        final float[] normal = calculateNormal(v1, v2, v3);
+        Math3DUtils.normalize(normal);
+
+        // check if triangle is already facing the new orientation
+        if (Math3DUtils.equals(normal, newOrientation)){
+            return Math3DUtils.IDENTITY_MATRIX;
+        }
+
+        // calculate 2D rotation
+        final float dot = Math3DUtils.dotProduct(newOrientation, normal);
+        final float angle = (float) Math.acos(dot);
+        final float[] cross = Math3DUtils.crossProduct(Constants.Z_NORMAL, normal);
+        Math3DUtils.normalize(cross);
+        //cross[1] = 0;
+        //cross[2] = 0;
+        float[] rotationMatrix = Math3DUtils.createRotationMatrixAroundVector(angle, cross[0], cross[1], cross[2]);
+
+        Log.i("HoleCutter", "normal: " + Arrays.toString(normal) + ", angle: " + angle + ", axis: " + Arrays.toString(cross));
+        return rotationMatrix;
     }
 }
 

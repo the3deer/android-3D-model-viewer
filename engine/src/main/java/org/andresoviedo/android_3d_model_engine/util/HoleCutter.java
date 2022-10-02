@@ -3,6 +3,7 @@ package org.andresoviedo.android_3d_model_engine.util;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import org.andresoviedo.android_3d_model_engine.model.Constants;
 import org.andresoviedo.util.math.Math3DUtils;
 
 import java.util.ArrayList;
@@ -11,8 +12,6 @@ import java.util.List;
 
 public class HoleCutter {
 
-    public static final float[] Z_NORMAL = {0, 0, 1};
-
     public static List<Integer> pierce(List<float[]> triangles, List<List<float[]>> holesList) {
 
         // calculate polygon normal
@@ -20,9 +19,9 @@ public class HoleCutter {
         Math3DUtils.normalize(normal);
 
         // calculate 2D rotation
-        final float dot = Math3DUtils.dotProduct(Z_NORMAL, normal);
+        final float dot = Math3DUtils.dotProduct(Constants.Z_NORMAL, normal);
         final float angle = (float) Math.acos(dot);
-        final float[] cross = Math3DUtils.crossProduct(Z_NORMAL, normal);
+        final float[] cross = Math3DUtils.crossProduct(Constants.Z_NORMAL, normal);
         Math3DUtils.normalize(cross);
         cross[1] = 0;
         cross[2] = 0;
