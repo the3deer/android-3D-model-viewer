@@ -26,13 +26,13 @@
  */
 package de.javagl.jgltf.model.io;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A class for reading the JSON for a glTF asset in a version-agnostic form.

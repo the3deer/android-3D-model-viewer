@@ -26,12 +26,12 @@
  */
 package de.javagl.jgltf.model.io;
 
-import java.lang.reflect.Field;
-
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
+
+import java.lang.reflect.Field;
 
 /**
  * An implementation of a Jackson PropertyNamingStrategy that handles 

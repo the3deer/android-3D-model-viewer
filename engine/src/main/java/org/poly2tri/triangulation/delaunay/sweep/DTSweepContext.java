@@ -30,9 +30,6 @@
  */
 package org.poly2tri.triangulation.delaunay.sweep;
 
-import java.util.ArrayDeque;
-import java.util.Collections;
-
 import org.poly2tri.triangulation.Triangulatable;
 import org.poly2tri.triangulation.TriangulationAlgorithm;
 import org.poly2tri.triangulation.TriangulationConstraint;
@@ -40,6 +37,9 @@ import org.poly2tri.triangulation.TriangulationContext;
 import org.poly2tri.triangulation.TriangulationPoint;
 import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
 import org.poly2tri.triangulation.point.TPoint;
+
+import java.util.ArrayDeque;
+import java.util.Collections;
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
 

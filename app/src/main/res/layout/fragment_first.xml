@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.the3deers.polybool.demo.FirstFragment">
+    tools:context="org.the3deer.polybool.demo.FirstFragment">
 
     <TextView
         android:id="@+id/textview_first"

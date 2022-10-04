@@ -36,8 +36,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-import de.javagl.jgltf.impl.v2.GlTFChildOfRootProperty;
-import de.javagl.jgltf.impl.v2.GlTFProperty;
 import de.javagl.jgltf.impl.v2.Accessor;
 import de.javagl.jgltf.impl.v2.AccessorSparse;
 import de.javagl.jgltf.impl.v2.AccessorSparseIndices;
@@ -52,6 +50,8 @@ import de.javagl.jgltf.impl.v2.Camera;
 import de.javagl.jgltf.impl.v2.CameraOrthographic;
 import de.javagl.jgltf.impl.v2.CameraPerspective;
 import de.javagl.jgltf.impl.v2.GlTF;
+import de.javagl.jgltf.impl.v2.GlTFChildOfRootProperty;
+import de.javagl.jgltf.impl.v2.GlTFProperty;
 import de.javagl.jgltf.impl.v2.Image;
 import de.javagl.jgltf.impl.v2.Material;
 import de.javagl.jgltf.impl.v2.MaterialNormalTextureInfo;

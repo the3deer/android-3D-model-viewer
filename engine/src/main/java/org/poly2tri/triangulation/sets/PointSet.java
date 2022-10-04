@@ -30,14 +30,14 @@
  */
 package org.poly2tri.triangulation.sets;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.poly2tri.triangulation.Triangulatable;
 import org.poly2tri.triangulation.TriangulationContext;
 import org.poly2tri.triangulation.TriangulationMode;
 import org.poly2tri.triangulation.TriangulationPoint;
 import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PointSet implements Triangulatable
 {

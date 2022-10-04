@@ -26,6 +26,8 @@
  */
 package de.javagl.jgltf.model.io.v1;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
@@ -33,8 +35,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.javagl.jgltf.impl.v1.BufferView;
 import de.javagl.jgltf.impl.v1.GlTF;

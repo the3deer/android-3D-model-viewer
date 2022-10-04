@@ -3,7 +3,7 @@
           xmlns:tools="http://schemas.android.com/tools"
     package="org.andresoviedo.dddmodel2"
     android:versionCode="33"
-    android:versionName="3.3.1">
+    android:versionName="4.0.0">
 
     <uses-sdk
         tools:overrideLibrary="android.support.compat, android.arch.lifecycle" />
@@ -23,7 +23,7 @@
 	    android:largeHeap="true"
         android:requestLegacyExternalStorage="true">
         <activity
-            android:name="org.andresoviedo.app.model3D.MainActivity"
+            android:name="org.the3deer.app.model3D.MainActivity"
 	        android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
@@ -33,19 +33,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="org.andresoviedo.app.model3D.view.MenuActivity"
+            android:name="org.the3deer.app.model3D.view.MenuActivity"
             android:label="@string/title_activity_menu"
-            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
+            android:parentActivityName="org.the3deer.app.model3D.MainActivity" >
         </activity>
         <activity
-            android:name="org.andresoviedo.util.view.TextActivity"
+            android:name="org.the3deer.util.view.TextActivity"
             android:label="@string/title_activity_text"
-            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
+            android:parentActivityName="org.the3deer.app.model3D.MainActivity" >
         </activity>
         <activity
-            android:name="org.andresoviedo.app.model3D.view.ModelActivity"
+            android:name="org.the3deer.app.model3D.view.ModelActivity"
             android:label="@string/title_activity_model"
-            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
+            android:parentActivityName="org.the3deer.app.model3D.MainActivity" >
 
             <!-- android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" -->
         </activity>
@@ -53,20 +53,20 @@
 
         <!-- Demos -->
         <activity
-            android:name="org.andresoviedo.app.model3D.demo.GlyphsDemoActivity"
+            android:name="org.the3deer.app.model3D.demo.GlyphsDemoActivity"
             android:label="@string/title_activity_model"
-            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
+            android:parentActivityName="org.the3deer.app.model3D.MainActivity" >
         </activity>
         <activity
-            android:name="org.andresoviedo.app.model3D.demo.EarCutDemoActivity"
+            android:name="org.the3deer.app.model3D.demo.EarCutDemoActivity"
             android:label="@string/title_activity_model"
-            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
+            android:parentActivityName="org.the3deer.app.model3D.MainActivity" >
         </activity>
 
 
         <!-- polybool -->
         <activity
-            android:name="org.the3deers.polybool.demo.WebActivity"
+            android:name="org.the3deer.polybool.demo.WebActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.NoActionBar">
 

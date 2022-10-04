@@ -9,6 +9,8 @@ android {
         applicationId "org.andresoviedo.dddmodel2"
         minSdk 16
         targetSdk 33
+
+        multiDexEnabled true
     }
 
     signingConfigs {

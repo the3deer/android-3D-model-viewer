@@ -1,7 +1,7 @@
 Android 3D Model Viewer
 =======================
 
-![travis-ci badge](https://travis-ci.org/the3deers/android-3D-model-viewer.svg?branch=master)
+![travis-ci badge](https://travis-ci.org/the3deer/android-3D-model-viewer.svg?branch=main)
 
 This is a demo of OpenGL ES 2.0.
 It is basically an android application with a 3D engine that can load Wavefront OBJ, STL, DAE & GLTF files.
@@ -13,12 +13,13 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * GLTF format (gltf): https://www.khronos.org/gltf/
 
 
-News (17/09/2022)
+News (04/10/2022)
 =================
 
-* New version released 3.4.0
+* Preparing version 4.0.0...
 * New orthographic, isometric and free camera views
 * GLTF basic support :)
+* Rebranding to org.the3deer
 
 Demo
 ====
@@ -52,7 +53,7 @@ but at least it's opened to anyone who wants to contribute or don't want to star
 
 As this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs;
 but I will try to continue improving the app and adding more features. So please send me your comments, suggestions or
-complains by opening an [issue](https://github.com/the3deers/android-3D-model-viewer/issues) or email me to andresoviedo@gmail.com.
+complains by opening an [issue](https://github.com/the3deer/android-3D-model-viewer/issues) or email me to andresoviedo@gmail.com.
 
 The app comes with some included 3D models that have different licenses.
 
@@ -118,7 +119,7 @@ You can install the application in either of these ways:
     export ANDROID_HOME=/home/$USER/Android/Sdk
     ./gradlew assembleDebug
     adb install -r app/build/outputs/apk/app-debug.apk
-    adb shell am start -n org.andresoviedo.dddmodel2/org.andresoviedo.app.model3D.MainActivity
+    adb shell am start -n org.andresoviedo.dddmodel2/org.the3deer.app.model3D.MainActivity
 ```
 
 Open the application. You should see a menu. From there you can load models
@@ -156,8 +157,8 @@ Glases
 
 You may need one of this glasses to view models in 3D virtual reality.
 
-[<img src="https://raw.githubusercontent.com/the3deers/android-3D-model-viewer/master/market/glasses-3d.jpg">](https://amzn.to/2E8LhxC)
-[<img src="https://raw.githubusercontent.com/the3deers/android-3D-model-viewer/master/market/cardboard-3d.jpg">](https://amzn.to/2E8M1Tq)
+[<img src="https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/market/glasses-3d.jpg">](https://amzn.to/2E8LhxC)
+[<img src="https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/market/cardboard-3d.jpg">](https://amzn.to/2E8M1Tq)
 
 
 Dependencies
@@ -176,9 +177,9 @@ Acknowledgement
 ===============
 
 * For teaching how animation engine works: https://github.com/TheThinMatrix/OpenGL-Animation
-* To the lot of user's feedback: https://github.com/the3deers/android-3D-model-viewer/issues
-* To the many infinite educational resources found in Internet for free :)
+* To the lot of user's feedback: https://github.com/the3deer/android-3D-model-viewer/issues
 * For the GLTF parser https://github.com/javagl/JglTF
+* To the many infinite educational resources found in Internet for free :)
 
 
 Licenses
@@ -188,10 +189,10 @@ The following copyright notice and this permission notice shall be included in a
 copies or substantial portions of the Software.
 
 
-    MIT License - Copyright (c) 2022 The 3Deers - https://github.com/the3deers
+    MIT License - Copyright (c) 2022 The 3Deer - https://github.com/the3deer
     GNU LGPL v2.1 Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski - STL Parser
     MIT License - https://github.com/javagl/JglTF - GLTF Parser    
-    ISC License - Earcut - https://github.com/the3deers/earcut
+    ISC License - Earcut - https://github.com/the3deer/earcut
 
 
 Assets

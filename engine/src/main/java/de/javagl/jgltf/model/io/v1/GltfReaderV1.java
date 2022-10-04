@@ -26,11 +26,11 @@
  */
 package de.javagl.jgltf.model.io.v1;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Consumer;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.javagl.jgltf.impl.v1.GlTF;
 import de.javagl.jgltf.model.io.JacksonUtils;

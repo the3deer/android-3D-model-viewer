@@ -30,13 +30,13 @@
  */
 package org.poly2tri.triangulation.sets;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.poly2tri.triangulation.TriangulationContext;
 import org.poly2tri.triangulation.TriangulationMode;
 import org.poly2tri.triangulation.TriangulationPoint;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Extends the PointSet by adding some Constraints on how it will be triangulated<br>

@@ -1,8 +1,8 @@
 package org.poly2tri.triangulation;
 
-import java.util.List;
-
 import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
+
+import java.util.List;
 
 public interface Triangulatable
 {

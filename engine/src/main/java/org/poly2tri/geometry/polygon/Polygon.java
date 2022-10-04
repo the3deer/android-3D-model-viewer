@@ -1,14 +1,14 @@
 package org.poly2tri.geometry.polygon;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.poly2tri.triangulation.Triangulatable;
 import org.poly2tri.triangulation.TriangulationContext;
 import org.poly2tri.triangulation.TriangulationMode;
 import org.poly2tri.triangulation.TriangulationPoint;
 import org.poly2tri.triangulation.delaunay.DelaunayTriangle;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 //// import org.slf4j.Logger;
 //// import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,5 @@
 package org.poly2tri.triangulation.delaunay.sweep;
 
-import org.poly2tri.triangulation.TriangulationContext;
 import org.poly2tri.triangulation.TriangulationDebugContext;
 import org.poly2tri.triangulation.TriangulationPoint;
 import org.poly2tri.triangulation.delaunay.DelaunayTriangle;

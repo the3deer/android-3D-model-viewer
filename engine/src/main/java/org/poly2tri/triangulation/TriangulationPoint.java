@@ -30,10 +30,10 @@
  */
 package org.poly2tri.triangulation;
 
-import java.util.ArrayList;
-
 import org.poly2tri.geometry.primitives.Point;
 import org.poly2tri.triangulation.delaunay.sweep.DTSweepConstraint;
+
+import java.util.ArrayList;
 
 
 public abstract class TriangulationPoint extends Point

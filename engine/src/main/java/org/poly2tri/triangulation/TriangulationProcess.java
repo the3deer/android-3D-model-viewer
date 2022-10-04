@@ -30,15 +30,15 @@
  */
 package org.poly2tri.triangulation;
 
-import java.lang.Thread.State;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.poly2tri.Poly2Tri;
 import org.poly2tri.geometry.polygon.Polygon;
 import org.poly2tri.geometry.polygon.PolygonSet;
 import org.poly2tri.triangulation.sets.ConstrainedPointSet;
 import org.poly2tri.triangulation.sets.PointSet;
+
+import java.lang.Thread.State;
+import java.util.ArrayList;
+import java.util.List;
 //// import org.slf4j.Logger;
 //// import org.slf4j.LoggerFactory;
 

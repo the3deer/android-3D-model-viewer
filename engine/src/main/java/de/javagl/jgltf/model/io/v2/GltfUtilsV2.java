@@ -26,10 +26,10 @@
  */
 package de.javagl.jgltf.model.io.v2;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.javagl.jgltf.impl.v2.BufferView;
 import de.javagl.jgltf.impl.v2.GlTF;

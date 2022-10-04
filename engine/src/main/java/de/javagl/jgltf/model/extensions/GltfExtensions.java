@@ -26,9 +26,9 @@
  */
 package de.javagl.jgltf.model.extensions;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Map;
 
 import de.javagl.jgltf.model.io.JacksonUtils;
 

@@ -26,10 +26,6 @@
  */
 package de.javagl.jgltf.model.io;
 
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.function.Consumer;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -37,6 +33,10 @@ import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.deser.NullValueProvider;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.function.Consumer;
 
 /**
  * A SettableBeanProperty that passes all calls to a delegate, and
