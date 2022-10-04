@@ -49,11 +49,29 @@
 
             <!-- android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" -->
         </activity>
+
+
+        <!-- Demos -->
         <activity
             android:name="org.andresoviedo.app.model3D.demo.GlyphsDemoActivity"
             android:label="@string/title_activity_model"
             android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
         </activity>
+        <activity
+            android:name="org.andresoviedo.app.model3D.demo.EarCutDemoActivity"
+            android:label="@string/title_activity_model"
+            android:parentActivityName="org.andresoviedo.app.model3D.MainActivity" >
+        </activity>
+
+
+        <!-- polybool -->
+        <activity
+            android:name="org.the3deers.polybool.demo.WebActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+
+        </activity>
+
     </application>
 
 </manifest>

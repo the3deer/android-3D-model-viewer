@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Polygon Clipping - Based somewhat on F. Martinez et al. (2008)</title>
+    <!--
+
+    /*
+     * @copyright 2016 Sean Connelly (@voidqk), http://syntheti.cc
+     * @license MIT
+     * @preserve Project Home: https://github.com/voidqk/polybooljs
+     */
+
+    -->
+    <style>
+	body, html {
+		background-color: #ddf;
+		font-family: sans-serif;
+		color: #333;
+	}
+	a {
+		color: #33d;
+		text-decoration: none;
+	}
+	a:hover, a:active {
+		text-decoration: underline;
+	}
+	p {
+		text-align: center;
+	}
+	</style>
+    <script src="./polybool.js"></script>
+</head>
+<body onload="javascript: init();">
+<script>
+
+var cnv, ctx;
+var rscale = 2;
+var wscale = 2;
+var cnvWidth, cnvHeight;
+var hover = false;
+var mode = 'Intersect';
+
+var polyCases = [{
+	name: 'Assorted Polygons',
+	poly1: {
+		regions: [
+			[ [500,60],[500,150],[320,150],[260,210],[200,150],[200,60] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [500,60],[500,150],[460,190],[460,110],[400,180],[160,90] ],
+			[ [220,170],[260,30],[310,160],[310,210],[260,170],[240,190] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Simple Rectangles',
+	poly1: {
+		regions: [
+			[ [200, 50], [600, 50], [600, 150], [200, 150] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [300, 150], [500, 150], [500, 200], [300, 200] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Shared Right Edge',
+	poly1: {
+		regions: [
+			[ [500,60],[500,150],[200,150],[200,60] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [500,60],[500,150],[450,230],[400,180],[590,60] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Simple Boxes',
+	poly1: {
+		regions: [
+			[ [500,60],[500,150],[200,150],[200,60] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [500,60],[500,150],[380,150],[380,60] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Simple Self-Overlap',
+	poly1: {
+		regions: [
+			[ [200,50],[400,50],[400,150],[200,150] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [400,150],[500,150],[300,50],[400,50] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'M Shape',
+	poly1: {
+		regions: [
+			[ [570,60],[570,150],[60,150],[60,60] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [500,60],[500,130],[330,20],[180,130],[120,60] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Two Triangles With Common Edge',
+	poly1: {
+		regions: [
+			[ [620,60],[620,150],[90,150],[90,60] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [350,60],[480,200],[180,60] ],
+			[ [180,60],[500,60],[180,220] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Two Trianges With Common Edge, pt. 2',
+	poly1: {
+		regions: [
+			[ [620,60],[620,150],[90,150],[90,60] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [400,60],[270,120],[210,60] ],
+			[ [210,60],[530,60],[210,220] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Two Triangles With Common Edge, pt. 3',
+	poly1: {
+		regions: [
+			[ [620,60],[620,150],[90,150],[90,60] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [370,60],[300,220],[560,60] ],
+			[ [180,60],[500,60],[180,220] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Three Triangles',
+	poly1: {
+		regions: [
+			[ [500,60],[500,150],[320,150] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [500,60],[500,150],[460,190] ],
+			[ [220,170],[260,30],[310,160] ],
+			[ [260,210],[200,150],[200,60] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Adjacent Edges in Status',
+	poly1: {
+		regions: [
+			[ [620,60],[620,150],[90,150],[90,60] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [110,60],[420,230],[540,60] ],
+			[ [180,60],[430,160],[190,200] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Coincident Self-Intersection',
+	poly1: {
+		regions: [
+			[ [500,60],[500,150],[320,150],[260,210],[200,150],[200,60] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [500,60],[500,150],[460,190],[460,110],[400,180],[70,90] ],
+			[ [220,170],[580,130],[310,160],[310,210],[260,170],[240,190] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Coincident Self-Intersection, pt. 2',
+	poly1: {
+		regions: [
+			[ [100, 100], [200, 200], [300, 100] ],
+			[ [200, 100], [300, 200], [400, 100] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions: [
+			[ [50, 50], [200, 50], [300, 150] ]
+		],
+		inverted: false
+	}
+}, {
+	name: 'Triple Overlap',
+	poly1: {
+		regions: [
+			[ [500, 60], [500, 150], [320, 150], [260, 210], [200, 150], [200, 60] ]
+		],
+		inverted: false
+	},
+	poly2: {
+		regions:[
+			[ [500, 60], [500, 150], [370, 60], [310, 60], [400, 180], [230, 60] ],
+			[ [260, 60], [410, 60], [310, 160], [310, 210], [260, 170], [240, 190] ]
+		],
+		inverted: false
+	}
+}];
+
+var nextDemoIndex = -1;
+var caseName, poly1, poly2, polyBox;
+var scaleToFit = false;
+function nextDemo(d){
+	nextDemoIndex = (nextDemoIndex + d) % polyCases.length;
+	if (nextDemoIndex < 0)
+		nextDemoIndex += polyCases.length;
+	var demo = polyCases[nextDemoIndex];
+	caseName = (nextDemoIndex + 1) + '. ' + demo.name;
+	poly1 = demo.poly1;
+	poly2 = demo.poly2;
+	polyBox = { min: [false, false], max: [false, false] };
+	function calcBox(regions){
+		for (var r = 0; r < regions.length; r++){
+			var region = regions[r];
+			for (var p = 0; p < region.length; p++){
+				var pt = region[p];
+				if (polyBox.min[0] === false || pt[0] < polyBox.min[0])
+					polyBox.min[0] = pt[0];
+				if (polyBox.min[1] === false || pt[1] < polyBox.min[1])
+					polyBox.min[1] = pt[1];
+				if (polyBox.max[0] === false || pt[0] > polyBox.max[0])
+					polyBox.max[0] = pt[0];
+				if (polyBox.max[1] === false || pt[1] > polyBox.max[1])
+					polyBox.max[1] = pt[1];
+			}
+		}
+	}
+	calcBox(poly1.regions);
+	calcBox(poly2.regions);
+	recalc();
+}
+
+
+function setMode(txt){
+	mode = txt;
+	recalc();
+}
+
+function colComp(n){
+	n = Math.floor(n * 256);
+	if (n > 255)
+		return 255;
+	if (n < 0)
+		return 0;
+	return n;
+}
+
+function colToHex(color){
+	function hex(n){
+		n = colComp(n).toString(16);
+		return (n.length <= 1 ? '0' : '') + n;
+	}
+	return '#' + hex(color[0]) + hex(color[1]) + hex(color[2]);
+}
+
+function vertRadius(region, vert){
+	if (vert === false)
+		return 0;
+	if (hover !== false && hover.region === region && hover.vert === vert)
+		return 6;
+	return 3;
+}
+
+function drawVerts(poly, offset){
+	poly.regions.forEach(function(region, region_i){
+		for (var i = 0; i < region.length; i++){
+			ctx.beginPath();
+			ctx.arc(scaleX(region[i][0]), scaleY(region[i][1]) + offset, vertRadius(region, i),
+				0, Math.PI * 2);
+			ctx.fill();
+		}
+	});
+}
+
+var buildLogMax = 0;
+var buildLogTimer = false;
+function buildLogNext(delta){
+	buildLogMax += delta;
+	if (buildLogMax < 0)
+		buildLogMax = 0;
+	if (buildLogMax > clipResult.build_log.length)
+		buildLogMax = clipResult.build_log.length;
+	redraw();
+	return buildLogMax >= clipResult.build_log.length;
+}
+
+function buildLogNextWrap(delta){
+	buildLogStop();
+	if (buildLogMax <= 0 && delta < 0){
+		buildLogMax = clipResult.build_log.length;
+		redraw();
+	}
+	else if (buildLogMax >= clipResult.build_log.length && delta > 0){
+		buildLogMax = 0;
+		redraw();
+	}
+	else
+		buildLogNext(delta);
+}
+
+function buildLogStop(){
+	if (buildLogTimer === false)
+		return;
+	clearInterval(buildLogTimer);
+	buildLogTimer = false;
+	document.getElementById('bl_play').innerHTML = 'Play';
+}
+
+function buildLogPlay(){
+	if (buildLogTimer === false){
+		if (buildLogNext(1))
+			buildLogMax = -1;
+		buildLogTimer = setInterval(function(){
+			if (buildLogNext(1)){
+				buildLogStop();
+				buildLogTimer = setInterval(function(){
+					buildLogNextWrap(1);
+					clearInterval(buildLogTimer);
+				}, 100);
+			}
+		}, 100);
+	}
+	else{
+		clearInterval(buildLogTimer);
+		buildLogTimer = false;
+	}
+	document.getElementById('bl_play').innerHTML = buildLogTimer === false ? 'Play' : 'Stop';
+}
+
+function JSONstringifyOrder( obj )
+{
+    var allKeys = [];
+    JSON.stringify( obj, function( key, value ){ allKeys.push( key ); return value; } )
+    allKeys.sort();
+    return JSON.stringify( obj, allKeys );
+}
+
+var clipResult;
+function recalc(){
+	buildLogStop();
+	buildLogMax = 0;
+
+	var func = ({
+		'Intersect' : PolyBool.intersect,
+		'Union'     : PolyBool.union,
+		'Red - Blue': PolyBool.difference,
+		'Blue - Red': PolyBool.differenceRev,
+		'Xor'       : PolyBool.xor
+	})[mode];
+	var BL = PolyBool.buildLog(true);
+	clipResult = {
+		result: func(poly1, poly2),
+		build_log: BL
+	};
+
+	redraw();
+
+	// Android.toast(JSON.stringify(clipResult.result));
+
+	// output GeoJSON
+
+	var geojson = PolyBool.polygonToGeoJSON(clipResult.result);
+	Android.logd(JSON.stringify(geojson));
+	function scalePoly(p){
+		// we need to scale the result because pixel coordinates are around 500, and that's not
+		// valid long/lat coordinates... so we just divide everything by 10
+		// (and out of pure luck this tends to place our polygons over Ethiopia...!)
+		for (var i = 0; i < p.length; i++){
+			for (var j = 0; j < p[i].length; j++)
+				p[i][j] = [p[i][j][0] * 0.1, p[i][j][1] * 0.1];
+		}
+	}
+	// I suppose we could just JSON.stringify(geojson, null, '  '), but that doesn't look so
+	// pretty (imho), so this is a bit stupid but I format it myself so it looks better :-P
+	var out = ['{', '  "type": ' + JSON.stringify(geojson.type) + ','];
+	function outLine(line, space, tail){
+		var o = space + '[';
+		for (var i = 0; i < line.length; i++){
+			o += '[' + line[i] + ']';
+			if (i < line.length - 1)
+				o += ', ';
+		}
+		out.push(o + ']' + (tail ? '' : ','));
+	}
+	if (geojson.type == 'Polygon'){
+		scalePoly(geojson.coordinates);
+		out.push('  "coordinates": [');
+		for (var i = 0; i < geojson.coordinates.length; i++)
+			outLine(geojson.coordinates[i], '      ', i === geojson.coordinates.length - 1);
+		out.push('  ]');
+	}
+	else{
+		for (var i = 0; i < geojson.coordinates.length; i++)
+			scalePoly(geojson.coordinates[i]);
+		out.push('  "coordinates": [[');
+		for (var i = 0; i < geojson.coordinates.length; i++){
+			for (var j = 0; j < geojson.coordinates[i].length; j++)
+				outLine(geojson.coordinates[i][j], '      ', j === geojson.coordinates[i].length - 1);
+			if (i < geojson.coordinates.length - 1)
+				out.push('    ], [');
+		}
+		out.push('  ]]');
+	}
+	out.push('}', '');
+	document.getElementById('geojson').value = out.join('\n');
+}
+
+function scaleX(x){
+	if (!scaleToFit)
+		return x;
+	return (x - polyBox.min[0]) * 650 / (polyBox.max[0] - polyBox.min[0]) + 25;
+}
+
+function scaleY(y){
+	if (!scaleToFit)
+		return y;
+	return (y - polyBox.min[1]) * 200 / (polyBox.max[1] - polyBox.min[1]) + 25;
+}
+
+function unscaleX(x){
+	if (!scaleToFit)
+		return x;
+	return (x - 25) * (polyBox.max[0] - polyBox.min[0]) / 650 + polyBox.min[0];
+}
+
+function unscaleY(y){
+	if (!scaleToFit)
+		return y;
+	return (y - 25) * (polyBox.max[1] - polyBox.min[1]) / 200 + polyBox.min[1];
+}
+
+function drawRegions(regions, offset){
+	regions.forEach(function(region, i){
+		if (region.length <= 0)
+			return;
+		ctx.moveTo(scaleX(region[0][0]), scaleY(region[0][1]) + offset);
+		for (var i = 1; i < region.length; i++)
+			ctx.lineTo(scaleX(region[i][0]), scaleY(region[i][1]) + offset);
+		ctx.closePath();
+	});
+}
+
+function polyStroke(result, offset){
+	ctx.beginPath();
+	drawRegions(result.regions, offset);
+	ctx.stroke();
+}
+
+function polyFill(result, rect1, rect2, offset){
+	ctx.beginPath();
+	if (result.inverted){
+		ctx.moveTo(rect1[0], rect1[1] + offset);
+		ctx.lineTo(rect1[0], rect2[1] + offset);
+		ctx.lineTo(rect2[0], rect2[1] + offset);
+		ctx.lineTo(rect2[0], rect1[1] + offset);
+		ctx.closePath();
+	}
+	drawRegions(result.regions, offset);
+	ctx.fill('evenodd');
+}
+
+function redraw(){
+	ctx.fillStyle = '#fff';
+	ctx.fillRect(0, 0, cnvWidth, cnvHeight);
+	ctx.lineWidth = 2;
+
+	var labels = [];
+
+	// this is quite the mess... sorry...
+	var bl_oldsegs = [];
+	var bl_segs = [];
+	var bl_segid = {};
+	var bl_vert = 0;
+	var bl_last_check = false;
+	var bl_last_check_i1 = false;
+	var bl_last_check_i2 = false;
+	var bl_last_div_seg = false;
+	var bl_last_pop_seg = false;
+	var bl_last_pop_seg_i = false;
+	var bl_last_status = false;
+	var bl_last_temp_status = false;
+	var bl_last_temp_status_i = false;
+	var bl_last_chop = false;
+	var bl_last_seg_keep = false;
+	var bl_last_seg_keep_match = false;
+	var bl_last_done = false;
+	var bl_finish = false;
+	var bl_status = [];
+	var bl_chains = [];
+	var bl_chainids = [];
+	var bl_nextchainid = 0;
+	var bl_oldchains = [];
+	var bl_oldchainids = [];
+	var bl_phase = 0;
+	var bl_selected = false;
+	clipResult.build_log.forEach(function(blw, i){
+		if (i >= buildLogMax)
+			return;
+		var bl = blw.data;
+		bl_last_check = false;
+		bl_last_div_seg = false;
+		bl_last_pop_seg = false;
+		bl_last_status = false;
+		bl_last_chop = false;
+		bl_last_done = false;
+		switch (blw.type){
+			case 'vert':
+				bl_vert = bl.x;
+				break;
+			case 'new_seg':
+				for (var i = 0; i < bl_segs.length; i++){
+					if (bl_segs[i].id === bl.seg.id){
+						bl_segs.splice(i, 1);
+						break;
+					}
+				}
+				for (var i = 0; i < bl_oldsegs.length; i++){
+					if (bl_oldsegs[i].id === bl.seg.id){
+						bl_oldsegs.splice(i, 1);
+						break;
+					}
+				}
+				bl_segs.push(bl.seg);
+				bl_segid[bl.seg.id] = {
+					phase: bl_phase,
+					primary: bl.primary
+				};
+				break;
+			case 'rem_seg':
+				for (var i = 0; i < bl_segs.length; i++){
+					if (bl_segs[i].id === bl.seg.id){
+						bl_segs.splice(i, 1);
+						break;
+					}
+				}
+				for (var i = 0; i < bl_oldsegs.length; i++){
+					if (bl_oldsegs[i].id === bl.seg.id){
+						bl_oldsegs.splice(i, 1);
+						break;
+					}
+				}
+				break;
+			case 'check':
+				bl_last_check = bl;
+				bl_last_check_i1 = false;
+				bl_last_check_i2 = false;
+				for (var i = 0; i < bl_status.length; i++){
+					if (bl_status[i].id === bl.seg1.id)
+						bl_last_check_i1 = i;
+					if (bl_status[i].id === bl.seg2.id)
+						bl_last_check_i2 = i;
+				}
+				break;
+			case 'pop_seg':
+				bl_last_pop_seg = bl;
+				for (var i = 0; i < bl_segs.length; i++){
+					if (bl_segs[i].id === bl.seg.id){
+						var r = bl_segs.splice(i, 1)[0];
+						bl_oldsegs.push(r);
+						break;
+					}
+				}
+				for (var i = 0; i < bl_status.length; i++){
+					if (bl_status[i].id === bl.seg.id){
+						bl_last_pop_seg_i = i;
+						bl_status.splice(i, 1);
+						break;
+					}
+				}
+				break;
+			case 'div_seg':
+				bl_last_div_seg = bl;
+				break;
+			case 'temp_status':
+				bl_last_temp_status = bl;
+				if (bl.above === false)
+					bl_last_temp_status_i = -0.5;
+				else{
+					for (var i = 0; i < bl_status.length; i++){
+						if (bl_status[i].id === bl.above.id){
+							bl_last_temp_status_i = i + 0.5;
+							break;
+						}
+					}
+				}
+				break;
+			case 'status':
+				bl_last_temp_status = false;
+				bl_last_status = bl.seg.id;
+				for (var i = 0; i < bl_segs.length; i++){
+					if (bl_segs[i].id === bl.seg.id){
+						bl_segs[i] = bl.seg;
+						break;
+					}
+				}
+				if (bl.above === false)
+					bl_status.unshift(bl.seg);
+				else{
+					for (var i = 0; i < bl_status.length; i++){
+						if (bl_status[i].id === bl.above.id){
+							bl_status.splice(i + 1, 0, bl.seg);
+							break;
+						}
+					}
+				}
+				break;
+			case 'rewind':
+				bl_last_temp_status = false;
+				for (var i = 0; i < bl_segs.length; i++){
+					if (bl_segs[i].id === bl.seg.id){
+						bl_segs.splice(i, 1);
+						break;
+					}
+				}
+				break;
+			case 'chop':
+				bl_last_chop = bl;
+				for (var i = 0; i < bl_segs.length; i++){
+					if (bl_segs[i].id === bl.seg.id){
+						bl_segs[i] = JSON.parse(JSON.stringify(bl_segs[i]));
+						bl_segs[i].end = bl.pt;
+					}
+				}
+				break;
+			case 'seg_update':
+				function chk_seg(seg){
+					if (seg.id !== bl.seg.id)
+						return seg;
+					return bl.seg;
+				}
+				for (var i = 0; i < bl_segs.length; i++)
+					bl_segs[i] = chk_seg(bl_segs[i]);
+				for (var i = 0; i < bl_oldsegs.length; i++)
+					bl_oldsegs[i] = chk_seg(bl_oldsegs[i]);
+				break;
+			case 'log':
+				if (i === buildLogMax - 1)
+					console.log(bl.txt);
+				break;
+			case 'reset':
+				bl_segs = [];
+				bl_oldsegs = [];
+				bl_segid = {};
+				bl_status = [];
+				bl_last_temp_status = false;
+				break;
+			case 'selected':
+				bl_selected = bl.segs;
+				bl_phase++;
+				break;
+			case 'chain_start':
+				bl_last_seg_keep = bl;
+				bl_last_seg_keep_match = false;
+				break;
+			case 'chain_new':
+				bl_chains.push([ bl.pt1, bl.pt2 ]);
+				bl_chainids.push(bl_nextchainid++);
+				bl_last_seg_keep = false;
+				break;
+			case 'chain_rev':
+				bl_chains[bl.index].reverse();
+				break;
+			case 'chain_add_head':
+				bl_chains[bl.index].unshift(bl.pt);
+				bl_last_seg_keep = false;
+				break;
+			case 'chain_add_tail':
+				bl_chains[bl.index].push(bl.pt);
+				bl_last_seg_keep = false;
+				break;
+			case 'chain_rem_head':
+				bl_chains[bl.index].shift();
+				break;
+			case 'chain_rem_tail':
+				bl_chains[bl.index].pop();
+				break;
+			case 'chain_match':
+				bl_last_seg_keep_match = bl.index;
+				break;
+			case 'chain_con':
+				bl_last_seg_keep_match = bl.index1;
+				break;
+			case 'chain_join':
+				bl_chains[bl.index1] = bl_chains[bl.index1].concat(bl_chains[bl.index2]);
+				bl_chains.splice(bl.index2, 1);
+				bl_chainids.splice(bl.index2, 1);
+				bl_last_seg_keep = false;
+				break;
+			case 'chain_close':
+				bl_oldchains.push(bl_chains.splice(bl.index, 1)[0]);
+				bl_oldchainids.push(bl_chainids.splice(bl.index, 1)[0]);
+				bl_last_seg_keep = false;
+				break;
+			case 'done':
+				bl_last_done = true;
+				bl_vert = false;
+				bl_phase++;
+				if (bl_phase === 5)
+					bl_finish = true;
+				break;
+			default: console.log(blw.type, bl);
+		}
+	});
+
+	function drawseg(seg, fade, size){
+		var poly = bl_segid[seg.id];
+		var poly1 = poly.phase === 0 || (((poly.phase === 2 && !bl_last_done) || bl_phase === 3) && poly.primary);
+		if (!poly1 && bl_phase === 0)
+			return;
+		if (poly1 && bl_phase === 1 && !bl_last_done)
+			return;
+		if (bl_phase === 2 && bl_last_done && poly1)
+			return;
+		var ang = Math.atan2(seg.end[1] - seg.start[1], seg.end[0] - seg.start[0]);
+		ctx.beginPath();
+		ctx.moveTo(
+			seg.start[0],
+			seg.start[1]
+		);
+		ctx.lineTo(
+			seg.end[0],
+			seg.end[1]
+		);
+		ctx.strokeStyle = poly1 ? (fade ? '#faa' : '#f00') : (fade ? '#aaf' : '#00f');
+		ctx.lineWidth = size;
+		ctx.stroke();
+		function drawfill(ang, fill, mine){
+			var poly1 =
+				poly.phase === 0 ? mine :
+				poly.phase === 1 ? !mine :
+				mine === poly.primary;
+			var dist = 6;
+			ctx.beginPath();
+			ctx.arc(
+				dist * Math.cos(ang) + (seg.start[0] + seg.end[0]) / 2,
+				dist * Math.sin(ang) + (seg.start[1] + seg.end[1]) / 2,
+				fill === null ? 1 : 3,
+				0, Math.PI * 2
+			);
+			ctx.fillStyle = (fill === true || fill === null) ? (poly1 ? '#f00' : '#00f') : '#fff';
+			ctx.fill();
+			ctx.strokeStyle = (fill === true) ? '#000' : (poly1 ? '#f00' : '#00f');
+			ctx.lineWidth = 1;
+			ctx.stroke();
+		}
+		var d = (bl_phase <= 1 || (bl_phase === 2 && bl_last_done)) ? 0 : 0.75;
+		drawfill(ang + Math.PI * 0.5 - d, seg.myFill.above, true);
+		drawfill(ang - Math.PI * 0.5 + d, seg.myFill.below, true);
+		if (bl_phase > 1 && !(bl_phase === 2 && bl_last_done)){
+			drawfill(ang + Math.PI * 0.5 + d, seg.otherFill ? seg.otherFill.above : null, false);
+			drawfill(ang - Math.PI * 0.5 - d, seg.otherFill ? seg.otherFill.below : null, false);
+		}
+	}
+	if (bl_phase < 4){
+		bl_oldsegs.forEach(function(seg){
+			drawseg(seg, true, 1);
+		});
+		bl_segs.forEach(function(seg){
+			drawseg(seg, false, 2);
+			labels.push({
+				txt: seg.id,
+				x: (seg.start[0] + seg.end[0]) / 2,
+				y: (seg.start[1] + seg.end[1]) / 2
+			});
+		});
+	}
+	var stw = 40;
+	var sth = 20;
+	function stpos(i){
+		return [ stw * 1.5 + 20, cnvHeight / 2 - i * sth - 30 - sth / 2 ];
+	}
+	if (bl_phase < 4 && bl_last_check){
+		ctx.beginPath();
+		ctx.moveTo(bl_last_check.seg1.start[0], bl_last_check.seg1.start[1]);
+		ctx.lineTo(bl_last_check.seg1.end[0], bl_last_check.seg1.end[1]);
+		ctx.strokeStyle = '#0f0';
+		ctx.lineWidth = 2;
+		ctx.stroke();
+		ctx.beginPath();
+		ctx.moveTo(bl_last_check.seg2.start[0], bl_last_check.seg2.start[1]);
+		ctx.lineTo(bl_last_check.seg2.end[0], bl_last_check.seg2.end[1]);
+		ctx.strokeStyle = '#0f0';
+		ctx.lineWidth = 2;
+		ctx.stroke();
+		if (bl_last_check_i1 === false || bl_last_check_i2 === false){
+			ctx.beginPath();
+			var c1 = stpos(bl_last_temp_status_i);
+			c1[0] += stw + 10;
+			var c2 = stpos(bl_last_check_i1 === false ? bl_last_check_i2 : bl_last_check_i1);
+			ctx.moveTo(c1[0], c1[1]);
+			ctx.lineTo(c2[0], c2[1]);
+			ctx.lineWidth = 2;
+			ctx.strokeStyle = '#0f0';
+			ctx.stroke();
+		}
+		else{
+			ctx.beginPath();
+			var c1 = stpos(bl_last_check_i1);
+			var c2 = stpos(bl_last_check_i2);
+			ctx.arc(c1[0] + stw / 2, (c2[1] + c1[1]) / 2,
+				Math.abs(c2[1] - c1[1]) / 2, 0, Math.PI * 2);
+			ctx.lineWidth = 2;
+			ctx.strokeStyle = '#0f0';
+			ctx.stroke();
+		}
+	}
+	if (bl_phase < 4 && bl_last_div_seg){
+		ctx.beginPath();
+		ctx.arc(bl_last_div_seg.pt[0], bl_last_div_seg.pt[1], 6, 0, Math.PI * 2);
+		ctx.fillStyle = '#aa0';
+		ctx.fill();
+		ctx.strokeStyle = '#000';
+		ctx.lineWidth = 1;
+		ctx.stroke();
+	}
+	if (bl_phase < 4){
+		for (var i = 0; i < bl_status.length; i++){
+			var c = stpos(i);
+			labels.push({
+				txt: bl_status[i].id,
+				x: c[0],
+				y: c[1]
+			});
+			ctx.beginPath();
+			ctx.rect(c[0] - stw / 2, c[1] - sth / 2, stw, sth);
+			ctx.fillStyle = bl_last_status === bl_status[i].id ? '#ff6' : '#fff';
+			ctx.fill();
+			ctx.strokeStyle = bl_last_status === bl_status[i].id ? '#444' : '#aaa';
+			ctx.lineWidth = 1;
+			ctx.stroke();
+		}
+	}
+	if (bl_phase < 4 && bl_last_pop_seg){
+		var c = stpos(bl_last_pop_seg_i);
+		c[0] -= stw + 10;
+		labels.push({
+			txt: bl_last_pop_seg.seg.id,
+			x: c[0],
+			y: c[1]
+		});
+		ctx.beginPath();
+		ctx.rect(c[0] - stw / 2, c[1] - sth / 2, stw, sth);
+		ctx.fillStyle = '#eee';
+		ctx.fill();
+		ctx.strokeStyle = '#ddd'
+		ctx.lineWidth = 1;
+		ctx.stroke();
+	}
+	if (bl_phase < 4 && bl_last_temp_status){
+		var c = stpos(bl_last_temp_status_i);
+		c[0] += stw + 10;
+		labels.push({
+			txt: bl_last_temp_status.seg.id,
+			x: c[0],
+			y: c[1]
+		});
+		ctx.beginPath();
+		ctx.rect(c[0] - stw / 2, c[1] - sth / 2, stw, sth);
+		ctx.fillStyle = '#dfd';
+		ctx.fill();
+		ctx.strokeStyle = '#cfc'
+		ctx.lineWidth = 1;
+		ctx.stroke();
+	}
+	if (bl_phase < 4 && bl_last_chop){
+		ctx.beginPath();
+		ctx.moveTo(bl_last_chop.seg.start[0], bl_last_chop.seg.start[1]);
+		ctx.lineTo(bl_last_chop.pt[0], bl_last_chop.pt[1]);
+		ctx.lineWidth = 3;
+		ctx.strokeStyle = '#f00';
+		ctx.stroke();
+		ctx.beginPath();
+		ctx.moveTo(bl_last_chop.pt[0], bl_last_chop.pt[1]);
+		ctx.lineTo(bl_last_chop.seg.end[0], bl_last_chop.seg.end[1]);
+		ctx.lineWidth = 2;
+		ctx.strokeStyle = '#ddd';
+		ctx.stroke();
+	}
+	if (bl_phase < 4 && bl_vert !== false){
+		ctx.beginPath();
+		ctx.moveTo(bl_vert, cnvHeight / 2);
+		ctx.lineTo(bl_vert, 0);
+		ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+		ctx.lineWidth = 1;
+		ctx.stroke();
+	}
+	if (bl_phase === 4){
+		bl_selected.forEach(function(seg){
+			ctx.beginPath();
+			ctx.moveTo(seg.start[0], seg.start[1]);
+			ctx.lineTo(seg.end[0], seg.end[1]);
+			ctx.strokeStyle = bl_last_done ? '#070' : '#e2e2e2';
+			ctx.lineWidth = 1;
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.arc(seg.start[0], seg.start[1], 3, 0, Math.PI * 2);
+			ctx.fillStyle = bl_last_done ? '#070' : '#e2e2e2';
+			ctx.fill();
+			ctx.beginPath();
+			ctx.arc(seg.end[0], seg.end[1], 3, 0, Math.PI * 2);
+			ctx.fillStyle = bl_last_done ? '#070' : '#e2e2e2';
+			ctx.fill();
+		});
+	}
+	if (bl_phase === 4 || (bl_phase === 5 && bl_last_done)){
+		ctx.beginPath();
+		bl_oldchains.forEach(function(ch){
+			for (var i = 0; i < ch.length; i++){
+				var pt = ch[i];
+				if (i === 0)
+					ctx.moveTo(pt[0], pt[1]);
+				else
+					ctx.lineTo(pt[0], pt[1]);
+			}
+			ctx.lineTo(ch[0][0], ch[0][1]);
+		});
+		ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
+		ctx.fill('evenodd');
+		ctx.strokeStyle = '#7f7';
+		ctx.lineWidth = 1;
+		ctx.stroke();
+		bl_oldchains.forEach(function(ch, chi){
+			var totx = 0;
+			var toty = 0;
+			for (var i = 0; i < ch.length; i++){
+				var pt = ch[i];
+				totx += pt[0];
+				toty += pt[1];
+				ctx.beginPath();
+				ctx.arc(pt[0], pt[1], 3, 0, Math.PI * 2);
+				ctx.fillStyle = '#7f7';
+				ctx.fill();
+			}
+			labels.push({
+				txt: bl_oldchainids[chi],
+				x: totx / ch.length,
+				y: toty / ch.length
+			});
+		});
+
+		function drawarrow(pt1, pt2, rad){
+			var arrowLen = 8;
+			var arrowAng = Math.PI - 0.45;
+			ctx.beginPath();
+			ctx.moveTo(pt1[0], pt1[1]);
+			ctx.lineTo(pt2[0], pt2[1]);
+
+			var ang = Math.atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]);
+			var ax = pt2[0] - Math.cos(ang) * rad;
+			var ay = pt2[1] - Math.sin(ang) * rad;
+			ctx.moveTo(ax, ay);
+			ctx.lineTo(
+				ax + Math.cos(ang + arrowAng) * arrowLen,
+				ay + Math.sin(ang + arrowAng) * arrowLen
+			);
+			ctx.moveTo(ax, ay);
+			ctx.lineTo(
+				ax + Math.cos(ang - arrowAng) * arrowLen,
+				ay + Math.sin(ang - arrowAng) * arrowLen
+			);
+		}
+
+		bl_chains.forEach(function(ch, chi){
+			var rad = 3;
+			for (var i = 0; i < ch.length - 1; i++){
+				var pt1 = ch[i];
+				var pt2 = ch[i + 1];
+				drawarrow(pt1, pt2, rad);
+				ctx.lineWidth = 1;
+				ctx.strokeStyle = '#070';
+				ctx.stroke();
+
+				ctx.beginPath();
+				ctx.arc(pt1[0], pt1[1], rad, 0, Math.PI * 2);
+				ctx.fillStyle = '#070';
+				ctx.fill();
+				ctx.beginPath();
+				ctx.arc(pt2[0], pt2[1], rad, 0, Math.PI * 2);
+				ctx.fillStyle = '#070';
+				ctx.fill();
+
+				labels.push({
+					txt: bl_chainids[chi],
+					x: (pt1[0] + pt2[0]) / 2,
+					y: (pt1[1] + pt2[1]) / 2
+				});
+			}
+		});
+
+		if (bl_last_seg_keep){
+			var pt1 = bl_last_seg_keep.seg.start;
+			var pt2 = bl_last_seg_keep.seg.end;
+			ctx.beginPath();
+			drawarrow(pt1, pt2, 3.5);
+			ctx.lineWidth = 2;
+			ctx.strokeStyle = '#0f0';
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.arc(pt1[0], pt1[1], 3.5, 0, Math.PI * 2);
+			ctx.fillStyle = '#0f0';
+			ctx.fill();
+			ctx.beginPath();
+			ctx.arc(pt2[0], pt2[1], 3.5, 0, Math.PI * 2);
+			ctx.fillStyle = '#0f0';
+			ctx.fill();
+
+			if (bl_last_seg_keep_match !== false){
+				labels.push({
+					txt: bl_chainids[bl_last_seg_keep_match],
+					x: (pt1[0] + pt2[0]) / 2,
+					y: (pt1[1] + pt2[1]) / 2
+				});
+			}
+		}
+	}
+
+	// move labels around so that they don't overlap
+	for (var i = 1; i < labels.length; i++){
+		if (labels[i].txt === '')
+			continue;
+		for (var j = 0; j < i; j++){
+			if (labels[j].txt === '')
+				continue;
+			var dx = labels[i].x - labels[j].x;
+			var dy = labels[i].y - labels[j].y;
+			var dist = Math.sqrt(dx * dx + dy * dy);
+			if (dist < 5){
+				labels[j].txt += ', ' + labels[i].txt;
+				labels[i].txt = '';
+			}
+			else if (dist < 16){
+				labels[j].y -= 4;
+				labels[i].y += 12;
+			}
+		}
+	}
+
+	ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+	polyFill(poly1, [0, 0], [cnvWidth, cnvHeight / 2], cnvHeight / 2);
+	ctx.fillStyle = 'rgba(0, 0, 255, 0.2)';
+	polyFill(poly2, [0, 0], [cnvWidth, cnvHeight / 2], cnvHeight / 2);
+
+	ctx.lineWidth = 1;
+	ctx.strokeStyle = '#f00';
+	polyStroke(poly1, cnvHeight / 2);
+	ctx.lineWidth = 1;
+	ctx.strokeStyle = '#00f';
+	polyStroke(poly2, cnvHeight / 2);
+
+	ctx.fillStyle = '#f00';
+	drawVerts(poly1, cnvHeight / 2);
+	ctx.fillStyle = '#00f';
+	drawVerts(poly2, cnvHeight / 2);
+
+	// draw labels
+	//*
+	ctx.save();
+	ctx.setTransform(rscale, 0, 0, rscale, 0, 0);
+	ctx.font = '10px sans-serif';
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	labels.forEach(function(lbl){
+		ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+		ctx.fillText(lbl.txt, lbl.x +  1, cnvHeight - lbl.y +  1);
+		ctx.fillText(lbl.txt, lbl.x +  1, cnvHeight - lbl.y +  0);
+		ctx.fillText(lbl.txt, lbl.x +  1, cnvHeight - lbl.y + -1);
+		ctx.fillText(lbl.txt, lbl.x +  0, cnvHeight - lbl.y +  1);
+		ctx.fillText(lbl.txt, lbl.x +  0, cnvHeight - lbl.y + -1);
+		ctx.fillText(lbl.txt, lbl.x + -1, cnvHeight - lbl.y +  1);
+		ctx.fillText(lbl.txt, lbl.x + -1, cnvHeight - lbl.y +  0);
+		ctx.fillText(lbl.txt, lbl.x + -1, cnvHeight - lbl.y + -1);
+		ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+		ctx.fillText(lbl.txt, lbl.x, cnvHeight - lbl.y);
+	});
+	ctx.restore(); // */
+
+	if (buildLogMax === 0){
+		ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+		ctx.strokeStyle = '#070';
+		ctx.lineWidth = 1;
+		polyFill(clipResult.result, [0, 0], [cnvWidth, cnvHeight / 2], 0);
+		polyStroke(clipResult.result, 0);
+		ctx.fillStyle = '#070';
+		drawVerts(clipResult.result, 0);
+	}
+
+	ctx.save();
+	ctx.setTransform(rscale, 0, 0, rscale, 0, 0);
+	ctx.font = '13px sans-serif';
+	ctx.fillStyle = '#000';
+	ctx.fillText(mode, 4, cnvHeight / 2 + 16);
+	ctx.fillText(caseName, 4, 16);
+	ctx.restore();
+
+	var phase = buildLogMax === 0 ? 'Result' :
+		bl_phase === 0 ? 'Phase 1. Self-Intersect Red' :
+		bl_phase === 1 ? (bl_last_done ? 'Phase 1 Result' : 'Phase 2. Self-Intersect Blue') :
+		bl_phase === 2 ? (bl_last_done ? 'Phase 2 Result' : 'Phase 3. Red vs. Blue') :
+		bl_phase === 3 ? 'Phase 3 Result' :
+		bl_phase === 4 ? (bl_last_done ? 'Segment Selection' : 'Phase 4. Segment Chaining') :
+		'Phase 4 Result';
+	ctx.save();
+	ctx.setTransform(rscale, 0, 0, rscale, 0, 0);
+	ctx.font = '13px sans-serif';
+	ctx.textAlign = 'right';
+	ctx.fillStyle = '#000';
+	ctx.fillText(phase, cnvWidth - 4, cnvHeight / 2 + 16);
+	ctx.restore();
+
+	ctx.fillStyle = '#999';
+	ctx.fillRect(0, 0, cnvWidth * buildLogMax / clipResult.build_log.length, 3);
+
+	ctx.beginPath();
+	for (var x = 0; x < cnvWidth; x += 10){
+		ctx.moveTo(x, cnvHeight / 2);
+		ctx.lineTo(x + 5, cnvHeight / 2);
+	}
+	ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+	ctx.lineWidth = 1;
+	ctx.stroke();
+}
+
+function init(){
+	cnv = document.getElementById('cnv');
+	ctx = cnv.getContext('2d');
+	cnv.style.width = cnv.width / wscale + 'px';
+	cnv.style.height = cnv.height / wscale + 'px';
+	// make y go up and scale by 2 (for high DPI screens)
+	ctx.transform(rscale, 0, 0, -rscale, 0, cnv.height);
+	cnvWidth = cnv.width / rscale;
+	cnvHeight = cnv.height / rscale;
+
+	nextDemo(1);
+
+	function mousePos(e){
+		var rect = cnv.getBoundingClientRect();
+		return [
+			e.clientX - rect.left,
+			cnvHeight - e.clientY + rect.top
+		];
+	}
+
+	function closestPoint(poly, x, y){
+		x = unscaleX(x);
+		y = unscaleY(y);
+		var reg = false;
+		var vert = false;
+		var len2 = false;
+		poly.regions.forEach(function(region){
+			for (var i = 0; i < region.length; i++){
+				var dx = scaleX(region[i][0] - x);
+				var dy = scaleY(region[i][1] - y);
+				var thisLen2 = dx * dx + dy * dy;
+				if (len2 === false || thisLen2 < len2){
+					reg = region;
+					vert = i;
+					len2 = thisLen2;
+				}
+			}
+		});
+		return {
+			region: reg,
+			vert: vert,
+			len: Math.sqrt(len2)
+		};
+	}
+
+	function mouseTrackHover(mp){
+		// look for the closest node
+		var p1 = closestPoint(poly1, mp[0], mp[1] - cnvHeight / 2);
+		var p2 = closestPoint(poly2, mp[0], mp[1] - cnvHeight / 2);
+		if (p2.len < p1.len)
+			p1 = p2;
+		if (p1.len > 10){
+			if (hover !== false){
+				hover = false;
+				redraw();
+			}
+			return;
+		}
+		if (hover === false || hover.region !== p1.region || hover.vert !== p1.vert){
+			hover = p1;
+			redraw();
+		}
+	}
+
+	var dragging = false;
+
+	cnv.addEventListener('mousemove', function(e){
+		var mp = mousePos(e);
+		if (dragging){
+			var dx = mp[0] - dragging[0];
+			var dy = mp[1] - dragging[1];
+			var pt = hover.region[hover.vert];
+			if (pt[1] + dy < 0)
+				dy = -pt[1];
+			if (document.getElementById('snap').checked){
+				var tx = pt[0] + dx;
+				var ty = pt[1] + dy;
+				tx = Math.round(tx / 10) * 10;
+				ty = Math.round(ty / 10) * 10;
+				dx = tx - pt[0];
+				dy = ty - pt[1];
+			}
+			if (dx !== 0 || dy !== 0){
+				dragging = [dragging[0] + dx, dragging[1] + dy];
+				pt[0] = unscaleX(scaleX(pt[0]) + dx);
+				pt[1] = unscaleY(scaleY(pt[1]) + dy);
+				recalc();
+			}
+		}
+		else
+			mouseTrackHover(mp);
+
+		if (window.debugMousePos === true){
+			ctx.save();
+			var mx = mp[0], my = mp[1] - cnvHeight / 2;
+			if (hover !== false){
+				mx = hover.region[hover.vert][0];
+				my = hover.region[hover.vert][1];
+			}
+			ctx.setTransform(rscale, 0, 0, rscale, 0, 0);
+			ctx.fillStyle = '#fff';
+			ctx.fillRect(0, 0, 100, 20);
+			ctx.fillStyle = '#000';
+			ctx.textAlign = 'left'
+			ctx.textBaseline = 'top';
+			ctx.fillText('(' + mx + ', ' + my + ')', 0, 0);
+			ctx.restore();
+		}
+	});
+
+	cnv.addEventListener('mouseup', function(e){
+		var mp = mousePos(e);
+		if (dragging){
+			dragging = false;
+			mouseTrackHover(mp);
+			redraw();
+		}
+		else
+			mouseTrackHover(mp);
+	});
+
+	cnv.addEventListener('mouseleave', function(e){
+		if (dragging){
+			dragging = false;
+			hover = false;
+			redraw();
+		}
+	});
+
+	cnv.addEventListener('mousedown', function(e){
+		var mp = mousePos(e);
+		mouseTrackHover(mp);
+		if (hover !== false){
+			dragging = mp; // begin dragging
+			e.preventDefault();
+		}
+	});
+
+	document.addEventListener('keydown', function(e){
+		if (e.keyCode === 37){ // left
+			buildLogNextWrap(e.shiftKey ? -10 : -1);
+			e.preventDefault();
+		}
+		else if (e.keyCode === 39){ // right
+			buildLogNextWrap(e.shiftKey ? 10 : 1);
+			e.preventDefault();
+		}
+		else if (e.keyCode === 32){ // space
+			buildLogPlay();
+			e.preventDefault();
+		}
+	});
+}
+
+	</script>
+<p>
+    <canvas id="cnv" width="1400" height="1000"></canvas>
+</p>
+<p>
+    Drag the polygon nodes to change the shape.  Click the buttons below and have fun!
+</p>
+<p>
+    Operation:
+    <button onclick="javascript: setMode('Intersect');">Intersect</button>
+    <button onclick="javascript: setMode('Union');">Union</button>
+    <button onclick="javascript: setMode('Red - Blue');">Red - Blue</button>
+    <button onclick="javascript: setMode('Blue - Red');">Blue - Red</button>
+    <button onclick="javascript: setMode('Xor');">Xor</button>
+</p>
+<p>
+    <input type="checkbox" id="snap" checked="checked" /><label for="snap"> Snap</label>
+    <button style="margin-left: 1em;" onclick="javascript: poly1.inverted = !poly1.inverted; recalc();">Invert Red</button>
+    <button onclick="javascript: poly2.inverted = !poly2.inverted; recalc();">Invert Blue</button>
+    <span style="margin-left: 1em;">Animation:</span>
+    <button onclick="javascript: buildLogNextWrap(-1);">Prev</button>
+    <button onclick="javascript: buildLogPlay();" id="bl_play">Play</button>
+    <button onclick="javascript: buildLogNextWrap(1);">Next</button>
+    <span style="margin-left: 1em;">Demo:</span>
+    <button onclick="javascript: nextDemo(-1);">Prev</button>
+    <button onclick="javascript: nextDemo(1);">Next</button>
+</p>
+<p>
+    <a href="https://tools.ietf.org/html/rfc7946">GeoJSON</a> of result (experimental):
+</p>
+<center><textarea id="geojson" rows="8" style="width: 650px;"></textarea></center>
+<p>
+    Polygon Clipping Demo based somewhat on the F. Martinez et al. algorithm (2008)
+</p>
+<p>
+    Coded (painfully) by
+    <a href="https://twitter.com/voidqk">@voidqk</a> from
+    <a href="http://syntheti.cc">syntheti.cc</a> &ndash; MIT License
+</p>
+<p>
+    <a href="http://syntheti.cc/article/polygon-clipping-pt2/">Read the companion tutorial</a>
+    <span style="padding: 0 1em; opacity: 0.3;">|</span>
+    <a href="https://github.com/voidqk/polybooljs">Project home on GitHub</a>
+</p>
+
+<input type="button" value="Say hello" onClick="javascript: recalc();" />
+
+
+</body>
+</html>

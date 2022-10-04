@@ -20,6 +20,7 @@ public class Constants {
 
     public static final float SKYBOX_SIZE = UNIT * 100;
     public static final float[] LIGHT_BULB_LOCATION = {0, 0, 0, 1};
+    public static final float[] Z_NORMAL = {0, 0, 1};
 
 
     static final float ROOM_CENTER_SIZE = 0.01f;

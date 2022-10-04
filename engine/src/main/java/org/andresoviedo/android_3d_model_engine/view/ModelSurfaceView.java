@@ -68,7 +68,6 @@ public class ModelSurfaceView extends GLSurfaceView implements EventListener {
 	}
 
 
-
 	@Override
 	public boolean onEvent(EventObject event) {
 		if (event instanceof TouchEvent &&  ((TouchEvent) event).getAction() == TouchEvent.Action.PINCH){
