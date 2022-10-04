@@ -3,6 +3,8 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 3.5.0 (04/09/2022)
+    - (n) merged shadow + geometry demo into master branch
 - 3.4.1 (23/09/2022)
     - (f) bug fixing: lighting, textures, etc #176
     - (i) texture loading refactoring #61
