@@ -14,7 +14,7 @@
 
     <string-array name="menu_items">
         <item>Load Model</item>
-        <item>Demos...</item>
+        <!--<item>Models</item>-->
         <item>Demo</item>
         <item>Help</item>
         <item>About</item>

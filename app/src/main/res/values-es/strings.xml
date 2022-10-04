@@ -14,7 +14,7 @@
 
     <string-array name="menu_items">
         <item>Cargar Modelo</item>
-        <item>Demos...</item>
+        <!--<item>Modelos</item>-->
         <item>Demo</item>
         <item>Ayuda</item>
         <item>Acerca</item>

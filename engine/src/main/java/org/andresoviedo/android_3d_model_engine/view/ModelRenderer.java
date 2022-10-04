@@ -366,10 +366,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer {
         if (fatalException) {
             return;
         }
-        if (scene == null) {
-            // scene not ready
-            return;
-        }
         try {
 
             GLES20.glViewport(0, 0, width, height);
