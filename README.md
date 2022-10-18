@@ -16,7 +16,7 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 News (04/10/2022)
 =================
 
-* Preparing version 4.0.0...
+* Preparing version 4.0.0 for Google Play release...
 * New orthographic, isometric and free camera views
 * GLTF basic support :)
 * Rebranding to org.the3deer
@@ -53,7 +53,7 @@ but at least it's opened to anyone who wants to contribute or don't want to star
 
 As this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs;
 but I will try to continue improving the app and adding more features. So please send me your comments, suggestions or
-complains by opening an [issue](https://github.com/the3deer/android-3D-model-viewer/issues) or email me to andresoviedo@gmail.com.
+complains by opening an [issue](https://github.com/the3deer/android-3D-model-viewer/issues).
 
 The app comes with some included 3D models that have different licenses.
 
@@ -61,8 +61,8 @@ The app comes with some included 3D models that have different licenses.
 Whats next
 ==========
 
-* Support for glTF standard format
-* 3D without glasses
+* Improve support for glTF standard format
+* VR without glasses (on hold)
 * Augmented reality
 
 
@@ -152,8 +152,8 @@ You can run application in an emulator
     adb -s emulator-5554 push .\app\src\main\assets\models /sdcard/download
 
 
-Glases
-======
+Glasses
+=======
 
 You may need one of this glasses to view models in 3D virtual reality.
 
@@ -164,6 +164,7 @@ You may need one of this glasses to view models in 3D virtual reality.
 Dependencies
 ============
 
+* git submodule add https://github.com/the3deer/android-3D-engine.git engine (3d engine)
 * implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4'  (gltf json parser)
 
 
