@@ -1,84 +1,85 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
 
 
     <item
         android:id="@+id/model_toggle_skybox"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="100"
-        android:showAsAction="ifRoom"
-        android:title="Toggle Sky Box"/>
+        android:title="Toggle Sky Box"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_projection"
         android:icon="@android:drawable/ic_menu_camera"
         android:orderInCategory="200"
-        android:showAsAction="ifRoom"
-        android:title="Toggle Projection"/>
+        android:title="Toggle Projection"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_lights"
         android:icon="@android:drawable/ic_menu_compass"
         android:orderInCategory="300"
-        android:showAsAction="ifRoom"
-        android:title="@string/toggle_lights"/>
+        android:title="@string/toggle_lights"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_wireframe"
         android:icon="@android:drawable/ic_menu_sort_by_size"
         android:orderInCategory="400"
-        android:showAsAction="ifRoom"
-        android:title="@string/toggle_wireframe"/>
+        android:title="@string/toggle_wireframe"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_textures"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="500"
-        android:showAsAction="ifRoom"
-        android:title="@string/toggle_textures"/>
+        android:title="@string/toggle_textures"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_animation"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="600"
-        android:showAsAction="ifRoom"
-        android:title="@string/toggle_animation"/>
+        android:title="@string/toggle_animation"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_smooth"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="700"
-        android:showAsAction="ifRoom"
-        android:title="Toggle Smooth"/>
+        android:title="Toggle Smooth"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_load_texture"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="800"
-        android:showAsAction="ifRoom"
-        android:title="@string/load_texture"/>
+        android:title="@string/load_texture"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_stereoscopic"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="900"
-        android:showAsAction="ifRoom"
-        android:title="Toggle Stereoscopic"/>
+        android:title="Toggle Stereoscopic"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_blending"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="1000"
-        android:showAsAction="ifRoom"
-        android:title="Toggle X-Ray" />
+        android:title="Toggle X-Ray"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_boundingbox"
         android:icon="@android:drawable/ic_menu_crop"
         android:orderInCategory="1100"
-        android:showAsAction="ifRoom"
-        android:title="@string/toggle_boundingbox"/>
+        android:title="@string/toggle_boundingbox"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_collision"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="1200"
-        android:showAsAction="ifRoom"
-        android:title="Toggle Collision"/>
+        android:title="Toggle Collision"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/model_toggle_immersive"
         android:icon="@android:drawable/ic_menu_gallery"
         android:orderInCategory="1300"
-        android:showAsAction="ifRoom"
-        android:title="Toggle Immersive"/>
+        android:title="Toggle Immersive"
+        app:showAsAction="ifRoom" />
 
     <!--
     <item
@@ -87,8 +88,6 @@
         android:orderInCategory="500"
         android:showAsAction="ifRoom"
         android:title="@string/action_settings"/>
-
-
     -->
 
 </menu>
