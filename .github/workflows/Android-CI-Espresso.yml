@@ -1,0 +1,59 @@
+name: Github CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: macOS-latest
+    strategy:
+      matrix:
+        java_version: [ 11 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Install JDK ${{ matrix.java_version }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: ${{ matrix.java_version }}
+      - name: Install Android SDK
+        uses: malinskiy/action-android/install-sdk@release/0.1.4
+      - name: Build project
+        run: ./gradlew assembleDebug
+      # TODO test is broken, it needs work work and is out of the scope og this pull request
+      # - name: Run tests
+      #   run: ./gradlew test
+# TODO lint is broken, it needs a lot of work and is out of the scope og this pull request
+#  check:
+#    name: Check
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        java_version: [ 11 ]
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#        with:
+#          submodules: true
+#      - name: Install JDK ${{ matrix.java_version }}
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: 'adopt'
+#          java-version: ${{ matrix.java_version }}
+#      - name: Install Android SDK
+#        uses: malinskiy/action-android/install-sdk@release/0.1.4
+#      - name: Gradle checks
+#        run: ./gradlew check
+#      - name: Archive Lint report
+#        uses: actions/upload-artifact@v3
+#        if: ${{ always() }}
+#        with:
+#          name: 3D-Lint
+#          path: ./**/build/reports/lint-results.html

@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Publish release
+    runs-on: macOS-latest # it comes with NDK installed
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Find Tag
+        id: tagger
+        uses: jimschubert/query-tag-action@v2
+        with:
+          skip-unshallow: 'true'
+          abbrev: false
+          commit-ish: HEAD
+      - name: Install JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+      - name: Install Android SDK
+        uses: malinskiy/action-android/install-sdk@release/0.1.4
+      - name: Build project
+        run: ./gradlew build
+        env:
+          VERSION: ${{ github.ref }}
+      - name: Create Release
+          uses: softprops/action-gh-release@v1
+          with:
+            tag_name: ${{steps.tagger.outputs.tag}}
+            name: ${{steps.tagger.outputs.tag}}
+            generate_release_notes: true
+            files: ./app/build/outputs/apk/release/LiveEdgeDetection-*-release.apk
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
