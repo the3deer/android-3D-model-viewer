@@ -3,6 +3,12 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 4.1.0 (22/10/2024)
+    - (n) Gltf Animations
+    - (n) Android Preferences for Settings
+    - (n) Loader: Integrated Khronos repository
+    - (i) Android view using Fragments
+    - (i) Android SDK and dependencies updated
 - 4.0.0 (04/09/2022)
     - (i) rebranding to org.the3deer
     - (i) master branch renamed to main
@@ -24,7 +30,6 @@ ChangeLog
     - (n) New gui axis + gui info
     - (f) fixed FPS counter
     - (i) some user options are being saved (camera settings)
-
 - 3.2.0 (02/02/2022)
     - (i) repository explorer improved - multiple index files
     - (f) smoothing fixed
@@ -57,7 +62,7 @@ ChangeLog
     - (f) Fixed overall bugs
 - 2.7.0 (13/11/2019)
     - (n) new blending force mode to 50%
-    - (f) fixed light rendering issues on shaders #125 (diffuse + specular)
+    - (f) fixed light rendering issues on renderers #125 (diffuse + specular)
     - (f) fixed bugs when DAE had multiple geometries #125
     - (f) fixed textures not being linked issue
     - (f) fixed performance issues: now rendering below 5% cpu & no ram allocation
@@ -71,7 +76,7 @@ ChangeLog
 - 2.5.0 (19/05/2019)
     - (n) new blending toggle
     - (n) new color toggle
-    - (i) engine refactoring: externalized shaders
+    - (i) engine refactoring: externalized renderers
     - (i) engine improved: fixed bugs and removed classes
 - 2.4.0 (16/05/2019)
     - (n) stereoscopic rendering: anaglyph + cardboard

@@ -13,13 +13,14 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * GLTF format (gltf): https://www.khronos.org/gltf/
 
 
-News (04/10/2022)
+News (22/10/2024)
 =================
 
-* Preparing version 4.0.0 for Google Play release...
-* New orthographic, isometric and free camera views
-* GLTF basic support :)
-* Rebranding to org.the3deer
+* Gltf Animations :D
+* Android view using Fragments
+* Android Preferences for Settings
+* Android SDK and dependencies updated
+* Loader: Integrated Khronos repository
 
 Demo
 ====
@@ -84,16 +85,16 @@ Features
   - [x] Multiple Rendering Modes 
     - [x] triangles
     - [x] wireframe
-    - [x] point cloud
+    - [ ] point cloud
     - [x] skeleton
   - [x] camera support
     - [x] perspective
-    - [x] orthographic
-    - [x] isometric views
-    - [x] free
-  - [x] skeletal animations (collada dae)
+    - [ ] orthographic
+    - [ ] isometric views
+    - [ ] free
+  - [x] skeletal animations (collada dae, gltf)
   - [x] ray collision detection
-  - [x] stereoscopic 3D: anaglyph + cardboard
+  - [ ] stereoscopic 3D: anaglyph + cardboard
   - [x] other:
      - [x] Polygon with holes
      - [x] Smoothing
@@ -102,8 +103,7 @@ Features
      - [x] Object picking
      - [x] file explorer
      - [x] repository explorer
-     - [x] texture loader
-     - [x] lightweight: only 1.3 Megabyte (embedded models excluded)
+     - [x] lightweight: only 8 Megabyte (3d models excluded)
 
   
 Try it
@@ -116,7 +116,7 @@ You can install the application in either of these ways:
   * Source code: clone the repository, compile with gradle and install with adb
 
 ```
-    export ANDROID_HOME=/home/$USER/Android/Sdk
+    export ANDROID_HOME=/home/$USER/Android/Sdk
     ./gradlew assembleDebug
     adb install -r app/build/outputs/apk/app-debug.apk
     adb shell am start -n org.andresoviedo.dddmodel2/org.the3deer.app.model3D.MainActivity
@@ -164,8 +164,9 @@ You may need one of this glasses to view models in 3D virtual reality.
 Dependencies
 ============
 
-* git submodule add https://github.com/the3deer/android-3D-engine.git engine (3d engine)
-* implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4'  (gltf json parser)
+In order to compile the application you must include this git submodule
+
+    git submodule add https://github.com/the3deer/android-3D-engine.git engine
 
 
 Documentation
@@ -180,7 +181,7 @@ Acknowledgement
 * For teaching how animation engine works: https://github.com/TheThinMatrix/OpenGL-Animation
 * To the lot of user's feedback: https://github.com/the3deer/android-3D-model-viewer/issues
 * For the GLTF parser https://github.com/javagl/JglTF
-* To the many infinite educational resources found in Internet for free :)
+* To the many infinite educational resources found on Internet for free, thank you ! :)
 
 
 Licenses
@@ -199,9 +200,10 @@ copies or substantial portions of the Software.
 Assets
 
  * cowboy       : Unlicense License - https://github.com/TheThinMatrix/OpenGL-Animation
+ * fox          : CC0: Low poly fox by PixelMannen, CC-BY 4.0: Rigging and animation by @tomkranis on Sketchfab
  * stormtrooper : MIT License - https://github.com/hujiulong/vue-3d-model
  * toyplane     : Editorial Uses Only - https://blog.turbosquid.com/turbosquid-3d-model-license/#Editorial-Usage
  * skybox sea   : https://learnopengl.com/Advanced-OpenGL/Cubemaps
  * skybox sand  : Copyright 2012 Mobialia - https://github.com/mobialia/jmini3d
- * repository (parts)  : Community contribution (Professsor S)
+ * models (parts)  : Community contribution (Professor S)
  

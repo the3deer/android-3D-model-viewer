@@ -1,52 +1,46 @@
 plugins {
-    id 'com.android.application'
+    id 'com.android.library'
 }
 
 android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "org.andresoviedo.dddmodel2"
         minSdk 21
         targetSdk 34
 
-        multiDexEnabled true
-    }
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
 
-    signingConfigs {
-        release {
-            storeFile file("android-3d-model-viewer.jks")
-            storePassword ""
-            keyAlias "android-3d-model-viewer"
-            keyPassword ""
-        }
+        multiDexEnabled true
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    buildFeatures {
-        viewBinding true
-    }
-    namespace 'org.andresoviedo.dddmodel2'
+    namespace 'org.the3deer.android_3d_model_engine'
+
 }
 
 dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
     implementation 'javax.inject:javax.inject:1'
     implementation 'androidx.core:core:1.13.1'
     implementation 'androidx.fragment:fragment:1.8.3'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-android:2.8.6'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation project(':engine')
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'  // required by gltf parser
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }

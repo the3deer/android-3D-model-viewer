@@ -3,7 +3,17 @@
 
     <string name="app_name">3D Model Viewer</string>
     <string name="app_version">Version 1.0</string>
+
+    <!-- common -->
+    <string name="alert_dialog_ok">Ok</string>
+    <string name="alert_dialog_cancel">Cancel</string>
+    <string name="alert_dialog_title">Menu</string>
+    <string name="alert_dialog_repository">Repository</string>
+
+    <!-- main menu -->
+    <string name="alert_dialog_main_title">Menu</string>
     <string name="action_settings">Settings</string>
+
     <!-- Activities -->
     <string name="title_activity_menu">Menu</string>
     <string name="title_activity_demo">Demo</string>
@@ -12,21 +22,29 @@
     <!-- Demo menu -->
     <string name="item">item</string>
 
-    <string-array name="menu_items">
+    <string-array name="dialog_menu_items">
         <item>Load Model</item>
-        <!--<item>Models</item>-->
-        <item>Demo</item>
+        <!-- item>Demos...</item -->
+        <item>Demos</item>
         <item>Help</item>
         <item>About</item>
         <!--<item>GitHub</item>-->
         <item>Exit</item>
     </string-array>
 
+    <string-array name="dialog_load_items">
+        <item>Samples</item>
+        <item>Repository (the3deer)</item>
+        <item>Repository (Khronos)</item>
+        <item>Android Explorer</item>
+        <item>File Explorer (Android &lt;= 10)</item>
+    </string-array>
+
     <string name="image">image</string>
     <!-- Help -->
-    <string name="help_text">Load Model\n\nLoad the samples included with the app (Samples), github repository (Repository) or download them to your device and open it (using File or Android Explorer)\n\nSupported formats\n\nOnly wavefront, stereolithography or Collada files (*.obj, *.stl, *.dae) are currently supported.\n\nDemo\n\nExample scene using the API. It loads several models using different draw modes, colors, textures, etc.\n\nRenderer\n\nOnce you load a model, you can pinch to zoom, translate the camera with your finger and rotate the screen with 2 fingers\n\nToolbar\n\nIn the action bar you will also find several buttons for toggling different draw modes like wireframe or points, enabling or disabiling lights, textures or animation.\n\nTroubleshooting\n\nIf the model file (.obj) is referencing any materials file (*.mtl) be sure its in the same folder; same applies for texture files (*.jpg, *.bmp) being referenced in the material file.\n\nIf you need more help or have any issue feel free to open a ticket in github or ask me. Thank you in advance for your feedback.\n\nhttps://github.com/the3deer/android-3D-model-viewer/issues\n\nandresoviedo@gmail.com</string>
+    <string name="help_text">Load Model\n\nLoad the samples included with the app (Samples), github repository (Repository) or download them to your device and open it (using File or Android Explorer)\n\nSupported formats\n\nOnly wavefront, stereolithography, Collada files or Gltf files (*.obj, *.stl, *.dae, *.gltf) are currently supported.\n\nDemo\n\nExample scene using the API. It loads several models using different draw modes, colors, textures, etc.\n\nRenderer\n\nOnce you load a model, you can pinch to zoom, translate the camera with your finger and rotate the screen with 2 fingers\n\nMenu\n\nIn the floating button you will also find several settings for toggling different functions like wireframe or the skybox.\n\nTroubleshooting\n\nIf the model file (.obj) is referencing any materials file (*.mtl) be sure its in the same folder; same applies for texture files (*.jpg, *.bmp) being referenced in the material file.\n\nIf you need more help or have any issue feel free to open a ticket in github or ask me. Thank you in advance for your feedback.\n\nhttps://github.com/the3deer/android-3D-model-viewer/issues\n\nandresoviedo@gmail.com</string>
     <!-- About -->
-    <string name="about_text">This application allows you to load 3D object models (currently only Wavefront, Stereolithography and Collada formats are supported).\n\nThe purpose of this application is to learn how to draw in android using the OpenGL 2.0 language.\n\nThe code for this application is open source and it can be found at https://github.com/the3deer/android-3D-model-viewer\n\nAs this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs; but I will try to continue improving the app.\n\nThe included models in the app were taken for free from Internet.\n\nThis application does not collect or make use of any kind of personal information.\n\nAny comments, suggestions, contributions, complains or donations are welcome. Feel free to contact me at andresoviedo@gmail.com.\n\nhttp://www.andresoviedo.org</string>
+    <string name="about_text">This application allows you to load 3D object models (currently only Wavefront, Stereolithography, Collada and Gltf formats are supported).\n\nThe purpose of this application is to learn how to draw in android using the OpenGL 2.0/3.0 language.\n\nThe code for this application is open source and it can be found at https://github.com/the3deer/android-3D-model-viewer\n\nAs this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs; but I will try to continue improving the app.\n\nThe included models in the app were taken for free from Internet.\n\nThis application does not collect or make use of any kind of personal information.\n\nAny comments, suggestions, contributions or donations are welcome. Feel free to contact me at andresoviedo@gmail.com.\n\nhttp://www.andresoviedo.org</string>
     <!-- Load settings -->
     <string name="model_name">Model name</string>
     <string name="texture">Texture</string>
@@ -38,8 +56,9 @@
     <!-- Scene settings -->
     <string name="scene">Scene...</string>
     <!-- GL Settings -->
+    <string name="toggle_camera">Toggle Camera</string>
     <string name="toggle_wireframe">Toggle wireframe</string>
-    <string name="toggle_textures">Toggle textures</string>
+    <string name="toggle_skeleton">Toggle skeleton</string>
     <string name="toggle_lights">Toggle lights</string>
     <string name="toggle_animation">Toggle animation</string>
     <!--<string name="toggle_skeleton">Toggle skeleton</string>-->
@@ -50,13 +69,57 @@
     <string name="app_logo_desc">Teapot animated logo</string>
 
 
-    <!-- polybool -->
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <!--<string name="item">Item</string>-->
+    <string-array name="menu_items_iso">
+        <item>Play</item>
+        <item>Exit</item>
+    </string-array>
+    <string-array name="menu_items_level">
+        <item>Easy</item>
+        <item>Medium</item>
+        <item>Hard</item>
+    </string-array>
+    <string-array name="level_easy_1">
+        <item>cube_0_0_0</item>
+        <item>cube_0_0_0</item>
+        <item>prism_0_0_0</item>
+    </string-array>
+    <string-array name="level_easy_2">
+        <item>prism_0_0_0</item>
+        <item>cube_0_0_0</item>
+        <item>cube_0_0_0</item>
+    </string-array>
+    <string-array name="level_easy_3">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item>prism_0_0_0</item>
+        <item>qcylinder_0_0_0</item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string-array name="level_easy_4">
+        <item></item>
+        <item>cube_0_0_0</item>
+        <item>prism_0_0_0</item>
+        <item>cube_0_0_0</item>
+    </string-array>
+    <string-array name="level_easy_5">
+        <item></item>
+        <item>cube_0_0_0</item>
+        <item>qcylinder_0_0_0</item>
+    </string-array>
+    <string-array name="level_easy_6">
+        <item></item>
+        <item>qcylinder_0_0_0</item>
+        <item>cube_0_0_0</item>
+    </string-array>
+    <string-array name="level_easy_7">
+        <item></item>
+        <item>qcylinder_0_0_0</item>
+        <item>cube_0_0_0</item>
+        <item>qcylinder_0_0_0</item>
+    </string-array>
 </resources>
