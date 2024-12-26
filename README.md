@@ -115,7 +115,17 @@ You can install the application in either of these ways:
   * APK: [app-release.apk](app/build/outputs/apk/release/app-release.apk)
   * Source code: clone the repository, compile with gradle and install with adb
 
+
+Compilation
+===========
+
+Script to build an apk package and run in your device.
+- Git 1.6.5 or later is required
+- Android Gradle plugin requires Java 17 to run
+
 ```
+    git clone --recursive https://github.com/the3deer/android-3D-model-viewer.git
+    cd android-3D-model-viewer
     export ANDROID_HOME=/home/$USER/Android/Sdk
     ./gradlew assembleDebug
     adb install -r app/build/outputs/apk/app-debug.apk
