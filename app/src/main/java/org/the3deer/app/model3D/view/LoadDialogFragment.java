@@ -40,6 +40,8 @@ import de.javagl.jgltf.model.io.IO;
 
 public class LoadDialogFragment extends DialogFragment {
 
+    private final static String TAG = LoadDialogFragment.class.getSimpleName();
+
     private static final URL REPO_URL = AndroidUtils.createURL("https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/models/index");
     private static final URL REPO_KHRONOS_URL = AndroidUtils.createURL("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/model-index.json");
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1000;
@@ -87,13 +89,17 @@ public class LoadDialogFragment extends DialogFragment {
                     loadModelFromKhronos();
                     break;
                 case ANDROID_EXPLORER:
-                    loadModelFromContentProvider();
+                    Bundle result = new Bundle();
+                    result.putString("action", "pick");
+                    getParentFragmentManager().setFragmentResult("app", result);
+                    //loadModelFromContentProvider();
                     break;
                 case FILE_EXPLORER:
                     loadModelFromSdCard();
                     break;
             }
         } catch (Exception ex) {
+            Log.e(TAG, ex.getMessage(),ex);
             Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -323,10 +329,16 @@ public class LoadDialogFragment extends DialogFragment {
     }
 
     private void askForFile(int requestCode, String mimeType) {
-        Intent target = ContentUtils.createGetContentIntent(mimeType);
-        Intent intent = Intent.createChooser(target, "Select file");
+        //Intent target = ContentUtils.createGetContentIntent(mimeType);
+        //Intent intent = Intent.createChooser(target, "Select file");
         try {
-            startActivityForResult(intent, requestCode);
+
+            //activity.startActivityFromFragment(this, intent, requestCode);
+            /*// perform
+            Log.i("LoadDialogFragment","Loading using android content manager...");
+            Bundle result = new Bundle();
+            result.putString("action", "load");
+            getParentFragmentManager().setFragmentResult("pick", result);*/
         } catch (ActivityNotFoundException e) {
             Toast.makeText(activity, "Error. Please install a file content provider", Toast.LENGTH_LONG).show();
         }

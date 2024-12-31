@@ -3,12 +3,16 @@ ChangeLog
 
 (f) fixed, (i) improved, (n) new feature
 
+- 4.1.1 (31/12/2024)
+    - (i) Android SDK and dependencies updated (API 35)  
+    - (f) Fixed Android Content Manager Loader
+    - (f) Fixed shader issue
 - 4.1.0 (22/10/2024)
     - (n) Gltf Animations
     - (n) Android Preferences for Settings
     - (n) Loader: Integrated Khronos repository
     - (i) Android view using Fragments
-    - (i) Android SDK and dependencies updated
+    - (i) Android SDK and dependencies updated (API 34)
 - 4.0.0 (04/09/2022)
     - (i) rebranding to org.the3deer
     - (i) master branch renamed to main
