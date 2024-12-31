@@ -13,7 +13,7 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * GLTF format (gltf): https://www.khronos.org/gltf/
 
 
-News (22/10/2024)
+News (31/12/2024)
 =================
 
 * Gltf Animations :D
@@ -25,7 +25,7 @@ News (22/10/2024)
 Demo
 ====
 
-Checkout this to see the features of the application: https://www.youtube.com/watch?v=PV92DKohXXk
+Checkout this to see the features of the application (old video): https://www.youtube.com/watch?v=PV92DKohXXk
 
 
 Android Market
@@ -40,7 +40,7 @@ Notice
 
 * Collada support is limited. Collada renderer currently supports a maximum of 60 bones.
 * In order to see models in 3D virtual reality, you need red-cyan and/or VR glasses
-* If you have any issue in general,please open an issue and attach model if possible, specifying Android version and Device model.  
+* If you have any issue in general, please open an issue and attach model if possible, specifying Android version and Device model.  
 
 
 About
@@ -52,27 +52,19 @@ The main purpose of this app is to show how to draw in android using the OpenGL 
 So please, don't expect this application to be much richer or nicer than the ones already published in the app store,
 but at least it's opened to anyone who wants to contribute or don't want to start a similar project from scratch.
 
-As this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs;
+As this is my first android app and Im still learning the OpenGL language, it is highly probable that there are bugs;
 but I will try to continue improving the app and adding more features. So please send me your comments, suggestions or
 complains by opening an [issue](https://github.com/the3deer/android-3D-model-viewer/issues).
 
 The app comes with some included 3D models that have different licenses.
 
 
-Whats next
-==========
-
-* Improve support for glTF standard format
-* VR without glasses (on hold)
-* Augmented reality
-
-
 Features
 ========
 
-  - [x] Supports >= Android 4.1 (Ice Cream Sandwich) - Min API Level 16 -> Target API Level 31
-  - [x] OpenGL ES 2.0 API
-  - [x] Multiple Formats: 
+  - [x] Supports >= Android Lollipop 5.0 (Min API Level 21 -> Target API Level 35)
+  - [x] Android API: OpenGL ES 2.0, Fragments, Preferences, Content Manager 
+  - [x] 3D Formats: 
     - [x] OBJ (wavefront)
     - [x] STL (STereoLithography)
     - [x] DAE (Collada-BETA)
@@ -114,6 +106,10 @@ You can install the application in either of these ways:
   * Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2
   * APK: [app-release.apk](app/build/outputs/apk/release/app-release.apk)
   * Source code: clone the repository, compile with gradle and install with adb
+
+Once you open the application, you can load any of the supported model formats.
+
+  * It's recommended to have all the model resources packed in a .zip file
 
 
 Compilation

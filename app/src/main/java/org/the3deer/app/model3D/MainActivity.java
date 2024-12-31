@@ -1,12 +1,16 @@
 package org.the3deer.app.model3D;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -15,6 +19,8 @@ import org.andresoviedo.dddmodel2.R;
 import org.the3deer.android_3d_model_engine.ModelEngine;
 import org.the3deer.android_3d_model_engine.ModelFragment;
 import org.the3deer.android_3d_model_engine.ModelViewModel;
+import org.the3deer.app.model3D.view.HelpDialogFragment;
+import org.the3deer.app.model3D.view.LoadContentDialog;
 import org.the3deer.app.model3D.view.MainDialogFragment;
 
 /**
@@ -33,6 +39,9 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
 	// variables
 	private Fragment fragmentMenu;
 	private ModelViewModel viewModel;
+	private ActivityResultLauncher<String> mGetContent;
+
+	private LoadContentDialog loadContentDialog = new LoadContentDialog(this);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +63,11 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
             // Do something with the result.
             if ("load".equals(action)) {
                 showDialog();
-            } else if ("back".equals(action)){
+            } else if ("help".equals(action)){
+				showHelpDialog();
+			} else if ("pick".equals(action)){
+				loadContentDialog.start();
+			} else if ("back".equals(action)){
 				showDialog();
 			}
         });
@@ -66,17 +79,37 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
 			}
 		});
 
+		ActivityResultContracts.GetContent contract = loadContentDialog.getActivityContract();
+
+		mGetContent = registerForActivityResult(contract,
+				uri -> {
+					try {
+						// Handle the returned Uri
+						Log.i(TAG, "Uri: " + uri);
+						loadContentDialog.load(uri);
+					} catch (Exception e) {
+						Log.e(TAG, "Exception loading uri: " + uri, e);
+						Toast.makeText(getApplication(), "Problem loading " + uri.toString()+
+										"\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+					}
+});
+
 		showDialog();
 		//launchModelRendererActivity(Uri.parse("android://org.the3deer.dddmodel2/assets/models/teapot.obj"), "0");
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+	}
 
-
-	/*@Override
+/*@Override
 	public void onBackPressed() {
 		super.onBackPressed();
 		showDialog();
 	}*/
+
+
 
 	private void showDialog(){
 		//Log.i("MainActivity", "setUp: "+getSupportFragmentManager().findFragmentByTag("model"));
@@ -86,9 +119,18 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
 		}
 	}
 
+	public void showHelpDialog() {
+		HelpDialogFragment fragment = HelpDialogFragment.newInstance(R.string.alert_dialog_help_title);
+		fragment.show(getSupportFragmentManager(), "help");
+	}
+
 	@Override
 	public void onDismiss(DialogInterface dialog) {
 		//showDialog();
+	}
+
+	public void pick(String mimeType){
+		this.mGetContent.launch(mimeType);
 	}
 
 	private void launchModelRendererActivity(Uri uri, String type) {
