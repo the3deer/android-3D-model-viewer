@@ -13,14 +13,12 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 * GLTF format (gltf): https://www.khronos.org/gltf/
 
 
-News (31/12/2024)
+News (30/05/2025)
 =================
 
-* Gltf Animations :D
-* Android view using Fragments
-* Android Preferences for Settings
-* Android SDK and dependencies updated
-* Loader: Integrated Khronos repository
+* Anaglyph support is back & Shadow support is enabled
+* Generic Preferences + Engine Improvement
+* **Not yet published on Play Store!**
 
 Demo
 ====
@@ -62,40 +60,44 @@ The app comes with some included 3D models that have different licenses.
 Features
 ========
 
-  - [x] Supports >= Android Lollipop 5.0 (Min API Level 21 -> Target API Level 35)
-  - [x] Android API: OpenGL ES 2.0, Fragments, Preferences, Content Manager 
-  - [x] 3D Formats: 
+  - [x] **Platform & API**
+    - [x] Java 8
+    - [x] Android >= Lollipop 5.0 (Min API Level 21 -> Target API Level 35)
+    - [x] Android Apis OpenGL ES 2.0, Fragments, Preferences, Content Manager 
+  - [x] **Supported 3D Formats**
     - [x] OBJ (wavefront)
     - [x] STL (STereoLithography)
-    - [x] DAE (Collada-BETA)
+    - [x] DAE (Collada)
     - [x] GLTF (GL Transmission Format)
-  - [x] Vertex Normals support
-  - [x] Transformation support: scaling, rotation, translation, orientation
-  - [x] Colors support
-  - [x] Textures support
-  - [x] Lighting support
-  - [x] Multiple Rendering Modes 
-    - [x] triangles
+  - [x] Core Rendering Capabilities
+    - [x] Vertex, Normals, Colors, Textures, etc
+    - [x] Skinning support (animation)
+    - [x] Texture mapping
+    - [x] Lighting
+    - [ ] Shadow
+  - [x] VR Support
+    - [ ] Anaglyph (red/blue)
+    - [ ] Stereo (left/right)
+  - [x] Decorators
     - [x] wireframe
-    - [ ] point cloud
+    - [x] skybox
     - [x] skeleton
-  - [x] camera support
-    - [x] perspective
+  - [x] Camera Support
+    - [x] user camera (perspective, zoom))
     - [ ] orthographic
-    - [ ] isometric views
+    - [ ] isometric
     - [ ] free
-  - [x] skeletal animations (collada dae, gltf)
-  - [x] ray collision detection
-  - [ ] stereoscopic 3D: anaglyph + cardboard
   - [x] other:
-     - [x] Polygon with holes
+     - [x] Polygons with holes
      - [x] Smoothing
      - [x] Bounding box
-     - [x] Skybox
-     - [x] Object picking
-     - [x] file explorer
-     - [x] repository explorer
-     - [x] lightweight: only 8 Megabyte (3d models excluded)
+     - [x] Ray Casting
+     - [x] File Explorer
+     - [x] Repository Explorer
+     - [x] Lightweight: only 8 Megabyte (3d models excluded)
+
+
+Some features have been disabled for now.
 
   
 Try it

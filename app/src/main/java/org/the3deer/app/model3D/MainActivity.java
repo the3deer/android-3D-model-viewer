@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
 						loadContentDialog.load(uri);
 					} catch (Exception e) {
 						Log.e(TAG, "Exception loading uri: " + uri, e);
-						Toast.makeText(getApplication(), "Problem loading " + uri.toString()+
+						Toast.makeText(getApplication(), "Problem loading " + uri+
 										"\n"+e.getMessage(), Toast.LENGTH_LONG).show();
 					}
 });
