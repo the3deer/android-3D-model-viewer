@@ -25,7 +25,7 @@ import org.the3deer.app.model3D.view.MainDialogFragment;
 
 /**
  * This is the main android activity. From here we launch the whole stuff.
- * 
+ *
  * Basically, this activity may serve to show a Splash screen and copy the assets (obj models) from the jar to external
  * directory.
  * 
@@ -52,8 +52,8 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
 		setContentView(R.layout.activity_main);
 
 		// configure model
-		viewModel = new ViewModelProvider(this).get(ModelViewModel.class);
-		final ModelEngine modelEngine = ModelEngine.newInstance(this, savedInstanceState, null);
+		//viewModel = new ViewModelProvider(this).get(ModelViewModel.class);
+		//final ModelEngine modelEngine = ModelEngine.newInstance(this, savedInstanceState, null);
 		//viewModel.setModelEngine(modelEngine);
 
 		// listen for engine events
@@ -95,7 +95,8 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
 });
 
 		showDialog();
-		//launchModelRendererActivity(Uri.parse("android://org.the3deer.dddmodel2/assets/models/teapot.obj"), "0");
+
+		launchModelRendererActivity(null, null, true);
 	}
 
 	@Override
@@ -133,12 +134,12 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
 		this.mGetContent.launch(mimeType);
 	}
 
-	private void launchModelRendererActivity(Uri uri, String type) {
+	private void launchModelRendererActivity(String uri, String type, boolean demo) {
 
 		try {
-			Log.i("Menu", "Launching renderer for '" + uri + "'");
+			Log.i(TAG, "Launching renderer for '" + uri + "'");
 			//URI.create(uri.toString());
-			ModelFragment modelFragment = ModelFragment.newInstance(uri.toString(), type, false);
+			ModelFragment modelFragment = ModelFragment.newInstance(uri, type, demo);
 			getSupportFragmentManager().beginTransaction()
 					.replace(R.id.main_container, modelFragment, "model")
 					.setReorderingAllowed(true)
@@ -146,8 +147,8 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
 					.commit();
 
 		} catch (Exception e) {
-			Log.e("Menu", "Launching renderer for '" + uri + "' failed: "+e.getMessage(),e);
-			Toast.makeText(getApplication(), "Error: " + uri.toString(), Toast.LENGTH_LONG).show();
+			Log.e(TAG, "Launching renderer for '" + uri + "' failed: "+e.getMessage(),e);
+			Toast.makeText(getApplication(), "Error: " + uri, Toast.LENGTH_LONG).show();
 		}
 	}
 

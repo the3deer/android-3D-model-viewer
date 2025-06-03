@@ -9,6 +9,7 @@ import android.widget.Toast;
 import org.andresoviedo.dddmodel2.R;
 import org.the3deer.android_3d_model_engine.ModelFragment;
 import org.the3deer.app.model3D.demo.EarCutDemoFragment;
+import org.the3deer.app.model3D.demo.ExampleDemoFragment;
 import org.the3deer.app.model3D.demo.GlyphsDemoFragment;
 import org.the3deer.util.android.ContentUtils;
 import org.the3deer.util.android.DialogFragment;
@@ -35,7 +36,7 @@ public class HelpDialogFragment extends DialogFragment {
             Action action = Action.values()[position];
             switch (action) {
                 case DEMOS:
-                    ContentUtils.showListDialog(activity, "Demos List", new String[]{"Simple Objects", "GUI", "Geometry"}, (DialogInterface dialog, int which) -> {
+                    ContentUtils.showListDialog(activity, "Demos List", new String[]{"Cube", "Simple Objects", "GUI", "Geometry"}, (DialogInterface dialog, int which) -> {
                         if (which == 0) {
                             ModelFragment modelFragment2 = ModelFragment.newInstance(null, null, true);
                             activity.getSupportFragmentManager().beginTransaction()
@@ -45,17 +46,25 @@ public class HelpDialogFragment extends DialogFragment {
                                     .commit();
                             dismiss();
                         } else if (which == 1) {
-                            ModelFragment modelFragment2 = new GlyphsDemoFragment();
+                            ModelFragment modelFragment2 = new ExampleDemoFragment();
                             activity.getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.main_container, modelFragment2, "demo_1")
                                     .setReorderingAllowed(true)
                                     .addToBackStack(null)
                                     .commit();
                             dismiss();
-                        } else if (which == 2) {
-                            ModelFragment modelFragment2 = new EarCutDemoFragment();
+                        }else if (which == 2) {
+                            ModelFragment modelFragment2 = new GlyphsDemoFragment();
                             activity.getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.main_container, modelFragment2, "demo_2")
+                                    .setReorderingAllowed(true)
+                                    .addToBackStack(null)
+                                    .commit();
+                            dismiss();
+                        } else if (which == 3) {
+                            ModelFragment modelFragment2 = new EarCutDemoFragment();
+                            activity.getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.main_container, modelFragment2, "demo_3")
                                     .setReorderingAllowed(true)
                                     .addToBackStack(null)
                                     .commit();

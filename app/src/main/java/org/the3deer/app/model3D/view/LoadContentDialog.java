@@ -346,7 +346,7 @@ public class LoadContentDialog {
                     .commit();
         } catch (Exception e) {
             Log.e(TAG, "Launching renderer for '" + uri + "' failed: " + e.getMessage(), e);
-            Toast.makeText(getActivity(), "Error: " + uri.toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), "Error: " + uri, Toast.LENGTH_LONG).show();
         }
     }
 

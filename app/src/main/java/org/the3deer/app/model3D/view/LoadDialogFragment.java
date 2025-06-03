@@ -584,7 +584,7 @@ public class LoadDialogFragment extends DialogFragment {
             dismiss();
         } catch (Exception e) {
             Log.e("Menu", "Launching renderer for '" + uri + "' failed: "+e.getMessage(),e);
-            Toast.makeText(getActivity(), "Error: " + uri.toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), "Error: " + uri, Toast.LENGTH_LONG).show();
             // info: filesystem url may contain spaces, therefore we re-encode URI
             /*try {
                 intent.putExtra("uri", new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), uri.getQuery(), uri.getFragment()).toString());
