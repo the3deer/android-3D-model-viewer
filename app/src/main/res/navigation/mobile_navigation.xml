@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="org.the3deer.android_3d_model_engine.ModelFragment"
+        android:label="welcome.obj"
+        tools:layout="@layout/fragment_model">
+        <argument
+            android:name="uri"
+            android:defaultValue="android:///assets/models/welcome.obj"
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="type"
+            android:defaultValue="obj"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+    <dialog
+        android:id="@+id/nav_load"
+        android:name="org.the3deer.modelviewer.ui.LoadDialogFragment"
+        android:label="@string/load">
+        <argument
+            android:name="title"
+            android:defaultValue="@string/load"
+            app:argType="reference" />
+        <argument
+            android:name="itemsId"
+            android:defaultValue="@array/dialog_load_from"
+            app:argType="reference"
+            app:nullable="false" />
+    </dialog>
+
+    <dialog
+        android:id="@+id/nav_help"
+        android:name="org.the3deer.modelviewer.ui.help.HelpDialogFragment"
+        android:label="@string/help">
+        <argument
+            android:name="title"
+            android:defaultValue="@string/load"
+            app:argType="reference" />
+        <argument
+            android:name="itemsId"
+            android:defaultValue="@array/dialog_help_items"
+            app:argType="reference"
+            app:nullable="false" />
+    </dialog>
+
+    <fragment
+        android:id="@+id/nav_help_fragment"
+        android:name="org.the3deer.modelviewer.ui.help.HelpFragment"
+        android:label="@string/help">
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_about"
+        android:name="org.the3deer.modelviewer.ui.about.AboutFragment"
+        android:label="@string/help">
+    </fragment>
+
+
+    <dialog
+        android:id="@+id/nav_settings"
+        android:name="org.the3deer.android_3d_model_engine.preferences.PreferenceDialog"
+        android:label="@string/title_settings" />
+    <!-- No tools:layout needed for PreferenceFragmentCompat usually -->
+
+    <dialog
+        android:id="@+id/nav_scenes"
+        android:name="org.the3deer.modelviewer.ui.SceneDialogFragment"
+        android:label="@string/scenes" />
+
+    <dialog
+        android:id="@+id/nav_animations"
+        android:name="org.the3deer.modelviewer.ui.animation.AnimationDialogFragment"
+        android:label="@string/animations" />
+
+    <!-- demos -->
+
+    <fragment
+        android:id="@+id/nav_demo1"
+        android:name="org.the3deer.modelviewer.demo.ExampleDemoFragment"
+        android:label="Objects demo"
+        tools:layout="@layout/fragment_model">
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_demo2"
+        android:name="org.the3deer.modelviewer.demo.GlyphsDemoFragment"
+        android:label="Glyphs demo"
+        tools:layout="@layout/fragment_model">
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_demo3"
+        android:name="org.the3deer.modelviewer.demo.EarCutDemoFragment"
+        android:label="Earcut demo"
+        tools:layout="@layout/fragment_model">
+    </fragment>
+
+    <!-- recent items -->
+    <navigation android:id="@+id/nav_recent_menu"/>
+
+</navigation>

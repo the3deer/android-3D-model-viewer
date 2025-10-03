@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".ui.help.HelpFragment"
+    android:paddingTop="?attr/actionBarSize"
+    android:background="@android:color/darker_gray">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/help_title_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/help"
+            android:textAppearance="?attr/textAppearanceHeadline5"
+            android:textSize="20sp"
+            android:layout_marginBottom="16dp"
+            android:textIsSelectable="true"/>
+
+        <TextView
+            android:id="@+id/help_content_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/help_text"  android:textAppearance="?attr/textAppearanceBody1"
+            android:textSize="20sp"
+            android:lineSpacingMultiplier="1.2"
+            android:textIsSelectable="true"/>
+
+        <!-- Optional: Add more sections or styled text as needed -->
+        <!--
+        <TextView
+            android:id="@+id/help_section_2_title_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Advanced Features"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
+            android:textIsSelectable="true"/>
+
+        <TextView
+            android:id="@+id/help_section_2_content_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Details about advanced features..."
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:lineSpacingMultiplier="1.2"
+            android:textIsSelectable="true"/>
+        -->
+
+    </LinearLayout>
+</ScrollView>
+   

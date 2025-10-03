@@ -13,7 +13,6 @@
     <!-- main menu -->
     <string name="alert_dialog_main_title">Menu</string>
     <string name="alert_dialog_help_title">Help</string>
-    <string name="action_settings">Settings</string>
 
     <!-- Activities -->
     <string name="title_activity_menu">Menu</string>
@@ -35,7 +34,7 @@
         <item>About</item>
     </string-array>
 
-    <string-array name="dialog_load_items">
+    <string-array name="dialog_load_from">
         <item>Samples</item>
         <item>Repository (the3deer)</item>
         <item>Repository (Khronos)</item>
@@ -45,11 +44,35 @@
 
     <string name="image">image</string>
     <!-- Help -->
-    <string name="help_text">Load Model\n\nLoad the samples included with the app (Samples), github repository (Repository) or download them to your device and open it (using File or Android Explorer)\n\nSupported formats\n\nOnly wavefront, stereolithography, Collada files or Gltf files (*.obj, *.stl, *.dae, *.gltf) are currently supported.\n\nDemo\n\nExample scene using the API. It loads several models using different draw modes, colors, textures, etc.\n\nRenderer\n\nOnce you load a model, you can pinch to zoom, translate the camera with your finger and rotate the screen with 2 fingers\n\nMenu\n\nIn the floating button you will also find several settings for toggling different functions like wireframe or the skybox.\n\nTroubleshooting\n\nIf the model file (.obj) is referencing any materials file (*.mtl) be sure its in the same folder; same applies for texture files (*.jpg, *.bmp) being referenced in the material file.\n\nIf you need more help or have any issue feel free to open a ticket in github or ask me. Thank you in advance for your feedback.\n\nhttps://github.com/the3deer/android-3D-model-viewer/issues\n\nandresoviedo@gmail.com</string>
+    <string name="about_text">
+        This application is a 3D model viewer.
+        \nThe purpose of this application is to learn how to draw in android using the OpenGL language.
+        \nThe code for this application is open source and it can be found at:
+        \n\n<a href="https://github.com/the3deer/android-3D-model-viewer">https://github.com/the3deer/android-3D-model-viewer</a>
+        \n\nAs this is my first android app and I\'m still learning the OpenGL language, it is highly probable that there are bugs;
+        but I will try to continue improving the app.
+        \n\n<b>Copyright</b>:
+        \nThe included models are free resources from the internet.
+        \n\n<b>Privacy</b>:
+        \nThis application does not collect or make use of any kind of personal information.
+    </string>
     <!-- About -->
-    <string name="about_text">This application allows you to load 3D object models (currently only Wavefront, Stereolithography, Collada and Gltf formats are supported).\n\nThe purpose of this application is to learn how to draw in android using the OpenGL 2.0/3.0 language.\n\nThe code for this application is open source and it can be found at https://github.com/the3deer/android-3D-model-viewer\n\nAs this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs; but I will try to continue improving the app.\n\nThe included models in the app were taken for free from Internet.\n\nThis application does not collect or make use of any kind of personal information.</string>
-    <!-- Load settings -->
     <string name="model_name">Model name</string>
+    <!-- Load settings -->
+    <string name="help_text">
+        <b>Load</b>: Load the samples included with the app (Samples), github repositories (Repository)
+        or load your own using Android Explorer.
+        \n<font color="red">/¡\ Warning: Not all features are implemented</font>: Please take a look to the <a href="https://github.com/the3deer/android-3D-model-viewer">website</a>
+        for the supported features.
+        \n\n<b>Formats</b>: Only wavefront, stereolithography, Collada or Gltf files are currently supported (*.obj, *.stl, *.dae, *.gltf/glb).
+        If your model has multiple files, please create a separate zip file, then load the .zip
+        \n\n<b>Demos</b>: Example fragments using the API.
+        \n\n<b>Renderer</b>: Once you load a model, you can pinch to zoom, translate the camera with your finger and rotate the screen with 2 fingers
+        \n\n<b>Settings</b>: You will find several settings for toggling different functions like wireframe or the skybox.
+        \n\n<b>Troubles</b>? If you experience issues with the app feel free to open a ticket in github.
+        \n\n<a href="https://github.com/the3deer/android-3D-model-viewer/issues">https://github.com/the3deer/android-3D-model-viewer/issues</a>
+        \n\nThank you in advance for your feedback
+    </string>
     <string name="texture">Texture</string>
     <string name="invert_texture_coordinates">Invert texture coordinates</string>
     <string name="cancel">Cancel</string>
@@ -125,4 +148,31 @@
         <item>cube_0_0_0</item>
         <item>qcylinder_0_0_0</item>
     </string-array>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_immersive">Immersive</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_opengl">OpenGL #1</string>
+    <string name="menu_opengl2">OpenGL #2</string>
+    <string name="menu_dynamic">Dynamic *</string>
+    <string name="menu_dynamic_item">Dynamic Group</string>
+    <string name="title_settings">Settings</string>
+    <string name="menu_settings">Settings</string>
+
+    <string name="scenes">Scenes</string>
+    <string name="recent">Recent</string>
+    <string name="ok">ok</string>
+    <string name="help">Help</string>
+    <string name="about">About</string>
+    <string name="earcutdemo">EarCut Demo</string>
+    <string name="animations">Animations</string>
+    <string name="information">Information</string>
 </resources>

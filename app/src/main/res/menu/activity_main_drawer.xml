@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_menu_camera"
+        android:title="@string/menu_home" />
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_load"
+            android:icon="@android:drawable/ic_menu_gallery"
+            android:title="@string/load" />
+        <item
+            android:id="@+id/nav_scenes"
+            android:icon="@android:drawable/ic_menu_slideshow"
+            android:title="@string/scenes" />
+        <item
+            android:id="@+id/nav_animations"
+            android:icon="@android:drawable/ic_media_play"
+            android:title="@string/animations" />
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@android:drawable/ic_menu_preferences"
+            android:title="@string/menu_settings" />
+        <item
+            android:id="@+id/nav_help"
+            android:icon="@android:drawable/ic_menu_help"
+            android:title="@string/help" />
+    </group>
+
+    <item
+        android:id="@+id/nav_recent_menu"
+        android:title="@string/recent">
+        <!-- You can programmatically add items to this submenu later using: -->
+        <!-- val dynamicMenu = navigationView.menu.findItem(R.id.nav_dynamic_menu).subMenu -->
+        <!-- dynamicMenu.add(...) -->
+
+        <menu>
+        </menu>
+    </item>
+</menu>

@@ -14,6 +14,7 @@
     <!-- main menu -->
     <string name="alert_dialog_main_title">Menu</string>
     <string name="action_settings">Ajustes</string>
+    <string name="action_immersive">Inmersivo</string>
 
     <!-- Activities -->
     <string name="title_activity_menu">Menu</string>
@@ -35,7 +36,7 @@
         <item>Acerca</item>
     </string-array>
 
-    <string-array name="dialog_load_items">
+    <string-array name="dialog_load_from">
         <item>Ejemplos</item>
         <item>Repositorio (the3deer)</item>
         <item>Repositorio (Khronos)</item>
@@ -70,5 +71,14 @@
 
     <!-- To review -->
     <string name="app_logo_desc">Logotipo animado de la tetera</string>
+    <string name="title_settings">Configuración</string>
+    <string name="menu_settings">Configuración</string>
 
+    <string name="scenes">Escenas</string>
+    <string name="recent">Reciente</string>
+    <string name="ok">ok</string>
+    <string name="help">Ayuda</string>
+    <string name="about">Acerca</string>
+    <string name="animations">Animations</string>
+    <string name="information">Information</string>
 </resources>
