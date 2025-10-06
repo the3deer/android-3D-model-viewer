@@ -83,8 +83,18 @@ public class AnimationDialogFragment extends DialogFragment {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (i < animations.size()) {
                             ((AnimatedModel) selectedObject).setCurrentAnimation(animations.get(i));
+                            for (Object3DData obj : currentScene.getObjects()){
+                                if (obj instanceof AnimatedModel) {
+                                    ((AnimatedModel) obj).setCurrentAnimation(animations.get(i));
+                                }
+                            }
                         } else {
                             ((AnimatedModel) selectedObject).setCurrentAnimation(null);
+                            for (Object3DData obj : currentScene.getObjects()){
+                                if (obj instanceof AnimatedModel) {
+                                    ((AnimatedModel) obj).setCurrentAnimation(null);
+                                }
+                            }
                         }
                     }})
 

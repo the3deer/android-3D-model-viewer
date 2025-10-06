@@ -1,0 +1,6 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Android3Dmodelviewer" parent="Theme.AppCompat.DayNight.NoActionBar">
+
+    </style>
+</resources>

@@ -1,0 +1,38 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme -->
+    <style name="Theme.App.Base" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" >?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+
+        <!-- Explicitly set textColorPrimary for light theme if needed -->
+        <item name="android:textColorPrimary">@android:color/black</item> <!-- Or your preferred dark text color like #DE000000 -->
+        <item name="android:textColorSecondary">@android:color/darker_gray</item> <!-- e.g., #8A000000 -->
+
+        <!-- Ensure background is light -->
+        <item name="android:windowBackground">@android:color/background_light</item>
+        <item name="colorSurface">@android:color/white</item> <!-- Background of cards, preferences -->
+        <item name="colorOnSurface">@android:color/black</item> <!-- Text on surface -->
+
+        <!-- Preference specific attributes (Often not needed if base theme is correct) -->
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+    </style>
+
+    <!-- Your final application theme -->
+    <style name="Theme.Android3Dmodelviewer" parent="Theme.App.Base" />
+
+    <!-- AppBarOverlay and PopupOverlay are for Toolbar styling if you use them,
+         they usually don't affect the entire app's base colors. -->
+    <style name="Theme.Android3Dmodelviewer.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.Android3Dmodelviewer.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+</resources>
+    
