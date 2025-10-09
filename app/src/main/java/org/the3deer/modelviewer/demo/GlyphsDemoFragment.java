@@ -2,10 +2,6 @@ package org.the3deer.modelviewer.demo;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import org.the3deer.android_3d_model_engine.ModelFragment;
 import org.the3deer.android_3d_model_engine.gui.GUIDefault;

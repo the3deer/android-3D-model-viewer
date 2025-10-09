@@ -9,12 +9,10 @@ import android.widget.Toast;
 
 import androidx.activity.result.contract.ActivityResultContracts;
 
-import org.the3deer.android_3d_model_engine.ModelFragment;
 import org.the3deer.android_3d_model_engine.services.collada.ColladaLoader;
 import org.the3deer.android_3d_model_engine.services.gltf.GltfLoader;
 import org.the3deer.android_3d_model_engine.services.wavefront.WavefrontLoader;
 import org.the3deer.modelviewer.MainActivity;
-import org.the3deer.modelviewer.R;
 import org.the3deer.util.android.ContentUtils;
 
 import java.io.IOException;

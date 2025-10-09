@@ -19,8 +19,6 @@ import org.the3deer.android_3d_model_engine.model.Scene;
 import org.the3deer.android_3d_model_engine.scene.SceneManager;
 import org.the3deer.modelviewer.R;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class AnimationDialogFragment extends DialogFragment {

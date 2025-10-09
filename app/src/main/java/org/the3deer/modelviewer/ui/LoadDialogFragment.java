@@ -14,10 +14,8 @@ import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.the3deer.android_3d_model_engine.ModelFragment;
 import org.the3deer.android_3d_model_engine.services.collada.ColladaLoader;
 import org.the3deer.android_3d_model_engine.services.wavefront.WavefrontLoader;
-import org.the3deer.modelviewer.R;
 import org.the3deer.util.android.AndroidUtils;
 import org.the3deer.util.android.AssetUtils;
 import org.the3deer.util.android.ContentUtils;

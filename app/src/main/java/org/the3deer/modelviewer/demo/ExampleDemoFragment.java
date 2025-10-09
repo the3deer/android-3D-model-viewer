@@ -3,11 +3,7 @@ package org.the3deer.modelviewer.demo;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import org.the3deer.android_3d_model_engine.ModelFragment;
 import org.the3deer.android_3d_model_engine.model.Object3DData;
