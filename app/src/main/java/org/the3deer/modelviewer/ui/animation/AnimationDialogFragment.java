@@ -13,8 +13,6 @@ import androidx.lifecycle.ViewModelProvider;
 import org.the3deer.android_3d_model_engine.ModelEngine;
 import org.the3deer.android_3d_model_engine.ModelViewModel;
 import org.the3deer.android_3d_model_engine.animation.Animation;
-import org.the3deer.android_3d_model_engine.model.AnimatedModel;
-import org.the3deer.android_3d_model_engine.model.Object3DData;
 import org.the3deer.android_3d_model_engine.model.Scene;
 import org.the3deer.android_3d_model_engine.scene.SceneManager;
 import org.the3deer.modelviewer.R;
@@ -49,19 +47,12 @@ public class AnimationDialogFragment extends DialogFragment {
         final Scene currentScene = sceneManager.getCurrentScene();
         if (currentScene == null) return createNotAvailableDialog(builder, "No scene available");;;
 
-        final Object3DData selectedObject = currentScene.getSelectedObject();
-        if (selectedObject == null) return createNotAvailableDialog(builder, "Please select an object first");;;;
-
-        if (!(selectedObject instanceof AnimatedModel)) {
-            return createNotAvailableDialog(builder, "Object is not animated");
-        }
-
-        final List<Animation> animations = ((AnimatedModel) selectedObject).getAnimations();
+        final List<Animation> animations = currentScene.getAnimations();
         if (animations == null || animations.isEmpty()) {
             return createNotAvailableDialog(builder, "No animations available");
         }
 
-        final Animation currentAnimation = ((AnimatedModel) selectedObject).getCurrentAnimation();
+        final Animation currentAnimation = currentScene.getCurrentAnimation();
         final int animationIndex = animations.indexOf(currentAnimation);
 
         final String[] animationNames = new String[animations.size()+1];
@@ -80,19 +71,9 @@ public class AnimationDialogFragment extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (i < animations.size()) {
-                            ((AnimatedModel) selectedObject).setCurrentAnimation(animations.get(i));
-                            for (Object3DData obj : currentScene.getObjects()){
-                                if (obj instanceof AnimatedModel) {
-                                    ((AnimatedModel) obj).setCurrentAnimation(animations.get(i));
-                                }
-                            }
+                            currentScene.setCurrentAnimation(animations.get(i));
                         } else {
-                            ((AnimatedModel) selectedObject).setCurrentAnimation(null);
-                            for (Object3DData obj : currentScene.getObjects()){
-                                if (obj instanceof AnimatedModel) {
-                                    ((AnimatedModel) obj).setCurrentAnimation(null);
-                                }
-                            }
+                            currentScene.setCurrentAnimation(null);
                         }
                     }})
 
