@@ -12,7 +12,7 @@ import org.the3deer.android_3d_model_engine.objects.Cube;
 import org.the3deer.android_3d_model_engine.scene.SceneImpl;
 import org.the3deer.android_3d_model_engine.scene.SceneManager;
 import org.the3deer.android_3d_model_engine.services.LoadListenerAdapter;
-import org.the3deer.android_3d_model_engine.services.collada.ColladaLoader;
+import org.the3deer.android_3d_model_engine.services.collada.ColladaLoaderLegacy;
 import org.the3deer.android_3d_model_engine.services.wavefront.WavefrontLoader;
 import org.the3deer.android_3d_model_engine.util.Exploder;
 import org.the3deer.android_3d_model_engine.util.Rescaler;
@@ -175,7 +175,7 @@ public class ExampleDemoFragment extends ModelFragment {
         // test loading object made of polygonal faces
         try {
             // this has heterogeneous faces
-            Object3DData obj53 = new ColladaLoader().load(new URI("android://org.the3deer.dddmodel2/assets/models/cowboy.dae"), new LoadListenerAdapter(){
+            Object3DData obj53 = new ColladaLoaderLegacy().load(new URI("android://org.the3deer.dddmodel2/assets/models/cowboy.dae"), new LoadListenerAdapter(){
                 @Override
                 public void onLoad(Scene scene, Object3DData obj53) {
                     obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });

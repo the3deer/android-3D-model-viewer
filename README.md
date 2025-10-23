@@ -81,7 +81,7 @@ Features
   - [x] Decorators
     - [x] wireframe
     - [x] skybox
-    - [x] skeleton
+    - [x] skin
   - [x] Camera Support
     - [x] user camera (perspective, zoom))
     - [ ] orthographic

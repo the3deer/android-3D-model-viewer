@@ -883,7 +883,7 @@
         <rotate sid="rotationX">1 0 0 0</rotate>
         <scale sid="scale">1 1 1</scale>
         <instance_controller url="#Armature_Cube-skin">
-          <skeleton>#Torso</skeleton>
+          <skin>#Torso</skin>
           <bind_material>
             <technique_common>
               <instance_material symbol="Material-material" target="#Material-material">

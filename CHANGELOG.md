@@ -46,7 +46,7 @@ ChangeLog
     - (f) deleted unlicensed assets
 - 3.0.4 (05/10/2020)
     - (f) support for multiple skin controllers
-    - (f) skeleton fixed to use invert of inverse bind matrix
+    - (f) skin fixed to use invert of inverse bind matrix
 - 3.0.3 (05/09/2020)
     - (f) smooth faces are now toggle featured - not all models should be smoothed
     - (f) fixed normal calculation - using high precision numbers

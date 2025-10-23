@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.the3deer.android_3d_model_engine.services.collada.ColladaLoader;
+import org.the3deer.android_3d_model_engine.services.collada.ColladaLoaderLegacy;
 import org.the3deer.android_3d_model_engine.services.wavefront.WavefrontLoader;
 import org.the3deer.util.android.AndroidUtils;
 import org.the3deer.util.android.AssetUtils;
@@ -541,7 +541,7 @@ public class LoadDialogFragment extends DialogFragment {
                 launchModelRendererActivity(getUserSelectedModel());
                 break;
             case 2: // dae
-                final List<String> images = ColladaLoader.getImages(ContentUtils.getInputStream(getUserSelectedModel()));
+                final List<String> images = ColladaLoaderLegacy.getImages(ContentUtils.getInputStream(getUserSelectedModel()));
                 if (images == null || images.isEmpty()) {
                     launchModelRendererActivity(getUserSelectedModel());
                 } else {

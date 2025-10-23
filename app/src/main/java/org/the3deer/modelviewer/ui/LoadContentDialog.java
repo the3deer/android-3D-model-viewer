@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.contract.ActivityResultContracts;
 
-import org.the3deer.android_3d_model_engine.services.collada.ColladaLoader;
+import org.the3deer.android_3d_model_engine.services.collada.ColladaLoaderLegacy;
 import org.the3deer.android_3d_model_engine.services.gltf.GltfLoader;
 import org.the3deer.android_3d_model_engine.services.wavefront.WavefrontLoader;
 import org.the3deer.modelviewer.MainActivity;
@@ -306,7 +306,7 @@ public class LoadContentDialog {
                 launchModelRendererActivity(getUserSelectedModel());
                 break;
             case "dae": // dae
-                final List<String> images = ColladaLoader.getImages(ContentUtils.getInputStream(getUserSelectedModel()));
+                final List<String> images = ColladaLoaderLegacy.getImages(ContentUtils.getInputStream(getUserSelectedModel()));
                 arguments.put("files", images);
                 pickOrLaunch();
                 break;

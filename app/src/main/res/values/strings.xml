@@ -84,10 +84,10 @@
     <!-- GL Settings -->
     <string name="toggle_camera">Toggle Camera</string>
     <string name="toggle_wireframe">Toggle wireframe</string>
-    <string name="toggle_skeleton">Toggle skeleton</string>
+    <string name="toggle_skeleton">Toggle skin</string>
     <string name="toggle_lights">Toggle lights</string>
     <string name="toggle_animation">Toggle animation</string>
-    <!--<string name="toggle_skeleton">Toggle skeleton</string>-->
+    <!--<string name="toggle_skeleton">Toggle skin</string>-->
     <string name="toggle_boundingbox">Toggle bounding box</string>
     <string name="load_texture">Load texture</string>
 
