@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 
 import org.the3deer.android_3d_model_engine.services.collada.ColladaLoaderLegacy;
 import org.the3deer.android_3d_model_engine.services.gltf.GltfLoader;
+import org.the3deer.android_3d_model_engine.services.gltf.GltfLoaderLegacy;
 import org.the3deer.android_3d_model_engine.services.wavefront.WavefrontLoader;
 import org.the3deer.modelviewer.MainActivity;
 import org.the3deer.util.android.ContentUtils;
@@ -312,7 +313,7 @@ public class LoadContentDialog {
                 break;
             case "gltf": // gltf
                 final Uri userSelectedModel = getUserSelectedModel();
-                List<String> allReferences = GltfLoader.getAllReferences(userSelectedModel);
+                List<String> allReferences = GltfLoaderLegacy.getAllReferences(userSelectedModel);
 
                 try {
                     final URI uri = new URI(userSelectedModel.toString());
