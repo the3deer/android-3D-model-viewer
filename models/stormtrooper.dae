@@ -2437,7 +2437,7 @@
         <rotate sid="rotationX">1 0 0 0</rotate>
         <scale sid="scale">1 1 1</scale>
         <instance_controller url="#Armature_Stormtrooper-skin">
-          <skin>#mixamorig_Hips</skin>
+          <skeleton>#mixamorig_Hips</skeleton>
           <bind_material>
             <technique_common>
               <instance_material symbol="Stormtroopermat-material" target="#Stormtroopermat-material">

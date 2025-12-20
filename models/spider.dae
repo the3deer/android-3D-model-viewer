@@ -2079,7 +2079,7 @@
         <rotate sid="rotationX">1 0 0 0</rotate>
         <scale sid="scale">1 1 1</scale>
         <instance_controller url="#Spider_Armature_Spider_Fur-skin">
-          <skin>#Body_003</skin>
+          <skeleton>#Body_003</skeleton>
           <bind_material>
             <technique_common>
               <instance_material symbol="Spider_Fur-material" target="#Spider_Fur-material"/>
@@ -2094,7 +2094,7 @@
         <rotate sid="rotationX">1 0 0 0</rotate>
         <scale sid="scale">1 1 1</scale>
         <instance_controller url="#Spider_Armature_Spider_teeth-skin">
-          <skin>#Body_003</skin>
+          <skeleton>#Body_003</skeleton>
           <bind_material>
             <technique_common>
               <instance_material symbol="Spider_teeth-material" target="#Spider_teeth-material"/>
@@ -2109,7 +2109,7 @@
         <rotate sid="rotationX">1 0 0 0</rotate>
         <scale sid="scale">1 1 1</scale>
         <instance_controller url="#Spider_Armature_Spider-skin">
-          <skin>#Body_003</skin>
+          <skeleton>#Body_003</skeleton>
           <bind_material>
             <technique_common>
               <instance_material symbol="Spider-material" target="#Spider-material"/>
@@ -2124,7 +2124,7 @@
         <rotate sid="rotationX">1 0 0 0</rotate>
         <scale sid="scale">1 1 1</scale>
         <instance_controller url="#Spider_Armature_Spider_Eyes-skin">
-          <skin>#Body_003</skin>
+          <skeleton>#Body_003</skeleton>
           <bind_material>
             <technique_common>
               <instance_material symbol="Spider_Eye-material" target="#Spider_Eye-material"/>
