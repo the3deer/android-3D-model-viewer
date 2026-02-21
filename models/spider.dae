@@ -1934,7 +1934,7 @@
   <library_visual_scenes>
     <visual_scene id="Game" name="Game">
       <node id="Armature" name="Spider_Armature" type="NODE">
-        <translate sid="location">0 0.2422297 41.00544</translate>
+        <translate sid="location">0 0.2422297 0.00544</translate>
         <rotate sid="rotationZ">0 0 1 0</rotate>
         <rotate sid="rotationY">0 1 0 0</rotate>
         <rotate sid="rotationX">1 0 0 0</rotate>
