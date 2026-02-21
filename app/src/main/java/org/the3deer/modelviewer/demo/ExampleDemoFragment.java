@@ -12,7 +12,7 @@ import org.the3deer.android_3d_model_engine.objects.Cube;
 import org.the3deer.android_3d_model_engine.scene.SceneImpl;
 import org.the3deer.android_3d_model_engine.scene.SceneManager;
 import org.the3deer.android_3d_model_engine.services.LoadListenerAdapter;
-import org.the3deer.android_3d_model_engine.services.collada.ColladaLoaderLegacy;
+import org.the3deer.android_3d_model_engine.services.collada.ColladaLoader;
 import org.the3deer.android_3d_model_engine.services.wavefront.WavefrontLoader;
 import org.the3deer.android_3d_model_engine.util.Exploder;
 import org.the3deer.android_3d_model_engine.util.Rescaler;
@@ -66,6 +66,7 @@ public class ExampleDemoFragment extends ModelFragment {
         obj10.setLocation(new float[] { -2f, 2f, 0f });
         obj10.setScale(0.5f, 0.5f, 0.5f);
         mainScene.addObject(obj10);
+
 
         // test cube made of wires (I explode it to see the faces better)
         Object3DData obj11 = Cube.buildCubeV1();
@@ -175,20 +176,18 @@ public class ExampleDemoFragment extends ModelFragment {
         // test loading object made of polygonal faces
         try {
             // this has heterogeneous faces
-            Object3DData obj53 = new ColladaLoaderLegacy().load(new URI("android://org.the3deer.dddmodel2/assets/models/cowboy.dae"), new LoadListenerAdapter(){
-                @Override
-                public void onLoad(Scene scene, Object3DData obj53) {
-                    obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
-                    Rescaler.rescale(obj53, 2f);
-                    obj53.setLocation(new float[] { 0f, 0f, 2f});
-                    obj53.setCentered(true);
-                    mainScene.addObject(obj53);
-                }
-            }).get(0);
-
-            //scene.addObject(obj53);
+            ContentUtils.setThreadActivity(getActivity());
+            ColladaLoader colladaLoader = new ColladaLoader();
+            Scene obj53 = colladaLoader.load(new URI("android://org.the3deer.dddmodel2/assets/models/cowboy.dae"));
+            /*obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
+            Rescaler.rescale(obj53, 2f);
+            obj53.setLocation(new float[] { 0f, 0f, 2f});
+            obj53.setCentered(true);*/
+            mainScene.merge(obj53);
         } catch (Exception ex) {
             errors.add(ex);
+        } finally {
+            ContentUtils.setThreadActivity(null);
         }
 
 
