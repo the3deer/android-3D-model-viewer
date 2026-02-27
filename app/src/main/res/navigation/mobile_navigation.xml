@@ -77,6 +77,11 @@
         android:label="@string/scenes" />
 
     <dialog
+        android:id="@+id/nav_cameras"
+        android:name="org.the3deer.modelviewer.ui.CameraDialogFragment"
+        android:label="@string/cameras" />
+
+    <dialog
         android:id="@+id/nav_animations"
         android:name="org.the3deer.modelviewer.ui.animation.AnimationDialogFragment"
         android:label="@string/animations" />

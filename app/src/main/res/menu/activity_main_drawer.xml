@@ -18,6 +18,10 @@
             android:icon="@android:drawable/ic_menu_slideshow"
             android:title="@string/scenes" />
         <item
+            android:id="@+id/nav_cameras"
+            android:icon="@android:drawable/ic_menu_camera"
+            android:title="@string/cameras" />
+        <item
             android:id="@+id/nav_animations"
             android:icon="@android:drawable/ic_media_play"
             android:title="@string/animations" />

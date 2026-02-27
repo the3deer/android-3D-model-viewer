@@ -75,10 +75,11 @@
     <string name="menu_settings">Configuración</string>
 
     <string name="scenes">Escenas</string>
+    <string name="cameras">Camaras</string>
     <string name="recent">Reciente</string>
     <string name="ok">ok</string>
     <string name="help">Ayuda</string>
     <string name="about">Acerca</string>
-    <string name="animations">Animations</string>
-    <string name="information">Information</string>
+    <string name="animations">Animaciones</string>
+    <string name="information">Información</string>
 </resources>
