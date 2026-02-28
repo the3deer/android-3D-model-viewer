@@ -198,9 +198,9 @@ public class LoadContentDialog {
                 } else {
                     // no model type from filename, ask user...
                     ContentUtils.showListDialog(getActivity(), "Model Type", new String[]{"Wavefront (*.obj)", "Stereolithography (*" +
-                            ".stl)", "Collada (*.dae)", "GLTF (*.glb, *.gltf)"}, (dialog, which) -> {
+                            ".stl)", "Collada (*.dae)", "GLTF (*.glb, *.gltf)", "Filmbox (*.fbx)"}, (dialog, which) -> {
                         try {
-                            loadLinks(new String[]{"obj", "stl", "dae", "gltf"}[which]);
+                            loadLinks(new String[]{"obj", "stl", "dae", "gltf", "fbx"}[which]);
                         } catch (IOException e) {
                             e.printStackTrace();
                         } catch (InterruptedException e) {
