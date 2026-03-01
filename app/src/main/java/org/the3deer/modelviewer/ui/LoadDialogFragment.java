@@ -41,6 +41,7 @@ public class LoadDialogFragment extends DialogFragment {
 
     private static final URL REPO_URL = AndroidUtils.createURL("https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/models/index");
     private static final URL REPO_KHRONOS_URL = AndroidUtils.createURL("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/model-index.json");
+    private static final URL REPO_ASSIMP_URL = AndroidUtils.createURL("https://api.github.com/repos/assimp/assimp/contents/test/models/FBX");
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1000;
     private static final int REQUEST_INTERNET_ACCESS = 1001;
     private static final int REQUEST_READ_CONTENT_PROVIDER = 1002;
@@ -52,8 +53,11 @@ public class LoadDialogFragment extends DialogFragment {
     private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae|gltf|glb|fbx|zip|index)";
 
 
+    /**
+     * This actions corresponds to the "dialog_load_from" string array defined in strings.xml
+     */
     private enum Action {
-        SAMPLES, REPOSITORY_THE3DEER, REPOSITORY_KHRONOS, ANDROID_EXPLORER, FILE_EXPLORER
+        SAMPLES, REPOSITORY_THE3DEER, REPOSITORY_KHRONOS, REPOSITORY_ASSIMP, ANDROID_EXPLORER, FILE_EXPLORER
     }
 
     /**
@@ -84,6 +88,9 @@ public class LoadDialogFragment extends DialogFragment {
                     break;
                 case REPOSITORY_KHRONOS:
                     loadModelFromKhronos();
+                    break;
+                case REPOSITORY_ASSIMP:
+                    loadModelFromAssimp();
                     break;
                 case ANDROID_EXPLORER:
                     Bundle result = new Bundle();
@@ -125,7 +132,7 @@ public class LoadDialogFragment extends DialogFragment {
 
         // testing purposes only
         ContentUtils.showListDialog(activity, "Choose Repository",
-                new String[]{"android-3D-model-viewer", "Khronos glTF-Sample-Models"},
+                new String[]{"android-3D-model-viewer", "Khronos glTF-Sample-Models", "Assimp FBX samples"},
                 (DialogInterface dialog, int which) -> {
                     if (which == 0) {
                         if (AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
@@ -134,6 +141,10 @@ public class LoadDialogFragment extends DialogFragment {
                     } else if (which == 1) {
                         if (AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
                             new LoadRepoKhronos().execute(REPO_KHRONOS_URL);
+                        }
+                    } else if(which == 2){
+                        if (AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
+                            new LoadRepoAssimp().execute(REPO_ASSIMP_URL);
                         }
                     }
                 });
@@ -153,7 +164,11 @@ public class LoadDialogFragment extends DialogFragment {
         }
     }
 
-
+    private void loadModelFromAssimp() {
+        if (AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
+            new LoadRepoAssimp().execute(REPO_ASSIMP_URL);
+        }
+    }
 
     class LoadRepoKhronos extends AsyncTask<URL, Integer, List<String>> {
 
@@ -313,6 +328,75 @@ public class LoadDialogFragment extends DialogFragment {
                     });
         }
 
+    }
+
+    class LoadRepoAssimp extends AsyncTask<URL, Integer, List<String>> {
+
+        private final ProgressDialog dialog;
+        private android.app.AlertDialog.Builder chooser;
+
+        public LoadRepoAssimp() {
+            this.dialog = new ProgressDialog(activity);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            this.dialog.setMessage("Loading...");
+            this.dialog.setCancelable(false);
+            this.dialog.show();
+        }
+
+        @Override
+        protected List<String> doInBackground(URL... urls) {
+
+            try {
+                // read json
+                final String json = ContentUtils.read(urls[0]);
+
+                // parse json
+                final JSONArray jsonArray = new JSONArray(json);
+
+                final List<String> files = new ArrayList<>();
+                for (int i=0; i < jsonArray.length(); i++){
+                    try {
+                        final JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        final String name = jsonObject.getString("name");
+                        final String download_url = jsonObject.getString("download_url");
+                        files.add(download_url);
+
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+
+                // chooser
+                chooser = ContentUtils.createChooserDialog(activity, "Select file", null,
+                        files, null, SUPPORTED_FILE_TYPES_REGEX,
+                        (String file) -> {
+                            if (file != null) {
+                                launchModelRendererActivity(Uri.parse(file));
+                            }
+                        });
+                return files;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return Collections.emptyList();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<String> strings) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            if (strings == null) {
+                Toast.makeText(activity, "Couldn't load repo index", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            chooser.create().show();
+        }
     }
 
     private void loadModelFromContentProvider() {
