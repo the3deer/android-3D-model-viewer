@@ -1,23 +1,24 @@
 Android 3D Model Viewer
 =======================
 
-![travis-ci badge](https://travis-ci.org/the3deer/android-3D-model-viewer.svg?branch=main)
-
 This is a demo of OpenGL ES 2.0.
-It is basically an android application with a 3D engine that can load Wavefront OBJ, STL, DAE & GLTF files.
+It is basically an android application with a 3D engine that can load Wavefront OBJ, STL, DAE, GLTF and FBX files.
 The purpose of this application is to learn and share how to draw using OpenGL language.
 
 * Wafefront format (OBJ): https://en.wikipedia.org/wiki/Wavefront_.obj_file
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 * GLTF format (gltf): https://www.khronos.org/gltf/
+* Filmbox format (fbx): https://code.blender.org/2013/08/fbx-binary-file-format-specification/
 
-
-News (30/05/2025)
+News (10/03/2026)
 =================
 
 * Anaglyph support is back & Shadow support is enabled
-* Generic Preferences + Engine Improvement
+* Nav Drawer and Fragments for the UI
+* Preferences for configuring the Engine
+* FBX basic support (no animation - no rigging)
+* Full application refactoring to ease maintenance
 * **Not yet published on Play Store!**
 
 Demo

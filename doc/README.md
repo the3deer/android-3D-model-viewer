@@ -2,12 +2,18 @@
 
     - Scenes
         |- Scene
-            |- Object3DData         <list>
-                | - Parent Node
-            |- Root Joints          <list>
-            |- Cameras              <list>
-            |- Animations           <list>
-            |- Skins                <lisT
+            |- Object3DData                     <list>
+                |- Parent Node                  <pointer>
+                |- Skin                         <pointer>
+                    |- Root Joint
+                    |- JointsIds
+                    |- Inverse Bind Matrices
+                    |- Weights
+                    |- Joints
+            |- Root Joints                      <list>
+            |- Cameras                          <list>
+            |- Animations                       <list>
+            |- Skins                            <list>
 
 
 # GLTF Model to App Model - Mesh details
@@ -72,6 +78,7 @@
         # Buffer native getNormalsBuffer(int handler, int mesh)
         # Buffer native getIndexBuffer(int handler, int mesh)
         # Buffer native getColorsBuffer(int handler, int mesh)
+        # Buffer native getTexCoordBuffer(int handler, int mesh)
 
 
 
