@@ -14,8 +14,8 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 News (10/03/2026)
 =================
 
-* Anaglyph support is back & Shadow support is enabled
 * Nav Drawer and Fragments for the UI
+* Support for multiple Scene, Camera and Animations 
 * Preferences for configuring the Engine
 * FBX basic support (no animation - no rigging)
 * Full application refactoring to ease maintenance
