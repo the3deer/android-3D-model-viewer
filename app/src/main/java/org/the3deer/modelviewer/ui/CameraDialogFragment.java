@@ -54,7 +54,7 @@ public class CameraDialogFragment extends DialogFragment {
         if (currentCamera == null) return createNotAvailableDialog(builder, "currentCamera is null");
 
         final List<Camera> cameras = currentScene.getCameras();
-        if (cameras == null) return createNotAvailableDialog(builder, "cameras is null");
+        if (cameras == null || cameras.isEmpty()) return createNotAvailableDialog(builder, "No cameras available");
 
         final String[] cameraNames = new String[cameras.size()];
         for (int i = 0; i < cameras.size(); i++) {
