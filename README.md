@@ -137,7 +137,7 @@ Once the model is rendered, pinch and rotate to see the 3D scene from another pe
 Screenshots
 ===========
 
-![Screenshot1](./screenshots/screenshot1.png)
+![Menu](./screenshots/menu.png)
 ![Screenshot2](screenshots/screenshot2.png)
 ![Screenshot3](screenshots/screenshot3.png)
 ![Screenshot4](screenshots/screenshot4.png)

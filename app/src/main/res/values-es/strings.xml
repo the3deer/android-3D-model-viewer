@@ -13,8 +13,7 @@
 
     <!-- main menu -->
     <string name="alert_dialog_main_title">Menu</string>
-    <string name="action_settings">Ajustes</string>
-    <string name="action_immersive">Inmersivo</string>
+
 
     <!-- Activities -->
     <string name="title_activity_menu">Menu</string>
@@ -74,6 +73,14 @@
     <string name="app_logo_desc">Logotipo animado de la tetera</string>
     <string name="title_settings">Configuración</string>
     <string name="menu_settings">Configuración</string>
+
+    <string name="navigation_drawer_open">Abrir barra de navegación</string>
+    <string name="navigation_drawer_close">Cerrar barra de navegación</string>
+    <string name="nav_header_title">Android Visor 3D</string>
+    <string name="nav_header_subtitle">https://github.com/the3deer</string>
+    <string name="nav_header_desc">Navegación</string>
+    <string name="action_settings">Ajustes</string>
+    <string name="action_immersive">Inmersivo</string>
 
     <string name="scenes">Escenas</string>
     <string name="cameras">Camaras</string>
