@@ -13,11 +13,11 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 News (10/03/2026)
 =================
 
-* Nav Drawer and Fragments for the UI
-* Support for multiple Scene, Camera and Animations 
-* Preferences for configuring the Engine
-* FBX *basic* support (no animation - no rigging)
-* Full application refactoring to ease maintenance
+* UI refactored to use Nav Drawer and Fragments
+* New Feature: Scene, Camera & Animation selection 
+* New Preferences: Configuring options for the Engine
+* FBX: *basic* support (no animation - no rigging)
+* Bug fixes and Engine improvement
 * **Not yet published on Play Store!**
 
 Demo
@@ -137,7 +137,7 @@ Once the model is rendered, pinch and rotate to see the 3D scene from another pe
 Screenshots
 ===========
 
-![Screenshot1](screenshots/screenshot1.png)
+![Screenshot1](./screenshots/screenshot1.png)
 ![Screenshot2](screenshots/screenshot2.png)
 ![Screenshot3](screenshots/screenshot3.png)
 ![Screenshot4](screenshots/screenshot4.png)
@@ -145,6 +145,7 @@ Screenshots
 ![Screenshot6](screenshots/screenshot_gltf.png)
 ![cowboy.gif](screenshots/cowboy.gif)
 ![stormtrooper.gif](screenshots/stormtrooper.gif)
+![vc.gif](screenshots/vc.gif)
 ![Screenshot6](screenshots/screenshot6-3d.png)
 
 
@@ -172,8 +173,13 @@ You may need one of this glasses to view models in 3D virtual reality.
 Dependencies
 ============
 
-In order to compile the application you must include this git submodule
+In order to compile the application you must either (1) clone recursively or (2) add the engine module
 
+    # 1 liner
+    git clone --recurse-submodules https://github.com/the3deer/android-3D-engine.gitz
+
+    # 2 liner
+    git clone https://github.com/the3deer/android-3D-engine.gitz
     git submodule add https://github.com/the3deer/android-3D-engine.git engine
 
 
@@ -188,24 +194,25 @@ Acknowledgement
 
 * For teaching how animation engine works: https://github.com/TheThinMatrix/OpenGL-Animation
 * To the lot of user's feedback: https://github.com/the3deer/android-3D-model-viewer/issues
-* For the GLTF parser https://github.com/javagl/JglTF
 * To the many infinite educational resources found on Internet for free, thank you ! :)
+* To the **AI (Gemini)**, which so far, helped me to rewrite the entire engine and fix bugs     
 
 
-Licenses
-========
+Credits
+=======
 
 The following copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 
-    MIT License - Copyright (c) 2022 The 3Deer - https://github.com/the3deer
-    GNU LGPL v2.1 Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski - STL Parser
-    MIT License - https://github.com/javagl/JglTF - GLTF Parser    
-    ISC License - Earcut - https://github.com/the3deer/earcut
+    3D Viewer   - MIT License   - Copyright (c) 2022 The 3Deer - https://github.com/the3deer
+    STL Parser  - GNU LGPL v2.1 - Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski - https://code.j3d.org
+    GLTF Parser - MIT License   - Copyright (c) 2016 Marco Hutter - https://github.com/javagl/JglTF
+    FBX Parser  - MIT License   - Copyright (c) 2020 Samuli Raivio - https://github.com/ufbx/ufbx
+    EarCut      - ISC License   - Copyright (c) 2016, Mapbox - https://github.com/the3deer/earcut
 
 
-Assets
+Demo Assets
 
  * cowboy       : Unlicense License - https://github.com/TheThinMatrix/OpenGL-Animation
  * fox          : CC0: Low poly fox by PixelMannen, CC-BY 4.0: Rigging and animation by @tomkranis on Sketchfab
