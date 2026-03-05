@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "9.1.0"
 junit = "4.13.2"
 extJunit = "1.2.1"
 espressoCore = "3.6.1"
