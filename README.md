@@ -18,6 +18,7 @@ News (10/03/2026)
 * New Preferences: Configuring options for the Engine
 * FBX: *basic* support (no animation - no rigging)
 * Bug fixes and Engine improvement
+* This release is possible thanks to Gemini AI 
 * **Not yet published on Play Store!**
 
 Demo
@@ -195,7 +196,7 @@ Acknowledgement
 * For teaching how animation engine works: https://github.com/TheThinMatrix/OpenGL-Animation
 * To the lot of user's feedback: https://github.com/the3deer/android-3D-model-viewer/issues
 * To the many infinite educational resources found on Internet for free, thank you ! :)
-* To the **AI (Gemini)**, which so far, helped me to rewrite the entire engine and fix bugs     
+* To the **AI (Gemini)**, which so far, helped me to rewrite entire parts of the engine     
 
 
 Credits
