@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.the3deer.android_3d_model_engine.services.collada.ColladaLoaderLegacy;
 import org.the3deer.android_3d_model_engine.services.wavefront.WavefrontLoader;
+import org.the3deer.modelviewer.providers.polyhaven.PolyHaven;
 import org.the3deer.util.android.AndroidUtils;
 import org.the3deer.util.android.AssetUtils;
 import org.the3deer.util.android.ContentUtils;
@@ -42,6 +43,11 @@ public class LoadDialogFragment extends DialogFragment {
     private static final URL REPO_URL = AndroidUtils.createURL("https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/models/index");
     private static final URL REPO_KHRONOS_URL = AndroidUtils.createURL("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/model-index.json");
     private static final URL REPO_ASSIMP_URL = AndroidUtils.createURL("https://api.github.com/repos/assimp/assimp/contents/test/models/FBX");
+    /**
+     * Poly Haven repository - free of charge - public domain
+     * @see <a href="https://github.com/Poly-Haven/Public-API/blob/master/ToS.md" />
+     */
+    private static final URL REPO_POLY_HAVEN_URL = AndroidUtils.createURL("https://api.polyhaven.com");
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1000;
     private static final int REQUEST_INTERNET_ACCESS = 1001;
     private static final int REQUEST_READ_CONTENT_PROVIDER = 1002;
@@ -57,7 +63,7 @@ public class LoadDialogFragment extends DialogFragment {
      * This actions corresponds to the "dialog_load_from" string array defined in strings.xml
      */
     private enum Action {
-        SAMPLES, REPOSITORY_THE3DEER, REPOSITORY_KHRONOS, REPOSITORY_ASSIMP, ANDROID_EXPLORER, FILE_EXPLORER
+        REPOSITORY_POLYHAVEN, REPOSITORY_KHRONOS, REPOSITORY_ASSIMP, REPOSITORY_THE3DEER, ANDROID_EXPLORER, SAMPLES, /* deprecated */ FILE_EXPLORER
     }
 
     /**
@@ -91,6 +97,9 @@ public class LoadDialogFragment extends DialogFragment {
                     break;
                 case REPOSITORY_ASSIMP:
                     loadModelFromAssimp();
+                    break;
+                case REPOSITORY_POLYHAVEN:
+                    loadModelFromPolyHaven();
                     break;
                 case ANDROID_EXPLORER:
                     Bundle result = new Bundle();
@@ -132,7 +141,7 @@ public class LoadDialogFragment extends DialogFragment {
 
         // testing purposes only
         ContentUtils.showListDialog(activity, "Choose Repository",
-                new String[]{"android-3D-model-viewer", "Khronos glTF-Sample-Models", "Assimp FBX samples"},
+                new String[]{"android-3D-model-viewer", "Khronos glTF-Sample-Models", "Assimp FBX samples", "Poly Haven"},
                 (DialogInterface dialog, int which) -> {
                     if (which == 0) {
                         if (AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
@@ -146,6 +155,8 @@ public class LoadDialogFragment extends DialogFragment {
                         if (AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
                             new LoadRepoAssimp().execute(REPO_ASSIMP_URL);
                         }
+                    } else if(which == 3){
+                        loadModelFromPolyHaven();
                     }
                 });
     }
@@ -167,6 +178,16 @@ public class LoadDialogFragment extends DialogFragment {
     private void loadModelFromAssimp() {
         if (AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
             new LoadRepoAssimp().execute(REPO_ASSIMP_URL);
+        }
+    }
+
+    private void loadModelFromPolyHaven() {
+        if (AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
+            PolyHaven.load(activity, (String url) -> {
+                if (url != null) {
+                    launchModelRendererActivity(Uri.parse(url));
+                }
+            });
         }
     }
 
@@ -327,7 +348,6 @@ public class LoadDialogFragment extends DialogFragment {
                         }
                     });
         }
-
     }
 
     class LoadRepoAssimp extends AsyncTask<URL, Integer, List<String>> {
