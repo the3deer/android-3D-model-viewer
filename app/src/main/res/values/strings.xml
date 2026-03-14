@@ -35,11 +35,12 @@
     </string-array>
 
     <string-array name="dialog_load_from">
-        <item>Samples</item>
-        <item>Repository (the3deer)</item>
+        <item>Repository (Poly Haven)</item>
         <item>Repository (Khronos)</item>
         <item>Repository (Assimp)</item>
+        <item>Repository (the3deer)</item>
         <item>Android Explorer</item>
+        <item>Samples</item>
         <!-- item>File Explorer (Android &lt;= 10)</item -->
     </string-array>
 

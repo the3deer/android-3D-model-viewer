@@ -36,11 +36,12 @@
     </string-array>
 
     <string-array name="dialog_load_from">
-        <item>Ejemplos</item>
-        <item>Repositorio (the3deer)</item>
+        <item>Repositorio (Poly Haven)</item>
         <item>Repositorio (Khronos)</item>
         <item>Repositorio (Assimp)</item>
+        <item>Repositorio (the3deer)</item>
         <item>Explorador Android</item>
+        <item>Ejemplos</item>
         <!-- item>Explorador (Android &lt;= 10)</item -->
     </string-array>
 
