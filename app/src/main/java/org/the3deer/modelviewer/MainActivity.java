@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // observe recentUri to add recent menu items and update the toolbar title
-        modelViewModel.getRecentId().observe(this, new Observer<String>() { // Or observe the arguments directly if possible
+        modelViewModel.getRecentUri().observe(this, new Observer<String>() { // Or observe the arguments directly if possible
             @Override
             public void onChanged(String uri) {
 

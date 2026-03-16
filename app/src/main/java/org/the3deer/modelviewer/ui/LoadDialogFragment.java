@@ -674,6 +674,7 @@ public class LoadDialogFragment extends DialogFragment {
     private void launchModelRendererActivity(Uri uri) {
         Bundle result = new Bundle();
         result.putString("action", "load");
+        result.putString("id", uri.toString());
         result.putString("uri", uri.toString());
         activity.getSupportFragmentManager().setFragmentResult("app", result);
     }

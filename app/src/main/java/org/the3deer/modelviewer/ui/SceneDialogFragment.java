@@ -34,7 +34,7 @@ public class SceneDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        Log.d(TAG, "onCreateDialog. "+viewModel.getRecentId().getValue());
+        Log.d(TAG, "onCreateDialog. "+viewModel.getRecentUri().getValue());
         final ModelEngine modelEngine = viewModel.getModelEngine();
         if (modelEngine == null) return null;
 

@@ -35,7 +35,7 @@ public class CameraDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        Log.d(TAG, "onCreateDialog. "+viewModel.getRecentId().getValue());
+        Log.d(TAG, "onCreateDialog. "+viewModel.getRecentUri().getValue());
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 

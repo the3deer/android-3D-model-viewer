@@ -15,11 +15,6 @@
             android:defaultValue="android:///assets/models/welcome.obj"
             app:argType="string"
             app:nullable="false" />
-        <argument
-            android:name="type"
-            android:defaultValue="obj"
-            app:argType="string"
-            app:nullable="true" />
     </fragment>
 
     <dialog
