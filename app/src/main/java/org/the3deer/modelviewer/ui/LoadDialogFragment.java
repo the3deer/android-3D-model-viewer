@@ -104,8 +104,8 @@ public class LoadDialogFragment extends DialogFragment {
                 case ANDROID_EXPLORER:
                     Bundle result = new Bundle();
                     result.putString("action", "pick");
-                    getParentFragmentManager().setFragmentResult("app", result);
-                    //loadModelFromContentProvider();
+                    activity.getSupportFragmentManager().setFragmentResult("app", result);
+                    dismiss();
                     break;
                 case FILE_EXPLORER:
                     loadModelFromSdCard();

@@ -33,7 +33,7 @@ public class MainDialogFragment extends DialogFragment {
                 case LOAD_MODEL:
                     DialogFragment newFragment = LoadDialogFragment.newInstance(R.string.alert_dialog_title,
                             getResources().getStringArray(R.array.dialog_load_from));
-                    newFragment.show(getParentFragmentManager(), "dialog");
+                    newFragment.show(activity.getSupportFragmentManager(), "dialog");
                     break;
                 case DEMO:
                     ModelFragment modelFragment = ModelFragment.newInstance(null, null, false);
@@ -50,7 +50,9 @@ public class MainDialogFragment extends DialogFragment {
                 case HELP:
                     final Bundle result = new Bundle();
                     result.putString("action", "help");
-                    getParentFragmentManager().setFragmentResult("app", result);
+                    activity.getSupportFragmentManager().setFragmentResult("app", result);
+                    dismiss();
+                    break;
                 case SETTINGS:
                     break;
                 case EXIT:

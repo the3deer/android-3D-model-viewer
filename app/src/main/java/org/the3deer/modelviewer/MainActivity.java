@@ -103,14 +103,16 @@ public class MainActivity extends AppCompatActivity {
 
         mGetContent = registerForActivityResult(contract,
                 uri -> {
-                    try {
-                        // Handle the returned Uri
-                        Log.i(TAG, "Uri: " + uri);
-                        loadContentDialog.load(uri);
-                    } catch (Exception e) {
-                        Log.e(TAG, "Exception loading uri: " + uri, e);
-                        Toast.makeText(getApplication(), "Problem loading " + uri +
-                                "\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                    if (uri != null) {
+                        try {
+                            // Handle the returned Uri
+                            Log.i(TAG, "Uri: " + uri);
+                            loadContentDialog.load(uri);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Exception loading uri: " + uri, e);
+                            Toast.makeText(getApplication(), "Problem loading " + uri +
+                                    "\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
                     }
                 });
 
