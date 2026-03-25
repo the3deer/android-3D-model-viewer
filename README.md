@@ -38,8 +38,8 @@ Android Market
 [<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" width="323" height="125">](https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2)
 
 
-Notice
-======
+Disclaimer
+==========
 
 * This is a work in progress... and the documentation as well
 * Only open 3d formats or API are to be supported
