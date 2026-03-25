@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    tools:context=".ui.about.AboutFragment"
+    tools:context="org.the3deer.android.viewer.ui.about.AboutFragment"
     android:paddingTop="?attr/actionBarSize"
     android:background="@android:color/darker_gray">
 
