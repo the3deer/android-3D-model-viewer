@@ -17,11 +17,11 @@
             app:nullable="false" />
     </fragment>
 
-    <fragment
+<!--    <fragment
         android:id="@+id/nav_slideshow"
         android:name="org.the3deer.android.viewer.ui.slideshow.SlideshowFragment"
         android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        tools:layout="@layout/fragment_slideshow" />-->
 
     <dialog
         android:id="@+id/nav_settings"
@@ -48,12 +48,12 @@
     <fragment
         android:id="@+id/nav_about"
         android:name="org.the3deer.android.viewer.ui.about.AboutFragment"
-        android:label="@string/about"
+        android:label="@string/menu_about"
         tools:layout="@layout/fragment_about" />
 
     <!-- demos -->
 
-    <fragment
+<!--    <fragment
         android:id="@+id/nav_demo1"
         android:name="org.the3deer.android.viewer.demo.ExampleDemoFragment"
         android:label="Objects demo"
@@ -72,6 +72,6 @@
         android:name="org.the3deer.android.viewer.demo.EarCutDemoFragment"
         android:label="Earcut demo"
         tools:layout="@layout/fragment_home">
-    </fragment>
+    </fragment>-->
 
 </navigation>
