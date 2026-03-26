@@ -1,4 +1,4 @@
-package org.the3deer.android.viewer.ui.legacy;
+package org.the3deer.android.viewer.ui.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -11,6 +11,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.the3deer.android.engine.ModelEngine;
+import org.the3deer.android.engine.model.Camera;
 import org.the3deer.android.engine.model.Model;
 import org.the3deer.android.engine.model.Scene;
 import org.the3deer.android.viewer.SharedViewModel;
@@ -19,9 +20,9 @@ import org.the3deer.dddmodel2.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SceneDialogFragment extends DialogFragment {
+public class CameraDialogFragment extends DialogFragment {
 
-    private static String TAG = "SceneDialogFragment";
+    private static String TAG = "CameraDialogFragment";
 
     private SharedViewModel viewModel;
 
@@ -35,30 +36,43 @@ public class SceneDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         Log.d(TAG, "onCreateDialog. "+viewModel.getActiveFragment().getValue());
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
         final ModelEngine modelEngine = viewModel.getActiveEngine().getValue();
-        if (modelEngine == null) return null;
+        if (modelEngine == null) return createNotAvailableDialog(builder, "modelEngine is null");
 
         final Model sceneManager = modelEngine.getBeanFactory().find(Model.class);
-        if (sceneManager == null) return null;
+        if (sceneManager == null) return createNotAvailableDialog(builder, "sceneManager is null");
 
-        final List<Scene> scenes = sceneManager.getScenes();
-        final String[] sceneNames = new String[scenes.size()];
-        for (int i = 0; i < scenes.size(); i++) {
-            sceneNames[i] = scenes.get(i).getName();
+        // current scene
+        final Scene currentScene = sceneManager.getActiveScene();
+        if (currentScene == null) return createNotAvailableDialog(builder, "currentScene is null");
+
+        // current camera
+        final Camera currentCamera = currentScene.getActiveCamera();
+        if (currentCamera == null) return createNotAvailableDialog(builder, "currentCamera is null");
+
+        final List<Camera> cameras = currentScene.getCameras();
+        if (cameras == null || cameras.isEmpty()) return createNotAvailableDialog(builder, "No cameras available");
+
+        final String[] cameraNames = new String[cameras.size()];
+        for (int i = 0; i < cameras.size(); i++) {
+            cameraNames[i] = cameras.get(i).getName();
         }
 
         ArrayList selectedItems = new ArrayList();  // Where we track the selected items
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
         // Set the dialog title.
-        builder.setTitle(R.string.scenes)
+        builder.setTitle(R.string.cameras)
                 // Specify the list array, the items to be selected by default (null for
                 // none), and the listener through which to receive callbacks when items
                 // are selected.
-                .setSingleChoiceItems(sceneNames, 0, new DialogInterface.OnClickListener() {
+                .setSingleChoiceItems(cameraNames, 0, new DialogInterface.OnClickListener() {
 
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        sceneManager.setActiveScene(scenes.get(i));
+                        currentScene.setActiveCamera(cameras.get(i));
                     }})
 
 
@@ -82,5 +96,20 @@ public class SceneDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-
+    /**
+     * Helper method to create a simple "Not Available" dialog.
+     */
+    private Dialog createNotAvailableDialog(AlertDialog.Builder builder, String message) {
+        // You might want a specific title for this kind of message
+        // e.g., <string name="title_not_available">Information</string>
+        builder.setTitle(getString(R.string.app_name)) // Use a string resource
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss(); // Dismiss the dialog on "Accept"
+                    }
+                });
+        return builder.create();
+    }
 }

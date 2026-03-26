@@ -26,42 +26,33 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         val engine = sharedViewModel.activeEngine.value ?: return
         val beanFactory = engine.beanFactory
-        val beans = beanFactory.getBeans()
+        val beans = beanFactory.beans
 
         val beansWithProperties = beans.filter { (_, bean) ->
             beanFactory.getProperties(bean).isNotEmpty()
         }
 
+        // Group beans by their Category using the priority rules
         val groupedBeans = beansWithProperties.values.groupBy { bean ->
-            val beanClass = bean.javaClass
-            val feature = beanClass.getAnnotation(Feature::class.java) 
-                ?: beanClass.`package`?.getAnnotation(Feature::class.java)
-            
-            feature?.name?.takeIf { it.isNotEmpty() } 
-                ?: beanClass.`package`?.name?.substringAfterLast('.')?.replaceFirstChar { it.uppercase() }
-                ?: "General"
+            getCategory(bean.javaClass)
         }
 
-        groupedBeans.forEach { (featureName, featureBeans) ->
-            val featureMetadata = featureBeans.firstNotNullOfOrNull { bean ->
-                bean.javaClass.getAnnotation(Feature::class.java) 
-                    ?: bean.javaClass.`package`?.getAnnotation(Feature::class.java)
-            }
-
+        groupedBeans.forEach { (categoryName, categoryBeans) ->
             val category = PreferenceCategory(context).apply {
-                title = if (featureMetadata?.experimental == true) "$featureName (Experimental)" else featureName
-                summary = featureMetadata?.description?.takeIf { it.isNotEmpty() }
+                title = categoryName
                 layoutResource = R.layout.preference_category
             }
             screen.addPreference(category)
 
-            featureBeans.forEach { bean ->
+            categoryBeans.forEach { bean ->
                 val id = bean.javaClass.name
                 val propertiesMap = beanFactory.getProperties(bean)
                 
                 val beanAnnotation = bean.javaClass.getAnnotation(Bean::class.java)
-                val componentName = beanAnnotation?.name?.takeIf { it.isNotEmpty() }
-                    ?: bean.javaClass.simpleName.replace("Drawer", "").replace("Renderer", "").replace("Default", "")
+                val isBeanExperimental = isExperimental(bean.javaClass)
+                val componentName = (beanAnnotation?.name?.takeIf { it.isNotEmpty() }
+                    ?: bean.javaClass.simpleName.replace("Drawer", "").replace("Renderer", "").replace("Default", ""))
+                    .let { if (isBeanExperimental) "$it (Experimental)" else it }
 
                 val propertyInfos = propertiesMap.values.toList()
                 val enabledProp = propertyInfos.find { it.name == "enabled" }
@@ -71,7 +62,9 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
                 if (enabledProp != null) {
                     val toggleTitle = enabledProp.name.takeIf { it.isNotEmpty() && it != "enabled" } ?: componentName
-                    val masterSwitch = createSwitchPreference(context, id, bean, enabledProp, toggleTitle)
+                    val summaryText = enabledProp.description?.takeIf { it.isNotEmpty() } ?: getDescription(bean.javaClass)
+                    
+                    val masterSwitch = createSwitchPreference(context, id, bean, enabledProp, toggleTitle, summaryText)
                     category.addPreference(masterSwitch)
                     masterDependencyKey = masterSwitch.key
                 }
@@ -88,11 +81,84 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         }
     }
 
-    private fun createSwitchPreference(context: Context, id: String, bean: Any, prop: BeanPropertyInfo, titleText: String): SwitchPreferenceCompat {
+    /**
+     * Resolves the category for a bean class based on @Bean, @Feature or parent package metadata.
+     */
+    private fun getCategory(beanClass: Class<*>): String {
+        // Step 1: Check @Bean category
+        beanClass.getAnnotation(Bean::class.java)?.category?.takeIf { it.isNotEmpty() }?.let { return it }
+
+        // Step 2: Check @Feature category on class
+        beanClass.getAnnotation(Feature::class.java)?.category?.takeIf { it.isNotEmpty() }?.let { return it }
+
+        // Step 3: Walk up package hierarchy to find near most parent package info
+        var pkgName = beanClass.`package`?.name
+        while (pkgName != null) {
+            getFeatureFromPackage(pkgName)?.category?.takeIf { it.isNotEmpty() }?.let { return it }
+            if (!pkgName.contains(".")) break
+            pkgName = pkgName.substringBeforeLast('.')
+        }
+
+        return "General"
+    }
+
+    /**
+     * Resolves the description for a bean class based on @Bean, @Feature or parent package metadata.
+     */
+    private fun getDescription(beanClass: Class<*>): String? {
+        // Step 1: Check @Bean description
+        beanClass.getAnnotation(Bean::class.java)?.description?.takeIf { it.isNotEmpty() }?.let { return it }
+
+        // Step 2: Check @Feature description on class
+        beanClass.getAnnotation(Feature::class.java)?.description?.takeIf { it.isNotEmpty() }?.let { return it }
+
+        // Step 3: Walk up package hierarchy
+        var pkgName = beanClass.`package`?.name
+        while (pkgName != null) {
+            getFeatureFromPackage(pkgName)?.description?.takeIf { it.isNotEmpty() }?.let { return it }
+            if (!pkgName.contains(".")) break
+            pkgName = pkgName.substringBeforeLast('.')
+        }
+
+        return null
+    }
+
+    /**
+     * Checks if a bean or its parent context is marked as experimental.
+     */
+    private fun isExperimental(beanClass: Class<*>): Boolean {
+        if (beanClass.getAnnotation(Bean::class.java)?.experimental == true) return true
+        if (beanClass.getAnnotation(Feature::class.java)?.experimental == true) return true
+
+        var pkgName = beanClass.`package`?.name
+        while (pkgName != null) {
+            if (getFeatureFromPackage(pkgName)?.experimental == true) return true
+            if (!pkgName.contains(".")) break
+            pkgName = pkgName.substringBeforeLast('.')
+        }
+
+        return false
+    }
+
+    /**
+     * Helper to load @Feature annotation from package metadata or synthetic package-info class.
+     */
+    private fun getFeatureFromPackage(pkgName: String): Feature? {
+        return try {
+            val pkg = Package.getPackage(pkgName)
+            pkg?.getAnnotation(Feature::class.java) ?: 
+                // Fallback for Android: try to load the package-info class directly
+                Class.forName("$pkgName.package-info").getAnnotation(Feature::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun createSwitchPreference(context: Context, id: String, bean: Any, prop: BeanPropertyInfo, titleText: String, summaryText: String?): SwitchPreferenceCompat {
         return SwitchPreferenceCompat(context).apply {
             key = "$id.${prop.name}"
             title = titleText
-            summary = prop.description?.takeIf { it.isNotEmpty() }
+            summary = summaryText
             try {
                 val value = prop.getValue(bean)
                 if (value is Boolean) setDefaultValue(value)
@@ -234,40 +300,36 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     }
                 }
             } catch (e: Exception) {
-                Log.e("SettingsFragment", "Error updating property $key", e)
+                Log.e("SettingsFragment", "Error applying preference $key", e)
             }
         }
 
-        private fun getPropertyValues(bean: Any, prop: BeanPropertyInfo): List<Any?> {
-            val valuesMethod = prop.valuesMethod
-            if (valuesMethod != null) {
-                val valuesObj = try { valuesMethod.invoke(bean) } catch (e: Exception) { null }
-                return when (valuesObj) {
-                    is List<*> -> valuesObj
-                    else -> if (valuesObj?.javaClass?.isArray == true) {
-                        (0 until java.lang.reflect.Array.getLength(valuesObj)).map { java.lang.reflect.Array.get(valuesObj, it) }
-                    } else emptyList()
-                }
+        private fun getPropertyValues(bean: Any, info: BeanPropertyInfo): List<Any> {
+            return try {
+                val values = info.valuesMethod?.invoke(bean) as? List<*> ?: info.values.toList()
+                values.filterNotNull()
+            } catch (e: Exception) {
+                emptyList()
             }
-            val staticValues = prop.values
-            if (staticValues != null && staticValues.isNotEmpty()) return staticValues.toList()
-            if (prop.valueNames.isNotEmpty()) return prop.valueNames.indices.toList()
-            return emptyList()
         }
 
-        private fun getPropertyNames(info: BeanPropertyInfo, values: List<Any?>): Array<CharSequence> {
-            if (info.valueNames.isNotEmpty()) return info.valueNames.map { it as CharSequence }.toTypedArray()
-            return values.map { it?.toString() ?: "null" }.toTypedArray()
+        private fun getPropertyNames(info: BeanPropertyInfo, values: List<Any>): Array<CharSequence> {
+            return if (info.valueNames.isNotEmpty()) {
+                info.valueNames.map { it as CharSequence }.toTypedArray()
+            } else {
+                values.map { it.toString() as CharSequence }.toTypedArray()
+            }
         }
 
-        private fun getPropertyIds(values: List<Any?>, names: Array<CharSequence>): Array<CharSequence> {
-            return names.indices.map { it.toString() }.toTypedArray()
+        private fun getPropertyIds(values: List<Any>, names: Array<CharSequence>): Array<CharSequence> {
+            return values.indices.map { i ->
+                if (i < names.size) names[i] else values[i].toString()
+            }.map { it as CharSequence }.toTypedArray()
         }
 
         private fun areEqual(v1: Any?, v2: Any?): Boolean {
             if (v1 == v2) return true
-            if (v1 == null || v2 == null) return false
-            if (v1.toString() == v2.toString()) return true
+            if (v1 is FloatArray && v2 is FloatArray) return v1.contentEquals(v2)
             return false
         }
     }

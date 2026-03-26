@@ -33,9 +33,9 @@ import org.the3deer.dddmodel2.R
 import org.the3deer.dddmodel2.databinding.ActivityMainBinding
 import androidx.core.net.toUri
 import org.the3deer.android.engine.model.ModelEvent
-import org.the3deer.android.viewer.ui.legacy.SceneDialogFragment
-import org.the3deer.android.viewer.ui.legacy.CameraDialogFragment
-import org.the3deer.android.viewer.ui.legacy.AnimationDialogFragment
+import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
+import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
+import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
 import org.the3deer.util.event.EventListener
 import java.util.EventObject
 
@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity(), EventListener {
         val navController = navHostFragment.navController
 
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.nav_home, R.id.nav_slideshow),
+            setOf(R.id.nav_home, R.id.nav_settings, R.id.nav_about),
             binding.drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity(), EventListener {
                         supportActionBar?.title = shortenUri(it)
                     }
                 }
-                if (destination.id == R.id.nav_home || destination.id == R.id.nav_slideshow) {
+                if (destination.id == R.id.nav_home) {
                     navigationView.setCheckedItem(destination.id)
                 }
             }

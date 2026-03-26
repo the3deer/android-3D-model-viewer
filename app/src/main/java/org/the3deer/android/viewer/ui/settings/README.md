@@ -2,22 +2,20 @@
 
 The Preference Screen is built as follows
 
-- There is 1 category for every feature
-- There is 1 category for every bean
+- There will be 1 preference category for every feature category or bean category found in the bean factory
+- If the bean is experimental, the menu will show the item as "My Component (Experimental)"
+- If the feature is experimental, all the beans in the feature will show the item as "My Component (Experimental)"
+
+## Components & Feature
+
+- The Components are the actual implementation of the Features
+- The Feature annotation is to be put in the java package implementation of the feature
+- The Feature annotation is to set common properties if all beans in the same package share the same attributes
 
 ## Preference Keys
 
 The key for each preference is constructed as follows:
 `<className>.<propertyName>`
-
-## Model
-
-    - Bean
-    |- BeanProperty ( field or method )
-    |   |- name
-    |   |- description
-    |   |- valueNames
-
 
 ## Dependencies
 
@@ -40,32 +38,3 @@ Preferences are stored using the following ID strategy:
 If a property named `enabled` (boolean) exists in a bean, it is treated as a **master toggle** for that component. 
 - It will be displayed at the top of the component section.
 - All other properties within the same bean will automatically depend on it (i.e., they will be disabled in the UI if `enabled` is set to `false`).
-
-```java
-@BeanProperty
-protected boolean enabled = true;
-```
-
-### Custom Property Values
-
-
-    @BeanProperty(name = "Background Color", description = "Select the default color for 3D models", valueNames = {"White", "Gray", "Black"})
-    private float[] backgroundColor = Constants.COLOR_GRAY;
-
-    @BeanProperty(name = "backgroundColor", valueNames = {"White", "Gray", "Black"})
-    public List<float[]> getBackgroundColorValues() {
-        return Arrays.asList(Constants.COLOR_WHITE, Constants.COLOR_GRAY, Constants.COLOR_BLACK);
-    }
-
-### Delegated Property Values
-
-    @BeanProperty(name = "Property X", description = "My delegated property X")
-    public void setSomeFlag(boolean enabled){
-        delegate.setSomeFlag(enabled);
-    }
-
-    @BeanProperty(description = "My delegated property X")
-    public boolean isSomeFlag(){
-        delegate.isSomeFlag();
-        return false;
-    }

@@ -1,4 +1,4 @@
-package org.the3deer.android.viewer.ui.legacy;
+package org.the3deer.android.viewer.ui.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

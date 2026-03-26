@@ -70,7 +70,7 @@
             android:id="@+id/immersive"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/fab_content_description"
+            android:contentDescription="@string/immersive"
             app:fabSize="mini"
             app:srcCompat="@android:drawable/ic_menu_add" />
 
