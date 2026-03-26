@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">Visor de Modelos 3D</string>
+    <string name="navigation_drawer_open">Abrir panel de navegación</string>
+    <string name="navigation_drawer_close">Cerrar panel de navegación</string>
+    <string name="nav_header_title">Visor de Modelos 3D</string>
+    <string name="nav_header_subtitle">support@the3deer.org</string>
+    <string name="nav_header_desc">Encabezado de navegación</string>
+    <string name="action_settings">Ajustes</string>
+
+    <string name="menu_home">Inicio</string>
+    <string name="menu_load">Cargar</string>
+    <string name="menu_slideshow">Presentación</string>
+    <string name="menu_settings">Ajustes</string>
+    <string name="menu_about">Acerca de</string>
+
+    <string name="lorem_ipsum_title">Lorem Ipsum</string>
+    <string name="lorem_ipsum">Lorem Ipsum es simplemente el texto de relleno de las imprentas y archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500, cuando un impresor desconocido usó una galería de textos y los mezcló de tal manera que logró hacer un libro de textos especimen.
+    </string>
+    <string name="fab_content_description">Representa una vista para invocar una acción</string>
+    <string name="image_view_item_home_content_description">Representa una vista de imagen en el elemento</string>
+    <string name="menu_model">Modelo</string>
+    <string name="white">Blanco</string>
+    <string name="gray">Gris</string>
+    <string name="black">Negro</string>
+    <string name="scenes">Escenas</string>
+    <string name="ok">Aceptar</string>
+    <string name="alert_dialog_title">Menú</string>
+    <string name="help">Ayuda</string>
+    <string name="help_text">Texto de ayuda...</string>
+    <string name="about">Acerca de</string>
+    <string name="about_text">Texto acerca de...</string>
+    <string name="animations">Animaciones</string>
+    <string name="cameras">Cámaras</string>
+    <string name="scene">Escena</string>
+    <string name="camera">Cámara</string>
+    <string name="anim">Anim</string>
+</resources>
