@@ -4,9 +4,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.activityViewModels
 import androidx.preference.*
 import org.the3deer.android.engine.ModelEngine
+import org.the3deer.android.engine.UISettings
 import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.util.bean.*
 import org.the3deer.dddmodel2.R
@@ -20,20 +23,16 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         val context = preferenceManager.context
         val screen = preferenceManager.createPreferenceScreen(context)
 
-        // FIX: Set preference screen EARLY so that findPreferenceInHierarchy works 
-        // during build, avoiding IllegalStateException: Dependency not found.
         setPreferenceScreen(screen)
 
         val engine = sharedViewModel.activeEngine.value ?: return
         val beanFactory = engine.beanFactory
         val beans = beanFactory.getBeans()
 
-        // 1. Filter beans that have at least one @BeanProperty
         val beansWithProperties = beans.filter { (_, bean) ->
             beanFactory.getProperties(bean).isNotEmpty()
         }
 
-        // 2. Group filtered beans by @Feature or Package
         val groupedBeans = beansWithProperties.values.groupBy { bean ->
             val beanClass = bean.javaClass
             val feature = beanClass.getAnnotation(Feature::class.java) 
@@ -45,13 +44,11 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         }
 
         groupedBeans.forEach { (featureName, featureBeans) ->
-            // Find feature metadata to extract the description and experimental flag
             val featureMetadata = featureBeans.firstNotNullOfOrNull { bean ->
                 bean.javaClass.getAnnotation(Feature::class.java) 
                     ?: bean.javaClass.`package`?.getAnnotation(Feature::class.java)
             }
 
-            // Create a section for each Feature (Blue title in legacy)
             val category = PreferenceCategory(context).apply {
                 title = if (featureMetadata?.experimental == true) "$featureName (Experimental)" else featureName
                 summary = featureMetadata?.description?.takeIf { it.isNotEmpty() }
@@ -63,12 +60,10 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 val id = bean.javaClass.name
                 val propertiesMap = beanFactory.getProperties(bean)
                 
-                // Use the Bean name or Class name for the feature toggle
                 val beanAnnotation = bean.javaClass.getAnnotation(Bean::class.java)
                 val componentName = beanAnnotation?.name?.takeIf { it.isNotEmpty() }
                     ?: bean.javaClass.simpleName.replace("Drawer", "").replace("Renderer", "").replace("Default", "")
 
-                // Filter inherited fields to avoid duplicates
                 val propertyInfos = propertiesMap.values.toList()
                 val enabledProp = propertyInfos.find { it.name == "enabled" }
                 val otherProps = propertyInfos.filter { it != enabledProp }
@@ -77,13 +72,11 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
                 if (enabledProp != null) {
                     val toggleTitle = enabledProp.name.takeIf { it.isNotEmpty() && it != "enabled" } ?: componentName
-                    
                     val masterSwitch = createSwitchPreference(context, id, bean, enabledProp, toggleTitle)
                     category.addPreference(masterSwitch)
                     masterDependencyKey = masterSwitch.key
                 }
 
-                // Add sub-properties
                 otherProps.forEach { prop ->
                     createPreference(context, id, bean, prop)?.let { pref ->
                         category.addPreference(pref)
@@ -102,7 +95,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             title = titleText
             summary = prop.description?.takeIf { it.isNotEmpty() }
             try {
-                setDefaultValue(prop.getValue(bean))
+                val value = prop.getValue(bean)
+                if (value is Boolean) setDefaultValue(value)
             } catch (e: Exception) {
                 Log.e("SettingsFragment", "Error getting value for ${prop.name}", e)
             }
@@ -114,11 +108,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         val propertyName = prop.name
         val preferenceKey = "$id.$propertyName"
 
-        val titleText = if (prop.name.isNotEmpty()) {
-            prop.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
-        } else {
-            propertyName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
-        }
+        val titleText = prop.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 
         return when (prop.type) {
             Boolean::class.java, java.lang.Boolean.TYPE -> {
@@ -127,7 +117,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     title = titleText
                     summary = prop.description?.takeIf { it.isNotEmpty() }
                     try {
-                        setDefaultValue(prop.getValue(bean))
+                        val value = prop.getValue(bean)
+                        if (value is Boolean) setDefaultValue(value)
                     } catch (e: Exception) {
                         Log.e("SettingsFragment", "Error getting value for ${prop.name}", e)
                     }
@@ -161,7 +152,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         val currentValue = try { prop.getValue(bean) } catch (e: Exception) { null }
         val currentIndex = values.indexOfFirst { areEqual(it, currentValue) }
         if (currentIndex != -1) {
-            pref.value = ids[currentIndex]
+            pref.value = ids[currentIndex].toString()
         }
     }
 
@@ -178,7 +169,21 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == null || sharedPreferences == null) return
         val engine = sharedViewModel.activeEngine.value ?: return
+        
+        // 1. Update the Java Bean first
         applyPreferenceToEngine(engine.beanFactory, sharedPreferences, key)
+
+        // 2. Bridge to the Android System if it's the language setting
+        if (key.endsWith(".language")) {
+            val uiSettings = engine.beanFactory.find(UISettings::class.java)
+            val languageCode = uiSettings?.language ?: "en"
+            
+            Log.i("SettingsFragment", "System bridge: Switching to $languageCode")
+            
+            // Modern Android standard for per-app language
+            val appLocales = LocaleListCompat.forLanguageTags(languageCode)
+            AppCompatDelegate.setApplicationLocales(appLocales)
+        }
     }
 
     companion object {
@@ -203,26 +208,23 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
                 if (info.type == Boolean::class.java || info.type == java.lang.Boolean.TYPE) {
                     if (sharedPreferences.contains(key)) {
-                        info.setValue(bean, sharedPreferences.getBoolean(key, info.getValue(bean) as Boolean))
+                        info.setValue(bean, sharedPreferences.getBoolean(key, false))
                     }
                     return
                 }
 
                 val valueStr = sharedPreferences.getString(key, null) ?: return
                 
-                // 1. Resolve values and stable IDs
                 val values = getPropertyValues(bean, info)
                 val names = getPropertyNames(info, values)
                 val ids = getPropertyIds(values, names)
 
-                // 2. Find selected index
                 var index = ids.indexOf(valueStr)
-                if (index == -1) index = valueStr.toIntOrNull() ?: -1 // Index fallback
+                if (index == -1) index = valueStr.toIntOrNull() ?: -1
 
                 if (index != -1 && index in values.indices) {
                     val selectedValue = values[index]
                     
-                    // 3. Apply value with type conversion for static annotation values
                     if (info.valuesMethod != null) {
                         info.setValue(bean, selectedValue)
                     } else {
@@ -253,57 +255,24 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             }
             val staticValues = prop.values
             if (staticValues != null && staticValues.isNotEmpty()) return staticValues.toList()
-            
-            // Fallback: If no values but names exist, the names index is the value
             if (prop.valueNames.isNotEmpty()) return prop.valueNames.indices.toList()
-            
             return emptyList()
         }
 
-        private fun getPropertyNames(prop: BeanPropertyInfo, values: List<Any?>): Array<String> {
-            if (prop.valueNames.isNotEmpty()) return prop.valueNames
-            
-            // Fallback: check valuesMethod annotation (BeanFactory might not have merged it)
-            val valuesMethod = prop.valuesMethod
-            if (valuesMethod != null) {
-                val ann = valuesMethod.getAnnotation(BeanProperty::class.java)
-                if (ann != null && ann.valueNames.isNotEmpty()) return ann.valueNames
-            }
-
-            return values.map { formatValue(it) }.toTypedArray()
+        private fun getPropertyNames(info: BeanPropertyInfo, values: List<Any?>): Array<CharSequence> {
+            if (info.valueNames.isNotEmpty()) return info.valueNames.map { it as CharSequence }.toTypedArray()
+            return values.map { it?.toString() ?: "null" }.toTypedArray()
         }
 
-        private fun getPropertyIds(values: List<Any?>, names: Array<String>): Array<String> {
-            return values.mapIndexed { index, value ->
-                when {
-                    index < names.size -> names[index] // Prefer the Name as a stable String ID
-                    value is String -> value
-                    value is Number -> value.toString()
-                    else -> index.toString()
-                }
-            }.toTypedArray()
+        private fun getPropertyIds(values: List<Any?>, names: Array<CharSequence>): Array<CharSequence> {
+            return names.indices.map { it.toString() }.toTypedArray()
         }
 
-        private fun formatValue(value: Any?): String {
-            if (value == null) return "None"
-            if (value is FloatArray) return "Color (${value.joinToString { String.format("%.2f", it) }})"
-            return value.toString()
-        }
-
-        private fun areEqual(a: Any?, b: Any?): Boolean {
-            if (a === b) return true
-            if (a == null || b == null) return false
-            if (a is FloatArray && b is FloatArray) return a.contentEquals(b)
-            if (a.javaClass.isArray && b.javaClass.isArray) {
-                val length = java.lang.reflect.Array.getLength(a)
-                if (length != java.lang.reflect.Array.getLength(b)) return false
-                for (i in 0 until length) {
-                    if (!areEqual(java.lang.reflect.Array.get(a, i), java.lang.reflect.Array.get(b, i))) return false
-                }
-                return true
-            }
-            if (a is Number && b is Number) return a.toDouble() == b.toDouble()
-            return a == b
+        private fun areEqual(v1: Any?, v2: Any?): Boolean {
+            if (v1 == v2) return true
+            if (v1 == null || v2 == null) return false
+            if (v1.toString() == v2.toString()) return true
+            return false
         }
     }
 }
