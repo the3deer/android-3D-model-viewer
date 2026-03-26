@@ -13,6 +13,7 @@ import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.renderer.GLRenderer
 import org.the3deer.android.engine.renderer.GLSurfaceView
 import org.the3deer.android.viewer.SharedViewModel
+import org.the3deer.android.viewer.ui.settings.SettingsOptions
 import org.the3deer.android.viewer.ui.settings.SettingsFragment
 import org.the3deer.android.viewer.ui.legacy.SceneDialogFragment
 import org.the3deer.android.viewer.ui.legacy.CameraDialogFragment
@@ -156,8 +157,14 @@ open class HomeFragment : Fragment() {
         try {
 
             // Register the GL components in our Engine
-            engine.beanFactory.addOrReplace("glSurfaceView", surface)
-            engine.beanFactory.addOrReplace("glRenderer", renderer)
+            engine.beanFactory.addOrReplace("gl.surfaceView", surface)
+            engine.beanFactory.addOrReplace("gl.renderer", renderer)
+
+            // Register UI components
+            engine.beanFactory.addOrReplace("ui.settings", SettingsOptions())
+
+            // debug
+            Log.i(TAG, "Engine setup finished");
 
             // boot engine
             engine.isInitialized.let {
