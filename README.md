@@ -166,6 +166,15 @@ Emulator
 You can run application in an emulator.  Open the provides samples to see how it works.
 
 
+Tests / Validation
+==================
+
+The Android Model Viewer application has been tested in the 2 following physical devices:
+
+    Lenovo Tab Y700   - Android 11
+    Pixel 8 Pro       - Android 16
+
+
 Glasses
 =======
 
