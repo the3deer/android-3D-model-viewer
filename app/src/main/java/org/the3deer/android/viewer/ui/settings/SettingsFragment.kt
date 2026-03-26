@@ -9,7 +9,6 @@ import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.activityViewModels
 import androidx.preference.*
 import org.the3deer.android.engine.ModelEngine
-import org.the3deer.android.engine.UISettings
 import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.util.bean.*
 import org.the3deer.dddmodel2.R
@@ -170,17 +169,14 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         if (key == null || sharedPreferences == null) return
         val engine = sharedViewModel.activeEngine.value ?: return
         
-        // 1. Update the Java Bean first
         applyPreferenceToEngine(engine.beanFactory, sharedPreferences, key)
 
-        // 2. Bridge to the Android System if it's the language setting
         if (key.endsWith(".language")) {
-            val uiSettings = engine.beanFactory.find(UISettings::class.java)
-            val languageCode = uiSettings?.language ?: "en"
+            val settingsOptions = engine.beanFactory.find(SettingsOptions::class.java)
+            val languageCode = settingsOptions?.language ?: "en"
             
             Log.i("SettingsFragment", "System bridge: Switching to $languageCode")
             
-            // Modern Android standard for per-app language
             val appLocales = LocaleListCompat.forLanguageTags(languageCode)
             AppCompatDelegate.setApplicationLocales(appLocales)
         }
