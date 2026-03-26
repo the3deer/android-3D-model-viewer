@@ -17,7 +17,6 @@ import org.the3deer.android.engine.model.Object3D;
 import org.the3deer.android.engine.model.Scene;
 import org.the3deer.android.engine.services.LoadListenerAdapter;
 import org.the3deer.android.engine.services.wavefront.WavefrontLoaderTask;
-import org.the3deer.android.util.ContentUtils;
 import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.util.geometry.UnionTri;
@@ -66,7 +65,7 @@ public class EarCutDemoFragment extends HomeFragment {
                 public void onStart() {
                     super.onStart();
                     // preload assets
-                    ContentUtils.setThreadActivity(getActivity());
+                    //ContentUtils.setContext(getActivity());
                 }
 
                 @Override
@@ -95,7 +94,7 @@ public class EarCutDemoFragment extends HomeFragment {
                         public void onStart() {
                             super.onStart();
                             // preload assets
-                            ContentUtils.setThreadActivity(getActivity());
+                            //ContentUtils.setContext(getActivity());
                         }
 
                         @Override

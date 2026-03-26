@@ -73,7 +73,7 @@ public class LoadContentDialog {
         // reset status
         nextFile = null;
         arguments.clear();
-        ContentUtils.setThreadActivity(getActivity());
+        //ContentUtils.setContext(getActivity());
         ContentUtils.clearDocumentsProvided();
 
         // inform user

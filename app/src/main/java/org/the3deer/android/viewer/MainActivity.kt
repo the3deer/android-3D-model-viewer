@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity(), EventListener {
         super.onCreate(savedInstanceState)
 
         // Initialize ContentUtils with context for file operations
-        ContentUtils.setThreadActivity(this)
+        ContentUtils.setContext(this)
         loadContentDialog = LoadContentDialog(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)

@@ -185,7 +185,7 @@ public class ExampleDemoFragment extends HomeFragment {
         // test loading object made of polygonal faces
         try {
             // this has heterogeneous faces
-            ContentUtils.setThreadActivity(getActivity());
+            //ContentUtils.setContext(getActivity());
             ColladaLoader colladaLoader = new ColladaLoader();
             Scene obj53 = colladaLoader.load(Uri.parse("android://org.the3deer.dddmodel2/assets/models/cowboy.dae"));
             /*obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
@@ -195,8 +195,6 @@ public class ExampleDemoFragment extends HomeFragment {
             mainScene.merge(obj53);
         } catch (Exception ex) {
             errors.add(ex);
-        } finally {
-            ContentUtils.setThreadActivity(null);
         }
 
 
