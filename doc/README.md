@@ -1,4 +1,4 @@
-# Android Model Viewer - Application Design
+# Android 3D Model Viewer - Application Design
 
 ## Overview
 A modern 3D model viewer for Android built with a modular architecture, separating the User Interface from a hierarchical Rendering Engine.
