@@ -13,30 +13,45 @@
     <string name="menu_settings">Settings</string>
     <string name="menu_about">About</string>
 
-    <string name="lorem_ipsum_title">Lorem Ipsum"</string>
-    <string name="lorem_ipsum">Lorem Ipsum is simply placeholder text of the printing and
-        typesetting industry. Lorem Ipsum has been the industry\'s standard placeholder text ever
-        since the 1500s, when an unknown printer took a galley of type and scrambled it to make a
-        type specimen book"
-    </string>
-    <string name="fab_content_description">Represents a view to invoke an action</string>
-    <string name="image_view_item_home_content_description">Represents an image view in the
-        item
-    </string>
-    <string name="menu_model">Model</string>
+    <string name="dialog_title_load">Menu</string>
+
     <string name="white">White</string>
     <string name="gray">Gray</string>
     <string name="black">Black</string>
-    <string name="scenes">Scenes</string>
     <string name="ok">OK</string>
-    <string name="alert_dialog_title">Menu</string>
-    <string name="help">Help</string>
-    <string name="help_text">Help Text...</string>
-    <string name="about">About</string>
-    <string name="about_text">About Text...</string>
-    <string name="animations">Animations</string>
+
+    <!-- About Screen -->
+    <string name="about_title_app">3D Model Viewer</string>
+    <string name="about_version">Version 1.0.0</string>
+    <string name="about_intro">An open-source project dedicated to learning 3D rendering on Android using OpenGL ES.</string>
+
+    <string name="about_header_formats">Supported Formats</string>
+    <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB, and FBX.</string>
+    <string name="about_formats_note">Note: For models with external textures, please load them as a single .zip file.</string>
+
+    <string name="about_header_controls">How to Use</string>
+    <string name="about_controls_orbit">• <b>Orbit:</b> Drag with one finger</string>
+    <string name="about_controls_pan">• <b>Pan:</b> Drag with two fingers</string>
+    <string name="about_controls_zoom">• <b>Zoom:</b> Pinch with two fingers</string>
+
+    <string name="about_header_links">Project Links</string>
+    <string name="about_link_website_label">Website</string>
+    <string name="about_link_website_url">https://www.the3deer.org</string>
+    <string name="about_link_source_label">Source Code (GitHub)</string>
+    <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
+    <string name="about_link_issues_label">Report an Issue</string>
+    <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
+
+    <string name="about_warning_experimental">⚠ Warning: This engine is experimental. Some file features might not render perfectly.</string>
+
+    <string name="about_header_privacy">Privacy</string>
+    <string name="about_privacy_text">This application does not collect or share any personal information.</string>
+
+    <string name="scenes">Scenes</string>
     <string name="cameras">Cameras</string>
+    <string name="animations">Animations</string>
     <string name="scene">Scene</string>
     <string name="camera">Camera</string>
+    <string name="immersive">Immersive</string>
     <string name="anim">Anim</string>
 </resources>
