@@ -50,6 +50,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 
                 val beanAnnotation = bean.javaClass.getAnnotation(Bean::class.java)
                 val isBeanExperimental = isExperimental(bean.javaClass)
+                val beanDescription = getDescription(bean.javaClass)
+
                 val componentName = (beanAnnotation?.name?.takeIf { it.isNotEmpty() }
                     ?: bean.javaClass.simpleName.replace("Drawer", "").replace("Renderer", "").replace("Default", ""))
                     .let { if (isBeanExperimental) "$it (Experimental)" else it }
@@ -62,15 +64,17 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
                 if (enabledProp != null) {
                     val toggleTitle = enabledProp.name.takeIf { it.isNotEmpty() && it != "enabled" } ?: componentName
-                    val summaryText = enabledProp.description?.takeIf { it.isNotEmpty() } ?: getDescription(bean.javaClass)
+                    val summaryText = enabledProp.description?.takeIf { it.isNotEmpty() } ?: beanDescription
                     
                     val masterSwitch = createSwitchPreference(context, id, bean, enabledProp, toggleTitle, summaryText)
                     category.addPreference(masterSwitch)
                     masterDependencyKey = masterSwitch.key
                 }
 
-                otherProps.forEach { prop ->
-                    createPreference(context, id, bean, prop)?.let { pref ->
+                otherProps.forEachIndexed { index, prop ->
+                    // Fallback to bean description only if no enabled toggle exists and this is the first property
+                    val fallbackDescription = if (enabledProp == null && index == 0) beanDescription else null
+                    createPreference(context, id, bean, prop, fallbackDescription)?.let { pref ->
                         category.addPreference(pref)
                         if (masterDependencyKey != null) {
                             pref.dependency = masterDependencyKey
@@ -91,9 +95,9 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         // Step 2: Check @Feature category on class
         beanClass.getAnnotation(Feature::class.java)?.category?.takeIf { it.isNotEmpty() }?.let { return it }
 
-        // Step 3: Walk up package hierarchy to find near most parent package info
-        var pkgName = beanClass.`package`?.name
-        while (pkgName != null) {
+        // Step 3: Walk up package hierarchy
+        var pkgName = beanClass.name.substringBeforeLast('.', "")
+        while (pkgName.isNotEmpty()) {
             getFeatureFromPackage(pkgName)?.category?.takeIf { it.isNotEmpty() }?.let { return it }
             if (!pkgName.contains(".")) break
             pkgName = pkgName.substringBeforeLast('.')
@@ -113,8 +117,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         beanClass.getAnnotation(Feature::class.java)?.description?.takeIf { it.isNotEmpty() }?.let { return it }
 
         // Step 3: Walk up package hierarchy
-        var pkgName = beanClass.`package`?.name
-        while (pkgName != null) {
+        var pkgName = beanClass.name.substringBeforeLast('.', "")
+        while (pkgName.isNotEmpty()) {
             getFeatureFromPackage(pkgName)?.description?.takeIf { it.isNotEmpty() }?.let { return it }
             if (!pkgName.contains(".")) break
             pkgName = pkgName.substringBeforeLast('.')
@@ -130,8 +134,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         if (beanClass.getAnnotation(Bean::class.java)?.experimental == true) return true
         if (beanClass.getAnnotation(Feature::class.java)?.experimental == true) return true
 
-        var pkgName = beanClass.`package`?.name
-        while (pkgName != null) {
+        var pkgName = beanClass.name.substringBeforeLast('.', "")
+        while (pkgName.isNotEmpty()) {
             if (getFeatureFromPackage(pkgName)?.experimental == true) return true
             if (!pkgName.contains(".")) break
             pkgName = pkgName.substringBeforeLast('.')
@@ -145,10 +149,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
      */
     private fun getFeatureFromPackage(pkgName: String): Feature? {
         return try {
-            val pkg = Package.getPackage(pkgName)
-            pkg?.getAnnotation(Feature::class.java) ?: 
-                // Fallback for Android: try to load the package-info class directly
-                Class.forName("$pkgName.package-info").getAnnotation(Feature::class.java)
+            Class.forName("$pkgName.package-info").getAnnotation(Feature::class.java)
         } catch (e: Exception) {
             null
         }
@@ -169,18 +170,19 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         }
     }
 
-    private fun createPreference(context: Context, id: String, bean: Any, prop: BeanPropertyInfo): Preference? {
+    private fun createPreference(context: Context, id: String, bean: Any, prop: BeanPropertyInfo, fallbackDescription: String?): Preference? {
         val propertyName = prop.name
         val preferenceKey = "$id.$propertyName"
 
         val titleText = prop.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+        val summaryText = prop.description?.takeIf { it.isNotEmpty() } ?: fallbackDescription
 
         return when (prop.type) {
             Boolean::class.java, java.lang.Boolean.TYPE -> {
                 SwitchPreferenceCompat(context).apply {
                     key = preferenceKey
                     title = titleText
-                    summary = prop.description?.takeIf { it.isNotEmpty() }
+                    summary = summaryText
                     try {
                         val value = prop.getValue(bean)
                         if (value is Boolean) setDefaultValue(value)
@@ -197,7 +199,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     ListPreference(context).apply {
                         key = preferenceKey
                         title = titleText
-                        summary = prop.description?.takeIf { it.isNotEmpty() } ?: "%s"
+                        summary = summaryText ?: "%s"
                         isIconSpaceReserved = false
                         setupListPreference(this, bean, prop)
                     }
