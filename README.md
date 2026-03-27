@@ -60,7 +60,7 @@ The main purpose of this app is to show how to draw in android using the OpenGL 
 So please, don't expect this application to be much richer or nicer than the ones already published in the app store,
 but at least it's opened to anyone who wants to contribute or don't want to start a similar project from scratch.
 
-As this is my first android app and I'm still learning the OpenGL language, it is highly probable that there are bugs;
+As this is my first android app, and I'm still learning the OpenGL language, it is highly probable that there are bugs;
 but I will try to continue improving the app and adding more features. So please send me your comments, suggestions or
 complains by opening an [issue](https://github.com/the3deer/android-3D-model-viewer/issues).
 
@@ -112,7 +112,7 @@ Try it
 You can install the application in either of these ways:
 
 * Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2
-* APK: [app-release.apk](app/build/outputs/apk/release/app-release.apk)
+* APK: [app-debug.apk](app/build/outputs/apk/debug/app-debug.apk)
 * Source code: clone the repository, compile with Gradle and install with adb
 
 Once you open the application, you can load any of the supported model formats.
@@ -125,8 +125,8 @@ Documentation
 [doc/README.md](./doc/README.md)
 
 
-Compilation
-===========
+Build / Package
+===============
 
 Script to build an apk package and run in your device.
 - Git 1.6.5 or later is required
@@ -135,14 +135,23 @@ Script to build an apk package and run in your device.
 ```
     git clone --recursive https://github.com/the3deer/android-3D-model-viewer.git
     cd android-3D-model-viewer
-    export ANDROID_HOME=/home/$USER/Android/Sdk
-    ./gradlew assembleDebug
-    adb install -r app/build/outputs/apk/app-debug.apk
-    adb shell am start -n org.andresoviedo.dddmodel2/org.the3deer.android.viewer.ui.MainActivity
+    ./gradlew clean assembleDebug
+    adb install -r app/build/outputs/apk/debug/app-debug.apk
+    adb shell am start -n org.andresoviedo.dddmodel2/org.the3deer.android.viewer.MainActivity
 ```
 
 Open the application. You should see a menu. From there you can load models
 Once the model is rendered, pinch and rotate to see the 3D scene from another perspective.
+
+
+Release / Bundle
+================
+
+```
+    export RELEASE_STORE_PASSWORD=***
+    export RELEASE_KEY_PASSWORD=***
+    ./gradlew clean bundleRelease
+```
 
 
 Screenshots
@@ -195,12 +204,6 @@ In order to compile the application you must either (1) clone recursively or (2)
     # 2 liner
     git clone https://github.com/the3deer/android-3D-engine.gitz
     git submodule add https://github.com/the3deer/android-3D-engine.git engine
-
-
-Documentation
-=============
-
-Working on it...
 
 
 Acknowledgement
