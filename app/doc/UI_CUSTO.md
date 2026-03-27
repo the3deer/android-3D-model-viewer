@@ -7,7 +7,7 @@ This document tracks the changes made to the user interface of the Android Model
 - **Home Fragment**: The `TransformFragment` has been promoted to be the application's **Home** fragment.
 - **Labeling**: Updated `mobile_navigation.xml` and `strings.xml` to rename the primary destination from "Transform" to "Home".
 - **Default Start**: The application now starts directly on the Home fragment.
-- **Top-Level Configuration**: Updated `AppBarConfiguration` in `MainActivity` to treat both **Home** and **Slideshow** as top-level destinations, ensuring the drawer icon (burger menu) is visible on both.
+- **Top-Level Configuration**: Updated `AppBarConfiguration` in `MainActivity` to treat both **Home** and **About** as top-level destinations, ensuring the drawer icon (burger menu) is visible on both.
 
 ## Modal Dialogs & Navigation Logic
 
@@ -16,7 +16,6 @@ This document tracks the changes made to the user interface of the Android Model
     - **Settings Fragment**: Hosted within a new `SettingsDialogFragment` to provide a consistent modal experience for application preferences.
 - **Navigation Fix**: 
     - Customised the navigation listener in `MainActivity` to prevent the "pop to Home" behaviour when opening **Load** or **Settings** from the drawer/bottom navigation.
-    - This allows users to open these tools while remaining on the **Slideshow** fragment.
     - Implemented a `DestinationChangedListener` to maintain correct menu selection highlights when dialogs are dismissed.
 
 ## Immersive Mode
@@ -32,7 +31,6 @@ This document tracks the changes made to the user interface of the Android Model
 
 ## OpenGL Integration
 
-- **GLSurfaceView**: Integrated a `GLSurfaceView` into multiple fragments (`SlideshowFragment`, `HomeFragment`).
 - **Custom Renderer**: Implemented a `ModelRenderer` using OpenGL ES 2.0 to draw 2D/3D shapes.
 - **Layering**: Verified that the existing `ConstraintLayout` correctly supports the OpenGL surface as a background layer, even behind interactive components like `RecyclerView`.
 - **Lifecycle Management**: Ensuring the OpenGL thread is properly paused and resumed with fragment lifecycle events (`onPause`, `onResume`).

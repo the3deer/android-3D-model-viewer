@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "org.the3deer.dddmodel2"
+    namespace = "org.the3deer.android.viewer"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "org.the3deer.android.viewer"
+        applicationId = "org.andresoviedo.dddmodel2"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

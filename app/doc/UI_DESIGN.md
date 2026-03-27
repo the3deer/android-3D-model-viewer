@@ -6,8 +6,7 @@ The application follows a standard Android Navigation Drawer and Bottom Navigati
 
 1.  **Home (Welcome)**: The primary landing page. It displays a responsive list of content overlaid on a live 3D background. 
 2.  **Load (Model Management)**: A core utility implemented as a **DialogFragment**. It allows the user to switch the active 3D model (e.g., between a Triangle and a Cube) without losing the current viewing context.
-3.  **Slideshow (Showcase)**: A secondary viewing mode that provides a distraction-free environment for inspecting models.
-4.  **Settings (Preferences)**: Implemented as a **DialogFragment**. It hosts application-wide settings like Immersive Mode and default model colors.
+3.  **Settings (Preferences)**: Implemented as a **DialogFragment**. It hosts application-wide settings like Immersive Mode and default model colors.
 
 ## Design Principles
 

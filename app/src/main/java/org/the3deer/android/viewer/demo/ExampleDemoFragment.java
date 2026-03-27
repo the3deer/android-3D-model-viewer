@@ -137,7 +137,7 @@ public class ExampleDemoFragment extends HomeFragment {
                     Rescaler.rescale(obj53, 2f);
                     mainScene.addObject(obj53);
                 }
-            }).load(new URI("android://org.the3deer.dddmodel2/assets/models/teapot.obj")).get(0);
+            }).load(new URI("android://org.the3deer.android.viewer/assets/models/teapot.obj")).get(0);
 
             //obj51.setScale(2f,2f,2f);
             //obj51.setSize(0.5f);
@@ -156,7 +156,7 @@ public class ExampleDemoFragment extends HomeFragment {
                     obj53.setColor(new float[] { 0.0f, 1.0f, 1f, 1.0f });
                     mainScene.addObject(obj53);
                 }
-            }).load(new URI("android://org.the3deer.dddmodel2/assets/models/cube.obj")).get(0);
+            }).load(new URI("android://org.the3deer.android.viewer/assets/models/cube.obj")).get(0);
 
             //obj52.setScale(0.5f, 0.5f, 0.5f);
             //scene.addObject(obj52);
@@ -175,7 +175,7 @@ public class ExampleDemoFragment extends HomeFragment {
                     obj53.setLocation(new float[] { 2f, 0f, 0f });
                     mainScene.addObject(obj53);
                 }
-            }).load(new URI("android://org.the3deer.dddmodel2/assets/models/ToyPlane.obj")).get(0);
+            }).load(new URI("android://org.the3deer.android.viewer/assets/models/ToyPlane.obj")).get(0);
 
             //scene.addObject(obj53);
         } catch (Exception ex) {
@@ -187,7 +187,7 @@ public class ExampleDemoFragment extends HomeFragment {
             // this has heterogeneous faces
             //ContentUtils.setContext(getActivity());
             ColladaLoader colladaLoader = new ColladaLoader();
-            Scene obj53 = colladaLoader.load(Uri.parse("android://org.the3deer.dddmodel2/assets/models/cowboy.dae"));
+            Scene obj53 = colladaLoader.load(Uri.parse("android://org.the3deer.android.viewer/assets/models/cowboy.dae"));
             /*obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
             Rescaler.rescale(obj53, 2f);
             obj53.setLocation(new float[] { 0f, 0f, 2f});

@@ -3,7 +3,7 @@ Android 3D Model Viewer
 
 ## App Module (`:app`)
 - **`SharedViewModel`**: Centralizes the app state. It holds the current `Model` being viewed and its properties (like color).
-- **UI Fragments (`HomeFragment`, `SlideshowFragment`)**:
+- **UI Fragments (`HomeFragment`, `AboutFragment`)**:
     - Act as the "Controller" in the MVC/MVVM sense.
     - They observe `LiveData` from the `SharedViewModel`.
     - When data changes, they "push" the new state into the `SceneRenderer`.

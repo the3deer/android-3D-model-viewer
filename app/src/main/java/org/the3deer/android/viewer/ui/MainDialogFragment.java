@@ -7,7 +7,7 @@ import android.widget.Toast;
 
 import org.the3deer.android.util.AndroidUtils;
 import org.the3deer.android.viewer.ui.load.LoadDialogFragment;
-import org.the3deer.dddmodel2.R;
+import org.the3deer.android.viewer.R;
 
 public class MainDialogFragment extends DialogFragment {
 

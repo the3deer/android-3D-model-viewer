@@ -11,7 +11,6 @@ import androidx.preference.*
 import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.util.bean.*
-import org.the3deer.dddmodel2.R
 import java.util.Locale
 
 class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {

@@ -13,8 +13,8 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 
+import org.the3deer.android.viewer.R;
 import org.the3deer.android.util.AssetUtils;
-import org.the3deer.dddmodel2.R;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;

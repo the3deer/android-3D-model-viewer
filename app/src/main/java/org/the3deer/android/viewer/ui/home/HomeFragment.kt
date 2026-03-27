@@ -13,9 +13,9 @@ import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.renderer.GLRenderer
 import org.the3deer.android.engine.renderer.GLSurfaceView
 import org.the3deer.android.viewer.SharedViewModel
+import org.the3deer.android.viewer.databinding.FragmentHomeBinding
 import org.the3deer.android.viewer.ui.settings.SettingsOptions
 import org.the3deer.android.viewer.ui.settings.SettingsFragment
-import org.the3deer.dddmodel2.databinding.FragmentHomeBinding
 
 open class HomeFragment : Fragment() {
 

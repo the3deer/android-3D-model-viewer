@@ -15,7 +15,7 @@ import org.the3deer.android.engine.services.wavefront.WavefrontLoader;
 import org.the3deer.android.util.ContentUtils;
 import org.the3deer.android.viewer.MainActivity;
 import org.the3deer.android.viewer.SharedViewModel;
-import org.the3deer.dddmodel2.R;
+import org.the3deer.android.viewer.R;
 
 import java.io.IOException;
 import java.net.URI;

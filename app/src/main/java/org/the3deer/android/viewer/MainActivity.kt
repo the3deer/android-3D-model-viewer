@@ -29,10 +29,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.the3deer.android.util.ContentUtils
 import org.the3deer.android.viewer.ui.load.LoadContentDialog
-import org.the3deer.dddmodel2.R
-import org.the3deer.dddmodel2.databinding.ActivityMainBinding
 import androidx.core.net.toUri
+
+
 import org.the3deer.android.engine.model.ModelEvent
+import org.the3deer.android.viewer.databinding.ActivityMainBinding
 import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment

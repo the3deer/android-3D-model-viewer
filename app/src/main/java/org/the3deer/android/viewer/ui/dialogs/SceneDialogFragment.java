@@ -14,7 +14,7 @@ import org.the3deer.android.engine.ModelEngine;
 import org.the3deer.android.engine.model.Model;
 import org.the3deer.android.engine.model.Scene;
 import org.the3deer.android.viewer.SharedViewModel;
-import org.the3deer.dddmodel2.R;
+import org.the3deer.android.viewer.R;
 
 import java.util.ArrayList;
 import java.util.List;

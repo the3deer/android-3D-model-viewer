@@ -13,15 +13,9 @@
         <argument
             android:name="uri"
             app:argType="string"
-            android:defaultValue="android://org.andresoviedo.dddmodel2/assets/models/welcome.obj"
+            android:defaultValue="android://org.the3deer.android.viewer/assets/models/welcome.obj"
             app:nullable="false" />
     </fragment>
-
-<!--    <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="org.the3deer.android.viewer.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />-->
 
     <dialog
         android:id="@+id/nav_settings"

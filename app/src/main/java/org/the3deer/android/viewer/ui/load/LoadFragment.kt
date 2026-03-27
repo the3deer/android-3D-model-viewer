@@ -8,7 +8,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import org.the3deer.android.viewer.SharedViewModel
-import org.the3deer.dddmodel2.databinding.FragmentLoadBinding
+import org.the3deer.android.viewer.databinding.FragmentLoadBinding
 
 class LoadFragment : DialogFragment() {
 

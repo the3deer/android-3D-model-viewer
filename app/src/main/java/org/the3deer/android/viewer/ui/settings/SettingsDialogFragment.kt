@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import org.the3deer.dddmodel2.R
+import org.the3deer.android.viewer.R
 
 class SettingsDialogFragment : DialogFragment() {
 

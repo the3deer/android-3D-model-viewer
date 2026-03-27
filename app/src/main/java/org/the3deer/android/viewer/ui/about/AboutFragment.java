@@ -12,8 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import org.the3deer.dddmodel2.R;
-import org.the3deer.dddmodel2.databinding.FragmentAboutBinding;
+import org.the3deer.android.viewer.R;
+import org.the3deer.android.viewer.databinding.FragmentAboutBinding;
 
 public class AboutFragment extends Fragment {
 

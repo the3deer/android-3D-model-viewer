@@ -23,7 +23,7 @@ import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.providers.polyhaven.PolyHaven;
 import org.the3deer.android.viewer.ui.DialogFragment;
 import org.the3deer.android.viewer.ui.DialogUtils;
-import org.the3deer.dddmodel2.R;
+import org.the3deer.android.viewer.R;
 
 import java.io.File;
 import java.io.IOException;

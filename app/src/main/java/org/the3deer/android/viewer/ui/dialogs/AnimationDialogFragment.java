@@ -15,7 +15,7 @@ import org.the3deer.android.engine.animation.Animation;
 import org.the3deer.android.engine.model.Model;
 import org.the3deer.android.engine.model.Scene;
 import org.the3deer.android.viewer.SharedViewModel;
-import org.the3deer.dddmodel2.R;
+import org.the3deer.android.viewer.R;
 
 import java.util.List;
 
@@ -62,7 +62,7 @@ public class AnimationDialogFragment extends DialogFragment {
         animationNames[animationNames.length-1] = "None";
 
         // Set the dialog title.
-        builder.setTitle(org.the3deer.dddmodel2.R.string.animations)
+        builder.setTitle(R.string.animations)
                 // Specify the list array, the items to be selected by default (null for
                 // none), and the listener through which to receive callbacks when items
                 // are selected.
