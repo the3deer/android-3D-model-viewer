@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.activityViewModels
 import androidx.preference.*
 import org.the3deer.android.engine.ModelEngine
@@ -13,7 +11,15 @@ import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.util.bean.*
 import java.util.Locale
 
+/**
+ * Fragment for displaying and managing application settings.
+ *
+ * @author andresoviedo
+ * @author Gemini AI
+ */
 class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
+
+    val TAG: String = SettingsFragment::class.java.simpleName
 
     private val sharedViewModel: SharedViewModel by activityViewModels()
 
@@ -33,7 +39,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         // Group beans by their Category using the priority rules
         val groupedBeans = beansWithProperties.values.groupBy { bean ->
-            getCategory(bean.javaClass)
+            getCategory(context, bean.javaClass)
         }
 
         groupedBeans.forEach { (categoryName, categoryBeans) ->
@@ -47,23 +53,21 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 val id = bean.javaClass.name
                 val propertiesMap = beanFactory.getProperties(bean)
                 
-                val beanAnnotation = bean.javaClass.getAnnotation(Bean::class.java)
                 val isBeanExperimental = isExperimental(bean.javaClass)
-                val beanDescription = getDescription(bean.javaClass)
+                val beanDescription = getDescription(context, bean.javaClass)
 
-                val componentName = (beanAnnotation?.name?.takeIf { it.isNotEmpty() }
-                    ?: bean.javaClass.simpleName.replace("Drawer", "").replace("Renderer", "").replace("Default", ""))
+                val componentName = resolveBeanLabel(context, bean.javaClass)
                     .let { if (isBeanExperimental) "$it (Experimental)" else it }
 
                 val propertyInfos = propertiesMap.values.toList()
-                val enabledProp = propertyInfos.find { it.name == "enabled" }
+                val enabledProp = propertyInfos.find { it.id == "enabled" }
                 val otherProps = propertyInfos.filter { it != enabledProp }
 
                 var masterDependencyKey: String? = null
 
                 if (enabledProp != null) {
-                    val toggleTitle = enabledProp.name.takeIf { it.isNotEmpty() && it != "enabled" } ?: componentName
-                    val summaryText = enabledProp.description?.takeIf { it.isNotEmpty() } ?: beanDescription
+                    val toggleTitle = enabledProp.resolveLabel(context)?.takeIf { it.isNotEmpty() && it != "enabled" } ?: componentName
+                    val summaryText = enabledProp.resolveDescription(context)?.takeIf { it.isNotEmpty() } ?: beanDescription
                     
                     val masterSwitch = createSwitchPreference(context, id, bean, enabledProp, toggleTitle, summaryText)
                     category.addPreference(masterSwitch)
@@ -73,7 +77,10 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 otherProps.forEachIndexed { index, prop ->
                     // Fallback to bean description only if no enabled toggle exists and this is the first property
                     val fallbackDescription = if (enabledProp == null && index == 0) beanDescription else null
-                    createPreference(context, id, bean, prop, fallbackDescription)?.let { pref ->
+                    // Use componentName as fallback title for list preferences (dynamic values)
+                    val fallbackTitle = if (prop.valuesMethod != null || (prop.values != null && prop.values.isNotEmpty())) componentName else null
+                    
+                    createPreference(context, id, bean, prop, fallbackTitle, fallbackDescription)?.let { pref ->
                         category.addPreference(pref)
                         if (masterDependencyKey != null) {
                             pref.dependency = masterDependencyKey
@@ -84,20 +91,72 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         }
     }
 
+    private fun resolveBeanLabel(context: Context, beanClass: Class<*>): String {
+        // Step 1: Check @Bean label
+        beanClass.getAnnotation(Bean::class.java)?.let { bean ->
+            val beanName = if (bean.name.isNotEmpty()) bean.name else BeanUtils.getSnakeCase(beanClass)
+            val resId = context.resources.getIdentifier("bean_" + beanName + "_label", "string", context.packageName)
+            if (resId != 0) return context.getString(resId)
+            return beanName
+        }
+        
+        // Step 2: Check @Feature label on class
+        beanClass.getAnnotation(Feature::class.java)?.let { feature ->
+            val featureName = if (feature.name.isNotEmpty()) feature.name else BeanUtils.getSnakeCase(beanClass)
+            val resId = context.resources.getIdentifier("feature_" + featureName + "_label", "string", context.packageName)
+            if (resId != 0) return context.getString(resId)
+            return featureName
+        }
+
+        // Step 3: Walk up package hierarchy for @Feature label
+        var pkgName = beanClass.name.substringBeforeLast('.', "")
+        while (pkgName.isNotEmpty()) {
+            getFeatureFromPackage(pkgName)?.let { feature ->
+                val featureName = if (feature.name.isNotEmpty()) feature.name else pkgName.substringAfterLast('.')
+                val resId = context.resources.getIdentifier("feature_" + featureName + "_label", "string", context.packageName)
+                if (resId != 0) return context.getString(resId)
+                return featureName
+            }
+            if (!pkgName.contains(".")) break
+            pkgName = pkgName.substringBeforeLast('.')
+        }
+
+        // return snake case version of class name
+        return BeanUtils.getSnakeCase(beanClass)
+    }
+
     /**
      * Resolves the category for a bean class based on @Bean, @Feature or parent package metadata.
      */
-    private fun getCategory(beanClass: Class<*>): String {
+    private fun getCategory(context: Context, beanClass: Class<*>): String {
         // Step 1: Check @Bean category
-        beanClass.getAnnotation(Bean::class.java)?.category?.takeIf { it.isNotEmpty() }?.let { return it }
+        beanClass.getAnnotation(Bean::class.java)?.let { bean ->
+            if (bean.category.isNotEmpty()) {
+                val resId = context.resources.getIdentifier("category_" + bean.category + "_label", "string", context.packageName)
+                if (resId != 0) return context.getString(resId)
+                return bean.category
+            }
+        }
 
         // Step 2: Check @Feature category on class
-        beanClass.getAnnotation(Feature::class.java)?.category?.takeIf { it.isNotEmpty() }?.let { return it }
+        beanClass.getAnnotation(Feature::class.java)?.let { feature ->
+            if (feature.category.isNotEmpty()) {
+                val resId = context.resources.getIdentifier("category_" + feature.category + "_label", "string", context.packageName)
+                if (resId != 0) return context.getString(resId)
+                return feature.category
+            }
+        }
 
         // Step 3: Walk up package hierarchy
         var pkgName = beanClass.name.substringBeforeLast('.', "")
         while (pkgName.isNotEmpty()) {
-            getFeatureFromPackage(pkgName)?.category?.takeIf { it.isNotEmpty() }?.let { return it }
+            getFeatureFromPackage(pkgName)?.let { feature ->
+                if (feature.category.isNotEmpty()) {
+                    val resId = context.resources.getIdentifier("category_" + feature.category + "_label", "string", context.packageName)
+                    if (resId != 0) return context.getString(resId)
+                    return feature.category
+                }
+            }
             if (!pkgName.contains(".")) break
             pkgName = pkgName.substringBeforeLast('.')
         }
@@ -108,17 +167,29 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
     /**
      * Resolves the description for a bean class based on @Bean, @Feature or parent package metadata.
      */
-    private fun getDescription(beanClass: Class<*>): String? {
+    private fun getDescription(context: Context, beanClass: Class<*>): String? {
         // Step 1: Check @Bean description
-        beanClass.getAnnotation(Bean::class.java)?.description?.takeIf { it.isNotEmpty() }?.let { return it }
+        beanClass.getAnnotation(Bean::class.java)?.let { bean ->
+            val beanName = if (bean.name.isNotEmpty()) bean.name else BeanUtils.getSnakeCase(beanClass)
+            val resId = context.resources.getIdentifier("bean_" + beanName + "_description", "string", context.packageName)
+            if (resId != 0) return context.getString(resId)
+        }
 
         // Step 2: Check @Feature description on class
-        beanClass.getAnnotation(Feature::class.java)?.description?.takeIf { it.isNotEmpty() }?.let { return it }
+        beanClass.getAnnotation(Feature::class.java)?.let { feature ->
+            val featureName = if (feature.name.isNotEmpty()) feature.name else BeanUtils.getSnakeCase(beanClass)
+            val resId = context.resources.getIdentifier("feature_" + featureName + "_description", "string", context.packageName)
+            if (resId != 0) return context.getString(resId)
+        }
 
         // Step 3: Walk up package hierarchy
         var pkgName = beanClass.name.substringBeforeLast('.', "")
         while (pkgName.isNotEmpty()) {
-            getFeatureFromPackage(pkgName)?.description?.takeIf { it.isNotEmpty() }?.let { return it }
+            getFeatureFromPackage(pkgName)?.let { feature ->
+                val featureName = if (feature.name.isNotEmpty()) feature.name else pkgName.substringAfterLast('.')
+                val resId = context.resources.getIdentifier("feature_" + featureName + "_description", "string", context.packageName)
+                if (resId != 0) return context.getString(resId)
+            }
             if (!pkgName.contains(".")) break
             pkgName = pkgName.substringBeforeLast('.')
         }
@@ -156,25 +227,26 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
     private fun createSwitchPreference(context: Context, id: String, bean: Any, prop: BeanPropertyInfo, titleText: String, summaryText: String?): SwitchPreferenceCompat {
         return SwitchPreferenceCompat(context).apply {
-            key = "$id.${prop.name}"
+            key = "$id.${prop.id}"
             title = titleText
             summary = summaryText
             try {
                 val value = prop.getValue(bean)
                 if (value is Boolean) setDefaultValue(value)
             } catch (e: Exception) {
-                Log.e("SettingsFragment", "Error getting value for ${prop.name}", e)
+                Log.e("SettingsFragment", "Error getting value for ${prop.id}", e)
             }
             isIconSpaceReserved = false
         }
     }
 
-    private fun createPreference(context: Context, id: String, bean: Any, prop: BeanPropertyInfo, fallbackDescription: String?): Preference? {
-        val propertyName = prop.name
-        val preferenceKey = "$id.$propertyName"
+    private fun createPreference(context: Context, id: String, bean: Any, prop: BeanPropertyInfo, fallbackTitle: String?, fallbackDescription: String?): Preference? {
+        val propertyId = prop.id
+        val preferenceKey = "$id.$propertyId"
 
-        val titleText = prop.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
-        val summaryText = prop.description?.takeIf { it.isNotEmpty() } ?: fallbackDescription
+        val label = prop.resolveLabel(context) ?: fallbackTitle ?: prop.id
+        val titleText = label.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+        val summaryText = prop.resolveDescription(context)?.takeIf { it.isNotEmpty() } ?: fallbackDescription
 
         return when (prop.type) {
             Boolean::class.java, java.lang.Boolean.TYPE -> {
@@ -186,7 +258,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                         val value = prop.getValue(bean)
                         if (value is Boolean) setDefaultValue(value)
                     } catch (e: Exception) {
-                        Log.e("SettingsFragment", "Error getting value for ${prop.name}", e)
+                        Log.e("SettingsFragment", "Error getting value for ${prop.id}", e)
                     }
                     isIconSpaceReserved = false
                 }
@@ -194,22 +266,25 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             else -> {
                 val staticValues = prop.values
                 val valuesMethod = prop.valuesMethod
-                if (valuesMethod != null || (staticValues != null && staticValues.isNotEmpty()) || prop.valueNames.isNotEmpty()) {
+                if (valuesMethod != null || (staticValues != null && staticValues.isNotEmpty())) {
                     ListPreference(context).apply {
                         key = preferenceKey
                         title = titleText
                         summary = summaryText ?: "%s"
                         isIconSpaceReserved = false
-                        setupListPreference(this, bean, prop)
+                        setupListPreference(context, this, bean, prop)
                     }
                 } else null
             }
         }
     }
 
-    private fun setupListPreference(pref: ListPreference, bean: Any, prop: BeanPropertyInfo) {
+    /**
+     * Setup a list preference with i18n support for values.
+     */
+    private fun setupListPreference(context: Context, pref: ListPreference, bean: Any, prop: BeanPropertyInfo) {
         val values = getPropertyValues(bean, prop)
-        val names = getPropertyNames(prop, values)
+        val names = getPropertyNames(context, prop, values)
         val ids = getPropertyIds(values, names)
 
         pref.entries = names
@@ -247,13 +322,13 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
             val beanFactory = engine.beanFactory
             sharedPreferences.all.keys.forEach { key ->
-                if (key.contains(".")) applyPreferenceToEngine(beanFactory, sharedPreferences, key)
+                if (key.contains(".")) applyPreferenceToEngine(context, beanFactory, sharedPreferences, key)
             }
 
             Log.d("SettingsFragment", "Finished restoring preferences.")
         }
 
-        private fun applyPreferenceToEngine(beanFactory: BeanFactory, sharedPreferences: SharedPreferences, key: String) {
+        private fun applyPreferenceToEngine(context: Context, beanFactory: BeanFactory, sharedPreferences: SharedPreferences, key: String) {
             val beanId = key.substringBeforeLast(".")
             val propertyName = key.substringAfterLast(".")
             
@@ -274,7 +349,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 val valueStr = sharedPreferences.getString(key, null) ?: return
                 
                 val values = getPropertyValues(bean, info)
-                val names = getPropertyNames(info, values)
+                val names = getPropertyNames(context, info, values)
                 val ids = getPropertyIds(values, names)
 
                 var index = ids.indexOf(valueStr)
@@ -302,19 +377,22 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         private fun getPropertyValues(bean: Any, info: BeanPropertyInfo): List<Any> {
             return try {
-                val values = info.valuesMethod?.invoke(bean) as? List<*> ?: info.values.toList()
+                val values = info.valuesMethod?.invoke(bean) as? List<*> ?: info.values?.toList() ?: emptyList<Any>()
                 values.filterNotNull()
             } catch (e: Exception) {
                 emptyList()
             }
         }
 
-        private fun getPropertyNames(info: BeanPropertyInfo, values: List<Any>): Array<CharSequence> {
-            return if (info.valueNames.isNotEmpty()) {
-                info.valueNames.map { it as CharSequence }.toTypedArray()
-            } else {
-                values.map { it.toString() as CharSequence }.toTypedArray()
+        private fun getPropertyNames(context: Context, info: BeanPropertyInfo, values: List<Any>): Array<CharSequence> {
+            val resolvedLabels = info.resolveValueLabels(context)
+            if (!resolvedLabels.isNullOrEmpty()) {
+                return resolvedLabels.map { it as CharSequence }.toTypedArray()
             }
+            
+            return values.map { value ->
+                info.resolveValueLabel(context, value.toString()) as CharSequence
+            }.toTypedArray()
         }
 
         private fun getPropertyIds(values: List<Any>, names: Array<CharSequence>): Array<CharSequence> {

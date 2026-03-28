@@ -1,12 +1,17 @@
 package org.the3deer.android.viewer.ui.settings;
 
+import android.util.Log;
+
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.os.LocaleListCompat;
+
 import org.the3deer.util.bean.Bean;
 import org.the3deer.util.bean.BeanProperty;
 
-@Bean(category = "General", name = "General Settings")
+@Bean(name = "settings", category = "general")
 public class SettingsOptions {
 
-    @BeanProperty(name = "language", description = "Application Language", values = {"en", "es"}, valueNames = {"English", "Español"})
+    @BeanProperty(values = {"en", "es"})
     private String language = "en";
 
     public String getLanguage() {

@@ -53,4 +53,66 @@
     <string name="camera">Camera</string>
     <string name="immersive">Immersive</string>
     <string name="anim">Anim</string>
+
+    <!-- Categories -->
+    <string name="category_renderers_label">Renderers</string>
+    <string name="category_gui_label">Graphical User Interface</string>
+    <string name="category_general_label">General</string>
+    <string name="category_decorators_label">Decorators</string>
+
+    <!-- Beans -->
+    <string name="bean_settings_label">General Settings</string>
+    <string name="bean_gl_renderer_label">OpenGL Settings</string>
+    <string name="bean_animation_controller_label">Animation Controller</string>
+    <string name="bean_collision_drawer_label">Collision Points Drawer</string>
+    <string name="bean_collision_drawer_description">Draw points where the ray-object collisions take place</string>
+    <string name="bean_bounding_box_drawer_label">Bounding Box Drawer</string>
+    <string name="bean_bounding_box_drawer_description">Draws the bounding box of the selected object</string>
+    <string name="bean_light_bulb_drawer_label">Light Bulb Drawer</string>
+    <string name="bean_light_bulb_drawer_description">Draws the light bulb</string>
+    <string name="bean_skeleton_drawer_label">Skeleton Drawer</string>
+    <string name="bean_skeleton_drawer_description">Draws the skeleton of the object</string>
+    <string name="bean_skybox_drawer_label">SkyBox Decorator</string>
+    <string name="bean_skybox_drawer_description">Draws a 3D Skybox as the scene background</string>
+    <string name="bean_wireframe_drawer_label">Wireframe Drawer</string>
+    <string name="bean_wireframe_drawer_description">Draws the wireframe of the models</string>
+    <string name="bean_gui_label">GUI</string>
+    <string name="bean_gui_drawer_label">Graphical User Interface</string>
+    <string name="bean_anaglyph_renderer_label">Anaglyph Renderer</string>
+    <string name="bean_default_renderer_label">Default Renderer</string>
+    <string name="bean_stereoscopic_renderer_label">Stereoscopic Renderer</string>
+    <string name="bean_shadow_drawer_description">Cast a shadow of the object in a plane on the ground</string>
+    <string name="bean_shadow_drawer_label">Shadow Renderer</string>
+
+    <!-- Bean Properties -->
+    <string name="property_settings_language_label">Language</string>
+    <string name="property_settings_language_description">Application Language</string>
+    <string name="property_gl_renderer_activeRenderer_label">Active Renderer</string>
+    <string name="property_gl_renderer_activeRenderer_description">Select the renderer</string>
+    <string name="property_gl_renderer_backgroundColor_label">Background Color</string>
+    <string name="property_gl_renderer_backgroundColor_description">Select the default color for 3D models</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>White</item>
+        <item>Gray</item>
+        <item>Black</item>
+    </string-array>
+    <string name="property_skybox_drawer_skybox_label">SkyBox</string>
+    <string name="property_skybox_drawer_skybox_description">Select the environment background</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>None</item>
+        <item>Sea</item>
+        <item>Sand</item>
+    </string-array>
+    <string name="property_gui_drawer_enabled_description">Show or hide GUI</string>
+    <string name="property_gui_drawer_showFPS_label">Frames Per Second</string>
+    <string name="property_gui_drawer_showFPS_description">Show or hide FPS counter</string>
+    <string name="property_shadow_drawer_enabled_description">Enable or disable shadows rendering</string>
+
+    <!-- Features -->
+    <string name="feature_collision_description">Components that draw on top of the model</string>
+    <string name="feature_decorator_description">Components that draw on top of the model</string>
+    <string name="feature_gui_description">Display FPS, Axis and Info</string>
+    <string name="feature_renderer_description">The Renderers draws on the screen</string>
+
+    <string name="value_gl_renderer_activeRenderer_default_renderer">Default Renderer</string>
 </resources>

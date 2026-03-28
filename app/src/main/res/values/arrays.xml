@@ -81,4 +81,15 @@
         <item>Samples</item>
         <!-- item>File Explorer (Android &lt;= 10)</item -->
     </string-array>
+
+    <!-- beans -->
+    <string-array name="property_settings_language_values">
+        <item>en</item>
+        <item>es</item>
+    </string-array>
+    <string-array name="property_settings_language_values_descriptions">
+        <item>English</item>
+        <item>Spanish</item>
+    </string-array>
+
 </resources>

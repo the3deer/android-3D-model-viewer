@@ -53,4 +53,68 @@
     <string name="camera">Cámara</string>
     <string name="immersive">Inmersivo</string>
     <string name="anim">Anim</string>
+
+    <!-- Categorías -->
+    <string name="category_decorators_label">Decoradores</string>
+    <string name="category_renderers_label">Renderizadores</string>
+    <string name="category_gui_label">Interfaz Gráfica de Usuario</string>
+    <string name="category_general_label">General</string>
+
+    <!-- Beans -->
+    <string name="bean_settings_label">Configuración General</string>
+    <string name="bean_gl_renderer_label">Ajustes de OpenGL</string>
+    <string name="bean_animation_controller_label">Controlador de Animación</string>
+    <string name="bean_collision_drawer_label">Dibujante de Puntos de Colisión</string>
+    <string name="bean_collision_drawer_description">Dibuja puntos donde ocurren las colisiones rayo-objeto</string>
+    <string name="bean_bounding_box_drawer_label">Dibujante de Caja Delimitadora</string>
+    <string name="bean_bounding_box_drawer_description">Dibuja la caja delimitadora del objeto seleccionado</string>
+    <string name="bean_light_bulb_drawer_label">Dibujante de Bombilla</string>
+    <string name="bean_light_bulb_drawer_description">Dibuja la bombilla</string>
+    <string name="bean_skeleton_drawer_label">Dibujante de Esqueleto</string>
+    <string name="bean_skeleton_drawer_description">Dibuja el esqueleto del objeto</string>
+    <string name="bean_skybox_drawer_label">Decorador de Fondo</string>
+    <string name="bean_skybox_drawer_description">Dibuja un Fondo 3D como fondo de escena</string>
+    <string name="bean_wireframe_drawer_label">Dibujante de Wireframe</string>
+    <string name="bean_wireframe_drawer_description">Dibuja el wireframe de los modelos</string>
+    <string name="bean_gui_label">GUI</string>
+    <string name="bean_gui_drawer_label">Interfaz Gráfica de Usuario</string>
+    <string name="bean_anaglyph_renderer_label">Renderizador Anaglifo</string>
+    <string name="bean_default_renderer_label">Renderizador por Defecto</string>
+    <string name="bean_stereoscopic_renderer_label">Renderizador Estereoscópico</string>
+    <string name="bean_shadow_drawer_description">Proyecta una sombra del objeto en un plano en el suelo</string>
+    <string name="bean_shadow_drawer_label">Renderizador de Sombras</string>
+
+    <!-- Propiedades de Bean -->
+    <string name="property_settings_language_label">Lenguaje</string>
+    <string name="property_settings_language_description">Idioma de la aplicación</string>
+    <string name="property_gl_renderer_activeRenderer_label">Renderizador Activo</string>
+    <string name="property_gl_renderer_activeRenderer_description">Seleccione el renderizador</string>
+    <string name="property_gl_renderer_backgroundColor_label">Color de Fondo</string>
+    <string name="property_gl_renderer_backgroundColor_description">Seleccione el color por defecto para los modelos 3D</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>Blanco</item>
+        <item>Gris</item>
+        <item>Negro</item>
+    </string-array>
+    <string name="property_skybox_drawer_skybox_label">Fondo</string>
+    <string name="property_skybox_drawer_skybox_description">Seleccione el fondo del entorno</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>Ninguno</item>
+        <item>Mar</item>
+        <item>Arena</item>
+    </string-array>
+    <string name="property_gui_drawer_enabled_description">Mostrar u ocultar GUI</string>
+    <string name="property_gui_drawer_showFPS_label">Frames Por Segundo</string>
+    <string name="property_gui_drawer_showFPS_description">Mostrar u ocultar contador de FPS</string>
+    <string name="property_shadow_drawer_enabled_description">Activar o desactivar el renderizado de sombras</string>
+
+
+    <!-- Features (Características) -->
+    <string name="feature_collision_description">Componentes que dibujan sobre el modelo</string>
+    <string name="feature_decorator_description">Componentes que dibujan sobre el modelo</string>
+    <string name="feature_gui_description">Muestra FPS, Ejes e Información</string>
+    <string name="feature_renderer_description">Los Renderizadores dibujan en la pantalla</string>
+
+    <!-- values -->
+    <string name="value_gl_renderer_activeRenderer_default_renderer">Renderizador por defecto</string>
 </resources>
