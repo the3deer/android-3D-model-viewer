@@ -23,9 +23,14 @@
             android:icon="@drawable/ic_settings_black_24dp"
             android:title="@string/menu_about" />
 
+        <item
+            android:id="@+id/nav_demo2"
+            android:icon="@drawable/ic_settings_black_24dp"
+            android:title="Glyphs Demo" />
+
     </group>
 
-    <item android:title="Recent Models">
+    <item android:title="@string/menu_recent_models">
         <menu>
             <group android:id="@+id/group_recent" android:checkableBehavior="none" />
         </menu>

@@ -11,8 +11,10 @@
     <string name="menu_load">Cargar</string>
     <string name="menu_settings">Ajustes</string>
     <string name="menu_about">Acerca de</string>
+    <string name="menu_recent_models">Modelos Recientes</string>
 
-    <string name="dialog_title_load">Menu</string>
+    <string name="dialog_load_title">Menu</string>
+    <string name="dialog_load_in_progress_message">Cargando…</string>
 
     <string name="white">Blanco</string>
     <string name="gray">Gris</string>

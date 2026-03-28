@@ -17,11 +17,13 @@ import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.android.viewer.databinding.FragmentHomeBinding
 import org.the3deer.android.viewer.ui.settings.SettingsOptions
 import org.the3deer.android.viewer.ui.settings.SettingsFragment
+import androidx.core.view.isVisible
 
 open class HomeFragment : Fragment() {
 
     val TAG: String = HomeFragment::class.java.getSimpleName()
 
+    private var uriString: String = ""
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val sharedViewModel: SharedViewModel by activityViewModels()
@@ -38,6 +40,9 @@ open class HomeFragment : Fragment() {
 
         // debug
         Log.i(TAG, "Initializing ModelFragment... " + System.identityHashCode(this))
+
+        // check arguments
+        uriString = arguments?.getString("uri") ?: throw Exception("No Uri provided as argument")
 
         // Get UI binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -86,35 +91,36 @@ open class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Observe loading state for this specific URI
+        sharedViewModel.loadingState.observe(viewLifecycleOwner) { loadingMap ->
+            val message = loadingMap[uriString]
+
+            // debug
+            Log.v(TAG, "Loading status changed. uri: $uriString, message: $message")
+
+            if (message != null) {
+                binding.loadingLayout.visibility = View.VISIBLE
+                binding.loadingText.text = message
+            } else {
+                binding.loadingLayout.visibility = View.GONE
+            }
+
+            // debug
+            Log.v(TAG, "Dialog visibility: " + (binding.loadingLayout.isVisible))
+        }
+
         // Observe the active model to trigger engine initialization
         sharedViewModel.activeFragment.observe(viewLifecycleOwner) { uriString ->
 
-            // Try to get the model from the shared view model
-            var model = sharedViewModel.getModel(uriString)
-            if (model == null) {
-                model = sharedViewModel.createModel(uriString);
-            }
+            // debug
+            Log.v(TAG, "Active Fragment changed. new: $uriString")
 
             // Try to get existing engine or load a new one
-            var engine = sharedViewModel.getEngine(uriString)
-            if (engine == null) {
-                engine = sharedViewModel.loadEngine(uriString, model, requireActivity())
-            }
+            val activeEngine = sharedViewModel.activeEngine.value ?: return@observe
 
             // setup engine
             handler.post {
-                setupEngine(engine)
-            }
-
-            // Observe loading state for this specific URI
-            sharedViewModel.loadingState.observe(viewLifecycleOwner) { loadingMap ->
-                val message = loadingMap[uriString]
-                if (message != null) {
-                    binding.loadingLayout.visibility = View.VISIBLE
-                    binding.loadingText.text = message
-                } else {
-                    binding.loadingLayout.visibility = View.GONE
-                }
+                setupEngine(activeEngine)
             }
         }
 
@@ -150,7 +156,7 @@ open class HomeFragment : Fragment() {
                 }
 
                 // Setup engine
-                setupEngine(engine)
+                //setupEngine(engine)
 
                 // set active engine
                 sharedViewModel.setActiveFragment(uriString)
@@ -175,18 +181,15 @@ open class HomeFragment : Fragment() {
             // Register UI components
             engine.beanFactory.addOrReplace("ui.settings", SettingsOptions())
 
-            // debug
-            Log.i(TAG, "Engine setup finished");
-
             // boot engine
             engine.isInitialized.let {
                 if (!it) {
 
-                    // debug
-                    Log.i(TAG, "Initializing Engine... $engine")
-
-                    // configure engine
+                    // initialize engine
                     engine.init()
+
+                    // debug
+                    Log.d(TAG, "Setting up HomeFragment...");
 
                     // configure this fragment
                     engine.beanFactory.configure(this);

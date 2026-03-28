@@ -131,7 +131,7 @@ public class ExampleDemoFragment extends HomeFragment {
             // this has no color array
             Object3D obj51 = new WavefrontLoader(GLES20.GL_TRIANGLE_FAN, new LoadListenerAdapter(){
                 @Override
-                public void onLoad(Scene scene, Object3D obj53) {
+                public void onLoadObject(Scene scene, Object3D obj53) {
                     obj53.setLocation(new float[] { -2f, 0f, 0f });
                     obj53.setColor(new float[] { 1.0f, 1.0f, 0f, 1.0f });
                     Rescaler.rescale(obj53, 2f);
@@ -151,7 +151,7 @@ public class ExampleDemoFragment extends HomeFragment {
             // this has color array
             Object3D obj52 = new WavefrontLoader(GLES20.GL_TRIANGLE_FAN, new LoadListenerAdapter(){
                 @Override
-                public void onLoad(Scene scene, Object3D obj53) {
+                public void onLoadObject(Scene scene, Object3D obj53) {
                     obj53.setLocation(new float[] { 1.5f, -2.5f, -0.5f });
                     obj53.setColor(new float[] { 0.0f, 1.0f, 1f, 1.0f });
                     mainScene.addObject(obj53);
@@ -169,7 +169,7 @@ public class ExampleDemoFragment extends HomeFragment {
             // this has heterogeneous faces
             Object3D obj53 = new WavefrontLoader(GLES20.GL_TRIANGLE_FAN, new LoadListenerAdapter(){
                 @Override
-                public void onLoad(Scene scene, Object3D obj53) {
+                public void onLoadObject(Scene scene, Object3D obj53) {
                     obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
                     Rescaler.rescale(obj53, 2f);
                     obj53.setLocation(new float[] { 2f, 0f, 0f });

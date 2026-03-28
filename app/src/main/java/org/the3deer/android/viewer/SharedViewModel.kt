@@ -3,19 +3,18 @@ package org.the3deer.android.viewer
 import android.app.Activity
 import android.app.Application
 import android.util.Log
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
 import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.model.Model
+import org.the3deer.android.engine.model.ModelEvent
 import org.the3deer.android.engine.model.Node
 import org.the3deer.android.engine.model.Object3D
 import org.the3deer.android.engine.model.Scene
-import java.util.LinkedHashMap
-import androidx.core.net.toUri
-import androidx.core.content.edit
-import org.the3deer.android.engine.model.ModelEvent
 import org.the3deer.util.event.EventListener
 import java.util.EventObject
 
@@ -143,7 +142,9 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
                     if (event is ModelEvent) {
                         when (event.code) {
                             ModelEvent.Code.LOADING -> setLoading(uriString, "Loading...")
-                            ModelEvent.Code.PROGRESS -> setLoading(uriString, event.data["message"] as? String?: "Loading...")
+                            // FIXME: if the message is too big the dialog is not looking nice
+                            //ModelEvent.Code.PROGRESS -> setLoading(uriString, event.data["message"] as? String?: "Loading...")
+                            ModelEvent.Code.PROGRESS -> setLoading(uriString, "Loading...")
                             ModelEvent.Code.LOADED, ModelEvent.Code.LOAD_ERROR -> setLoading(uriString, null)
                             else -> {}
                         }

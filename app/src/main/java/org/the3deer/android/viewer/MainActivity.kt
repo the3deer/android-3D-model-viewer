@@ -264,7 +264,7 @@ class MainActivity : AppCompatActivity(), EventListener {
         if (event is ModelEvent && event.code == ModelEvent.Code.LOADED) {
             Log.i(TAG, "Model loaded event received. Refreshing overlay buttons.")
             refreshOverlayButtons()
-            return true
+            return false
         }
         return false
     }

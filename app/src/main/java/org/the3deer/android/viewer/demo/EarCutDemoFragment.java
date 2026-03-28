@@ -62,14 +62,14 @@ public class EarCutDemoFragment extends HomeFragment {
                     Uri.parse("android://org.the3deer.android.viewer/assets/models/triangle1.obj"), new LoadListenerAdapter() {
 
                 @Override
-                public void onStart() {
-                    super.onStart();
+                public void onLoadStart() {
+                    super.onLoadStart();
                     // preload assets
                     //ContentUtils.setContext(getActivity());
                 }
 
                 @Override
-                public void onLoad(Scene scene, Object3D data) {
+                public void onLoadObject(Scene scene, Object3D data) {
                     Log.i("PolyBoolDemoActivity", "Adding object...");
                     float value = 20f;
                     data.setScale(new float[]{value, value, value});
@@ -79,7 +79,7 @@ public class EarCutDemoFragment extends HomeFragment {
                 }
 
                 @Override
-                public void onLoadComplete(Scene scene) {
+                public void onLoadScene(Scene scene) {
                     sceneManager.addScene(scene);
                     sceneManager.update();
                 }
@@ -91,14 +91,14 @@ public class EarCutDemoFragment extends HomeFragment {
                     new LoadListenerAdapter() {
 
                         @Override
-                        public void onStart() {
-                            super.onStart();
+                        public void onLoadStart() {
+                            super.onLoadStart();
                             // preload assets
                             //ContentUtils.setContext(getActivity());
                         }
 
                         @Override
-                        public void onLoad(Scene scene, Object3D data) {
+                        public void onLoadObject(Scene scene, Object3D data) {
                             Log.i("PolyBoolDemoActivity", "Adding object...");
                             float value = 20f;
                             data.setScale(new float[]{value, value, value});
@@ -108,7 +108,7 @@ public class EarCutDemoFragment extends HomeFragment {
                         }
 
                         @Override
-                        public void onLoadComplete(Scene scene) {
+                        public void onLoadScene(Scene scene) {
                             sceneManager.addScene(scene);
 
 

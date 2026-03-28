@@ -47,11 +47,16 @@
 
     <!-- demos -->
 
-<!--    <fragment
+    <fragment
         android:id="@+id/nav_demo1"
         android:name="org.the3deer.android.viewer.demo.ExampleDemoFragment"
         android:label="Objects demo"
         tools:layout="@layout/fragment_home">
+        <argument
+            android:name="uri"
+            app:argType="string"
+            android:defaultValue="android://org.the3deer.android.viewer/demos/example_demo"
+            app:nullable="false" />
     </fragment>
 
     <fragment
@@ -59,6 +64,11 @@
         android:name="org.the3deer.android.viewer.demo.GlyphsDemoFragment"
         android:label="Glyphs demo"
         tools:layout="@layout/fragment_home">
+        <argument
+            android:name="uri"
+            app:argType="string"
+            android:defaultValue="android://org.the3deer.android.viewer/demos/glyphs_demo"
+            app:nullable="false" />
     </fragment>
 
     <fragment
@@ -66,6 +76,6 @@
         android:name="org.the3deer.android.viewer.demo.EarCutDemoFragment"
         android:label="Earcut demo"
         tools:layout="@layout/fragment_home">
-    </fragment>-->
+    </fragment>
 
 </navigation>

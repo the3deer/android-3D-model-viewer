@@ -31,7 +31,7 @@ public class MainDialogFragment extends DialogFragment {
             Action action = Action.values()[position];
             switch (action) {
                 case LOAD_MODEL:
-                    DialogFragment newFragment = LoadDialogFragment.newInstance(R.string.dialog_title_load,
+                    DialogFragment newFragment = LoadDialogFragment.newInstance(R.string.dialog_load_title,
                             getResources().getStringArray(R.array.dialog_load_from));
                     newFragment.show(activity.getSupportFragmentManager(), "dialog");
                     break;
