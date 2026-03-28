@@ -4,17 +4,16 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.the3deer.android.engine.ModelEngine;
+import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.android.engine.animation.Animation;
 import org.the3deer.android.engine.model.Model;
 import org.the3deer.android.engine.model.Scene;
-import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.R;
 
 import java.util.List;
@@ -23,18 +22,18 @@ public class AnimationDialogFragment extends DialogFragment {
 
     private static String TAG = "AnimationDialogFragment";
 
-    private SharedViewModel viewModel;
+    private ModelEngineViewModel viewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        Log.d(TAG, "onCreateDialog. "+viewModel.getActiveFragment().getValue());
+        //Log.d(TAG, "onCreateDialog. "+viewModel.getActiveFragment().getValue());
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 

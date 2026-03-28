@@ -7,17 +7,17 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.renderer.GLRenderer
 import org.the3deer.android.engine.renderer.GLSurfaceView
-import org.the3deer.android.viewer.SharedViewModel
+import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.databinding.FragmentHomeBinding
 import org.the3deer.android.viewer.ui.settings.SettingsOptions
 import org.the3deer.android.viewer.ui.settings.SettingsFragment
 import androidx.core.view.isVisible
+import org.the3deer.android.engine.ModelEngineViewModel
 
 open class HomeFragment : Fragment() {
 
@@ -27,10 +27,13 @@ open class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val sharedViewModel: SharedViewModel by activityViewModels()
+    private val modelEngineViewModel: ModelEngineViewModel by activityViewModels()
+    
     protected val handler = Handler(Looper.getMainLooper())
 
     private var surface: GLSurfaceView? = null
-    private val renderer = GLRenderer()
+    private lateinit var renderer: GLRenderer
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,13 +42,16 @@ open class HomeFragment : Fragment() {
     ): View {
 
         // debug
-        Log.i(TAG, "Initializing ModelFragment... " + System.identityHashCode(this))
+        Log.i(TAG, "Creating HomeFragment... " + System.identityHashCode(this))
 
         // check arguments
         uriString = arguments?.getString("uri") ?: throw Exception("No Uri provided as argument")
 
         // Get UI binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        // Initialize renderer with the engine view model
+        renderer = GLRenderer(modelEngineViewModel)
 
         // Get GL Surface (from Layout)
         surface = binding.glSurfaceView as GLSurfaceView?
@@ -82,17 +88,18 @@ open class HomeFragment : Fragment() {
         // Ensure buttons stay on top of the GL surface
         //glSurfaceView.setZOrderMediaOverlay(true)
 
-        // debug
-        Log.i(TAG, "ModelFragment initialized: " + System.identityHashCode(this))
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        // debug
+        Log.i(TAG, "HomeFragment created: " + System.identityHashCode(this))
+
         super.onViewCreated(view, savedInstanceState)
 
         // Observe loading state for this specific URI
-        sharedViewModel.loadingState.observe(viewLifecycleOwner) { loadingMap ->
+        modelEngineViewModel.loadingState.observe(viewLifecycleOwner) { loadingMap ->
             val message = loadingMap[uriString]
 
             // debug
@@ -109,70 +116,32 @@ open class HomeFragment : Fragment() {
             Log.v(TAG, "Dialog visibility: " + (binding.loadingLayout.isVisible))
         }
 
-        // Observe the active model to trigger engine initialization
-        sharedViewModel.activeFragment.observe(viewLifecycleOwner) { uriString ->
+        // Observe the active engine to trigger setup
+        sharedViewModel.activeFragment.observe(viewLifecycleOwner) { activeEngine ->
 
-            // debug
-            Log.v(TAG, "Active Fragment changed. new: $uriString")
-
-            // Try to get existing engine or load a new one
-            val activeEngine = sharedViewModel.activeEngine.value ?: return@observe
-
-            // setup engine
-            handler.post {
-                setupEngine(activeEngine)
-            }
+            activateEngine(uriString);
         }
 
-        // setup engine
-        loadEngine(savedInstanceState)
+        sharedViewModel.setActiveFragment(uriString)
     }
 
-    private fun loadEngine(savedInstanceState: Bundle?) {
+    private fun activateEngine(uriString: String) {
 
-        // Get model URI from arguments
-        val uriString = arguments?.getString("uri") ?: throw Exception("No model URI provided")
-        Log.v(TAG, "Loading engine for fragment: $uriString")
+        // load engine
+        val modelEngine = modelEngineViewModel.loadEngine(uriString)
 
-        // Setup engine asynchronously
-        handler.post {
-            try {
+        // setup engine
+        setupEngine(modelEngine)
 
-                // debug
-                Log.i(TAG, "Loading Engine for ModelFragment... $uriString")
-
-                // Try to get the model from the shared view model
-                var model = sharedViewModel.getModel(uriString)
-                if (model == null) {
-                    model = sharedViewModel.createModel(uriString);
-                }
-
-                // Get engine
-                var engine = sharedViewModel.getEngine(uriString)
-
-                // Initialize engine
-                if (engine == null) {
-                    engine = sharedViewModel.loadEngine(uriString, model, requireActivity())
-                }
-
-                // Setup engine
-                //setupEngine(engine)
-
-                // set active engine
-                sharedViewModel.setActiveFragment(uriString)
-
-                Log.i(TAG, "Engine connected to GLSurfaceView successfully")
-            } catch (ex: Exception) {
-                Log.e(TAG, "Error connecting engine", ex)
-                requireActivity().runOnUiThread {
-                    Toast.makeText(requireContext(), "Error loading engine. Message: "+ex.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
+        // activate engine
+        modelEngineViewModel.setActiveEngine(modelEngine);
     }
 
     private fun setupEngine(engine: ModelEngine) {
         try {
+
+            // debug
+            Log.i(TAG, "Setting up Engine... uri: $uriString")
 
             // Register the GL components in our Engine
             engine.beanFactory.addOrReplace("gl.surfaceView", surface)
@@ -182,29 +151,27 @@ open class HomeFragment : Fragment() {
             engine.beanFactory.addOrReplace("ui.settings", SettingsOptions())
 
             // boot engine
-            engine.isInitialized.let {
-                if (!it) {
+            if (!engine.isInitialized) {
 
-                    // initialize engine
-                    engine.init()
+                // initialize engine
+                engine.init()
 
-                    // debug
-                    Log.d(TAG, "Setting up HomeFragment...");
+                // debug
+                Log.d(TAG, "Setting up HomeFragment...");
 
-                    // configure this fragment
-                    engine.beanFactory.configure(this);
-                    engine.beanFactory.setUpBean(this);
+                // configure this fragment
+                engine.beanFactory.configure(this);
+                engine.beanFactory.setUpBean(this);
 
-                    // boot engine
-                    engine.start()
-                }
+                // boot engine
+                engine.start()
             }
 
             // apply saved preferences
             SettingsFragment.applySavedPreferences(engine, requireContext())
 
             // debug
-            Log.d(TAG, "Engine setup finished")
+            Log.i(TAG, "Engine setup finished")
 
         } catch (ex: Exception) {
             Log.e(TAG, "Error setting up engine", ex)

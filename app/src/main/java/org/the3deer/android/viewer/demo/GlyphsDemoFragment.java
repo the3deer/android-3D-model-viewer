@@ -6,13 +6,13 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.jetbrains.annotations.NotNull;
 import org.the3deer.android.engine.ModelEngine;
+import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.android.engine.gui.GUI;
 import org.the3deer.android.engine.gui.Label;
 import org.the3deer.android.engine.gui.Text;
 import org.the3deer.android.engine.gui.Widget;
 import org.the3deer.android.engine.model.Camera;
 import org.the3deer.android.engine.model.Model;
-import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.util.bean.BeanInit;
 
@@ -40,9 +40,9 @@ public class GlyphsDemoFragment extends HomeFragment {
     public void setUp() {
         Log.i(TAG, "Starting up...");
 
-        SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-        @NotNull Model model = sharedViewModel.createModel("demo.glyphs");
-        ModelEngine modelEngine = sharedViewModel.loadEngine("demo.glyphs", model, requireActivity());
+        ModelEngineViewModel viewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
+        @NotNull Model model = viewModel.createModel("demo.glyphs");
+        ModelEngine modelEngine = viewModel.loadEngine("demo.glyphs");
 
         abcd = Text.allocate(null,10, 6);
         abcd.setMargin(Widget.PADDING_01);

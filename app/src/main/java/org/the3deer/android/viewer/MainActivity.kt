@@ -1,8 +1,5 @@
 package org.the3deer.android.viewer
 
-/**
- * @author Andres Oviedo
- */
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -34,8 +31,7 @@ import kotlinx.coroutines.withContext
 import org.the3deer.android.util.ContentUtils
 import org.the3deer.android.viewer.ui.load.LoadContentDialog
 import androidx.core.net.toUri
-
-
+import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.android.engine.model.ModelEvent
 import org.the3deer.android.viewer.databinding.ActivityMainBinding
 import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
@@ -51,7 +47,9 @@ class MainActivity : AppCompatActivity(), EventListener {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private var isImmersiveMode = false
+    
     private val sharedViewModel: SharedViewModel by viewModels()
+    private val modelEngineViewModel: ModelEngineViewModel by viewModels()
 
     private lateinit var loadContentDialog: LoadContentDialog
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -87,32 +85,19 @@ class MainActivity : AppCompatActivity(), EventListener {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             
-            // Log insets for debugging
-            Log.d(TAG, "System bars insets: $insets")
+            // Update the shared screen object in the engine view model
+            modelEngineViewModel.glScreen.value?.let { screen ->
+                screen.setInsets(insets.left, insets.top, insets.right, insets.bottom)
 
-            // Update the screen insets in the engine
-            sharedViewModel.activeEngine.value?.let { engine ->
-                val screen = engine.beanFactory.get("screen", org.the3deer.android.engine.model.Screen::class.java)
-                screen?.let {
-                    it.setInsets(insets.left, insets.top, insets.right, insets.bottom)
+                // Update toolbar height (including status bar if visible)
+                val toolbarHeight = if (isImmersiveMode) 0 else binding.appBarMain.toolbar.height
+                screen.setToolbarHeight(toolbarHeight)
+                
+                Log.d(TAG, "Shared Screen insets updated: $insets, toolbar=$toolbarHeight")
 
-                    // Update toolbar height (including status bar if visible)
-                    val toolbarHeight = if (isImmersiveMode) 0 else binding.appBarMain.toolbar.height
-                    it.setToolbarHeight(toolbarHeight)
-                    
-                    // Update bottom bar height (the actions stack)
-                    /*val bottomBarHeight = if (isImmersiveMode) 0 else binding.appBarMain.uiActionsStack.height
-                    it.setBottomBarHeight(bottomBarHeight)*/
-                    
-                    Log.d(TAG, "Screen updated: toolbar=$toolbarHeight")
-                }
-
-                // get event manager
-                var eventManager = engine.beanFactory.find(EventManager::class.java)
-
-                // check and fire event
-                if (eventManager != null) {
-                    eventManager.propagate(ModelEvent(this, ModelEvent.Code.SCREEN_CHANGED))
+                // Notify the active engine that screen properties changed
+                modelEngineViewModel.activeEngine.value?.let { engine ->
+                    engine.beanFactory.find(EventManager::class.java)?.propagate(ModelEvent(this, ModelEvent.Code.SCREEN_CHANGED))
                 }
             }
             
@@ -143,17 +128,12 @@ class MainActivity : AppCompatActivity(), EventListener {
                 when (item.groupId) {
                     R.id.group_recent -> {
                         val uriString = MenuItemCompat.getTooltipText(item)?.toString() ?: item.title.toString().lowercase()
-                        when (uriString) {
-                            "triangle" -> sharedViewModel.loadTriangle()
-                            "cube" -> sharedViewModel.loadCube()
-                            "square" -> sharedViewModel.loadSquare()
-                            else -> {
-                                sharedViewModel.setActiveFragment(uriString)
-                                val arguments = Bundle()
-                                arguments.putString("uri", uriString)
-                                navController.navigate(R.id.nav_home, arguments)
-                            }
-                        }
+                        
+                        // Set URI and navigate
+                        val arguments = Bundle()
+                        arguments.putString("uri", uriString)
+                        navController.navigate(R.id.nav_home, arguments)
+                        
                         binding.drawerLayout?.closeDrawers()
                         true
                     }
@@ -181,8 +161,6 @@ class MainActivity : AppCompatActivity(), EventListener {
                     sharedViewModel.activeFragment.value?.let {
                         supportActionBar?.title = shortenUri(it)
                     }
-                }
-                if (destination.id == R.id.nav_home) {
                     navigationView.setCheckedItem(destination.id)
                 }
             }
@@ -209,12 +187,10 @@ class MainActivity : AppCompatActivity(), EventListener {
             AnimationDialogFragment().show(supportFragmentManager, "animation_dialog")
         }
 
-        // Note: visibility of individual buttons is managed by sharedViewModel observer
-        sharedViewModel.activeEngine.observe(this) { engine ->
-            Log.i(TAG, "Updating overlay buttons visibility for engine: $engine")
+        // Monitor active engine to refresh UI buttons
+        modelEngineViewModel.activeEngine.observe(this) { engine ->
+            Log.i(TAG, "Active engine changed: $engine")
             refreshOverlayButtons()
-            
-            // Trigger an inset update for the new engine
             ViewCompat.requestApplyInsets(binding.root)
         }
 
@@ -226,8 +202,8 @@ class MainActivity : AppCompatActivity(), EventListener {
                 "load" -> {
                     val uri = bundle.getString("uri")
                     if (uri != null) {
-                        sharedViewModel.setActiveFragment(uri)
-                        navController.navigate(R.id.nav_home, bundle)
+                        val navBundle = Bundle(bundle)
+                        navController.navigate(R.id.nav_home, navBundle)
                     }
                 }
                 "navigate" -> {
@@ -243,7 +219,7 @@ class MainActivity : AppCompatActivity(), EventListener {
     private fun refreshOverlayButtons() {
         if (isImmersiveMode) return
 
-        val engine = sharedViewModel.activeEngine.value
+        val engine = modelEngineViewModel.activeEngine.value
         val model = engine?.beanFactory?.get("model", org.the3deer.android.engine.model.Model::class.java)
         val scene = model?.activeScene
 
@@ -255,14 +231,11 @@ class MainActivity : AppCompatActivity(), EventListener {
             binding.appBarMain.btnScene.alpha = if (binding.appBarMain.btnScene.isEnabled) 1.0f else 0.5f
             binding.appBarMain.btnCamera.alpha = if (binding.appBarMain.btnCamera.isEnabled) 1.0f else 0.5f
             binding.appBarMain.btnAnimation.alpha = if (binding.appBarMain.btnAnimation.isEnabled) 1.0f else 0.5f
-
-            Log.i(TAG, "Overlay buttons refreshed. Scenes: ${model?.scenes?.size}, Cameras: ${scene?.cameras?.size}, Animations: ${scene?.animations?.size}")
         }
     }
 
     override fun onEvent(event: EventObject?): Boolean {
         if (event is ModelEvent && event.code == ModelEvent.Code.LOADED) {
-            Log.i(TAG, "Model loaded event received. Refreshing overlay buttons.")
             refreshOverlayButtons()
             return false
         }
@@ -323,17 +296,14 @@ class MainActivity : AppCompatActivity(), EventListener {
             windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
             supportActionBar?.hide()
-            //binding.appBarMain.uiActionsStack.visibility = View.GONE
             binding.appBarMain.immersive.setImageResource(android.R.drawable.ic_menu_revert)
         } else {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
             supportActionBar?.show()
-            //binding.appBarMain.uiActionsStack.visibility = View.VISIBLE
             binding.appBarMain.immersive.setImageResource(android.R.drawable.ic_menu_add)
             refreshOverlayButtons()
         }
         
-        // Request insets re-application to update Screen object
         ViewCompat.requestApplyInsets(binding.root)
     }
 

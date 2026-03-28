@@ -7,8 +7,8 @@ import android.util.Log
 import androidx.fragment.app.activityViewModels
 import androidx.preference.*
 import org.the3deer.android.engine.ModelEngine
+import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.android.viewer.R
-import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.util.bean.*
 import java.util.Locale
 
@@ -22,7 +22,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
     val TAG: String = SettingsFragment::class.java.simpleName
 
-    private val sharedViewModel: SharedViewModel by activityViewModels()
+    private val modelEngineViewModel: ModelEngineViewModel by activityViewModels()
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val context = preferenceManager.context
@@ -30,7 +30,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         setPreferenceScreen(screen)
 
-        val engine = sharedViewModel.activeEngine.value ?: return
+        val engine = modelEngineViewModel.activeEngine.value ?: return
         val beanFactory = engine.beanFactory
         val beans = beanFactory.beans
 
@@ -324,7 +324,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == null || sharedPreferences == null) return
-        val engine = sharedViewModel.activeEngine.value ?: return
+        val engine = modelEngineViewModel.activeEngine.value ?: return
         
         applyPreferenceToEngine(requireContext(), engine.beanFactory, sharedPreferences, key)
     }

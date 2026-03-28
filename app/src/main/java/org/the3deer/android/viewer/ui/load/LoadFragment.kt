@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
-import org.the3deer.android.viewer.SharedViewModel
+import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.databinding.FragmentLoadBinding
 
 class LoadFragment : DialogFragment() {
@@ -38,21 +38,6 @@ class LoadFragment : DialogFragment() {
 
         loadViewModel.text.observe(viewLifecycleOwner) {
             binding.textLoad.text = it
-        }
-
-        binding.buttonLoadTriangle.setOnClickListener {
-            sharedViewModel.loadTriangle()
-            dismiss()
-        }
-
-        binding.buttonLoadCube.setOnClickListener {
-            sharedViewModel.loadCube()
-            dismiss()
-        }
-
-        binding.buttonLoadSquare.setOnClickListener {
-            sharedViewModel.loadSquare()
-            dismiss()
         }
 
         return root

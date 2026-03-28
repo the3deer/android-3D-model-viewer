@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.jetbrains.annotations.NotNull;
 import org.the3deer.android.engine.ModelEngine;
+import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.android.engine.model.Model;
 import org.the3deer.android.engine.model.Object3D;
 import org.the3deer.android.engine.model.Scene;
@@ -20,7 +21,6 @@ import org.the3deer.android.engine.services.wavefront.WavefrontLoader;
 import org.the3deer.android.engine.util.Exploder;
 import org.the3deer.android.engine.util.Rescaler;
 import org.the3deer.android.util.ContentUtils;
-import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.util.io.IOUtils;
 
@@ -49,9 +49,9 @@ public class ExampleDemoFragment extends HomeFragment {
     private void setUp() {
         Log.i(TAG, "Starting up...");
 
-        SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-        @NotNull Model model = sharedViewModel.createModel("demo.gui");
-        ModelEngine modelEngine = sharedViewModel.loadEngine("demo.gui", model, requireActivity());
+        ModelEngineViewModel viewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
+        @NotNull Model model = viewModel.createModel("demo.gui");
+        ModelEngine modelEngine = viewModel.loadEngine("demo.gui");
 
         // preload assets
         ContentUtils.provideAssets(getActivity());
