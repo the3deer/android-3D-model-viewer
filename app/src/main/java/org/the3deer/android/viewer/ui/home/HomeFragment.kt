@@ -105,6 +105,17 @@ open class HomeFragment : Fragment() {
             handler.post {
                 setupEngine(engine)
             }
+
+            // Observe loading state for this specific URI
+            sharedViewModel.loadingState.observe(viewLifecycleOwner) { loadingMap ->
+                val message = loadingMap[uriString]
+                if (message != null) {
+                    binding.loadingLayout.visibility = View.VISIBLE
+                    binding.loadingText.text = message
+                } else {
+                    binding.loadingLayout.visibility = View.GONE
+                }
+            }
         }
 
         // setup engine

@@ -15,6 +15,9 @@ import org.the3deer.android.engine.model.Scene
 import java.util.LinkedHashMap
 import androidx.core.net.toUri
 import androidx.core.content.edit
+import org.the3deer.android.engine.model.ModelEvent
+import org.the3deer.util.event.EventListener
+import java.util.EventObject
 
 class SharedViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -46,6 +49,12 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _history = MutableLiveData<List<String>>()
     val history: LiveData<List<String>> = _history
+
+    /**
+     * Loading state per URI. Value is the loading message or null if not loading.
+     */
+    private val _loadingState = MutableLiveData<Map<String, String>>(emptyMap())
+    val loadingState: LiveData<Map<String, String>> = _loadingState
 
     // Simple shapes for testing
     private val triangle = createModelForTest("triangle", floatArrayOf(
@@ -119,7 +128,7 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
         val engines = _engines.value!!
 
         // get engine
-        var engine = engines.get(uriString)
+        var engine = engines[uriString]
 
         if (engine == null) {
 
@@ -127,6 +136,21 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
             engine = ModelEngine(uriString, model, activity)
             engines[uriString] = engine
             _engines.value = engines
+
+            // Register a listener that updates the loading state
+            engine.beanFactory.addOrReplace("sharedViewModelListener", object : EventListener {
+                override fun onEvent(event: EventObject): Boolean {
+                    if (event is ModelEvent) {
+                        when (event.code) {
+                            ModelEvent.Code.LOADING -> setLoading(uriString, "Loading...")
+                            ModelEvent.Code.PROGRESS -> setLoading(uriString, event.data["message"] as? String?: "Loading...")
+                            ModelEvent.Code.LOADED, ModelEvent.Code.LOAD_ERROR -> setLoading(uriString, null)
+                            else -> {}
+                        }
+                    }
+                    return false
+                }
+            })
         }
 
         if (_activeEngine.value == null) {
@@ -136,6 +160,16 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
         updateHistory(uriString)
 
         return engine;
+    }
+
+    private fun setLoading(uri: String, message: String?) {
+        val current = _loadingState.value?.toMutableMap() ?: mutableMapOf()
+        if (message == null) {
+            current.remove(uri)
+        } else {
+            current[uri] = message
+        }
+        _loadingState.postValue(current)
     }
 
     fun getModel(uriString: String) : Model? {
