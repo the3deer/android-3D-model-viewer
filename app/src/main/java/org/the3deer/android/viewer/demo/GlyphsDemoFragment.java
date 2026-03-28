@@ -1,6 +1,5 @@
 package org.the3deer.android.viewer.demo;
 
-import android.os.Bundle;
 import android.util.Log;
 
 import androidx.lifecycle.ViewModelProvider;
@@ -15,6 +14,10 @@ import org.the3deer.android.engine.model.Camera;
 import org.the3deer.android.engine.model.Model;
 import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.ui.home.HomeFragment;
+import org.the3deer.util.bean.BeanInit;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * This activity represents the container for our 3D viewer.
@@ -25,30 +28,21 @@ public class GlyphsDemoFragment extends HomeFragment {
 
     private final static String TAG = GlyphsDemoFragment.class.getSimpleName();
 
+    @Inject
     private GUI gui;
+
+    @Inject @Named("gui.camera")
     private Camera camera;
 
     private Text abcd;
 
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        getHandler().post(this::setUp);
-    }
-
-    private void setUp() {
+    @BeanInit
+    public void setUp() {
         Log.i(TAG, "Starting up...");
 
         SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         @NotNull Model model = sharedViewModel.createModel("demo.glyphs");
         ModelEngine modelEngine = sharedViewModel.loadEngine("demo.glyphs", model, requireActivity());
-
-        gui = modelEngine.getBeanFactory().find(GUI.class);
-        //camera = modelEngine.getBeanFactory().get("80.gui.camera", Camera.class);
-        //camera.getPos()[2]=0;
-
 
         abcd = Text.allocate(null,10, 6);
         abcd.setMargin(Widget.PADDING_01);
