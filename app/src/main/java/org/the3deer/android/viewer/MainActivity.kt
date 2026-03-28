@@ -1,5 +1,9 @@
 package org.the3deer.android.viewer
 
+/**
+ * @author Andres Oviedo
+ * @author Gemini AI
+ */
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +16,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuItemCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -38,6 +43,7 @@ import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
 import org.the3deer.util.event.EventListener
+import org.the3deer.util.event.EventManager
 import java.util.EventObject
 
 class MainActivity : AppCompatActivity(), EventListener {
@@ -77,6 +83,30 @@ class MainActivity : AppCompatActivity(), EventListener {
 
         // Make the window draw edge-to-edge
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        // Listen for system bar insets to update the engine's safe area
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            
+            // Log insets for debugging
+            Log.d(TAG, "System bars insets: $insets")
+
+            // Update the screen insets in the engine
+            sharedViewModel.activeEngine.value?.let { engine ->
+                val screen = engine.beanFactory.get("screen", org.the3deer.android.engine.model.Screen::class.java)
+                screen?.setInsets(insets.left, insets.top, insets.right, insets.bottom)
+
+                // get event manager
+                var eventManager = engine.beanFactory.find(EventManager::class.java)
+
+                // check and fire event
+                if (eventManager != null) {
+                    eventManager.propagate(ModelEvent(this, ModelEvent.Code.SCREEN_CHANGED))
+                }
+            }
+            
+            windowInsets
+        }
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
@@ -172,6 +202,13 @@ class MainActivity : AppCompatActivity(), EventListener {
         sharedViewModel.activeEngine.observe(this) { engine ->
             Log.i(TAG, "Updating overlay buttons visibility for engine: $engine")
             refreshOverlayButtons()
+            
+            // Also update insets for the new engine if they are already known
+            val insets = ViewCompat.getRootWindowInsets(binding.root)?.getInsets(WindowInsetsCompat.Type.systemBars())
+            if (insets != null) {
+                val screen = engine.beanFactory.get("screen", org.the3deer.android.engine.model.Screen::class.java)
+                screen?.setInsets(insets.left, insets.top, insets.right, insets.bottom)
+            }
         }
 
         // Handle fragment results
