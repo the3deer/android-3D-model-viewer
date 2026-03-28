@@ -13,7 +13,26 @@ public class SettingsOptions {
         return language;
     }
 
-    public void setLanguage(String language) {
+    public void setLanguage(String language) throws Exception {
+
+        // check
+        if (language == null) throw new Exception("Invalid language: $language");
+
         this.language = language;
+
+        // call android bridge
+        setAndroidLanguage();
+    }
+
+    public void setAndroidLanguage(){
+
+        final String languageCode = language.equals("en") ? "en-US" : "es-ES";
+
+        Log.i("SettingsOptions", "System bridge: Switching to $languageCode");
+
+        LocaleListCompat appLocales = LocaleListCompat.forLanguageTags(languageCode);
+        AppCompatDelegate.setApplicationLocales(appLocales);
+
+        Log.i("SettingsOptions", "System bridge: Switching to $languageCode");
     }
 }

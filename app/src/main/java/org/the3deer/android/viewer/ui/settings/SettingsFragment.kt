@@ -236,26 +236,21 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         if (key == null || sharedPreferences == null) return
         val engine = sharedViewModel.activeEngine.value ?: return
         
-        applyPreferenceToEngine(engine.beanFactory, sharedPreferences, key)
-
-        if (key.endsWith(".language")) {
-            val settingsOptions = engine.beanFactory.find(SettingsOptions::class.java)
-            val languageCode = settingsOptions?.language ?: "en"
-            
-            Log.i("SettingsFragment", "System bridge: Switching to $languageCode")
-            
-            val appLocales = LocaleListCompat.forLanguageTags(languageCode)
-            AppCompatDelegate.setApplicationLocales(appLocales)
-        }
+        applyPreferenceToEngine(requireContext(), engine.beanFactory, sharedPreferences, key)
     }
 
     companion object {
+
         fun applySavedPreferences(engine: ModelEngine, context: Context) {
+            Log.d("SettingsFragment", "Restoring preferences...")
+
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
             val beanFactory = engine.beanFactory
             sharedPreferences.all.keys.forEach { key ->
                 if (key.contains(".")) applyPreferenceToEngine(beanFactory, sharedPreferences, key)
             }
+
+            Log.d("SettingsFragment", "Finished restoring preferences.")
         }
 
         private fun applyPreferenceToEngine(beanFactory: BeanFactory, sharedPreferences: SharedPreferences, key: String) {

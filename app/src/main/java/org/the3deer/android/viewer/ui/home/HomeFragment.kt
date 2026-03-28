@@ -178,9 +178,6 @@ open class HomeFragment : Fragment() {
                 }
             }
 
-            // debug
-            Log.d(TAG, "Restoring preferences...")
-
             // apply saved preferences
             SettingsFragment.applySavedPreferences(engine, requireContext())
 
