@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import org.the3deer.android.engine.ModelEngine
@@ -146,6 +147,9 @@ open class HomeFragment : Fragment() {
                 Log.i(TAG, "Engine connected to GLSurfaceView successfully")
             } catch (ex: Exception) {
                 Log.e(TAG, "Error connecting engine", ex)
+                requireActivity().runOnUiThread {
+                    Toast.makeText(requireContext(), "Error loading engine. Message: "+ex.message, Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
@@ -172,6 +176,10 @@ open class HomeFragment : Fragment() {
 
                     // configure engine
                     engine.init()
+
+                    // configure this fragment
+                    engine.beanFactory.configure(this);
+                    engine.beanFactory.setUpBean(this);
 
                     // boot engine
                     engine.start()
