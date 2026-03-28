@@ -2,7 +2,6 @@ package org.the3deer.android.viewer
 
 /**
  * @author Andres Oviedo
- * @author Gemini AI
  */
 import android.net.Uri
 import android.os.Bundle
@@ -85,7 +84,7 @@ class MainActivity : AppCompatActivity(), EventListener {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         // Listen for system bar insets to update the engine's safe area
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, windowInsets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             
             // Log insets for debugging
@@ -94,7 +93,19 @@ class MainActivity : AppCompatActivity(), EventListener {
             // Update the screen insets in the engine
             sharedViewModel.activeEngine.value?.let { engine ->
                 val screen = engine.beanFactory.get("screen", org.the3deer.android.engine.model.Screen::class.java)
-                screen?.setInsets(insets.left, insets.top, insets.right, insets.bottom)
+                screen?.let {
+                    it.setInsets(insets.left, insets.top, insets.right, insets.bottom)
+
+                    // Update toolbar height (including status bar if visible)
+                    val toolbarHeight = if (isImmersiveMode) 0 else binding.appBarMain.toolbar.height
+                    it.setToolbarHeight(toolbarHeight)
+                    
+                    // Update bottom bar height (the actions stack)
+                    /*val bottomBarHeight = if (isImmersiveMode) 0 else binding.appBarMain.uiActionsStack.height
+                    it.setBottomBarHeight(bottomBarHeight)*/
+                    
+                    Log.d(TAG, "Screen updated: toolbar=$toolbarHeight")
+                }
 
                 // get event manager
                 var eventManager = engine.beanFactory.find(EventManager::class.java)
@@ -203,12 +214,8 @@ class MainActivity : AppCompatActivity(), EventListener {
             Log.i(TAG, "Updating overlay buttons visibility for engine: $engine")
             refreshOverlayButtons()
             
-            // Also update insets for the new engine if they are already known
-            val insets = ViewCompat.getRootWindowInsets(binding.root)?.getInsets(WindowInsetsCompat.Type.systemBars())
-            if (insets != null) {
-                val screen = engine.beanFactory.get("screen", org.the3deer.android.engine.model.Screen::class.java)
-                screen?.setInsets(insets.left, insets.top, insets.right, insets.bottom)
-            }
+            // Trigger an inset update for the new engine
+            ViewCompat.requestApplyInsets(binding.root)
         }
 
         // Handle fragment results
@@ -325,6 +332,9 @@ class MainActivity : AppCompatActivity(), EventListener {
             binding.appBarMain.immersive.setImageResource(android.R.drawable.ic_menu_add)
             refreshOverlayButtons()
         }
+        
+        // Request insets re-application to update Screen object
+        ViewCompat.requestApplyInsets(binding.root)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
