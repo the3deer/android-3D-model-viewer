@@ -16,7 +16,6 @@ import org.the3deer.android.engine.model.Model;
 import org.the3deer.android.engine.model.Scene;
 import org.the3deer.android.viewer.R;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CameraDialogFragment extends DialogFragment {
@@ -41,26 +40,21 @@ public class CameraDialogFragment extends DialogFragment {
         final ModelEngine modelEngine = viewModel.getActiveEngine().getValue();
         if (modelEngine == null) return createNotAvailableDialog(builder, "modelEngine is null");
 
-        final Model sceneManager = modelEngine.getBeanFactory().find(Model.class);
-        if (sceneManager == null) return createNotAvailableDialog(builder, "sceneManager is null");
+        final Model engineModel = modelEngine.getBeanFactory().find(Model.class);
+        if (engineModel == null) return createNotAvailableDialog(builder, "engineModel is null");
 
-        // current scene
-        final Scene currentScene = sceneManager.getActiveScene();
-        if (currentScene == null) return createNotAvailableDialog(builder, "currentScene is null");
+        final Scene activeScene = engineModel.getActiveScene();
+        if (activeScene == null) return createNotAvailableDialog(builder, "No active scene");
 
         // current camera
-        final Camera currentCamera = currentScene.getActiveCamera();
-        if (currentCamera == null) return createNotAvailableDialog(builder, "currentCamera is null");
+        final List<Camera> cameras = engineModel.getCameras();
+        if (cameras.isEmpty()) return createNotAvailableDialog(builder, "No cameras available");
 
-        final List<Camera> cameras = currentScene.getCameras();
-        if (cameras == null || cameras.isEmpty()) return createNotAvailableDialog(builder, "No cameras available");
-
+        // build names
         final String[] cameraNames = new String[cameras.size()];
         for (int i = 0; i < cameras.size(); i++) {
             cameraNames[i] = cameras.get(i).getName();
         }
-
-        ArrayList selectedItems = new ArrayList();  // Where we track the selected items
 
         // Set the dialog title.
         builder.setTitle(R.string.cameras)
@@ -71,7 +65,7 @@ public class CameraDialogFragment extends DialogFragment {
 
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        currentScene.setActiveCamera(cameras.get(i));
+                        activeScene.setActiveCamera(cameras.get(i));
                     }})
 
 

@@ -58,7 +58,7 @@ public class EarCutDemoFragment extends HomeFragment {
 
         try {
 
-            WavefrontLoaderTask task = new WavefrontLoaderTask(getActivity(),
+            WavefrontLoaderTask task = new WavefrontLoaderTask(
                     Uri.parse("android://org.the3deer.android.viewer/assets/models/triangle1.obj"), new LoadListenerAdapter() {
 
                 @Override
@@ -86,7 +86,7 @@ public class EarCutDemoFragment extends HomeFragment {
             });
             task.execute();
 
-            WavefrontLoaderTask task2 = new WavefrontLoaderTask(getActivity(),
+            WavefrontLoaderTask task2 = new WavefrontLoaderTask(
                     Uri.parse("android://org.the3deer.android.viewer/assets/models/triangle2.obj"),
                     new LoadListenerAdapter() {
 
