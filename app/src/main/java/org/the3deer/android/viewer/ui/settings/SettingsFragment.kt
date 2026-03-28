@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.fragment.app.activityViewModels
 import androidx.preference.*
 import org.the3deer.android.engine.ModelEngine
+import org.the3deer.android.viewer.R
 import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.util.bean.*
 import java.util.Locale
@@ -77,7 +78,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 otherProps.forEachIndexed { index, prop ->
                     // Fallback to bean description only if no enabled toggle exists and this is the first property
                     val fallbackDescription = if (enabledProp == null && index == 0) beanDescription else null
-                    // Use componentName as fallback title for list preferences (dynamic values)
+                    // Use componentName as fallback title for list preferences (dynamic values) or if it's the primary property
                     val fallbackTitle = if (prop.valuesMethod != null || (prop.values != null && prop.values.isNotEmpty())) componentName else null
                     
                     createPreference(context, id, bean, prop, fallbackTitle, fallbackDescription)?.let { pref ->
@@ -285,16 +286,30 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
     private fun setupListPreference(context: Context, pref: ListPreference, bean: Any, prop: BeanPropertyInfo) {
         val values = getPropertyValues(bean, prop)
         val names = getPropertyNames(context, prop, values)
-        val ids = getPropertyIds(values, names)
 
-        pref.entries = names
-        pref.entryValues = ids
-        
+        // check
+        if (values.size != names.size) throw Exception("Values and names must have the same size. Property: $prop.  Values: $values. Names: $names")
+
+        pref.entries = names.toTypedArray()
+        pref.entryValues = values.map { it.toString() }.toTypedArray()
+
         val currentValue = try { prop.getValue(bean) } catch (e: Exception) { null }
         val currentIndex = values.indexOfFirst { areEqual(it, currentValue) }
         if (currentIndex != -1) {
-            pref.value = ids[currentIndex].toString()
+            pref.value = values[currentIndex].toString()
         }
+
+        // i18n override - using arrays.xml
+        // TODO: add support for arrays.xml
+        
+        // i18n override - using string.xml
+        // get the label from strings.xml using the propertyName as the lookup key
+        // example: key = "value_<beanName>_<propertyName>_<value>"
+        val localizedNames = values.map { value ->
+            prop.resolveValueLabel(context, value.toString())
+        }
+        pref.entries = localizedNames.toTypedArray()
+
     }
 
     override fun onResume() {
@@ -349,10 +364,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 val valueStr = sharedPreferences.getString(key, null) ?: return
                 
                 val values = getPropertyValues(bean, info)
-                val names = getPropertyNames(context, info, values)
-                val ids = getPropertyIds(values, names)
 
-                var index = ids.indexOf(valueStr)
+                var index = values.indexOf(valueStr)
                 if (index == -1) index = valueStr.toIntOrNull() ?: -1
 
                 if (index != -1 && index in values.indices) {
@@ -384,15 +397,19 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             }
         }
 
-        private fun getPropertyNames(context: Context, info: BeanPropertyInfo, values: List<Any>): Array<CharSequence> {
+        /**
+         * Resolves the localized names for property values.
+         * Falls back to string representation of the value if no localized labels are found.
+         */
+        private fun getPropertyNames(context: Context, info: BeanPropertyInfo, values: List<Any>): List<CharSequence> {
             val resolvedLabels = info.resolveValueLabels(context)
             if (!resolvedLabels.isNullOrEmpty()) {
-                return resolvedLabels.map { it as CharSequence }.toTypedArray()
+                return resolvedLabels.map { it as CharSequence }.toList()
             }
             
             return values.map { value ->
                 info.resolveValueLabel(context, value.toString()) as CharSequence
-            }.toTypedArray()
+            }.toList()
         }
 
         private fun getPropertyIds(values: List<Any>, names: Array<CharSequence>): Array<CharSequence> {

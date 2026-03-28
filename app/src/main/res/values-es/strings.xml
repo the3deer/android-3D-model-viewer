@@ -87,8 +87,8 @@
     <!-- Propiedades de Bean -->
     <string name="property_settings_language_label">Lenguaje</string>
     <string name="property_settings_language_description">Idioma de la aplicación</string>
-    <string name="property_gl_renderer_activeRenderer_label">Renderizador Activo</string>
-    <string name="property_gl_renderer_activeRenderer_description">Seleccione el renderizador</string>
+    <string name="property_gl_renderer_renderer_label">Renderizador Activo</string>
+    <string name="property_gl_renderer_renderer_description">Seleccione el renderizador</string>
     <string name="property_gl_renderer_backgroundColor_label">Color de Fondo</string>
     <string name="property_gl_renderer_backgroundColor_description">Seleccione el color por defecto para los modelos 3D</string>
     <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
@@ -115,6 +115,22 @@
     <string name="feature_gui_description">Muestra FPS, Ejes e Información</string>
     <string name="feature_renderer_description">Los Renderizadores dibujan en la pantalla</string>
 
-    <!-- values -->
-    <string name="value_gl_renderer_activeRenderer_default_renderer">Renderizador por defecto</string>
+    <!-- Values: GL renderer -->
+    <string name="value_gl_renderer_renderer_renderer_default">Renderizador por defecto</string>
+    <string name="value_gl_renderer_renderer_renderer_anaglyph">Renderizador por anaglifos</string>
+    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Renderizador estereoescópico</string>
+
+    <!-- Values: GL color -->
+    <string name="value_gl_renderer_backgroundColor_white">Blanco</string>
+    <string name="value_gl_renderer_backgroundColor_gray">Gris</string>
+    <string name="value_gl_renderer_backgroundColor_black">Negro</string>
+
+    <!-- Values: Language -->
+    <string name="value_settings_language_en">Inglés</string>
+    <string name="value_settings_language_es">Español</string>
+
+    <!-- Values: Skybox Drawer -->
+    <string name="value_skybox_drawer_skybox_none">Ninguno</string>
+    <string name="value_skybox_drawer_skybox_sea">Mar</string>
+    <string name="value_skybox_drawer_skybox_sand">Playa</string>
 </resources>

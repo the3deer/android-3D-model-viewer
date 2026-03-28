@@ -21,7 +21,7 @@ public class SettingsOptions {
     public void setLanguage(String language) throws Exception {
 
         // check
-        if (language == null) throw new Exception("Invalid language: $language");
+        if (language == null) throw new Exception("Language can't be null");
 
         this.language = language;
 
@@ -33,11 +33,11 @@ public class SettingsOptions {
 
         final String languageCode = language.equals("en") ? "en-US" : "es-ES";
 
-        Log.i("SettingsOptions", "System bridge: Switching to $languageCode");
+        Log.i("SettingsOptions", "System bridge: Switching to "+languageCode);
 
         LocaleListCompat appLocales = LocaleListCompat.forLanguageTags(languageCode);
         AppCompatDelegate.setApplicationLocales(appLocales);
 
-        Log.i("SettingsOptions", "System bridge: Switching to $languageCode");
+        Log.i("SettingsOptions", "System bridge: Switching to "+languageCode);
     }
 }
