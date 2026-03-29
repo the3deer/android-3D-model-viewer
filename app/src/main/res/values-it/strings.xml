@@ -1,0 +1,149 @@
+<resources>
+    <string name="app_name">Visualizzatore di modelli 3D</string>
+    <string name="navigation_drawer_open">Apri il menu di navigazione</string>
+    <string name="navigation_drawer_close">Chiudi il menu di navigazione</string>
+    <string name="nav_header_title">Visualizzatore di modelli 3D</string>
+    <string name="nav_header_subtitle">support@the3deer.org</string>
+    <string name="nav_header_desc">Intestazione di navigazione</string>
+    <string name="action_settings">Impostazioni</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_load">Carica</string>
+    <string name="menu_settings">Impostazioni</string>
+    <string name="menu_about">Informazioni</string>
+    <string name="menu_recent_models">Modelli recenti</string>
+
+    <string name="dialog_load_title">Menu</string>
+    <string name="dialog_load_in_progress_message">Caricamento…</string>
+
+    <string name="white">Bianco</string>
+    <string name="gray">Grigio</string>
+    <string name="black">Nero</string>
+    <string name="ok">OK</string>
+
+    <!-- Schermata Informazioni -->
+    <string name="about_title_app">Visualizzatore di modelli 3D</string>
+    <string name="about_version">Versione 1.0.0</string>
+    <string name="about_intro">Un progetto open-source dedicato all\'apprendimento del rendering 3D su Android utilizzando OpenGL ES.</string>
+
+    <string name="about_header_formats">Formati supportati</string>
+    <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB e FBX.</string>
+    <string name="about_formats_note">Nota: per i modelli con texture esterne, caricarli come un unico file .zip.</string>
+
+    <string name="about_header_controls">Come usare</string>
+    <string name="about_controls_orbit">• <b>Orbita:</b> Trascina con un dito</string>
+    <string name="about_controls_pan">• <b>Panoramica:</b> Trascina con due dita</string>
+    <string name="about_controls_zoom">• <b>Zoom:</b> Pizzica con due dita</string>
+
+    <string name="about_header_links">Link del progetto</string>
+    <string name="about_link_website_label">Sito Web</string>
+    <string name="about_link_website_url">https://www.the3deer.org</string>
+    <string name="about_link_source_label">Codice sorgente (GitHub)</string>
+    <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
+    <string name="about_link_issues_label">Segnala un problema</string>
+    <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
+
+    <string name="about_warning_experimental">⚠ Attenzione: questo motore è sperimentale. Alcune funzionalità dei file potrebbero non essere renderizzate perfettamente.</string>
+
+    <string name="about_header_privacy">Privacy</string>
+    <string name="about_privacy_text">Questa applicazione non raccoglie né condivide alcuna informazione personale.</string>
+
+    <string name="scenes">Scene</string>
+    <string name="cameras">Telecamere</string>
+    <string name="animations">Animazioni</string>
+    <string name="scene">Scena</string>
+    <string name="camera">Telecamera</string>
+    <string name="immersive">Immersivo</string>
+    <string name="anim">Anim</string>
+
+    <!-- Categorie -->
+    <string name="category_decorators_label">Decoratori</string>
+    <string name="category_renderers_label">Renderer</string>
+    <string name="category_gui_label">Interfaccia grafica utente</string>
+    <string name="category_general_label">Generale</string>
+
+    <!-- Bean -->
+    <string name="bean_settings_label">Impostazioni generali</string>
+    <string name="bean_gl_renderer_label">Impostazioni OpenGL</string>
+    <string name="bean_animation_controller_label">Controller animazione</string>
+    <string name="bean_collision_drawer_label">Disegnatore punti di collisione</string>
+    <string name="bean_collision_drawer_description">Disegna i punti in cui avvengono le collisioni raggio-oggetto</string>
+    <string name="bean_bounding_box_drawer_label">Disegnatore bounding box</string>
+    <string name="bean_bounding_box_drawer_description">Disegna il bounding box dell\'oggetto selezionato</string>
+    <string name="bean_light_bulb_drawer_label">Disegnatore lampadina</string>
+    <string name="bean_light_bulb_drawer_description">Disegna la lampadina</string>
+    <string name="bean_skeleton_drawer_label">Disegnatore scheletro</string>
+    <string name="bean_skeleton_drawer_description">Disegna lo scheletro dell\'oggetto</string>
+    <string name="bean_skybox_drawer_label">Decoratore SkyBox</string>
+    <string name="bean_skybox_drawer_description">Disegna una Skybox 3D come sfondo della scena</string>
+    <string name="bean_wireframe_drawer_label">Disegnatore wireframe</string>
+    <string name="bean_wireframe_drawer_description">Disegna il wireframe dei modelli</string>
+    <string name="bean_gui_label">GUI</string>
+    <string name="bean_gui_drawer_label">Interfaccia grafica utente</string>
+    <string name="bean_anaglyph_renderer_label">Renderer anaglifo</string>
+    <string name="bean_default_renderer_label">Renderer predefinito</string>
+    <string name="bean_stereoscopic_renderer_label">Renderer stereoscopico</string>
+    <string name="bean_shadow_drawer_description">Proietta un\'ombra dell\'oggetto su un piano a terra</string>
+    <string name="bean_shadow_drawer_label">Renderer ombre</string>
+
+    <!-- Proprietà dei Bean -->
+    <string name="property_settings_language_label">Lingua</string>
+    <string name="property_settings_language_description">Lingua dell\'applicazione</string>
+    <string name="property_gl_renderer_renderer_label">Renderer attivo</string>
+    <string name="property_gl_renderer_renderer_description">Seleziona il renderer</string>
+    <string name="property_gl_renderer_backgroundColor_label">Colore di sfondo</string>
+    <string name="property_gl_renderer_backgroundColor_description">Seleziona il colore predefinito per i modelli 3D</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>Bianco</item>
+        <item>Grigio</item>
+        <item>Nero</item>
+    </string-array>
+    <string name="property_skybox_drawer_skybox_label">SkyBox</string>
+    <string name="property_skybox_drawer_skybox_description">Seleziona lo sfondo dell\'ambiente</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>Nessuno</item>
+        <item>Mare</item>
+        <item>Sabbia</item>
+    </string-array>
+    <string name="property_gui_drawer_enabled_description">Mostra o nascondi la GUI</string>
+    <string name="property_gui_drawer_showFPS_label">Fotogrammi al secondo</string>
+    <string name="property_gui_drawer_showFPS_description">Mostra o nascondi il contatore FPS</string>
+    <string name="property_shadow_drawer_enabled_description">Abilita o disabilita il rendering delle ombre</string>
+
+    <!-- Caratteristiche -->
+    <string name="feature_collision_description">Componenti che disegnano sopra il modello</string>
+    <string name="feature_decorator_description">Componenti che disegnano sopra il modello</string>
+    <string name="feature_gui_description">Visualizza FPS, assi e informazioni</string>
+    <string name="feature_renderer_description">I renderer disegnano sullo schermo</string>
+
+    <!-- Valori: Renderer GL -->
+    <string name="value_gl_renderer_renderer_renderer_default">Renderer predefinito</string>
+    <string name="value_gl_renderer_renderer_renderer_anaglyph">Renderer anaglifo</string>
+    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Renderer stereoscopico</string>
+
+    <!-- Valori: Colore GL -->
+    <string name="value_gl_renderer_backgroundColor_white">Bianco</string>
+    <string name="value_gl_renderer_backgroundColor_gray">Grigio</string>
+    <string name="value_gl_renderer_backgroundColor_black">Nero</string>
+
+    <!-- Valori: Lingua -->
+    <string name="value_settings_language_en">Inglese</string>
+    <string name="value_settings_language_es">Spagnolo</string>
+    <string name="value_settings_language_ru">Russo</string>
+    <string name="value_settings_language_zh">Cinese</string>
+    <string name="value_settings_language_de">Tedesco</string>
+    <string name="value_settings_language_fr">Francese</string>
+    <string name="value_settings_language_hi">Hindi</string>
+    <string name="value_settings_language_it">Italiano</string>
+    <string name="value_settings_language_ar">Arabo</string>
+    <string name="value_settings_language_pt">Portoghese</string>
+    <string name="value_settings_language_ja">Giapponese</string>
+    <string name="value_settings_language_tr">Turco</string>
+    <string name="value_settings_language_id">Indonesiano</string>
+    <string name="value_settings_language_uk">Ucraino</string>
+
+    <!-- Valori: Disegnatore Skybox -->
+    <string name="value_skybox_drawer_skybox_none">Nessuno</string>
+    <string name="value_skybox_drawer_skybox_sea">Mare</string>
+    <string name="value_skybox_drawer_skybox_sand">Spiaggia</string>
+</resources>

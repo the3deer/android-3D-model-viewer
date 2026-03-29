@@ -1,0 +1,149 @@
+<resources>
+    <string name="app_name">3D模型查看器</string>
+    <string name="navigation_drawer_open">打开导航抽屉</string>
+    <string name="navigation_drawer_close">关闭导航抽屉</string>
+    <string name="nav_header_title">3D模型查看器</string>
+    <string name="nav_header_subtitle">support@the3deer.org</string>
+    <string name="nav_header_desc">导航标题</string>
+    <string name="action_settings">设置</string>
+
+    <string name="menu_home">主页</string>
+    <string name="menu_load">加载</string>
+    <string name="menu_settings">设置</string>
+    <string name="menu_about">关于</string>
+    <string name="menu_recent_models">最近模型</string>
+
+    <string name="dialog_load_title">菜单</string>
+    <string name="dialog_load_in_progress_message">加载中…</string>
+
+    <string name="white">白色</string>
+    <string name="gray">灰色</string>
+    <string name="black">黑色</string>
+    <string name="ok">确定</string>
+
+    <!-- 关于页面 -->
+    <string name="about_title_app">3D模型查看器</string>
+    <string name="about_version">版本 1.0.0</string>
+    <string name="about_intro">一个致力于学习在 Android 上使用 OpenGL ES 进行 3D 渲染的开源项目。</string>
+
+    <string name="about_header_formats">支持的格式</string>
+    <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB 和 FBX。</string>
+    <string name="about_formats_note">注意：对于带有外部纹理的模型，请将其作为单个 .zip 文件加载。</string>
+
+    <string name="about_header_controls">如何使用</string>
+    <string name="about_controls_orbit">• <b>旋转：</b> 单指拖动</string>
+    <string name="about_controls_pan">• <b>平移：</b> 双指拖动</string>
+    <string name="about_controls_zoom">• <b>缩放：</b> 双指捏合</string>
+
+    <string name="about_header_links">项目链接</string>
+    <string name="about_link_website_label">网站</string>
+    <string name="about_link_website_url">https://www.the3deer.org</string>
+    <string name="about_link_source_label">源代码 (GitHub)</string>
+    <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
+    <string name="about_link_issues_label">报告问题</string>
+    <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
+
+    <string name="about_warning_experimental">⚠ 警告：此引擎处于实验阶段。某些文件特性可能无法完美渲染。</string>
+
+    <string name="about_header_privacy">隐私</string>
+    <string name="about_privacy_text">此应用程序不收集或共享任何个人信息。</string>
+
+    <string name="scenes">场景</string>
+    <string name="cameras">相机</string>
+    <string name="animations">动画</string>
+    <string name="scene">场景</string>
+    <string name="camera">相机</string>
+    <string name="immersive">沉浸式</string>
+    <string name="anim">动画</string>
+
+    <!-- 类别 -->
+    <string name="category_decorators_label">装饰器</string>
+    <string name="category_renderers_label">渲染器</string>
+    <string name="category_gui_label">图形用户界面</string>
+    <string name="category_general_label">通用</string>
+
+    <!-- Beans -->
+    <string name="bean_settings_label">通用设置</string>
+    <string name="bean_gl_renderer_label">OpenGL 设置</string>
+    <string name="bean_animation_controller_label">动画控制器</string>
+    <string name="bean_collision_drawer_label">碰撞点绘制器</string>
+    <string name="bean_collision_drawer_description">绘制射线与对象发生碰撞的点</string>
+    <string name="bean_bounding_box_drawer_label">包围盒绘制器</string>
+    <string name="bean_bounding_box_drawer_description">绘制所选对象的包围盒</string>
+    <string name="bean_light_bulb_drawer_label">灯泡绘制器</string>
+    <string name="bean_light_bulb_drawer_description">绘制灯泡</string>
+    <string name="bean_skeleton_drawer_label">骨架绘制器</string>
+    <string name="bean_skeleton_drawer_description">绘制对象的骨架</string>
+    <string name="bean_skybox_drawer_label">天空盒装饰器</string>
+    <string name="bean_skybox_drawer_description">绘制 3D 天空盒作为场景背景</string>
+    <string name="bean_wireframe_drawer_label">线框绘制器</string>
+    <string name="bean_wireframe_drawer_description">绘制模型的线框</string>
+    <string name="bean_gui_label">GUI</string>
+    <string name="bean_gui_drawer_label">图形用户界面</string>
+    <string name="bean_anaglyph_renderer_label">补色渲染器</string>
+    <string name="bean_default_renderer_label">默认渲染器</string>
+    <string name="bean_stereoscopic_renderer_label">立体渲染器</string>
+    <string name="bean_shadow_drawer_description">在地面平面上投射对象的阴影</string>
+    <string name="bean_shadow_drawer_label">阴影渲染器</string>
+
+    <!-- Bean 属性 -->
+    <string name="property_settings_language_label">语言</string>
+    <string name="property_settings_language_description">应用程序语言</string>
+    <string name="property_gl_renderer_renderer_label">活动渲染器</string>
+    <string name="property_gl_renderer_renderer_description">选择渲染器</string>
+    <string name="property_gl_renderer_backgroundColor_label">背景颜色</string>
+    <string name="property_gl_renderer_backgroundColor_description">选择 3D 模型的默认颜色</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>白色</item>
+        <item>灰色</item>
+        <item>黑色</item>
+    </string-array>
+    <string name="property_skybox_drawer_skybox_label">天空盒</string>
+    <string name="property_skybox_drawer_skybox_description">选择环境背景</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>无</item>
+        <item>海洋</item>
+        <item>沙滩</item>
+    </string-array>
+    <string name="property_gui_drawer_enabled_description">显示或隐藏 GUI</string>
+    <string name="property_gui_drawer_showFPS_label">每秒帧数</string>
+    <string name="property_gui_drawer_showFPS_description">显示或隐藏 FPS 计数器</string>
+    <string name="property_shadow_drawer_enabled_description">启用或禁用阴影渲染</string>
+
+    <!-- 特性 -->
+    <string name="feature_collision_description">在模型上方绘制的组件</string>
+    <string name="feature_decorator_description">在模型上方绘制的组件</string>
+    <string name="feature_gui_description">显示 FPS、轴和信息</string>
+    <string name="feature_renderer_description">渲染器在屏幕上绘制</string>
+
+    <!-- 值：GL 渲染器 -->
+    <string name="value_gl_renderer_renderer_renderer_default">默认渲染器</string>
+    <string name="value_gl_renderer_renderer_renderer_anaglyph">补色渲染器</string>
+    <string name="value_gl_renderer_renderer_renderer_stereoscopic">立体渲染器</string>
+
+    <!-- 值：GL 颜色 -->
+    <string name="value_gl_renderer_backgroundColor_white">白色</string>
+    <string name="value_gl_renderer_backgroundColor_gray">灰色</string>
+    <string name="value_gl_renderer_backgroundColor_black">黑色</string>
+
+    <!-- 值：语言 -->
+    <string name="value_settings_language_en">英语</string>
+    <string name="value_settings_language_es">西班牙语</string>
+    <string name="value_settings_language_ru">俄语</string>
+    <string name="value_settings_language_zh">中文</string>
+    <string name="value_settings_language_de">德语</string>
+    <string name="value_settings_language_fr">法语</string>
+    <string name="value_settings_language_hi">印地语</string>
+    <string name="value_settings_language_it">意大利语</string>
+    <string name="value_settings_language_ar">阿拉伯语</string>
+    <string name="value_settings_language_pt">葡萄牙语</string>
+    <string name="value_settings_language_ja">日语</string>
+    <string name="value_settings_language_tr">土耳其语</string>
+    <string name="value_settings_language_id">印尼语</string>
+    <string name="value_settings_language_uk">乌克兰语</string>
+
+    <!-- 值：天空盒绘制器 -->
+    <string name="value_skybox_drawer_skybox_none">无</string>
+    <string name="value_skybox_drawer_skybox_sea">海洋</string>
+    <string name="value_skybox_drawer_skybox_sand">沙滩</string>
+</resources>
