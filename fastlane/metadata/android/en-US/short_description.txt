@@ -1,1 +1,1 @@
-Load 3D models and learn how to do it
+3D model viewer (OBJ, STL, DAE, GLTF, FBX) using OpenGL ES 2.0/3.0
