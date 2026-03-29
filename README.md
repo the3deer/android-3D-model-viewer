@@ -6,7 +6,7 @@ It is basically an android application with a 3D engine that can load Wavefront 
 The purpose of this application is to learn and share how to draw using OpenGL language.
 
 * GLTF format (gltf): https://www.khronos.org/gltf/
-* * Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
+* Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
 * Wafefront format (OBJ): https://en.wikipedia.org/wiki/Wavefront_.obj_file
 * STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
 * Filmbox format (FBX): https://en.wikipedia.org/wiki/Filmbox
@@ -15,15 +15,25 @@ The purpose of this application is to learn and share how to draw using OpenGL l
 News (10/04/2026)
 =================
 
-* User Interface completely rewritten with AI (Gemini)
-* UI has now a Nav Drawer and use Fragments
-* UI allows how Scene, Camera & Animation selection
-* UI allows configuring Preferences for the engine
-* FBX: *basic* support (no animation - no rigging)
-* DAE & GLTF parsers completely rewritten with AI (Gemini)
-* Bug fixes and Engine improvement
-* This release is possible thanks to AI (Gemini)
-* **Not yet published on Play Store!**
+**Version 5.0.0**
+
+* **Engine** improvements
+  * OpenGL shaders upgraded to **OpenGL 3**. OpenGL 2 shaders is still supported (for older phones)
+  * Engine Multiple **Scene**, **Camera** and **Animation** 
+* **Internationalization (i18n)**
+  * Support for **Spanish** language. **English** being the default application language
+* **Brand New User Interface (UI)**
+  * UI completely rewritten / re-designed from scratch (assisted by AI)
+  * UI is now based on **Android Fragments**
+  * UI has now 1 **Android Navigation** Drawer (and 1 Android Toolbar)
+  * UI has now 3 **Dialogs** to allow the selection of the Scene, Camera & Animation
+  * UI has now 1 **Preference** screen to configure some of the Engine properties (skybox, language, etc)
+* DAE & GLTF parsers completely rewritten / re-designed from scratch (assisted by AI)
+* FBX: **basic** support added. The FBX parser is possible thanks to ufbx (https://github.com/ufbx/ufbx)
+  * FBX Features: **static** models only with diffuse textures (no animation / rigging)
+
+**This release is possible thanks to Gemini (AI)**
+**Not yet published on Play Store!**
 
 Demo
 ====
@@ -36,19 +46,6 @@ Android Market
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="125" alt="Get in on F-Droid">](https://f-droid.org/en/packages/org.andresoviedo.dddmodel2/)
 [<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" width="323" height="125">](https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2)
-
-
-Disclaimer
-==========
-
-* This is a work in progress... and the documentation as well
-* Only open 3d formats or API are to be supported
-* Only the most basic 3D mesh features are supported, like colors, textures and animations
-* The shader is the simplest implementation supporting a very basic lighting model
-* This application is tested only with a few models. Some models may not work
-* In order to see models in 3D virtual reality, you need red-cyan and/or VR glasses
-* Some parts of the code are being written with AI (Gemini)
-* If you have any issue in general, please open an issue and attach model if possible
 
 
 About
@@ -65,7 +62,6 @@ but I will try to continue improving the app and adding more features. So please
 complains by opening an [issue](https://github.com/the3deer/android-3D-model-viewer/issues).
 
 The app comes with some included 3D models that have different licenses.
-
 
 Features
 ========
@@ -103,8 +99,6 @@ In order to maintain this application by adding new features, some features were
     - [x] Ray Casting
     - [x] Repository Explorer
     - [x] Lightweight: only ? Megabyte (3d assets excluded)
-
-
 
 Try it
 ======
@@ -218,24 +212,36 @@ Acknowledgement
 Credits
 =======
 
-The following copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The following license notice shall be included in all copies or substantial portions of the Software.
 
 
-    3D Viewer   - MIT License   - Copyright (c) 2022 The 3Deer - https://github.com/the3deer
-    STL Parser  - GNU LGPL v2.1 - Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski - https://code.j3d.org
-    GLTF Parser - MIT License   - Copyright (c) 2016 Marco Hutter - https://github.com/javagl/JglTF
-    FBX Parser  - MIT License   - Copyright (c) 2020 Samuli Raivio - https://github.com/ufbx/ufbx
-    EarCut      - ISC License   - Copyright (c) 2016, Mapbox - https://github.com/the3deer/earcut
+    The3Deer     - MIT License   - Copyright (c) 2026 The 3Deer - https://github.com/the3deer
+    STL Parser   - GNU LGPL v2.1 - Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski - https://code.j3d.org
+    GLTF Parser  - MIT License   - Copyright (c) 2016 Marco Hutter - https://github.com/javagl/JglTF
+    FBX Parser   - MIT License   - Copyright (c) 2020 Samuli Raivio - https://github.com/ufbx/ufbx
+    EarCut       - ISC License   - Copyright (c) 2016, Mapbox - https://github.com/the3deer/earcut
 
 
-Demo Assets
+Assets
+======
 
-* cowboy       : Unlicense License - https://github.com/TheThinMatrix/OpenGL-Animation
-* fox          : CC0: Low poly fox by PixelMannen, CC-BY 4.0: Rigging and animation by @tomkranis on Sketchfab
-* stormtrooper : MIT License - https://github.com/hujiulong/vue-3d-model
-* toyplane     : Editorial Uses Only - https://blog.turbosquid.com/turbosquid-3d-model-license/#Editorial-Usage
-* skybox sea   : https://learnopengl.com/Advanced-OpenGL/Cubemaps
-* skybox sand  : Copyright 2012 Mobialia - https://github.com/mobialia/jmini3d
-* models (parts)  : Community contribution (Professor S)
- 
+* cowboy        : Unlicense License - https://github.com/TheThinMatrix/OpenGL-Animation
+* fox           : CC0: Low poly fox by PixelMannen, CC-BY 4.0: Rigging and animation by @tomkranis on Sketchfab
+* stormtrooper  : MIT License - https://github.com/hujiulong/vue-3d-model
+* toyplane      : Editorial Uses Only - https://blog.turbosquid.com/turbosquid-3d-model-license/#Editorial-Usage
+* skybox (sea)  : https://learnopengl.com/Advanced-OpenGL/Cubemaps
+* skybox (sand) : Copyright 2012 Mobialia - https://github.com/mobialia/jmini3d
+* other models  : The3Deer Community Contributions 
+
+
+Disclaimer
+==========
+
+* This is a work in progress... and the documentation as well
+* Only open 3d formats or API are to be supported
+* Only the most basic 3D mesh features are supported, like colors, textures and animations
+* The shader is the simplest implementation supporting a very basic lighting model
+* This application is tested only with a few models. Some models may not work
+* In order to see models in 3D virtual reality, you need red-cyan and/or VR glasses
+* Some parts of the code are being written with AI (Gemini)
+* If you have any issue in general, please open an issue and attach model if possible
