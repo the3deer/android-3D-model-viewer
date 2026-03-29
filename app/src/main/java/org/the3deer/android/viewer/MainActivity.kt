@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.Insets
 import androidx.core.view.MenuItemCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -31,7 +32,9 @@ import kotlinx.coroutines.withContext
 import org.the3deer.android.util.ContentUtils
 import org.the3deer.android.viewer.ui.load.LoadContentDialog
 import androidx.core.net.toUri
+import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.ModelEngineViewModel
+import org.the3deer.android.engine.model.Constants
 import org.the3deer.android.engine.model.ModelEvent
 import org.the3deer.android.viewer.databinding.ActivityMainBinding
 import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
@@ -46,7 +49,7 @@ class MainActivity : AppCompatActivity(), EventListener {
     private val TAG = "MainActivity"
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
-    private var isImmersiveMode = false
+    private var immersiveMode = false
     
     private val sharedViewModel: SharedViewModel by viewModels()
     private val modelEngineViewModel: ModelEngineViewModel by viewModels()
@@ -86,20 +89,7 @@ class MainActivity : AppCompatActivity(), EventListener {
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             
             // Update the shared screen object in the engine view model
-            modelEngineViewModel.glScreen.value?.let { screen ->
-                screen.setInsets(insets.left, insets.top, insets.right, insets.bottom)
-
-                // Update toolbar height (including status bar if visible)
-                val toolbarHeight = if (isImmersiveMode) 0 else binding.appBarMain.toolbar.height
-                screen.setToolbarHeight(toolbarHeight)
-                
-                Log.d(TAG, "Shared Screen insets updated: $insets, toolbar=$toolbarHeight")
-
-                // Notify the active engine that screen properties changed
-                modelEngineViewModel.activeEngine.value?.let { engine ->
-                    engine.beanFactory.find(EventManager::class.java)?.propagate(ModelEvent(this, ModelEvent.Code.SCREEN_CHANGED))
-                }
-            }
+            updateScreenInsets(insets)
             
             windowInsets
         }
@@ -107,9 +97,9 @@ class MainActivity : AppCompatActivity(), EventListener {
         setSupportActionBar(binding.appBarMain.toolbar)
 
         binding.appBarMain.immersive.setOnClickListener {
-            toggleImmersiveMode()
+            setImmersiveMode(!this.immersiveMode)
             PreferenceManager.getDefaultSharedPreferences(this).edit()
-                .putBoolean(MainActivity::class.java.name+".immersive", isImmersiveMode)
+                .putBoolean(MainActivity::class.java.name+".immersive", immersiveMode)
                 .apply()
         }
 
@@ -188,8 +178,24 @@ class MainActivity : AppCompatActivity(), EventListener {
         }
 
         // Monitor active engine to refresh UI buttons
+        var lastEngine: ModelEngine? = null
         modelEngineViewModel.activeEngine.observe(this) { engine ->
-            Log.i(TAG, "Active engine changed: $engine")
+            Log.i(TAG, "Active engine changed. id: ${engine?.id}")
+
+            // Unregister from previous engine
+            lastEngine?.remove(Constants.BEAN_ID_CONTEXT, this)
+            /*lastEngine?.beanFactory?.find(EventManager::class.java)?.let { eventManager ->
+                val listeners = lastEngine?.beanFactory?.findAll(EventListener::class.java)
+                listeners?.remove(this)
+            }*/
+
+            // Register with new engine
+            engine?.add(Constants.BEAN_ID_CONTEXT, this)
+            /*engine?.beanFactory?.find(EventManager::class.java)?.let { eventManager ->
+                engine.beanFactory.addOrReplace("mainActivityListener", this)
+            }*/
+
+            lastEngine = engine
             refreshOverlayButtons()
             ViewCompat.requestApplyInsets(binding.root)
         }
@@ -216,18 +222,34 @@ class MainActivity : AppCompatActivity(), EventListener {
         applyInitialImmersiveMode()
     }
 
+    private fun updateScreenInsets(insets: Insets) {
+        modelEngineViewModel.glScreen.value?.let { screen ->
+            screen.setInsets(insets.left, insets.top, insets.right, insets.bottom)
+
+            // Update toolbar height (including status bar if visible)
+            val toolbarHeight = if (immersiveMode) 0 else binding.appBarMain.toolbar.height
+            screen.setToolbarHeight(toolbarHeight)
+
+            Log.d(TAG, "Shared Screen insets updated: $insets, toolbar=$toolbarHeight")
+
+            // Notify the active engine that screen properties changed
+            modelEngineViewModel.activeEngine.value?.let { engine ->
+                engine.beanFactory.find(EventManager::class.java)
+                    ?.propagate(ModelEvent(this, ModelEvent.Code.SCREEN_CHANGED))
+            }
+        }
+    }
+
     private fun refreshOverlayButtons() {
-        if (isImmersiveMode) return
-
-        val engine = modelEngineViewModel.activeEngine.value
-        val model = engine?.beanFactory?.get("model", org.the3deer.android.engine.model.Model::class.java)
-        val scene = model?.activeScene
-
         runOnUiThread {
+            val engine = modelEngineViewModel.activeEngine.value
+            val model = engine?.model
+            val scene = model?.activeScene
+
             binding.appBarMain.btnScene.isEnabled = (model?.scenes?.size ?: 0) > 1
             binding.appBarMain.btnCamera.isEnabled = (scene?.cameras?.size ?: 0) > 1
-            binding.appBarMain.btnAnimation.isEnabled = (scene?.animations?.size ?: 0) > 1
-            
+            binding.appBarMain.btnAnimation.isEnabled = (scene?.animations?.size ?: 0) > 0
+
             binding.appBarMain.btnScene.alpha = if (binding.appBarMain.btnScene.isEnabled) 1.0f else 0.5f
             binding.appBarMain.btnCamera.alpha = if (binding.appBarMain.btnCamera.isEnabled) 1.0f else 0.5f
             binding.appBarMain.btnAnimation.alpha = if (binding.appBarMain.btnAnimation.isEnabled) 1.0f else 0.5f
@@ -235,7 +257,7 @@ class MainActivity : AppCompatActivity(), EventListener {
     }
 
     override fun onEvent(event: EventObject?): Boolean {
-        if (event is ModelEvent && event.code == ModelEvent.Code.LOADED) {
+        if (event is ModelEvent && (event.code == ModelEvent.Code.LOADED || event.code == ModelEvent.Code.LOAD_ERROR)) {
             refreshOverlayButtons()
             return false
         }
@@ -283,16 +305,14 @@ class MainActivity : AppCompatActivity(), EventListener {
 
     private fun applyInitialImmersiveMode() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        if (prefs.getBoolean(MainActivity::class.java.name+".immersive", false)) {
-            isImmersiveMode = false
-            toggleImmersiveMode()
-        }
+        val isImmersiveMode = prefs.getBoolean(MainActivity::class.java.name + ".immersive", false)
+        setImmersiveMode(isImmersiveMode)
     }
 
-    private fun toggleImmersiveMode() {
-        isImmersiveMode = !isImmersiveMode
+    private fun setImmersiveMode(immersiveMode: Boolean) {
+        this.immersiveMode = immersiveMode
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
-        if (isImmersiveMode) {
+        if (immersiveMode) {
             windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
             supportActionBar?.hide()
