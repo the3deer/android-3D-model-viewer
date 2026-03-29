@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="org.the3deer.android.viewer.ui.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home">
+        <argument
+            android:name="uri"
+            app:argType="string"
+            android:defaultValue="android://org.the3deer.android.viewer/assets/models/welcome.obj"
+            app:nullable="false" />
+    </fragment>
+
+    <dialog
+        android:id="@+id/nav_settings"
+        android:name="org.the3deer.android.viewer.ui.settings.SettingsDialogFragment"
+        android:label="@string/menu_settings"
+        tools:layout="@layout/fragment_settings" />
+
+    <dialog
+        android:id="@+id/nav_load"
+        android:name="org.the3deer.android.viewer.ui.load.LoadDialogFragment"
+        android:label="@string/menu_load"
+        tools:layout="@layout/fragment_load">
+        <argument
+            android:name="title"
+            android:defaultValue="@string/menu_load"
+            app:argType="reference" />
+        <argument
+            android:name="itemsId"
+            android:defaultValue="@array/dialog_load_from"
+            app:argType="reference"
+            app:nullable="false" />
+    </dialog>
+
+    <fragment
+        android:id="@+id/nav_about"
+        android:name="org.the3deer.android.viewer.ui.about.AboutFragment"
+        android:label="@string/menu_about"
+        tools:layout="@layout/fragment_about" />
+
+    <!-- demos -->
+
+    <fragment
+        android:id="@+id/nav_demo1"
+        android:name="org.the3deer.android.viewer.demo.ExampleDemoFragment"
+        android:label="Objects demo"
+        tools:layout="@layout/fragment_home">
+        <argument
+            android:name="uri"
+            app:argType="string"
+            android:defaultValue="android://org.the3deer.android.viewer/demos/example_demo"
+            app:nullable="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_demo2"
+        android:name="org.the3deer.android.viewer.demo.GlyphsDemoFragment"
+        android:label="Glyphs demo"
+        tools:layout="@layout/fragment_home">
+        <argument
+            android:name="uri"
+            app:argType="string"
+            android:defaultValue="android://org.the3deer.android.viewer/demos/glyphs_demo"
+            app:nullable="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_demo3"
+        android:name="org.the3deer.android.viewer.demo.EarCutDemoFragment"
+        android:label="Earcut demo"
+        tools:layout="@layout/fragment_home">
+    </fragment>
+
+</navigation>

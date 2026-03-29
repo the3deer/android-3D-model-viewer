@@ -1,0 +1,5 @@
+<resources>
+    <dimen name="fragment_horizontal_margin">48dp</dimen>
+    <dimen name="fab_margin">48dp</dimen>
+    <dimen name="item_transform_image_length">142dp</dimen>
+</resources>

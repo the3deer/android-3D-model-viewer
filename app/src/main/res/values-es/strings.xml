@@ -1,74 +1,138 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="app_name">Visor de modelos 3D</string>
-    <string name="app_version">Versión 1.0</string>
-
-    <!-- common -->
-    <string name="alert_dialog_ok">Ok</string>
-    <string name="alert_dialog_cancel">Cancelar</string>
-    <string name="alert_dialog_title">Por favor responda</string>
-    <string name="alert_dialog_help_title">Ayuda</string>
-    <string name="alert_dialog_repository">Repositorio</string>
-
-    <!-- main menu -->
-    <string name="alert_dialog_main_title">Menu</string>
+    <string name="app_name">Visor de Modelos 3D</string>
+    <string name="navigation_drawer_open">Abrir panel de navegación</string>
+    <string name="navigation_drawer_close">Cerrar panel de navegación</string>
+    <string name="nav_header_title">Visor de Modelos 3D</string>
+    <string name="nav_header_subtitle">support@the3deer.org</string>
+    <string name="nav_header_desc">Encabezado de navegación</string>
     <string name="action_settings">Ajustes</string>
 
-    <!-- Activities -->
-    <string name="title_activity_menu">Menu</string>
-    <string name="title_activity_demo">Demo</string>
-    <string name="title_activity_text">Texto</string>
-    <string name="title_activity_model">Modelo</string>
-    <!-- Demo menu -->
-    <string name="item">item</string>
+    <string name="menu_home">Inicio</string>
+    <string name="menu_load">Cargar</string>
+    <string name="menu_settings">Ajustes</string>
+    <string name="menu_about">Acerca de</string>
+    <string name="menu_recent_models">Modelos Recientes</string>
 
-    <string-array name="dialog_menu_items">
-        <item>Cargar Modelo</item>
-        <item>Ayuda</item>
-        <item>Salir</item>
+    <string name="dialog_load_title">Menu</string>
+    <string name="dialog_load_in_progress_message">Cargando…</string>
+
+    <string name="white">Blanco</string>
+    <string name="gray">Gris</string>
+    <string name="black">Negro</string>
+    <string name="ok">Aceptar</string>
+
+    <!-- Pantalla Acerca de -->
+    <string name="about_title_app">Visor de Modelos 3D</string>
+    <string name="about_version">Versión 1.0.0</string>
+    <string name="about_intro">Un proyecto de código abierto dedicado al aprendizaje de renderizado 3D en Android usando OpenGL ES.</string>
+
+    <string name="about_header_formats">Formatos Soportados</string>
+    <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB y FBX.</string>
+    <string name="about_formats_note">Nota: Para modelos con texturas externas, por favor cárguelos como un único archivo .zip.</string>
+
+    <string name="about_header_controls">Cómo Usar</string>
+    <string name="about_controls_orbit">• <b>Orbitar:</b> Arrastrar con un dedo</string>
+    <string name="about_controls_pan">• <b>Desplazar:</b> Arrastrar con dos dedos</string>
+    <string name="about_controls_zoom">• <b>Zoom:</b> Pellizcar con dos dedos</string>
+
+    <string name="about_header_links">Enlaces del Proyecto</string>
+    <string name="about_link_website_label">Sitio web</string>
+    <string name="about_link_website_url">https://www.the3deer.org</string>
+    <string name="about_link_source_label">Código fuente (GitHub)</string>
+    <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
+    <string name="about_link_issues_label">Reportar un problema</string>
+    <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
+
+    <string name="about_warning_experimental">⚠ Advertencia: Este motor es experimental. Algunas características de los archivos podrían no renderizarse perfectamente.</string>
+
+    <string name="about_header_privacy">Privacidad</string>
+    <string name="about_privacy_text">Esta aplicación no recopila ni comparte ninguna información personal.</string>
+
+    <string name="scenes">Escenas</string>
+    <string name="cameras">Cámaras</string>
+    <string name="animations">Animaciones</string>
+    <string name="scene">Escena</string>
+    <string name="camera">Cámara</string>
+    <string name="immersive">Inmersivo</string>
+    <string name="anim">Anim</string>
+
+    <!-- Categorías -->
+    <string name="category_decorators_label">Decoradores</string>
+    <string name="category_renderers_label">Renderizadores</string>
+    <string name="category_gui_label">Interfaz Gráfica de Usuario</string>
+    <string name="category_general_label">General</string>
+
+    <!-- Beans -->
+    <string name="bean_settings_label">Configuración General</string>
+    <string name="bean_gl_renderer_label">Ajustes de OpenGL</string>
+    <string name="bean_animation_controller_label">Controlador de Animación</string>
+    <string name="bean_collision_drawer_label">Dibujante de Puntos de Colisión</string>
+    <string name="bean_collision_drawer_description">Dibuja puntos donde ocurren las colisiones rayo-objeto</string>
+    <string name="bean_bounding_box_drawer_label">Dibujante de Caja Delimitadora</string>
+    <string name="bean_bounding_box_drawer_description">Dibuja la caja delimitadora del objeto seleccionado</string>
+    <string name="bean_light_bulb_drawer_label">Dibujante de Bombilla</string>
+    <string name="bean_light_bulb_drawer_description">Dibuja la bombilla</string>
+    <string name="bean_skeleton_drawer_label">Dibujante de Esqueleto</string>
+    <string name="bean_skeleton_drawer_description">Dibuja el esqueleto del objeto</string>
+    <string name="bean_skybox_drawer_label">Decorador de Fondo</string>
+    <string name="bean_skybox_drawer_description">Dibuja un Fondo 3D como fondo de escena</string>
+    <string name="bean_wireframe_drawer_label">Dibujante de Wireframe</string>
+    <string name="bean_wireframe_drawer_description">Dibuja el wireframe de los modelos</string>
+    <string name="bean_gui_label">GUI</string>
+    <string name="bean_gui_drawer_label">Interfaz Gráfica de Usuario</string>
+    <string name="bean_anaglyph_renderer_label">Renderizador Anaglifo</string>
+    <string name="bean_default_renderer_label">Renderizador por Defecto</string>
+    <string name="bean_stereoscopic_renderer_label">Renderizador Estereoscópico</string>
+    <string name="bean_shadow_drawer_description">Proyecta una sombra del objeto en un plano en el suelo</string>
+    <string name="bean_shadow_drawer_label">Renderizador de Sombras</string>
+
+    <!-- Propiedades de Bean -->
+    <string name="property_settings_language_label">Lenguaje</string>
+    <string name="property_settings_language_description">Idioma de la aplicación</string>
+    <string name="property_gl_renderer_renderer_label">Renderizador Activo</string>
+    <string name="property_gl_renderer_renderer_description">Seleccione el renderizador</string>
+    <string name="property_gl_renderer_backgroundColor_label">Color de Fondo</string>
+    <string name="property_gl_renderer_backgroundColor_description">Seleccione el color por defecto para los modelos 3D</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>Blanco</item>
+        <item>Gris</item>
+        <item>Negro</item>
     </string-array>
-
-    <string-array name="dialog_help_items">
-        <item>Demos</item>
-        <item>Ayuda</item>
-        <item>Acerca</item>
+    <string name="property_skybox_drawer_skybox_label">Fondo</string>
+    <string name="property_skybox_drawer_skybox_description">Seleccione el fondo del entorno</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>Ninguno</item>
+        <item>Mar</item>
+        <item>Arena</item>
     </string-array>
+    <string name="property_gui_drawer_enabled_description">Mostrar u ocultar GUI</string>
+    <string name="property_gui_drawer_showFPS_label">Frames Por Segundo</string>
+    <string name="property_gui_drawer_showFPS_description">Mostrar u ocultar contador de FPS</string>
+    <string name="property_shadow_drawer_enabled_description">Activar o desactivar el renderizado de sombras</string>
 
-    <string-array name="dialog_load_items">
-        <item>Ejemplos</item>
-        <item>Repositorio (the3deer)</item>
-        <item>Repositorio (Khronos)</item>
-        <item>Explorador Android</item>
-        <!-- item>Explorador (Android &lt;= 10)</item -->
-    </string-array>
 
-    <string name="image">imagen</string>
-    <!-- Help -->
-    <string name="help_text">Cargar modelo\n\nCarga las muestras incluidas con la the app (Samples), el repositorio de github (Repository) or descárgalas desde su dispositivo y ábrelas (usando Archivos o Android Explorer)\n\nFormatos admitidos\n\nSólo el frente de onda, la estereolitografía, archivos Collada o Gltf (*.obj, *.stl, *.dae, *.gltf) están actualmente admitidos.\n\nDemo\n\nEjemplo de escena usando el API. Carga varios modelos usando diferentes modos de dibujo, colores, texturas, etc.\n\Renderizar\n\nUna vez que cargues un modelo, puedes pellizcar para hacer zoom, traducir la cámara con el dedo y girar la pantalla con 2 dedos\n\nMenu\n\nEn el botón flotante también encontrarás varios botones para cambiar diferentes configuraciones, como renderizado de esquema o fondo.\n\nProblemas frecuentes\n\nSi el archivo de modelo está referenciando algún archivo de materiales (*.mtl) asegúrese que esté en la misma carpeta; lo mismo aplica para los archivos de texturas (*.jpg, *.bmp) a los que se hace referencia en el archivo de material.\n\nSi necesita más ayuda o tiene algún problema no dude en abrir un ticket en github o pregúnteme. Gracias de antemano por sus comentarios.\n\nhttps://github.com/the3deer/android-3D-model-viewer/issues\n\nandresoviedo@gmail.com</string>
-    <!-- About -->
-    <string name="about_text">Esta aplicación permite cargar modelos de objetos 3D (actualmente sólo se admiten los formatos Wavefront, Stereolithography y Collada).\n\nEl propósito de esta aplicación es aprender a dibujar en Android usando el lenguaje OpenGL 2.0.\n\nLa fuente de esta aplicación es de código abierto y se puede encontrar en https://github.com/the3deer/android-3D-model-viewer\n\nComo es mi primera aplicación para Android todavía estoy aprendiendo el lenguaje OpenGL 2.0, y es muy probable que tenga errores, así que seguiré mejorando la app.\n\nLos modelos incluidos en la aplicación fueron tomados gratuitamente de Internet.\n\nEsta aplicación no recoge ni hace uso de ningún tipo de información personal.</string>
-    <!-- Load settings -->
-    <string name="model_name">Nombre del modelo</string>
-    <string name="texture">Textura</string>
-    <string name="invert_texture_coordinates">Invert texture coordinates</string>
-    <string name="cancel">Cancelar</string>
-    <string name="load">Cargar</string>
-    <string name="load_model">Cargar modelo</string>
+    <!-- Features (Características) -->
+    <string name="feature_collision_description">Componentes que dibujan sobre el modelo</string>
+    <string name="feature_decorator_description">Componentes que dibujan sobre el modelo</string>
+    <string name="feature_gui_description">Muestra FPS, Ejes e Información</string>
+    <string name="feature_renderer_description">Los Renderizadores dibujan en la pantalla</string>
 
-    <!-- Scene settings -->
-    <string name="scene">Escena...</string>
-    <!-- GL Settings -->
-    <string name="toggle_camera">Cambiar Camara</string>
-    <string name="toggle_wireframe">Cambiar esquema</string>
-    <string name="toggle_skeleton">Cambiar esqueleto</string>
-    <string name="toggle_lights">Cambiar luces</string>
-    <string name="toggle_animation">Cambiar animación</string>
-    <!--<string name="toggle_skeleton">Cambiar esqueleto</string>-->
-    <string name="toggle_boundingbox">Cambiar zonas limítrofes</string>
-    <string name="load_texture">Cargar texturas</string>
+    <!-- Values: GL renderer -->
+    <string name="value_gl_renderer_renderer_renderer_default">Renderizador por defecto</string>
+    <string name="value_gl_renderer_renderer_renderer_anaglyph">Renderizador por anaglifos</string>
+    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Renderizador estereoescópico</string>
 
-    <!-- To review -->
-    <string name="app_logo_desc">Logotipo animado de la tetera</string>
+    <!-- Values: GL color -->
+    <string name="value_gl_renderer_backgroundColor_white">Blanco</string>
+    <string name="value_gl_renderer_backgroundColor_gray">Gris</string>
+    <string name="value_gl_renderer_backgroundColor_black">Negro</string>
 
+    <!-- Values: Language -->
+    <string name="value_settings_language_en">Inglés</string>
+    <string name="value_settings_language_es">Español</string>
+
+    <!-- Values: Skybox Drawer -->
+    <string name="value_skybox_drawer_skybox_none">Ninguno</string>
+    <string name="value_skybox_drawer_skybox_sea">Mar</string>
+    <string name="value_skybox_drawer_skybox_sand">Playa</string>
 </resources>

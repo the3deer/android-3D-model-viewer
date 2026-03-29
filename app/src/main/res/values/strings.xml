@@ -1,128 +1,137 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">3D Model Viewer</string>
-    <string name="app_version">Version 1.0</string>
-
-    <!-- common -->
-    <string name="alert_dialog_ok">Ok</string>
-    <string name="alert_dialog_cancel">Cancel</string>
-    <string name="alert_dialog_title">Menu</string>
-    <string name="alert_dialog_repository">Repository</string>
-
-    <!-- main menu -->
-    <string name="alert_dialog_main_title">Menu</string>
-    <string name="alert_dialog_help_title">Help</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">3D Model Viewer</string>
+    <string name="nav_header_subtitle">support@the3deer.org</string>
+    <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
-    <!-- Activities -->
-    <string name="title_activity_menu">Menu</string>
-    <string name="title_activity_demo">Demo</string>
-    <string name="title_activity_text">Text</string>
-    <string name="title_activity_model">Model</string>
-    <!-- Demo menu -->
-    <string name="item">item</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_load">Load</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_about">About</string>
+    <string name="menu_recent_models">Recent Models</string>
 
-    <string-array name="dialog_menu_items">
-        <item>Load Model</item>
-        <item>Help</item>
-        <item>Exit</item>
-    </string-array>
+    <string name="dialog_load_title">Menu</string>
+    <string name="dialog_load_in_progress_message">Loading…</string>
 
-    <string-array name="dialog_help_items">
-        <item>Demos</item>
-        <item>Help</item>
-        <item>About</item>
-    </string-array>
+    <string name="white">White</string>
+    <string name="gray">Gray</string>
+    <string name="black">Black</string>
+    <string name="ok">OK</string>
 
-    <string-array name="dialog_load_items">
-        <item>Samples</item>
-        <item>Repository (the3deer)</item>
-        <item>Repository (Khronos)</item>
-        <item>Android Explorer</item>
-        <!-- item>File Explorer (Android &lt;= 10)</item -->
-    </string-array>
+    <!-- About Screen -->
+    <string name="about_title_app">3D Model Viewer</string>
+    <string name="about_version">Version 1.0.0</string>
+    <string name="about_intro">An open-source project dedicated to learning 3D rendering on Android using OpenGL ES.</string>
 
-    <string name="image">image</string>
-    <!-- Help -->
-    <string name="help_text">Load Model\n\nLoad the samples included with the app (Samples), github repository (Repository) or download them to your device and open it (using File or Android Explorer)\n\nSupported formats\n\nOnly wavefront, stereolithography, Collada files or Gltf files (*.obj, *.stl, *.dae, *.gltf) are currently supported.\n\nDemo\n\nExample scene using the API. It loads several models using different draw modes, colors, textures, etc.\n\nRenderer\n\nOnce you load a model, you can pinch to zoom, translate the camera with your finger and rotate the screen with 2 fingers\n\nMenu\n\nIn the floating button you will also find several settings for toggling different functions like wireframe or the skybox.\n\nTroubleshooting\n\nIf the model file (.obj) is referencing any materials file (*.mtl) be sure its in the same folder; same applies for texture files (*.jpg, *.bmp) being referenced in the material file.\n\nIf you need more help or have any issue feel free to open a ticket in github or ask me. Thank you in advance for your feedback.\n\nhttps://github.com/the3deer/android-3D-model-viewer/issues\n\nandresoviedo@gmail.com</string>
-    <!-- About -->
-    <string name="about_text">This application allows you to load 3D object models (currently only Wavefront, Stereolithography, Collada and Gltf formats are supported).\n\nThe purpose of this application is to learn how to draw in android using the OpenGL 2.0/3.0 language.\n\nThe code for this application is open source and it can be found at https://github.com/the3deer/android-3D-model-viewer\n\nAs this is my first android app and Im still learning the OpenGL 2.0 language, it is highly probable that there are bugs; but I will try to continue improving the app.\n\nThe included models in the app were taken for free from Internet.\n\nThis application does not collect or make use of any kind of personal information.</string>
-    <!-- Load settings -->
-    <string name="model_name">Model name</string>
-    <string name="texture">Texture</string>
-    <string name="invert_texture_coordinates">Invert texture coordinates</string>
-    <string name="cancel">Cancel</string>
-    <string name="load">Load</string>
-    <string name="load_model">Load Model</string>
+    <string name="about_header_formats">Supported Formats</string>
+    <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB, and FBX.</string>
+    <string name="about_formats_note">Note: For models with external textures, please load them as a single .zip file.</string>
 
-    <!-- Scene settings -->
-    <string name="scene">Scene...</string>
-    <!-- GL Settings -->
-    <string name="toggle_camera">Toggle Camera</string>
-    <string name="toggle_wireframe">Toggle wireframe</string>
-    <string name="toggle_skeleton">Toggle skeleton</string>
-    <string name="toggle_lights">Toggle lights</string>
-    <string name="toggle_animation">Toggle animation</string>
-    <!--<string name="toggle_skeleton">Toggle skeleton</string>-->
-    <string name="toggle_boundingbox">Toggle bounding box</string>
-    <string name="load_texture">Load texture</string>
+    <string name="about_header_controls">How to Use</string>
+    <string name="about_controls_orbit">• <b>Orbit:</b> Drag with one finger</string>
+    <string name="about_controls_pan">• <b>Pan:</b> Drag with two fingers</string>
+    <string name="about_controls_zoom">• <b>Zoom:</b> Pinch with two fingers</string>
 
-    <!-- To review -->
-    <string name="app_logo_desc">Teapot animated logo</string>
+    <string name="about_header_links">Project Links</string>
+    <string name="about_link_website_label">Website</string>
+    <string name="about_link_website_url">https://www.the3deer.org</string>
+    <string name="about_link_source_label">Source Code (GitHub)</string>
+    <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
+    <string name="about_link_issues_label">Report an Issue</string>
+    <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
 
+    <string name="about_warning_experimental">⚠ Warning: This engine is experimental. Some file features might not render perfectly.</string>
 
-    <!--<string name="item">Item</string>-->
-    <string-array name="menu_items_iso">
-        <item>Play</item>
-        <item>Exit</item>
+    <string name="about_header_privacy">Privacy</string>
+    <string name="about_privacy_text">This application does not collect or share any personal information.</string>
+
+    <string name="scenes">Scenes</string>
+    <string name="cameras">Cameras</string>
+    <string name="animations">Animations</string>
+    <string name="scene">Scene</string>
+    <string name="camera">Camera</string>
+    <string name="immersive">Immersive</string>
+    <string name="anim">Anim</string>
+
+    <!-- Categories -->
+    <string name="category_renderers_label">Renderers</string>
+    <string name="category_gui_label">Graphical User Interface</string>
+    <string name="category_general_label">General</string>
+    <string name="category_decorators_label">Decorators</string>
+
+    <!-- Beans -->
+    <string name="bean_settings_label">General Settings</string>
+    <string name="bean_gl_renderer_label">OpenGL Settings</string>
+    <string name="bean_animation_controller_label">Animation Controller</string>
+    <string name="bean_collision_drawer_label">Collision Points Drawer</string>
+    <string name="bean_collision_drawer_description">Draw points where the ray-object collisions take place</string>
+    <string name="bean_bounding_box_drawer_label">Bounding Box Drawer</string>
+    <string name="bean_bounding_box_drawer_description">Draws the bounding box of the selected object</string>
+    <string name="bean_light_bulb_drawer_label">Light Bulb Drawer</string>
+    <string name="bean_light_bulb_drawer_description">Draws the light bulb</string>
+    <string name="bean_skeleton_drawer_label">Skeleton Drawer</string>
+    <string name="bean_skeleton_drawer_description">Draws the skeleton of the object</string>
+    <string name="bean_skybox_drawer_label">SkyBox Decorator</string>
+    <string name="bean_skybox_drawer_description">Draws a 3D Skybox as the scene background</string>
+    <string name="bean_wireframe_drawer_label">Wireframe Drawer</string>
+    <string name="bean_wireframe_drawer_description">Draws the wireframe of the models</string>
+    <string name="bean_gui_label">GUI</string>
+    <string name="bean_gui_drawer_label">Graphical User Interface</string>
+    <string name="bean_anaglyph_renderer_label">Anaglyph Renderer</string>
+    <string name="bean_default_renderer_label">Default Renderer</string>
+    <string name="bean_stereoscopic_renderer_label">Stereoscopic Renderer</string>
+    <string name="bean_shadow_drawer_description">Cast a shadow of the object in a plane on the ground</string>
+    <string name="bean_shadow_drawer_label">Shadow Renderer</string>
+
+    <!-- Bean Properties -->
+    <string name="property_settings_language_label">Language</string>
+    <string name="property_settings_language_description">Application Language</string>
+    <string name="property_gl_renderer_renderer_label">Active Renderer</string>
+    <string name="property_gl_renderer_renderer_description">Select the renderer</string>
+    <string name="property_gl_renderer_backgroundColor_label">Background Color</string>
+    <string name="property_gl_renderer_backgroundColor_description">Select the default color for 3D models</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>White</item>
+        <item>Gray</item>
+        <item>Black</item>
     </string-array>
-    <string-array name="menu_items_level">
-        <item>Easy</item>
-        <item>Medium</item>
-        <item>Hard</item>
+    <string name="property_skybox_drawer_skybox_label">SkyBox</string>
+    <string name="property_skybox_drawer_skybox_description">Select the environment background</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>None</item>
+        <item>Sea</item>
+        <item>Sand</item>
     </string-array>
-    <string-array name="level_easy_1">
-        <item>cube_0_0_0</item>
-        <item>cube_0_0_0</item>
-        <item>prism_0_0_0</item>
-    </string-array>
-    <string-array name="level_easy_2">
-        <item>prism_0_0_0</item>
-        <item>cube_0_0_0</item>
-        <item>cube_0_0_0</item>
-    </string-array>
-    <string-array name="level_easy_3">
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item>prism_0_0_0</item>
-        <item>qcylinder_0_0_0</item>
-        <item></item>
-        <item></item>
-    </string-array>
-    <string-array name="level_easy_4">
-        <item></item>
-        <item>cube_0_0_0</item>
-        <item>prism_0_0_0</item>
-        <item>cube_0_0_0</item>
-    </string-array>
-    <string-array name="level_easy_5">
-        <item></item>
-        <item>cube_0_0_0</item>
-        <item>qcylinder_0_0_0</item>
-    </string-array>
-    <string-array name="level_easy_6">
-        <item></item>
-        <item>qcylinder_0_0_0</item>
-        <item>cube_0_0_0</item>
-    </string-array>
-    <string-array name="level_easy_7">
-        <item></item>
-        <item>qcylinder_0_0_0</item>
-        <item>cube_0_0_0</item>
-        <item>qcylinder_0_0_0</item>
-    </string-array>
+    <string name="property_gui_drawer_enabled_description">Show or hide GUI</string>
+    <string name="property_gui_drawer_showFPS_label">Frames Per Second</string>
+    <string name="property_gui_drawer_showFPS_description">Show or hide FPS counter</string>
+    <string name="property_shadow_drawer_enabled_description">Enable or disable shadows rendering</string>
+
+    <!-- Features -->
+    <string name="feature_collision_description">Components that draw on top of the model</string>
+    <string name="feature_decorator_description">Components that draw on top of the model</string>
+    <string name="feature_gui_description">Display FPS, Axis and Info</string>
+    <string name="feature_renderer_description">The Renderers draws on the screen</string>
+
+    <!-- Values: GL -->
+    <string name="value_gl_renderer_renderer_renderer_default">Default Renderer</string>
+    <string name="value_gl_renderer_renderer_renderer_anaglyph">Anaglyph Renderer</string>
+    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Stereoscopic Renderer</string>
+
+    <!-- Values: GL color -->
+    <string name="value_gl_renderer_backgroundColor_white">White</string>
+    <string name="value_gl_renderer_backgroundColor_gray">Gray</string>
+    <string name="value_gl_renderer_backgroundColor_black">Black</string>
+
+    <!-- Values: Language -->
+    <string name="value_settings_language_en">English</string>
+    <string name="value_settings_language_es">Spanish</string>
+
+    <!-- Values: Skybox Drawer -->
+    <string name="value_skybox_drawer_skybox_none">None</string>
+    <string name="value_skybox_drawer_skybox_sea">Sea</string>
+    <string name="value_skybox_drawer_skybox_sand">Beach</string>
 </resources>

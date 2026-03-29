@@ -1,0 +1,29 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.AndroidModelViewer" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand color (Toolbar/Status Bar) -->
+        <item name="colorPrimary">@color/engine_dark_grey</item>
+        <item name="colorPrimaryVariant">@color/black</item>
+        <item name="colorOnPrimary">@color/engine_text_primary</item>
+
+        <!-- Secondary brand color (Accent/Highlights) -->
+        <item name="colorSecondary">@color/engine_accent</item>
+        <item name="colorSecondaryVariant">@color/engine_accent_variant</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+
+        <!-- Navigation Drawer Style -->
+        <item name="android:windowBackground">@color/engine_dark_grey</item>
+    </style>
+
+    <style name="Theme.AndroidModelViewer.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.AndroidModelViewer.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.AndroidModelViewer.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+</resources>

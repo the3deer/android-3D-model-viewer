@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="color_entries">
+        <item>Rojo</item>
+        <item>Verde</item>
+        <item>Azul</item>
+    </string-array>
+
+    <string-array name="skybox_entries">
+        <item>Mar</item>
+        <item>Arena</item>
+    </string-array>
+
+    <string-array name="shader_lighting_entries">
+        <item>Simple</item>
+        <item>Sin Iluminación</item>
+    </string-array>
+
+    <string-array name="shader_texture_entries">
+        <item>Texturas Activadas</item>
+        <item>Sin Texturas</item>
+    </string-array>
+
+    <string-array name="renderer_entries">
+        <item>Predeterminado</item>
+        <item>Anaglifo</item>
+        <item>Estereoscópico</item>
+    </string-array>
+
+    <string-array name="background_color_entries">
+        <item>Blanco</item>
+        <item>Gris</item>
+        <item>Negro</item>
+    </string-array>
+
+    <string-array name="dialog_menu_items">
+        <item>Cargar Modelo</item>
+        <item>Ayuda</item>
+        <item>Salir</item>
+    </string-array>
+
+    <string-array name="dialog_help_items">
+        <item>Demos</item>
+        <item>Ayuda</item>
+        <item>Acerca de</item>
+    </string-array>
+
+    <string-array name="dialog_load_from">
+        <item>Repositorio (the3deer)</item>
+        <item>Repositorio (Khronos)</item>
+        <item>Repositorio (Poly Haven)</item>
+        <item>Repositorio (Assimp)</item>
+        <item>Explorador de Android</item>
+        <item>Ejemplos</item>
+    </string-array>
+
+    <!-- beans -->
+    <string-array name="property_settings_language_values">
+        <item>en</item>
+        <item>es</item>
+    </string-array>
+    <string-array name="property_settings_language_values_descriptions">
+        <item>Inglés</item>
+        <item>Español</item>
+    </string-array>
+</resources>

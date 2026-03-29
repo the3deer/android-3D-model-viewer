@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="color_entries">
+        <item>Red</item>
+        <item>Green</item>
+        <item>Blue</item>
+    </string-array>
+    <string-array name="color_values">
+        <item>red</item>
+        <item>green</item>
+        <item>blue</item>
+    </string-array>
+
+    <string-array name="skybox_entries">
+        <item>Sea</item>
+        <item>Sand</item>
+    </string-array>
+    <string-array name="skybox_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+    <string-array name="shader_lighting_entries">
+        <item>Simple</item>
+        <item>No Lighting</item>
+    </string-array>
+    <string-array name="shader_lighting_values">
+        <item>on</item>
+        <item>off</item>
+    </string-array>
+
+    <string-array name="shader_texture_entries">
+        <item>Textures Enabled</item>
+        <item>No Textures</item>
+    </string-array>
+    <string-array name="shader_texture_values">
+        <item>on</item>
+        <item>off</item>
+    </string-array>
+
+    <string-array name="renderer_entries">
+        <item>Default</item>
+        <item>Anaglyph</item>
+        <item>Stereoscopic</item>
+    </string-array>
+    <string-array name="renderer_values">
+        <item>org.the3deer.android.engine.renderer.DefaultRenderer</item>
+        <item>org.the3deer.android.engine.renderer.AnaglyphRenderer</item>
+        <item>org.the3deer.android.engine.renderer.StereoscopicRenderer</item>
+    </string-array>
+
+    <string-array name="background_color_entries">
+        <item>White</item>
+        <item>Gray</item>
+        <item>Black</item>
+    </string-array>
+    <string-array name="background_color_values">
+        <item>white</item>
+        <item>gray</item>
+        <item>black</item>
+    </string-array>
+
+    <string-array name="dialog_menu_items">
+        <item>Load Model</item>
+        <item>Help</item>
+        <item>Exit</item>
+    </string-array>
+
+    <string-array name="dialog_help_items">
+        <item>Demos</item>
+        <item>Help</item>
+        <item>About</item>
+    </string-array>
+
+    <string-array name="dialog_load_from">
+        <item>Repository (the3deer)</item>
+        <item>Repository (Khronos)</item>
+        <item>Repository (Poly Haven)</item>
+        <item>Repository (Assimp)</item>
+        <item>Android Explorer</item>
+        <item>Samples</item>
+        <!-- item>File Explorer (Android &lt;= 10)</item -->
+    </string-array>
+
+    <!-- beans -->
+    <string-array name="property_settings_language_values">
+        <item>en</item>
+        <item>es</item>
+    </string-array>
+    <string-array name="property_settings_language_values_descriptions">
+        <item>English</item>
+        <item>Spanish</item>
+    </string-array>
+
+</resources>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/engine_dark_grey">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="100dp">
+
+        <!-- App Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_suzanne"
+                app:tint="@color/engine_accent" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_title_app"
+                    android:textAppearance="?attr/textAppearanceHeadline5"
+                    android:textColor="@color/engine_text_primary"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_version"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:textColor="@color/engine_text_secondary" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_intro"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="@color/engine_text_primary"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Formats Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="@color/engine_charcoal"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/engine_text_secondary">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_header_formats"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    android:textStyle="bold"
+                    android:textColor="@color/engine_accent"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_formats_list"
+                    android:textAppearance="?attr/textAppearanceBody2"
+                    android:textColor="@color/engine_text_primary"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_formats_note"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:textColor="@color/engine_text_secondary"
+                    android:fontStyle="italic" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Controls Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/about_header_controls"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:textStyle="bold"
+            android:textColor="@color/engine_accent"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_controls_orbit"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="@color/engine_text_primary"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_controls_pan"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="@color/engine_text_primary"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_controls_zoom"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="@color/engine_text_primary"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Warning -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_warning_experimental"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:textColor="@color/purple_200"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Links -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/about_header_links"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:textStyle="bold"
+            android:textColor="@color/engine_accent"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/link_website"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_link_website_label"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="@color/engine_accent"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/link_github"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_link_source_label"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="@color/engine_accent"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/link_issues"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_link_issues_label"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="@color/engine_accent"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Privacy -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/about_header_privacy"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textStyle="bold"
+            android:textColor="@color/engine_text_primary"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_privacy_text"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:textColor="@color/engine_text_secondary" />
+
+    </LinearLayout>
+</ScrollView>
