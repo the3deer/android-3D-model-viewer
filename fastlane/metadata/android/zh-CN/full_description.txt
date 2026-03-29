@@ -1,0 +1,14 @@
+开源3D模型查看器和 OpenGL ES 2.0/3.0 演示。
+
+加载并检查 3D 资产，同时学习如何在 Android 上实现 3D 渲染。此应用程序既是一个实用工具，也是开发人员的教育资源。
+
+<b>主要特点：</b>
+* 支持 <b>OBJ, STL, DAE (Collada), GLTF 和 FBX</b>。
+* 基于 <b>Fragments 和 Navigation Component</b> 的现代 UI。
+* 支持具有高级着色器的 <b>OpenGL ES 2.0 和 3.0</b>。
+* <b>骨骼动画</b> (DAE 和 GLTF)。
+* <b>VR 支持</b>：补色（红/蓝）和立体模式。
+* 交互式工具：线框、包围盒、骨架视图和射线投射选择。
+* 完全开源。
+
+本应用程序旨在分享有关 OpenGL 和 Android 开发的知识。在 GitHub 上查看源代码：https://github.com/the3deer/android-3D-model-viewer

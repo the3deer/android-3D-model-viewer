@@ -1,0 +1,14 @@
+Visualizzatore di modelli 3D open-source e demo OpenGL ES 2.0/3.0.
+
+Carica e ispeziona asset 3D mentre impari come implementare il rendering 3D su Android. Questa app funge sia da utility che da risorsa educativa per gli sviluppatori.
+
+<b>Caratteristiche principali:</b>
+* Supporto per <b>OBJ, STL, DAE (Collada), GLTF e FBX</b>.
+* UI moderna basata su <b>Fragment e Navigation Component</b>.
+* Supporto <b>OpenGL ES 2.0 e 3.0</b> con shader avanzati.
+* <b>Animazioni scheletriche</b> (DAE e GLTF).
+* <b>Supporto VR</b>: modalità Anaglifi e Stereoscopica.
+* Strumenti interattivi: Wireframe, Bounding Box, vista scheletro e selezione tramite Ray-casting.
+* Completamente Open Source.
+
+Lo scopo di questa applicazione è condividere la conoscenza su OpenGL e lo sviluppo Android. Controlla il codice sorgente su GitHub: https://github.com/the3deer/android-3D-model-viewer

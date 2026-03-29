@@ -1,0 +1,14 @@
+Açık kaynaklı 3D model görüntüleyici ve OpenGL ES 2.0/3.0 demosu.
+
+Android'de 3D oluşturmanın nasıl uygulanacağını öğrenirken 3D varlıkları yükleyin ve inceleyin. Bu uygulama, geliştiriciler için hem bir araç hem de eğitici bir kaynak görevi görür.
+
+<b>Temel Özellikler:</b>
+* <b>OBJ, STL, DAE (Collada), GLTF ve FBX</b> desteği.
+* <b>Fragmentlar ve Navigation Component</b> tabanlı modern arayüz.
+* Gelişmiş gölgelendiricilerle <b>OpenGL ES 2.0 ve 3.0</b> desteği.
+* <b>İskelet Animasyonları</b> (DAE ve GLTF).
+* <b>VR Desteği</b>: Anaglif ve Stereoskopik modlar.
+* Etkileşimli araçlar: Tel kafes (wireframe), sınırlayıcı kutular, iskelet görünümü ve Ray-casting seçimi.
+* Tamamen Açık Kaynak.
+
+Bu uygulamanın amacı OpenGL ve Android geliştirme hakkındaki bilgileri paylaşmaktır. Kaynak kodunu GitHub'da inceleyin: https://github.com/the3deer/android-3D-model-viewer

@@ -1,1 +1,1 @@
-3B modelleri yükleyin ve nasıl yapılacağını görün
+3D model görüntüleyici (OBJ, STL, DAE, GLTF, FBX), OpenGL ES 2.0/3.0 kullanarak

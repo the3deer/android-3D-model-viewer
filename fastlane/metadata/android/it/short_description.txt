@@ -1,0 +1,1 @@
+Visualizzatore di modelli 3D (OBJ, STL, DAE, GLTF, FBX) con OpenGL ES 2.0/3.0
