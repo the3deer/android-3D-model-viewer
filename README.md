@@ -1,247 +1,82 @@
-Android 3D Model Viewer
-=======================
+# Android 3D Model Viewer
 
-This is a demo of OpenGL ES 2.0.
-It is basically an android application with a 3D engine that can load Wavefront OBJ, STL, DAE, GLTF and FBX files.
-The purpose of this application is to learn and share how to draw using OpenGL language.
+A powerful, open-source Android application for viewing and inspecting 3D models. Built with a modular architecture and powered by a custom OpenGL ES 2.0/3.0 engine.
 
-* GLTF format (gltf): https://www.khronos.org/gltf/
-* Collada format (DAE): https://en.wikipedia.org/wiki/COLLADA
-* Wafefront format (OBJ): https://en.wikipedia.org/wiki/Wavefront_.obj_file
-* STereoLithography format (STL): https://en.wikipedia.org/wiki/STL_(file_format)
-* Filmbox format (FBX): https://en.wikipedia.org/wiki/Filmbox
+## News (29/03/2026)
 
-
-News (10/04/2026)
-=================
-
-**Version 5.0.0**
+**Version 5.0.0** *
 
 * **Engine** improvements
-  * OpenGL shaders upgraded to **OpenGL 3**. OpenGL 2 shaders is still supported (for older phones)
-  * Engine Multiple **Scene**, **Camera** and **Animation** 
+    * OpenGL shaders upgraded to **OpenGL 3**. OpenGL 2 shaders is still supported (for older phones)
+    * Engine Multiple **Scene**, **Camera** and **Animation**
 * **Internationalization (i18n)**
-  * Support for **Spanish** language. **English** being the default application language
+    * Support for **Spanish** language. **English** being the default application language
 * **Brand New User Interface (UI)**
-  * UI completely rewritten / re-designed from scratch (assisted by AI)
-  * UI is now based on **Android Fragments**
-  * UI has now 1 **Android Navigation** Drawer (and 1 Android Toolbar)
-  * UI has now 3 **Dialogs** to allow the selection of the Scene, Camera & Animation
-  * UI has now 1 **Preference** screen to configure some of the Engine properties (skybox, language, etc)
+    * UI completely rewritten / re-designed from scratch (assisted by AI)
+    * UI is now based on **Android Fragments**
+    * UI has now 1 **Android Navigation** Drawer (and 1 Android Toolbar)
+    * UI has now 3 **Dialogs** to allow the selection of the Scene, Camera & Animation
+    * UI has now 1 **Preference** screen to configure some of the Engine properties (skybox, language, etc)
 * DAE & GLTF parsers completely rewritten / re-designed from scratch (assisted by AI)
 * FBX: **basic** support added. The FBX parser is possible thanks to ufbx (https://github.com/ufbx/ufbx)
-  * FBX Features: **static** models only with diffuse textures (no animation / rigging)
-
-**This release is possible thanks to Gemini (AI)**
-**Not yet published on Play Store!**
-
-Demo
-====
-
-Checkout this to see the features of the application (old video): https://www.youtube.com/watch?v=PV92DKohXXk
+    * FBX Features: **static** models only with diffuse textures (no animation / rigging)
 
 
-Android Market
-==============
+* **Not yet published on Play Store!**
+* **This release is possible thanks to Gemini (AI)**
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="125" alt="Get in on F-Droid">](https://f-droid.org/en/packages/org.andresoviedo.dddmodel2/)
-[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" width="323" height="125">](https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2)
+## Key Features
 
+- **Multi-Format Support**: Load OBJ, STL, DAE (Collada), GLTF, and FBX files.
+- **Advanced Rendering**: Support for skeletal animation, normal mapping, and basic lighting.
+- **Modern UI**: Built with Android Fragments, Navigation Component, and Material Design.
+- **VR Ready**: Integrated Anaglyph and Stereoscopic (VR headset) rendering modes.
+- **Interactive Tools**: Wireframe toggles, skeleton visualization, bounding boxes, and ray-cast selection.
 
-About
-=====
+## Project Structure
 
-Load 3D models and see how to do it with this open source code application.
+This project consists of two main components:
 
-The main purpose of this app is to show how to draw in android using the OpenGL 2.0/3.0 by sharing the source code.
-So please, don't expect this application to be much richer or nicer than the ones already published in the app store,
-but at least it's opened to anyone who wants to contribute or don't want to start a similar project from scratch.
+1.  **App (`:app`)**: The Android application layer, managing UI, state, and user interaction.
+2.  **Engine (`:engine`)**: A standalone 3D engine submodule.
 
-As this is my first android app, and I'm still learning the OpenGL language, it is highly probable that there are bugs;
-but I will try to continue improving the app and adding more features. So please send me your comments, suggestions or
-complains by opening an [issue](https://github.com/the3deer/android-3D-model-viewer/issues).
+## Documentation
 
-The app comes with some included 3D models that have different licenses.
+For detailed information, please refer to the following guides:
 
-Features
-========
+- **[Application Documentation](./doc/README.md)**: Details on UI architecture, reactive data flow, and app-specific features.
+- **[Engine Documentation](./engine/doc/README.md)**: Deep dive into the 3D engine API, Scene Graph, and rendering pipeline.
+- **[Engine Integration](./engine/README.md)**: How to use the engine as a standalone library.
 
-The application supports very basic features.
-In order to maintain this application by adding new features, some features were disabled:
+## Getting Started
 
-- [x] **Platform & API**
-    - [x] Java 8 language
-    - [x] Android >= Lollipop 5.0 (Min API Level 26 -> Target API Level 36)
-    - [x] Android API: OpenGL ES 2.0/3.0, Fragments, Preferences, Content Manager
-- [x] **Supported 3D Formats**
-    - [x] OBJ (wavefront)
-    - [x] STL (STereoLithography)
-    - [x] DAE (Collada)
-    - [x] GLTF (GL Transmission Format)
-    - [x] FBX (Filmbox)
-- [x] Core Rendering Capabilities
-    - [x] Vertex, Normals, Colors, Textures, etc
-    - [x] Skinning support (animation)
-    - [x] Normal mapping
-    - [x] Lighting
-    - [x] Shadow
-- [x] VR Support
-    - [x] Anaglyph (red/blue)
-    - [x] Stereo (left/right)
-- [x] Decorators
-    - [x] wireframe
-    - [x] skeleton
-    - [x] skybox
-- [x] other:
-    - [x] Polygons with holes (dae)
-    - [ ] Smoothing
-    - [x] Bounding box
-    - [x] Ray Casting
-    - [x] Repository Explorer
-    - [x] Lightweight: only ? Megabyte (3d assets excluded)
+### Installation
+You can install the app via:
+- **Google Play**: [Download](https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2)
+- **F-Droid**: [Download](https://f-droid.org/en/packages/org.andresoviedo.dddmodel2/)
 
-Try it
-======
+### Building from Source
+```bash
+# Clone with submodules
+git clone --recursive https://github.com/the3deer/android-3D-model-viewer.git
+cd android-3D-model-viewer
 
-You can install the application in either of these ways:
-
-* Play Store:  https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2
-* APK: [app-debug.apk](app/build/outputs/apk/debug/app-debug.apk)
-* Source code: clone the repository, compile with Gradle and install with adb
-
-Once you open the application, you can load any of the supported model formats.
-
-* It's recommended to have all the model resources packed in a .zip file
-
-Documentation
-=============
-
-[doc/README.md](./doc/README.md)
-
-
-Build / Package
-===============
-
-Script to build an apk package and run in your device.
-- Git 1.6.5 or later is required
-- Android Gradle plugin requires Java 17 to run
-
-```
-    git clone --recursive https://github.com/the3deer/android-3D-model-viewer.git
-    cd android-3D-model-viewer
-    ./gradlew clean assembleDebug
-    adb install -r app/build/outputs/apk/debug/app-debug.apk
-    adb shell am start -n org.andresoviedo.dddmodel2/org.the3deer.android.viewer.MainActivity
+# Build and Install
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Open the application. You should see a menu. From there you can load models
-Once the model is rendered, pinch and rotate to see the 3D scene from another perspective.
+## Community & Support
 
+- **Issues**: Found a bug or have a suggestion? [Open an issue](https://github.com/the3deer/android-3D-model-viewer/issues).
+- **Contributing**: Pull requests are welcome! Please follow the existing code style.
 
-Release / Bundle
-================
+## Credits & License
 
-```
-    export RELEASE_STORE_PASSWORD=***
-    export RELEASE_KEY_PASSWORD=***
-    ./gradlew clean bundleRelease
-```
+- **The3Deer**: MIT License
+- **JglTF (GLTF Parser)**: MIT License
+- **ufbx (FBX Parser)**: MIT License
+- **Earcut**: ISC License
 
-
-Screenshots
-===========
-
-![Menu](./screenshots/menu.png)
-![Screenshot2](screenshots/screenshot2.png)
-![Screenshot3](screenshots/screenshot3.png)
-![Screenshot4](screenshots/screenshot4.png)
-![Screenshot5](screenshots/screenshot5.png)
-![Screenshot6](screenshots/screenshot_gltf.png)
-![cowboy.gif](screenshots/cowboy.gif)
-![stormtrooper.gif](screenshots/stormtrooper.gif)
-![vc.gif](screenshots/vc.gif)
-![Screenshot6](screenshots/screenshot6-3d.png)
-
-
-Emulator
-========
-
-You can run application in an emulator.  Open the provides samples to see how it works.
-
-
-Tests / Validation
-==================
-
-The Android Model Viewer application has been tested in the 2 following physical devices:
-
-    Lenovo Tab Y700   - Android 11
-    Pixel 8 Pro       - Android 16
-
-
-Glasses
-=======
-
-You may need one of these glasses to view models in 3D virtual reality.
-
-[<img src="https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/market/glasses-3d.jpg">](https://amzn.to/2E8LhxC)
-[<img src="https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/market/cardboard-3d.jpg">](https://amzn.to/2E8M1Tq)
-
-
-Dependencies
-============
-
-In order to compile the application you must either (1) clone recursively or (2) add the engine module
-
-    # 1 liner
-    git clone --recurse-submodules https://github.com/the3deer/android-3D-engine.gitz
-
-    # 2 liner
-    git clone https://github.com/the3deer/android-3D-engine.gitz
-    git submodule add https://github.com/the3deer/android-3D-engine.git engine
-
-
-Acknowledgement
-===============
-
-* For teaching how animation engine works: https://github.com/TheThinMatrix/OpenGL-Animation
-* To the lot of user's feedback: https://github.com/the3deer/android-3D-model-viewer/issues
-* To the many infinite educational resources found on Internet for free, thank you ! :)
-* To the **AI (Gemini)**, which so far, helped me to rewrite entire parts of the engine
-
-
-Credits
-=======
-
-The following license notice shall be included in all copies or substantial portions of the Software.
-
-
-    The3Deer     - MIT License   - Copyright (c) 2026 The 3Deer - https://github.com/the3deer
-    STL Parser   - GNU LGPL v2.1 - Copyright (c) 2001, 2002 Dipl. Ing. P. Szawlowski - https://code.j3d.org
-    GLTF Parser  - MIT License   - Copyright (c) 2016 Marco Hutter - https://github.com/javagl/JglTF
-    FBX Parser   - MIT License   - Copyright (c) 2020 Samuli Raivio - https://github.com/ufbx/ufbx
-    EarCut       - ISC License   - Copyright (c) 2016, Mapbox - https://github.com/the3deer/earcut
-
-
-Assets
-======
-
-* cowboy        : Unlicense License - https://github.com/TheThinMatrix/OpenGL-Animation
-* fox           : CC0: Low poly fox by PixelMannen, CC-BY 4.0: Rigging and animation by @tomkranis on Sketchfab
-* stormtrooper  : MIT License - https://github.com/hujiulong/vue-3d-model
-* toyplane      : Editorial Uses Only - https://blog.turbosquid.com/turbosquid-3d-model-license/#Editorial-Usage
-* skybox (sea)  : https://learnopengl.com/Advanced-OpenGL/Cubemaps
-* skybox (sand) : Copyright 2012 Mobialia - https://github.com/mobialia/jmini3d
-* other models  : The3Deer Community Contributions 
-
-
-Disclaimer
-==========
-
-* This is a work in progress... and the documentation as well
-* Only open 3d formats or API are to be supported
-* Only the most basic 3D mesh features are supported, like colors, textures and animations
-* The shader is the simplest implementation supporting a very basic lighting model
-* This application is tested only with a few models. Some models may not work
-* In order to see models in 3D virtual reality, you need red-cyan and/or VR glasses
-* Some parts of the code are being written with AI (Gemini)
-* If you have any issue in general, please open an issue and attach model if possible
+---
+*Maintained by The3Deer. Assisted by Gemini AI.*

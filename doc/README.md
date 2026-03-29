@@ -1,33 +1,46 @@
-# Android 3D Model Viewer - Application Design
+# Android Model Viewer Application Documentation
 
-## Overview
-A modern 3D model viewer for Android built with a modular architecture, separating the User Interface from a hierarchical Rendering Engine.
+This document explains how the Viewer application is built on top of the 3D Engine.
 
-## Architecture
+## Application Architecture
 
-### 1. Module Structure
-- **`:app` (Android Application)**: Handles UI, navigation, user preferences, and application state via Jetpack components.
-- **`:engine` (Android Library)**: A standalone 3D rendering engine. It implements a Scene Graph architecture, allowing for complex object hierarchies and transformations.
+The app follows an MVVM-inspired architecture using Android Jetpack components.
 
-### 2. Design Principles
-- **Scene Graph**: Instead of drawing flat lists of vertices, the engine manages a tree of `Node` objects. This allows for parent-child transformations (moving a group of objects together).
-- **Separation of Concerns**: The `:engine` is purely data-driven. It doesn't know about ViewModels or SharedPreferences. It simply renders the `Model` data it is given.
-- **MVP (Model-View-Projection)**: The engine uses standard 3D math matrices to handle object positions, camera views, and screen projections.
+- **MainActivity**: The single entry point, hosting the Navigation Drawer and Fragment container.
+- **SharedViewModel**: Scoped to the Activity, it holds the "Single Source of Truth" for the app state:
+    - Currently loaded `Model`.
+    - Active UI state (Immersive mode, colors).
+    - Camera and Animation selections.
+- **Fragments**: Each screen (Home, Load, Settings) observes the `SharedViewModel`.
 
-## 3.  Application / Engine Integration
+## Data Flow & Integration
 
-- **`SharedViewModel`**: Centralizes the app state. It holds a list of the `Model`s being viewed and it's corresponding `ModelEngine`s (aka environment). 
-- **`Model`**: The root container for a 3D asset. Holds multiple `Scene`s.
-- **`Scene`**: A specific 3D environment containing a `Node` hierarchy and `Camera`s.
-- **`ModelEngine`**: The environment holding a list of engine `Component`s
-- **`Component`**: super interface to implement different engine Features, like `CameraController` or the `GUI`
-- GLSurfaceView: OpenGL surface holding an `GLRendererImpl`
-- GLRenderer: OpenGL Renderer. Delegate the rendering to the active `Renderer`
-- Renderer: interface with 3 implementations (Default, anaglyph an stereoscopic)
-- `Drawer`: specialization of a `Component` with many implementations, like `SceneDrawer` or `SkyBoxDrawer`
+The app integrates with the Engine's `SceneRenderer` via a reactive flow:
+1. **Selection**: User picks a model in the `LoadContentDialog`.
+2. **State**: The `SharedViewModel` updates the `activeModel` LiveData.
+3. **Observation**: `HomeFragment` observes the change and calls `renderer.updateModel(newModel)`.
+4. **Drawing**: The Fragment triggers `glSurfaceView.requestRender()`, and the Engine draws the new state.
 
+## User Interface
 
+### Home (The 3D Canvas)
+The `HomeFragment` displays the OpenGL content. To allow standard Android UI to appear over the 3D scene:
+- `glSurfaceView.setZOrderMediaOverlay(true)` is used to place the surface correctly in the window hierarchy.
+- UI elements (like the selection buttons) are placed in a layout with higher elevation.
 
+### Modal Navigation
+- **Load Dialog**: A `DialogFragment` that allows browsing and switching models without leaving the 3D context.
+- **Settings Dialog**: Hosted via `PreferenceFragmentCompat`, allowing real-time adjustments to rendering properties (like skybox or language).
 
+## Preferences & Settings System
 
+The app leverages the Engine's `BeanFactory` to automatically generate the Settings UI.
 
+### Annotation Mapping
+The UI is dynamically built by scanning for `@Bean` and `@BeanProperty` annotations:
+- **Keys**: Constructed as `<className>.<propertyName>`.
+- **Master Toggles**: If a property is named `enabled`, it acts as a toggle for all other properties in that bean.
+- **Dynamic Values**: Lists of options (like Colors or Renderers) are fetched via delegated methods in the beans.
+
+### Persistence
+Settings are stored in `SharedPreferences`. The `SharedViewModel` initializes by reading these values and injecting them into the Engine's configuration beans on startup.
