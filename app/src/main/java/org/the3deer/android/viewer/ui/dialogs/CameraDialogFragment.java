@@ -37,7 +37,7 @@ public class CameraDialogFragment extends DialogFragment {
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        final ModelEngine modelEngine = viewModel.getActiveEngine().getValue();
+        final ModelEngine modelEngine = viewModel.getActiveEngine();
         if (modelEngine == null) return createNotAvailableDialog(builder, "modelEngine is null");
 
         final Model engineModel = modelEngine.getBeanFactory().find(Model.class);

@@ -37,7 +37,7 @@ public class AnimationDialogFragment extends DialogFragment {
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        final ModelEngine modelEngine = viewModel.getActiveEngine().getValue();
+        final ModelEngine modelEngine = viewModel.getActiveEngine();
         if (modelEngine == null) return createNotAvailableDialog(builder, "ModelEngine is null");
 
         final Model sceneManager = modelEngine.getBeanFactory().find(Model.class);

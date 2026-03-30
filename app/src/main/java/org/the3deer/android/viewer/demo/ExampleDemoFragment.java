@@ -51,7 +51,7 @@ public class ExampleDemoFragment extends HomeFragment {
 
         ModelEngineViewModel viewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
         @NotNull Model model = viewModel.createModel("demo.gui");
-        ModelEngine modelEngine = viewModel.loadEngine("demo.gui");
+        ModelEngine modelEngine = viewModel.initEngine("demo.gui");
 
         // preload assets
         ContentUtils.provideAssets(getActivity());

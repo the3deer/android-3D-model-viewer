@@ -34,7 +34,7 @@ public class SceneDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         //Log.d(TAG, "onCreateDialog. "+viewModel.getActiveFragment().getValue());
-        final ModelEngine modelEngine = viewModel.getActiveEngine().getValue();
+        final ModelEngine modelEngine = viewModel.getActiveEngine();
         if (modelEngine == null) return null;
 
         final Model sceneManager = modelEngine.getBeanFactory().find(Model.class);
