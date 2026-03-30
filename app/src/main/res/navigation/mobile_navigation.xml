@@ -47,7 +47,7 @@
 
     <!-- demos -->
 
-    <fragment
+    <!--<fragment
         android:id="@+id/nav_demo1"
         android:name="org.the3deer.android.viewer.demo.ExampleDemoFragment"
         android:label="Objects demo"
@@ -57,9 +57,9 @@
             app:argType="string"
             android:defaultValue="android://org.the3deer.android.viewer/demos/example_demo"
             app:nullable="false" />
-    </fragment>
+    </fragment>-->
 
-    <fragment
+    <!--<fragment
         android:id="@+id/nav_demo2"
         android:name="org.the3deer.android.viewer.demo.GlyphsDemoFragment"
         android:label="Glyphs demo"
@@ -69,13 +69,13 @@
             app:argType="string"
             android:defaultValue="android://org.the3deer.android.viewer/demos/glyphs_demo"
             app:nullable="false" />
-    </fragment>
+    </fragment>-->
 
-    <fragment
+    <!--<fragment
         android:id="@+id/nav_demo3"
         android:name="org.the3deer.android.viewer.demo.EarCutDemoFragment"
         android:label="Earcut demo"
         tools:layout="@layout/fragment_home">
-    </fragment>
+    </fragment>-->
 
 </navigation>
