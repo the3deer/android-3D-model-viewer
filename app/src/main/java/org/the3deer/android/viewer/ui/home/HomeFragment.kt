@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.renderer.GLRenderer
 import org.the3deer.android.engine.renderer.GLSurfaceView
 import org.the3deer.android.viewer.SharedViewModel;
@@ -24,6 +23,7 @@ open class HomeFragment : Fragment() {
     val TAG: String = HomeFragment::class.java.getSimpleName()
 
     private var uriString: String = ""
+    private var modelType: String = ""
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val sharedViewModel: SharedViewModel by activityViewModels()
@@ -46,6 +46,11 @@ open class HomeFragment : Fragment() {
 
         // check arguments
         uriString = arguments?.getString("uri") ?: throw Exception("No Uri provided as argument")
+        modelType = arguments?.getString("type") ?: uriString.split(".").last()
+        
+        // Register model metadata
+        //Model.register(uriString.toUri(), type)
+        modelEngineViewModel.initEngine(uriString, modelType)
 
         // Get UI binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -117,61 +122,52 @@ open class HomeFragment : Fragment() {
         }
 
         // Observe the active engine to trigger setup
-        sharedViewModel.activeFragment.observe(viewLifecycleOwner) { activeEngine ->
+        sharedViewModel.activeFragment.observe(viewLifecycleOwner) { uriString ->
 
-            activateEngine(uriString);
+            loadEngine(uriString)
         }
 
         sharedViewModel.setActiveFragment(uriString)
     }
 
-    private fun activateEngine(uriString: String) {
+    private fun loadEngine(uriString : String) {
 
-        // load engine
-        val modelEngine = modelEngineViewModel.loadEngine(uriString)
-
-        // setup engine
-        setupEngine(modelEngine)
-
-        // activate engine
-        modelEngineViewModel.setActiveEngine(modelEngine);
-    }
-
-    private fun setupEngine(engine: ModelEngine) {
+        // FIXME: this block should be done in the background
         try {
+
+            // get engine
+            val engine = modelEngineViewModel.getEngine(uriString)
+                ?: throw IllegalArgumentException("Engine not initialized")
 
             // debug
             Log.i(TAG, "Setting up Engine... uri: $uriString")
 
-            // Register the GL components in our Engine
-            engine.beanFactory.addOrReplace("gl.surfaceView", surface)
-            engine.beanFactory.addOrReplace("gl.renderer", renderer)
+            // setup engine
+            engine.add("gl.surfaceView", surface)
+            engine.add("gl.renderer", renderer)
 
-            // Register UI components
-            engine.beanFactory.addOrReplace("ui.settings", SettingsOptions())
-
-            // boot engine
-            if (!engine.isInitialized) {
-
-                // initialize engine
-                engine.init()
-
-                // debug
-                Log.d(TAG, "Setting up HomeFragment...");
-
-                // configure this fragment
-                engine.beanFactory.configure(this);
-                engine.beanFactory.setUpBean(this);
-
-                // boot engine
-                engine.start()
-            }
+            // setup UI
+            engine.add("ui.settings", SettingsOptions())
+            engine.add("ui.fragment", this)
 
             // apply saved preferences
             SettingsFragment.applySavedPreferences(engine, requireContext())
 
+            // setup engine asynchronously
+            engine.loadAsync({
+
+                // debug
+                Log.d(TAG, "Setting up HomeFragment...");
+
+                // boot engine
+                engine.start()
+            })
+
             // debug
             Log.i(TAG, "Engine setup finished")
+
+            // activate engine
+            modelEngineViewModel.activateEngine(uriString);
 
         } catch (ex: Exception) {
             Log.e(TAG, "Error setting up engine", ex)
@@ -192,5 +188,7 @@ open class HomeFragment : Fragment() {
         super.onDestroyView()
         handler.removeCallbacksAndMessages(null)
         _binding = null
+
+        // FIXME: unregister UI components
     }
 }
