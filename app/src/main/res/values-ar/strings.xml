@@ -1,0 +1,149 @@
+<resources>
+    <string name="app_name">عارض نماذج ثلاثية الأبعاد</string>
+    <string name="navigation_drawer_open">فتح درج التنقل</string>
+    <string name="navigation_drawer_close">إغلاق درج التنقل</string>
+    <string name="nav_header_title">عارض نماذج ثلاثية الأبعاد</string>
+    <string name="nav_header_subtitle">support@the3deer.org</string>
+    <string name="nav_header_desc">رأس التنقل</string>
+    <string name="action_settings">الإعدادات</string>
+
+    <string name="menu_home">الرئيسية</string>
+    <string name="menu_load">تحميل</string>
+    <string name="menu_settings">الإعدادات</string>
+    <string name="menu_about">حول</string>
+    <string name="menu_recent_models">النماذج الأخيرة</string>
+
+    <string name="dialog_load_title">القائمة</string>
+    <string name="dialog_load_in_progress_message">جاري التحميل…</string>
+
+    <string name="white">أبيض</string>
+    <string name="gray">رمادي</string>
+    <string name="black">أسود</string>
+    <string name="ok">موافق</string>
+
+    <!-- شاشة حول -->
+    <string name="about_title_app">عارض نماذج ثلاثية الأبعاد</string>
+    <string name="about_version">الإصدار 1.0.0</string>
+    <string name="about_intro">مشروع مفتوح المصدر مخصص لتعلم الرندر ثلاثي الأبعاد على أندرويد باستخدام OpenGL ES.</string>
+
+    <string name="about_header_formats">التنسيقات المدعومة</string>
+    <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB, و FBX.</string>
+    <string name="about_formats_note">ملاحظة: بالنسبة للنماذج ذات الأنسجة الخارجية، يرجى تحميلها كملف .zip واحد.</string>
+
+    <string name="about_header_controls">كيفية الاستخدام</string>
+    <string name="about_controls_orbit">• <b>الدوران:</b> السحب بإصبع واحد</string>
+    <string name="about_controls_pan">• <b>التحريك:</b> السحب بإصبعين</string>
+    <string name="about_controls_zoom">• <b>التكبير:</b> القرص بإصبعين</string>
+
+    <string name="about_header_links">روابط المشروع</string>
+    <string name="about_link_website_label">الموقع الإلكتروني</string>
+    <string name="about_link_website_url">https://www.the3deer.org</string>
+    <string name="about_link_source_label">كود المصدر (GitHub)</string>
+    <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
+    <string name="about_link_issues_label">الإبلاغ عن مشكلة</string>
+    <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
+
+    <string name="about_warning_experimental">⚠ تحذير: هذا المحرك تجريبي. قد لا يتم عرض بعض ميزات الملفات بشكل مثالي.</string>
+
+    <string name="about_header_privacy">الخصوصية</string>
+    <string name="about_privacy_text">هذا التطبيق لا يجمع أو يشارك أي معلومات شخصية.</string>
+
+    <string name="scenes">المشاهد</string>
+    <string name="cameras">الكاميرات</string>
+    <string name="animations">الرسوم المتحركة</string>
+    <string name="scene">المشهد</string>
+    <string name="camera">الكاميرا</string>
+    <string name="immersive">غامر</string>
+    <string name="anim">تحريك</string>
+
+    <!-- الفئات -->
+    <string name="category_decorators_label">المزينون (Decorators)</string>
+    <string name="category_renderers_label">المصيّرون (Renderers)</string>
+    <string name="category_gui_label">واجهة المستخدم الرسومية</string>
+    <string name="category_general_label">عام</string>
+
+    <!-- البينات (Beans) -->
+    <string name="bean_settings_label">الإعدادات العامة</string>
+    <string name="bean_gl_renderer_label">إعدادات OpenGL</string>
+    <string name="bean_animation_controller_label">متحكم الرسوم المتحركة</string>
+    <string name="bean_collision_drawer_label">راسم نقاط التصادم</string>
+    <string name="bean_collision_drawer_description">رسم النقاط التي تحدث فيها تصادمات الشعاع مع الكائن</string>
+    <string name="bean_bounding_box_drawer_label">راسم صندوق الإحاطة</string>
+    <string name="bean_bounding_box_drawer_description">يرسم صندوق الإحاطة للكائن المحدد</string>
+    <string name="bean_light_bulb_drawer_label">راسم المصباح</string>
+    <string name="bean_light_bulb_drawer_description">يرسم المصباح الضوئي</string>
+    <string name="bean_skeleton_drawer_label">راسم الهيكل العظمي</string>
+    <string name="bean_skeleton_drawer_description">يرسم الهيكل العظمي للكائن</string>
+    <string name="bean_skybox_drawer_label">مزين السماء (SkyBox)</string>
+    <string name="bean_skybox_drawer_description">يرسم صندوق سماء ثلاثي الأبعاد كخلفية للمشهد</string>
+    <string name="bean_wireframe_drawer_label">راسم الإطار السلكي</string>
+    <string name="bean_wireframe_drawer_description">يرسم الإطار السلكي للنماذج</string>
+    <string name="bean_gui_label">واجهة المستخدم</string>
+    <string name="bean_gui_drawer_label">واجهة المستخدم الرسومية</string>
+    <string name="bean_anaglyph_renderer_label">مصيّر أناجليف (Anaglyph)</string>
+    <string name="bean_default_renderer_label">المصيّر الافتراضي</string>
+    <string name="bean_stereoscopic_renderer_label">المصيّر المجسم (Stereoscopic)</string>
+    <string name="bean_shadow_drawer_description">إلقاء ظل للكائن على مستوى في الأرض</string>
+    <string name="bean_shadow_drawer_label">مصيّر الظلال</string>
+
+    <!-- خصائص البينات -->
+    <string name="property_settings_language_label">اللغة</string>
+    <string name="property_settings_language_description">لغة التطبيق</string>
+    <string name="property_gl_renderer_renderer_label">المصيّر النشط</string>
+    <string name="property_gl_renderer_renderer_description">اختر المصيّر</string>
+    <string name="property_gl_renderer_backgroundColor_label">لون الخلفية</string>
+    <string name="property_gl_renderer_backgroundColor_description">اختر اللون الافتراضي للنماذج ثلاثية الأبعاد</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>أبيض</item>
+        <item>رمادي</item>
+        <item>أسود</item>
+    </string-array>
+    <string name="property_skybox_drawer_skybox_label">صندوق السماء</string>
+    <string name="property_skybox_drawer_skybox_description">اختر خلفية البيئة</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>بدون</item>
+        <item>بحر</item>
+        <item>رمل</item>
+    </string-array>
+    <string name="property_gui_drawer_enabled_description">إظهار أو إخفاء واجهة المستخدم</string>
+    <string name="property_gui_drawer_showFPS_label">الإطارات في الثانية</string>
+    <string name="property_gui_drawer_showFPS_description">إظهار أو إخفاء عداد الإطارات (FPS)</string>
+    <string name="property_shadow_drawer_enabled_description">تمكين أو تعطيل رندر الظلال</string>
+
+    <!-- الميزات -->
+    <string name="feature_collision_description">المكونات التي ترسم فوق النموذج</string>
+    <string name="feature_decorator_description">المكونات التي ترسم فوق النموذج</string>
+    <string name="feature_gui_description">عرض الإطارات والمحاور والمعلومات</string>
+    <string name="feature_renderer_description">المصيّرون يرسمون على الشاشة</string>
+
+    <!-- قيم: مصيّر GL -->
+    <string name="value_gl_renderer_renderer_renderer_default">المصيّر الافتراضي</string>
+    <string name="value_gl_renderer_renderer_renderer_anaglyph">مصيّر أناجليف</string>
+    <string name="value_gl_renderer_renderer_renderer_stereoscopic">مصيّر مجسم</string>
+
+    <!-- قيم: لون GL -->
+    <string name="value_gl_renderer_backgroundColor_white">أبيض</string>
+    <string name="value_gl_renderer_backgroundColor_gray">رمادي</string>
+    <string name="value_gl_renderer_backgroundColor_black">أسود</string>
+
+    <!-- قيم: اللغة -->
+    <string name="value_settings_language_en">الإنجليزية</string>
+    <string name="value_settings_language_es">الإسبانية</string>
+    <string name="value_settings_language_ru">الروسية</string>
+    <string name="value_settings_language_zh">الصينية</string>
+    <string name="value_settings_language_de">الألمانية</string>
+    <string name="value_settings_language_fr">الفرنسية</string>
+    <string name="value_settings_language_hi">الهندية</string>
+    <string name="value_settings_language_it">الإيطالية</string>
+    <string name="value_settings_language_ar">العربية</string>
+    <string name="value_settings_language_pt">البرتغالية</string>
+    <string name="value_settings_language_ja">اليابانية</string>
+    <string name="value_settings_language_tr">التركية</string>
+    <string name="value_settings_language_id">الإندونيسية</string>
+    <string name="value_settings_language_uk">الأوكرانية</string>
+
+    <!-- قيم: راسم صندوق السماء -->
+    <string name="value_skybox_drawer_skybox_none">بدون</string>
+    <string name="value_skybox_drawer_skybox_sea">بحر</string>
+    <string name="value_skybox_drawer_skybox_sand">شاطئ</string>
+</resources>

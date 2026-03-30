@@ -1,0 +1,149 @@
+<resources>
+    <string name="app_name">3D Model Görüntüleyici</string>
+    <string name="navigation_drawer_open">Navigasyon çekmecesini aç</string>
+    <string name="navigation_drawer_close">Navigasyon çekmecesini kapat</string>
+    <string name="nav_header_title">3D Model Görüntüleyici</string>
+    <string name="nav_header_subtitle">support@the3deer.org</string>
+    <string name="nav_header_desc">Navigasyon başlığı</string>
+    <string name="action_settings">Ayarlar</string>
+
+    <string name="menu_home">Ana Sayfa</string>
+    <string name="menu_load">Yükle</string>
+    <string name="menu_settings">Ayarlar</string>
+    <string name="menu_about">Hakkında</string>
+    <string name="menu_recent_models">Son Modeller</string>
+
+    <string name="dialog_load_title">Menü</string>
+    <string name="dialog_load_in_progress_message">Yükleniyor…</string>
+
+    <string name="white">Beyaz</string>
+    <string name="gray">Gri</string>
+    <string name="black">Siyah</string>
+    <string name="ok">Tamam</string>
+
+    <!-- Hakkında Ekranı -->
+    <string name="about_title_app">3D Model Görüntüleyici</string>
+    <string name="about_version">Sürüm 1.0.0</string>
+    <string name="about_intro">OpenGL ES kullanarak Android üzerinde 3D oluşturmayı öğrenmeye adanmış açık kaynaklı bir proje.</string>
+
+    <string name="about_header_formats">Desteklenen Formatlar</string>
+    <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB ve FBX.</string>
+    <string name="about_formats_note">Not: Harici dokulara sahip modeller için lütfen bunları tek bir .zip dosyası olarak yükleyin.</string>
+
+    <string name="about_header_controls">Nasıl Kullanılır</string>
+    <string name="about_controls_orbit">• <b>Yörünge:</b> Tek parmakla sürükleyin</string>
+    <string name="about_controls_pan">• <b>Kaydır:</b> İki parmakla sürükleyin</string>
+    <string name="about_controls_zoom">• <b>Yakınlaştır:</b> İki parmakla sıkıştırın</string>
+
+    <string name="about_header_links">Proje Bağlantıları</string>
+    <string name="about_link_website_label">Web Sitesi</string>
+    <string name="about_link_website_url">https://www.the3deer.org</string>
+    <string name="about_link_source_label">Kaynak Kod (GitHub)</string>
+    <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
+    <string name="about_link_issues_label">Sorun Bildir</string>
+    <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
+
+    <string name="about_warning_experimental">⚠ Uyarı: Bu motor deneyseldir. Bazı dosya özellikleri mükemmel şekilde oluşturulmayabilir.</string>
+
+    <string name="about_header_privacy">Gizlilik</string>
+    <string name="about_privacy_text">Bu uygulama herhangi bir kişisel bilgi toplamaz veya paylaşmaz.</string>
+
+    <string name="scenes">Sahneler</string>
+    <string name="cameras">Kameralar</string>
+    <string name="animations">Animasyonlar</string>
+    <string name="scene">Sahne</string>
+    <string name="camera">Kamera</string>
+    <string name="immersive">Sürükleyici</string>
+    <string name="anim">Anim</string>
+
+    <!-- Kategoriler -->
+    <string name="category_decorators_label">Dekoratörler</string>
+    <string name="category_renderers_label">Oluşturucular (Renderers)</string>
+    <string name="category_gui_label">Grafik Kullanıcı Arayüzü</string>
+    <string name="category_general_label">Genel</string>
+
+    <!-- Bean'ler -->
+    <string name="bean_settings_label">Genel Ayarlar</string>
+    <string name="bean_gl_renderer_label">OpenGL Ayarları</string>
+    <string name="bean_animation_controller_label">Animasyon Kontrolörü</string>
+    <string name="bean_collision_drawer_label">Çarpışma Noktaları Çizici</string>
+    <string name="bean_collision_drawer_description">Işın-nesne çarpışmalarının gerçekleştiği noktaları çizer</string>
+    <string name="bean_bounding_box_drawer_label">Sınırlayıcı Kutu Çizici</string>
+    <string name="bean_bounding_box_drawer_description">Seçili nesnenin sınırlayıcı kutusunu çizer</string>
+    <string name="bean_light_bulb_drawer_label">Ampul Çizici</string>
+    <string name="bean_light_bulb_drawer_description">Ampulü çizer</string>
+    <string name="bean_skeleton_drawer_label">İskelet Çizici</string>
+    <string name="bean_skeleton_drawer_description">Nesnenin iskeletini çizer</string>
+    <string name="bean_skybox_drawer_label">SkyBox Dekoratörü</string>
+    <string name="bean_skybox_drawer_description">Sahne arka planı olarak bir 3D Skybox çizer</string>
+    <string name="bean_wireframe_drawer_label">Tel Kafes (Wireframe) Çizici</string>
+    <string name="bean_wireframe_drawer_description">Modellerin tel kafesini çizer</string>
+    <string name="bean_gui_label">GUI</string>
+    <string name="bean_gui_drawer_label">Grafik Kullanıcı Arayüzü</string>
+    <string name="bean_anaglyph_renderer_label">Anaglif Oluşturucu</string>
+    <string name="bean_default_renderer_label">Varsayılan Oluşturucu</string>
+    <string name="bean_stereoscopic_renderer_label">Stereoskopik Oluşturucu</string>
+    <string name="bean_shadow_drawer_description">Yerdeki bir düzlemde nesnenin gölgesini oluşturur</string>
+    <string name="bean_shadow_drawer_label">Gölge Oluşturucu</string>
+
+    <!-- Bean Özellikleri -->
+    <string name="property_settings_language_label">Dil</string>
+    <string name="property_settings_language_description">Uygulama Dili</string>
+    <string name="property_gl_renderer_renderer_label">Aktif Oluşturucu</string>
+    <string name="property_gl_renderer_renderer_description">Oluşturucuyu seçin</string>
+    <string name="property_gl_renderer_backgroundColor_label">Arka Plan Rengi</string>
+    <string name="property_gl_renderer_backgroundColor_description">3D modeller için varsayılan rengi seçin</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>Beyaz</item>
+        <item>Gri</item>
+        <item>Siyah</item>
+    </string-array>
+    <string name="property_skybox_drawer_skybox_label">SkyBox</string>
+    <string name="property_skybox_drawer_skybox_description">Ortam arka planını seçin</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>Yok</item>
+        <item>Deniz</item>
+        <item>Kum</item>
+    </string-array>
+    <string name="property_gui_drawer_enabled_description">GUI\'yi göster veya gizle</string>
+    <string name="property_gui_drawer_showFPS_label">Saniyedeki Kare Sayısı</string>
+    <string name="property_gui_drawer_showFPS_description">FPS sayacını göster veya gizle</string>
+    <string name="property_shadow_drawer_enabled_description">Gölge oluşturmayı etkinleştirin veya devre dışı bırakın</string>
+
+    <!-- Özellikler -->
+    <string name="feature_collision_description">Modelin üzerine çizen bileşenler</string>
+    <string name="feature_decorator_description">Modelin üzerine çizen bileşenler</string>
+    <string name="feature_gui_description">FPS, Eksen ve Bilgileri Görüntüler</string>
+    <string name="feature_renderer_description">Oluşturucular ekrana çizer</string>
+
+    <!-- Değerler: GL Oluşturucu -->
+    <string name="value_gl_renderer_renderer_renderer_default">Varsayılan Oluşturucu</string>
+    <string name="value_gl_renderer_renderer_renderer_anaglyph">Anaglif Oluşturucu</string>
+    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Stereoskopik Oluşturucu</string>
+
+    <!-- Değerler: GL Renk -->
+    <string name="value_gl_renderer_backgroundColor_white">Beyaz</string>
+    <string name="value_gl_renderer_backgroundColor_gray">Gri</string>
+    <string name="value_gl_renderer_backgroundColor_black">Siyah</string>
+
+    <!-- Değerler: Dil -->
+    <string name="value_settings_language_en">İngilizce</string>
+    <string name="value_settings_language_es">İspanyolca</string>
+    <string name="value_settings_language_ru">Rusça</string>
+    <string name="value_settings_language_zh">Çince</string>
+    <string name="value_settings_language_de">Almanca</string>
+    <string name="value_settings_language_fr">Fransızca</string>
+    <string name="value_settings_language_hi">Hintçe</string>
+    <string name="value_settings_language_it">İtalyanca</string>
+    <string name="value_settings_language_ar">Arapça</string>
+    <string name="value_settings_language_pt">Portekizce</string>
+    <string name="value_settings_language_ja">Japonca</string>
+    <string name="value_settings_language_tr">Türkçe</string>
+    <string name="value_settings_language_id">Endonezyaca</string>
+    <string name="value_settings_language_uk">Ukraynaca</string>
+
+    <!-- Değerler: Skybox Çizici -->
+    <string name="value_skybox_drawer_skybox_none">Yok</string>
+    <string name="value_skybox_drawer_skybox_sea">Deniz</string>
+    <string name="value_skybox_drawer_skybox_sand">Plaj</string>
+</resources>

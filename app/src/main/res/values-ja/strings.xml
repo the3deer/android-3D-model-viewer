@@ -1,0 +1,149 @@
+<resources>
+    <string name="app_name">3Dモデルビューア</string>
+    <string name="navigation_drawer_open">ナビゲーションドロワーを開く</string>
+    <string name="navigation_drawer_close">ナビゲーションドロワーを閉じる</string>
+    <string name="nav_header_title">3Dモデルビューア</string>
+    <string name="nav_header_subtitle">support@the3deer.org</string>
+    <string name="nav_header_desc">ナビゲーションヘッダー</string>
+    <string name="action_settings">設定</string>
+
+    <string name="menu_home">ホーム</string>
+    <string name="menu_load">読み込み</string>
+    <string name="menu_settings">設定</string>
+    <string name="menu_about">アプリについて</string>
+    <string name="menu_recent_models">最近のモデル</string>
+
+    <string name="dialog_load_title">メニュー</string>
+    <string name="dialog_load_in_progress_message">読み込み中…</string>
+
+    <string name="white">ホワイト</string>
+    <string name="gray">グレー</string>
+    <string name="black">ブラック</string>
+    <string name="ok">OK</string>
+
+    <!-- アプリについて -->
+    <string name="about_title_app">3Dモデルビューア</string>
+    <string name="about_version">バージョン 1.0.0</string>
+    <string name="about_intro">OpenGL ESを使用したAndroid上での3Dレンダリング学習に特化したオープンソースプロジェクトです。</string>
+
+    <string name="about_header_formats">対応フォーマット</string>
+    <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB, FBX。</string>
+    <string name="about_formats_note">注：外部テクスチャを持つモデルの場合は、単一の.zipファイルとして読み込んでください。</string>
+
+    <string name="about_header_controls">操作方法</string>
+    <string name="about_controls_orbit">• <b>回転:</b> 1本の指でドラッグ</string>
+    <string name="about_controls_pan">• <b>平行移動:</b> 2本の指でドラッグ</string>
+    <string name="about_controls_zoom">• <b>ズーム:</b> 2本の指でピンチ</string>
+
+    <string name="about_header_links">プロジェクトリンク</string>
+    <string name="about_link_website_label">ウェブサイト</string>
+    <string name="about_link_website_url">https://www.the3deer.org</string>
+    <string name="about_link_source_label">ソースコード (GitHub)</string>
+    <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
+    <string name="about_link_issues_label">問題を報告</string>
+    <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
+
+    <string name="about_warning_experimental">⚠ 警告：このエンジンは実験的なものです。一部のファイルの機能が完全にレンダリングされない場合があります。</string>
+
+    <string name="about_header_privacy">プライバシー</string>
+    <string name="about_privacy_text">このアプリケーションは、個人情報を収集または共有しません。</string>
+
+    <string name="scenes">シーン</string>
+    <string name="cameras">カメラ</string>
+    <string name="animations">アニメーション</string>
+    <string name="scene">シーン</string>
+    <string name="camera">カメラ</string>
+    <string name="immersive">イマーシブ</string>
+    <string name="anim">アニメ</string>
+
+    <!-- カテゴリ -->
+    <string name="category_decorators_label">デコレータ</string>
+    <string name="category_renderers_label">レンダラー</string>
+    <string name="category_gui_label">グラフィカルユーザーインターフェース</string>
+    <string name="category_general_label">全般</string>
+
+    <!-- Bean -->
+    <string name="bean_settings_label">全般設定</string>
+    <string name="bean_gl_renderer_label">OpenGL設定</string>
+    <string name="bean_animation_controller_label">アニメーションコントローラー</string>
+    <string name="bean_collision_drawer_label">衝突点ドロワー</string>
+    <string name="bean_collision_drawer_description">レイとオブジェクトの衝突が発生するポイントを描画します</string>
+    <string name="bean_bounding_box_drawer_label">バウンディングボックスドロワー</string>
+    <string name="bean_bounding_box_drawer_description">選択したオブジェクトのバウンディングボックスを描画します</string>
+    <string name="bean_light_bulb_drawer_label">電球ドロワー</string>
+    <string name="bean_light_bulb_drawer_description">電球を描画します</string>
+    <string name="bean_skeleton_drawer_label">スケルトンドロワー</string>
+    <string name="bean_skeleton_drawer_description">オブジェクトのスケルトンを描画します</string>
+    <string name="bean_skybox_drawer_label">スカイボックスデコレータ</string>
+    <string name="bean_skybox_drawer_description">背景として3Dスカイボックスを描画します</string>
+    <string name="bean_wireframe_drawer_label">ワイヤーフレームドロワー</string>
+    <string name="bean_wireframe_drawer_description">モデルのワイヤーフレームを描画します</string>
+    <string name="bean_gui_label">GUI</string>
+    <string name="bean_gui_drawer_label">グラフィカルユーザーインターフェース</string>
+    <string name="bean_anaglyph_renderer_label">アナグリフレンダラー</string>
+    <string name="bean_default_renderer_label">デフォルトレンダラー</string>
+    <string name="bean_stereoscopic_renderer_label">ステレオスコピックレンダラー</string>
+    <string name="bean_shadow_drawer_description">地面の平面にオブジェクトの影を投影します</string>
+    <string name="bean_shadow_drawer_label">シャドウレンダラー</string>
+
+    <!-- Beanプロパティ -->
+    <string name="property_settings_language_label">言語</string>
+    <string name="property_settings_language_description">アプリの言語</string>
+    <string name="property_gl_renderer_renderer_label">アクティブなレンダラー</string>
+    <string name="property_gl_renderer_renderer_description">レンダラーを選択</string>
+    <string name="property_gl_renderer_backgroundColor_label">背景色</string>
+    <string name="property_gl_renderer_backgroundColor_description">3Dモデルのデフォルトの色を選択</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>ホワイト</item>
+        <item>グレー</item>
+        <item>ブラック</item>
+    </string-array>
+    <string name="property_skybox_drawer_skybox_label">スカイボックス</string>
+    <string name="property_skybox_drawer_skybox_description">環境の背景を選択</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>なし</item>
+        <item>海</item>
+        <item>砂漠</item>
+    </string-array>
+    <string name="property_gui_drawer_enabled_description">GUIの表示/非表示</string>
+    <string name="property_gui_drawer_showFPS_label">フレーム/秒</string>
+    <string name="property_gui_drawer_showFPS_description">FPSカウンターの表示/非表示</string>
+    <string name="property_shadow_drawer_enabled_description">シャドウレンダリングを有効または無効にします</string>
+
+    <!-- 機能 -->
+    <string name="feature_collision_description">モデルの上に描画されるコンポーネント</string>
+    <string name="feature_decorator_description">モデルの上に描画されるコンポーネント</string>
+    <string name="feature_gui_description">FPS、座標軸、情報の表示</string>
+    <string name="feature_renderer_description">レンダラーが画面に描画します</string>
+
+    <!-- 値：GLレンダラー -->
+    <string name="value_gl_renderer_renderer_renderer_default">デフォルトレンダラー</string>
+    <string name="value_gl_renderer_renderer_renderer_anaglyph">アナグリフレンダラー</string>
+    <string name="value_gl_renderer_renderer_renderer_stereoscopic">ステレオスコピックレンダラー</string>
+
+    <!-- 値：GLカラー -->
+    <string name="value_gl_renderer_backgroundColor_white">ホワイト</string>
+    <string name="value_gl_renderer_backgroundColor_gray">グレー</string>
+    <string name="value_gl_renderer_backgroundColor_black">ブラック</string>
+
+    <!-- 値：言語 -->
+    <string name="value_settings_language_en">英語</string>
+    <string name="value_settings_language_es">スペイン語</string>
+    <string name="value_settings_language_ru">ロシア語</string>
+    <string name="value_settings_language_zh">中国語</string>
+    <string name="value_settings_language_de">ドイツ語</string>
+    <string name="value_settings_language_fr">フランス語</string>
+    <string name="value_settings_language_hi">ヒンディー語</string>
+    <string name="value_settings_language_it">イタリア語</string>
+    <string name="value_settings_language_ar">アラビア語</string>
+    <string name="value_settings_language_pt">ポルトガル語</string>
+    <string name="value_settings_language_ja">日本語</string>
+    <string name="value_settings_language_tr">トルコ語</string>
+    <string name="value_settings_language_id">インドネシア語</string>
+    <string name="value_settings_language_uk">ウクライナ語</string>
+
+    <!-- 値：スカイボックスドロワー -->
+    <string name="value_skybox_drawer_skybox_none">なし</string>
+    <string name="value_skybox_drawer_skybox_sea">海</string>
+    <string name="value_skybox_drawer_skybox_sand">砂浜</string>
+</resources>

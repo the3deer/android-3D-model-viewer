@@ -1,0 +1,149 @@
+<resources>
+    <string name="app_name">Просмотрщик 3D-моделей</string>
+    <string name="navigation_drawer_open">Открыть панель навигации</string>
+    <string name="navigation_drawer_close">Закрыть панель навигации</string>
+    <string name="nav_header_title">Просмотрщик 3D-моделей</string>
+    <string name="nav_header_subtitle">support@the3deer.org</string>
+    <string name="nav_header_desc">Заголовок навигации</string>
+    <string name="action_settings">Настройки</string>
+
+    <string name="menu_home">Главная</string>
+    <string name="menu_load">Загрузить</string>
+    <string name="menu_settings">Настройки</string>
+    <string name="menu_about">О приложении</string>
+    <string name="menu_recent_models">Последние модели</string>
+
+    <string name="dialog_load_title">Меню</string>
+    <string name="dialog_load_in_progress_message">Загрузка…</string>
+
+    <string name="white">Белый</string>
+    <string name="gray">Серый</string>
+    <string name="black">Черный</string>
+    <string name="ok">ОК</string>
+
+    <!-- О приложении -->
+    <string name="about_title_app">Просмотрщик 3D-моделей</string>
+    <string name="about_version">Версия 1.0.0</string>
+    <string name="about_intro">Проект с открытым исходным кодом, посвященный изучению 3D-рендеринга на Android с использованием OpenGL ES.</string>
+
+    <string name="about_header_formats">Поддерживаемые форматы</string>
+    <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB и FBX.</string>
+    <string name="about_formats_note">Примечание: Для моделей с внешними текстурами загружайте их как единый .zip архив.</string>
+
+    <string name="about_header_controls">Как использовать</string>
+    <string name="about_controls_orbit">• <b>Вращение:</b> Перетаскивание одним пальцем</string>
+    <string name="about_controls_pan">• <b>Панорамирование:</b> Перетаскивание двумя пальцами</string>
+    <string name="about_controls_zoom">• <b>Масштаб:</b> Сведение/разведение двух пальцев</string>
+
+    <string name="about_header_links">Ссылки проекта</string>
+    <string name="about_link_website_label">Веб-сайт</string>
+    <string name="about_link_website_url">https://www.the3deer.org</string>
+    <string name="about_link_source_label">Исходный код (GitHub)</string>
+    <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
+    <string name="about_link_issues_label">Сообщить о проблеме</string>
+    <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
+
+    <string name="about_warning_experimental">⚠ Внимание: Этот движок является экспериментальным. Некоторые функции файлов могут отображаться некорректно.</string>
+
+    <string name="about_header_privacy">Конфиденциальность</string>
+    <string name="about_privacy_text">Это приложение не собирает и не передает личную информацию.</string>
+
+    <string name="scenes">Сцены</string>
+    <string name="cameras">Камеры</string>
+    <string name="animations">Анимации</string>
+    <string name="scene">Сцена</string>
+    <string name="camera">Камера</string>
+    <string name="immersive">Погружение</string>
+    <string name="anim">Аним</string>
+
+    <!-- Категории -->
+    <string name="category_renderers_label">Рендереры</string>
+    <string name="category_gui_label">Графический интерфейс</string>
+    <string name="category_general_label">Общие</string>
+    <string name="category_decorators_label">Декораторы</string>
+
+    <!-- Бины -->
+    <string name="bean_settings_label">Общие настройки</string>
+    <string name="bean_gl_renderer_label">Настройки OpenGL</string>
+    <string name="bean_animation_controller_label">Контроллер анимации</string>
+    <string name="bean_collision_drawer_label">Отрисовка точек столкновения</string>
+    <string name="bean_collision_drawer_description">Рисовать точки, где происходят столкновения луча с объектом</string>
+    <string name="bean_bounding_box_drawer_label">Отрисовка ограничивающей рамки</string>
+    <string name="bean_bounding_box_drawer_description">Рисует ограничивающую рамку выбранного объекта</string>
+    <string name="bean_light_bulb_drawer_label">Отрисовка лампочки</string>
+    <string name="bean_light_bulb_drawer_description">Рисует лампочку</string>
+    <string name="bean_skeleton_drawer_label">Отрисовка скелета</string>
+    <string name="bean_skeleton_drawer_description">Рисует скелет объекта</string>
+    <string name="bean_skybox_drawer_label">Декоратор SkyBox</string>
+    <string name="bean_skybox_drawer_description">Рисует 3D Skybox как фон сцены</string>
+    <string name="bean_wireframe_drawer_label">Отрисовка каркаса</string>
+    <string name="bean_wireframe_drawer_description">Рисует каркас моделей</string>
+    <string name="bean_gui_label">Интерфейс</string>
+    <string name="bean_gui_drawer_label">Графический интерфейс пользователя</string>
+    <string name="bean_anaglyph_renderer_label">Анаглифный рендерер</string>
+    <string name="bean_default_renderer_label">Рендерер по умолчанию</string>
+    <string name="bean_stereoscopic_renderer_label">Стереоскопический рендерер</string>
+    <string name="bean_shadow_drawer_description">Отражать тень объекта на плоскость на земле</string>
+    <string name="bean_shadow_drawer_label">Рендерер теней</string>
+
+    <!-- Свойства бинов -->
+    <string name="property_settings_language_label">Язык</string>
+    <string name="property_settings_language_description">Язык приложения</string>
+    <string name="property_gl_renderer_renderer_label">Активный рендерер</string>
+    <string name="property_gl_renderer_renderer_description">Выберите рендерер</string>
+    <string name="property_gl_renderer_backgroundColor_label">Цвет фона</string>
+    <string name="property_gl_renderer_backgroundColor_description">Выберите цвет по умолчанию для 3D-моделей</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>Белый</item>
+        <item>Серый</item>
+        <item>Черный</item>
+    </string-array>
+    <string name="property_skybox_drawer_skybox_label">SkyBox</string>
+    <string name="property_skybox_drawer_skybox_description">Выберите фон окружения</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>Нет</item>
+        <item>Море</item>
+        <item>Песок</item>
+    </string-array>
+    <string name="property_gui_drawer_enabled_description">Показать или скрыть интерфейс</string>
+    <string name="property_gui_drawer_showFPS_label">Кадров в секунду</string>
+    <string name="property_gui_drawer_showFPS_description">Показать или скрыть счетчик FPS</string>
+    <string name="property_shadow_drawer_enabled_description">Включить или выключить рендеринг теней</string>
+
+    <!-- Особенности -->
+    <string name="feature_collision_description">Компоненты, которые рисуют поверх модели</string>
+    <string name="feature_decorator_description">Компоненты, которые рисуют поверх модели</string>
+    <string name="feature_gui_description">Отображение FPS, осей и информации</string>
+    <string name="feature_renderer_description">Рендереры рисуют на экране</string>
+
+    <!-- Значения: GL -->
+    <string name="value_gl_renderer_renderer_renderer_default">Рендерер по умолчанию</string>
+    <string name="value_gl_renderer_renderer_renderer_anaglyph">Анаглифный рендерер</string>
+    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Стереоскопический рендерер</string>
+
+    <!-- Значения: Цвет GL -->
+    <string name="value_gl_renderer_backgroundColor_white">Белый</string>
+    <string name="value_gl_renderer_backgroundColor_gray">Серый</string>
+    <string name="value_gl_renderer_backgroundColor_black">Черный</string>
+
+    <!-- Значения: Язык -->
+    <string name="value_settings_language_en">Английский</string>
+    <string name="value_settings_language_es">Испанский</string>
+    <string name="value_settings_language_ru">Русский</string>
+    <string name="value_settings_language_zh">Китайский</string>
+    <string name="value_settings_language_de">Немецкий</string>
+    <string name="value_settings_language_fr">Французский</string>
+    <string name="value_settings_language_hi">Хинди</string>
+    <string name="value_settings_language_it">Итальянский</string>
+    <string name="value_settings_language_ar">Арабский</string>
+    <string name="value_settings_language_pt">Португальский</string>
+    <string name="value_settings_language_ja">Японский</string>
+    <string name="value_settings_language_tr">Турецкий</string>
+    <string name="value_settings_language_id">Индонезийский</string>
+    <string name="value_settings_language_uk">Украинский</string>
+
+    <!-- Значения: Декоратор Skybox -->
+    <string name="value_skybox_drawer_skybox_none">Нет</string>
+    <string name="value_skybox_drawer_skybox_sea">Море</string>
+    <string name="value_skybox_drawer_skybox_sand">Пляж</string>
+</resources>

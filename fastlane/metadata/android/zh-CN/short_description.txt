@@ -1,1 +1,1 @@
-加载 3D 模型并查看制作方法
+3D模型查看器 (OBJ, STL, DAE, GLTF, FBX)，支持 OpenGL ES 2.0/3.0

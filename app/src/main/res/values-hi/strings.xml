@@ -1,0 +1,149 @@
+<resources>
+    <string name="app_name">3D मॉडल व्यूअर</string>
+    <string name="navigation_drawer_open">नेविगेशन ड्रावर खोलें</string>
+    <string name="navigation_drawer_close">नेविगेशन ड्रावर बंद करें</string>
+    <string name="nav_header_title">3D मॉडल व्यूअर</string>
+    <string name="nav_header_subtitle">support@the3deer.org</string>
+    <string name="nav_header_desc">नेविगेशन हेडर</string>
+    <string name="action_settings">सेटिंग्स</string>
+
+    <string name="menu_home">होम</string>
+    <string name="menu_load">लोड करें</string>
+    <string name="menu_settings">सेटिंग्स</string>
+    <string name="menu_about">के बारे में</string>
+    <string name="menu_recent_models">हाल के मॉडल</string>
+
+    <string name="dialog_load_title">मेनू</string>
+    <string name="dialog_load_in_progress_message">लोड हो रहा है…</string>
+
+    <string name="white">सफेद</string>
+    <string name="gray">सलेटी</string>
+    <string name="black">काला</string>
+    <string name="ok">ठीक है</string>
+
+    <!-- के बारे में स्क्रीन -->
+    <string name="about_title_app">3D मॉडल व्यूअर</string>
+    <string name="about_version">संस्करण 1.0.0</string>
+    <string name="about_intro">OpenGL ES का उपयोग करके Android पर 3D रेंडरिंग सीखने के लिए समर्पित एक ओपन-सोर्स प्रोजेक्ट।</string>
+
+    <string name="about_header_formats">समर्थित प्रारूप</string>
+    <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB, और FBX।</string>
+    <string name="about_formats_note">नोट: बाहरी बनावट (textures) वाले मॉडल के लिए, कृपया उन्हें एक .zip फ़ाइल के रूप में लोड करें।</string>
+
+    <string name="about_header_controls">उपयोग कैसे करें</string>
+    <string name="about_controls_orbit">• <b>परिक्रमा (Orbit):</b> एक उंगली से खींचें</string>
+    <string name="about_controls_pan">• <b>पैन (Pan):</b> दो उंगलियों से खींचें</string>
+    <string name="about_controls_zoom">• <b>ज़ूम (Zoom):</b> दो उंगलियों से पिंच करें</string>
+
+    <string name="about_header_links">प्रोजेक्ट लिंक</string>
+    <string name="about_link_website_label">वेबसाइट</string>
+    <string name="about_link_website_url">https://www.the3deer.org</string>
+    <string name="about_link_source_label">सोर्स कोड (GitHub)</string>
+    <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
+    <string name="about_link_issues_label">समस्या की रिपोर्ट करें</string>
+    <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
+
+    <string name="about_warning_experimental">⚠ चेतावनी: यह इंजन प्रयोगात्मक है। कुछ फ़ाइल सुविधाएँ पूरी तरह से रेंडर नहीं हो सकती हैं।</string>
+
+    <string name="about_header_privacy">गोपनीयता</string>
+    <string name="about_privacy_text">यह एप्लिकेशन कोई भी व्यक्तिगत जानकारी एकत्र या साझा नहीं करता है।</string>
+
+    <string name="scenes">दृश्य (Scenes)</string>
+    <string name="cameras">कैमरा</string>
+    <string name="animations">एनिमेशन</string>
+    <string name="scene">दृश्य</string>
+    <string name="camera">कैमरा</string>
+    <string name="immersive">इमर्सिव</string>
+    <string name="anim">एनिम</string>
+
+    <!-- श्रेणियां -->
+    <string name="category_decorators_label">डेकोरेटर्स</string>
+    <string name="category_renderers_label">रेंडरर्स</string>
+    <string name="category_gui_label">ग्राफिकल यूजर इंटरफेस</string>
+    <string name="category_general_label">सामान्य</string>
+
+    <!-- बीन्स -->
+    <string name="bean_settings_label">सामान्य सेटिंग्स</string>
+    <string name="bean_gl_renderer_label">OpenGL सेटिंग्स</string>
+    <string name="bean_animation_controller_label">एनिमेशन कंट्रोलर</string>
+    <string name="bean_collision_drawer_label">टक्कर बिंदु ड्रावर</string>
+    <string name="bean_collision_drawer_description">उन बिंदुओं को ड्रा करें जहां किरण-वस्तु की टक्कर होती है</string>
+    <string name="bean_bounding_box_drawer_label">बाउंडिंग बॉक्स ड्रावर</string>
+    <string name="bean_bounding_box_drawer_description">चयनित वस्तु का बाउंडिंग बॉक्स ड्रा करता है</string>
+    <string name="bean_light_bulb_drawer_label">लाइट बल्ब ड्रावर</string>
+    <string name="bean_light_bulb_drawer_description">लाइट बल्ब ड्रा करता है</string>
+    <string name="bean_skeleton_drawer_label">कंकाल ड्रावर</string>
+    <string name="bean_skeleton_drawer_description">वस्तु का कंकाल ड्रा करता है</string>
+    <string name="bean_skybox_drawer_label">स्काईबॉक्स डेकोरेटर</string>
+    <string name="bean_skybox_drawer_description">दृश्य पृष्ठभूमि के रूप में 3D स्काईबॉक्स ड्रा करता है</string>
+    <string name="bean_wireframe_drawer_label">वायरफ्रेम ड्रावर</string>
+    <string name="bean_wireframe_drawer_description">मॉडल का वायरफ्रेम ड्रा करता है</string>
+    <string name="bean_gui_label">GUI</string>
+    <string name="bean_gui_drawer_label">ग्राफिकल यूजर इंटरफेस</string>
+    <string name="bean_anaglyph_renderer_label">एनाग्लिफ रेंडरर</string>
+    <string name="bean_default_renderer_label">डिफ़ॉल्ट रेंडरर</string>
+    <string name="bean_stereoscopic_renderer_label">स्टीरियोस्कोपिक रेंडरर</string>
+    <string name="bean_shadow_drawer_description">जमीन पर एक समतल में वस्तु की छाया डालें</string>
+    <string name="bean_shadow_drawer_label">शैडो रेंडरर</string>
+
+    <!-- बीन गुण -->
+    <string name="property_settings_language_label">भाषा</string>
+    <string name="property_settings_language_description">एप्लिकेशन की भाषा</string>
+    <string name="property_gl_renderer_renderer_label">सक्रिय रेंडरर</string>
+    <string name="property_gl_renderer_renderer_description">रेंडरर चुनें</string>
+    <string name="property_gl_renderer_backgroundColor_label">पृष्ठभूमि का रंग</string>
+    <string name="property_gl_renderer_backgroundColor_description">3D मॉडल के लिए डिफ़ॉल्ट रंग चुनें</string>
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>सफेद</item>
+        <item>सलेटी</item>
+        <item>काला</item>
+    </string-array>
+    <string name="property_skybox_drawer_skybox_label">स्काईबॉक्स</string>
+    <string name="property_skybox_drawer_skybox_description">पर्यावरण पृष्ठभूमि चुनें</string>
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>कोई नहीं</item>
+        <item>समुद्र</item>
+        <item>रेत</item>
+    </string-array>
+    <string name="property_gui_drawer_enabled_description">GUI दिखाएं या छुपाएं</string>
+    <string name="property_gui_drawer_showFPS_label">फ्रेम प्रति सेकंड</string>
+    <string name="property_gui_drawer_showFPS_description">FPS काउंटर दिखाएं या छुपाएं</string>
+    <string name="property_shadow_drawer_enabled_description">छाया रेंडरिंग सक्षम या अक्षम करें</string>
+
+    <!-- विशेषताएं -->
+    <string name="feature_collision_description">कंपोनेंट्स जो मॉडल के ऊपर ड्रा करते हैं</string>
+    <string name="feature_decorator_description">कंपोनेंट्स जो मॉडल के ऊपर ड्रा करते हैं</string>
+    <string name="feature_gui_description">FPS, अक्ष और जानकारी प्रदर्शित करें</string>
+    <string name="feature_renderer_description">रेंडरर्स स्क्रीन पर ड्रा करते हैं</string>
+
+    <!-- मान: GL रेंडरर -->
+    <string name="value_gl_renderer_renderer_renderer_default">डिफ़ॉल्ट रेंडरर</string>
+    <string name="value_gl_renderer_renderer_renderer_anaglyph">एनाग्लिफ रेंडरर</string>
+    <string name="value_gl_renderer_renderer_renderer_stereoscopic">स्टीरियोस्कोपिक रेंडरर</string>
+
+    <!-- मान: GL रंग -->
+    <string name="value_gl_renderer_backgroundColor_white">सफेद</string>
+    <string name="value_gl_renderer_backgroundColor_gray">सलेटी</string>
+    <string name="value_gl_renderer_backgroundColor_black">काला</string>
+
+    <!-- मान: भाषा -->
+    <string name="value_settings_language_en">अंग्रेज़ी</string>
+    <string name="value_settings_language_es">स्पेनिश</string>
+    <string name="value_settings_language_ru">रूसी</string>
+    <string name="value_settings_language_zh">चीनी</string>
+    <string name="value_settings_language_de">जर्मन</string>
+    <string name="value_settings_language_fr">फ्रांसीसी</string>
+    <string name="value_settings_language_hi">हिन्दी</string>
+    <string name="value_settings_language_it">इतालवी</string>
+    <string name="value_settings_language_ar">अरबी</string>
+    <string name="value_settings_language_pt">पुर्तगाली</string>
+    <string name="value_settings_language_ja">जापानी</string>
+    <string name="value_settings_language_tr">तुर्की</string>
+    <string name="value_settings_language_id">इंडोनेशियाई</string>
+    <string name="value_settings_language_uk">यूक्रेनी</string>
+
+    <!-- मान: स्काईबॉक्स ड्रावर -->
+    <string name="value_skybox_drawer_skybox_none">कोई नहीं</string>
+    <string name="value_skybox_drawer_skybox_sea">समुद्र</string>
+    <string name="value_skybox_drawer_skybox_sand">समुद्र तट</string>
+</resources>
