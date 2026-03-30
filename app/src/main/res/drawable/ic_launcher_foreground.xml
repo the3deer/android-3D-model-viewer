@@ -8,14 +8,16 @@
         android:translateY="14"
         android:scaleX="0.8"
         android:scaleY="0.8">
+        <!-- Merkabah (Star Tetrahedron) representation -->
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M50,20 C35,20 20,30 20,45 C20,55 25,60 30,65 L30,75 C30,80 35,85 50,85 C65,85 70,80 70,75 L70,65 C75,60 80,55 80,45 C80,30 65,20 50,20 Z M35,45 C32,45 30,42 30,40 C30,38 32,35 35,35 C38,35 40,38 40,40 C40,42 38,45 35,45 Z M65,45 C62,45 60,42 60,40 C60,38 62,35 65,35 C68,35 70,38 70,40 C70,42 68,45 65,45 Z M50,75 C40,75 38,70 38,68 L62,68 C62,70 60,75 50,75 Z" />
+            android:pathData="M50,5 L89,72.5 L11,72.5 Z" />
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M20,40 C10,40 5,45 5,55 C5,65 15,65 20,60 Z" />
+            android:pathData="M50,95 L11,27.5 L89,27.5 Z" />
         <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M80,40 C90,40 95,45 95,55 C95,65 85,65 80,60 Z" />
+            android:strokeColor="#000000"
+            android:strokeWidth="1"
+            android:pathData="M50,5 L50,95 M11,27.5 L89,72.5 M89,27.5 L11,72.5" />
     </group>
 </vector>

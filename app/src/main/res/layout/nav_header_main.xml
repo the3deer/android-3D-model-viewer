@@ -14,7 +14,7 @@
         android:layout_height="64dp"
         android:contentDescription="@string/nav_header_desc"
         android:paddingTop="8dp"
-        app:srcCompat="@drawable/ic_suzanne"
+        app:srcCompat="@drawable/ic_merkabah"
         app:tint="#FFFFFF" />
 
     <TextView

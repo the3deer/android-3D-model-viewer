@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <!-- Merkabah (Star Tetrahedron) representation -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,5 L89,72.5 L11,72.5 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,95 L11,27.5 L89,27.5 Z" />
+    <!-- Optional: Add some internal lines for a more geometric/3D look -->
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="1"
+        android:pathData="M50,5 L50,95 M11,27.5 L89,72.5 M89,27.5 L11,72.5" />
+</vector>
