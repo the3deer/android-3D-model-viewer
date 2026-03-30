@@ -11,7 +11,7 @@ import org.the3deer.util.bean.BeanProperty;
 @Bean(name = "settings", category = "general")
 public class SettingsOptions {
 
-    @BeanProperty(values = {"en", "es", "ru", "zh", "de", "fr", "hi", "it", "ar", "pt", "ja", "tr", "id", "uk"})
+    @BeanProperty
     private String language = "en";
 
     public String getLanguage() {
@@ -31,29 +31,11 @@ public class SettingsOptions {
 
     public void setAndroidLanguage(){
 
-        final String languageCode;
-        switch (language) {
-            case "es": languageCode = "es"; break;
-            case "ru": languageCode = "ru"; break;
-            case "zh": languageCode = "zh"; break;
-            case "de": languageCode = "de"; break;
-            case "fr": languageCode = "fr"; break;
-            case "hi": languageCode = "hi"; break;
-            case "it": languageCode = "it"; break;
-            case "ar": languageCode = "ar"; break;
-            case "pt": languageCode = "pt"; break;
-            case "ja": languageCode = "ja"; break;
-            case "tr": languageCode = "tr"; break;
-            case "id": languageCode = "id"; break;
-            case "uk": languageCode = "uk"; break;
-            default: languageCode = "en";
-        }
+        Log.i("SettingsOptions", "System bridge: Switching to " + language);
 
-        Log.i("SettingsOptions", "System bridge: Switching to " + languageCode);
-
-        final LocaleListCompat appLocales = LocaleListCompat.forLanguageTags(languageCode);
+        final LocaleListCompat appLocales = LocaleListCompat.forLanguageTags(language);
         AppCompatDelegate.setApplicationLocales(appLocales);
 
-        Log.i("SettingsOptions", "System bridge: Switched to " + languageCode);
+        Log.i("SettingsOptions", "System bridge: Switched to " + language);
     }
 }

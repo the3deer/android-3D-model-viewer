@@ -267,7 +267,9 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             else -> {
                 val staticValues = prop.values
                 val valuesMethod = prop.valuesMethod
-                if (valuesMethod != null || (staticValues != null && staticValues.isNotEmpty())) {
+                val hasValues = valuesMethod != null || (staticValues != null && staticValues.isNotEmpty()) || !prop.resolveValues(context).isNullOrEmpty()
+                
+                if (hasValues) {
                     ListPreference(context).apply {
                         key = preferenceKey
                         title = titleText
@@ -284,7 +286,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
      * Setup a list preference with i18n support for values.
      */
     private fun setupListPreference(context: Context, pref: ListPreference, bean: Any, prop: BeanPropertyInfo) {
-        val values = getPropertyValues(bean, prop)
+        val values = getPropertyValues(context, bean, prop)
         val names = getPropertyNames(context, prop, values)
 
         // check
@@ -298,18 +300,6 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         if (currentIndex != -1) {
             pref.value = values[currentIndex].toString()
         }
-
-        // i18n override - using arrays.xml
-        // TODO: add support for arrays.xml
-        
-        // i18n override - using string.xml
-        // get the label from strings.xml using the propertyName as the lookup key
-        // example: key = "value_<beanName>_<propertyName>_<value>"
-        val localizedNames = values.map { value ->
-            prop.resolveValueLabel(context, value.toString())
-        }
-        pref.entries = localizedNames.toTypedArray()
-
     }
 
     override fun onResume() {
@@ -363,7 +353,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
                 val valueStr = sharedPreferences.getString(key, null) ?: return
                 
-                val values = getPropertyValues(bean, info)
+                val values = getPropertyValues(context, bean, info)
 
                 var index = values.indexOf(valueStr)
                 if (index == -1) index = valueStr.toIntOrNull() ?: -1
@@ -388,10 +378,24 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             }
         }
 
-        private fun getPropertyValues(bean: Any, info: BeanPropertyInfo): List<Any> {
+        private fun getPropertyValues(context: Context, bean: Any, info: BeanPropertyInfo): List<Any> {
             return try {
-                val values = info.valuesMethod?.invoke(bean) as? List<*> ?: info.values?.toList() ?: emptyList<Any>()
-                values.filterNotNull()
+                // Priority 1: Method provider
+                info.valuesMethod?.invoke(bean)?.let {
+                    return (it as List<*>).filterNotNull()
+                }
+                
+                // Priority 2: Static values in annotation
+                if (info.values != null && info.values.isNotEmpty()) {
+                    return info.values.toList()
+                }
+
+                // Priority 3: arrays.xml convention
+                info.resolveValues(context)?.let {
+                    return it.toList()
+                }
+
+                emptyList()
             } catch (e: Exception) {
                 emptyList()
             }
@@ -402,11 +406,19 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
          * Falls back to string representation of the value if no localized labels are found.
          */
         private fun getPropertyNames(context: Context, info: BeanPropertyInfo, values: List<Any>): List<CharSequence> {
-            val resolvedLabels = info.resolveValueLabels(context)
+            // Priority 1: Check for _values_descriptions array in arrays.xml
+            val descriptions = info.resolveDescriptions(context)
+            if (!descriptions.isNullOrEmpty()) {
+                return descriptions.map { it as CharSequence }.toList()
+            }
+
+            // Priority 2: Check for _values array in arrays.xml (use them as labels if no descriptions found)
+            val resolvedLabels = info.resolveValues(context)
             if (!resolvedLabels.isNullOrEmpty()) {
                 return resolvedLabels.map { it as CharSequence }.toList()
             }
             
+            // Priority 3: Lookup individual strings or fallback to ID
             return values.map { value ->
                 info.resolveValueLabel(context, value.toString()) as CharSequence
             }.toList()

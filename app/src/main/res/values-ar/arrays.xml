@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- values for language -->
+    <string-array name="property_settings_language_values_descriptions">
+        <item>العربية</item>
+        <item>الألمانية</item>
+        <item>الإنجليزية</item>
+        <item>الإسبانية</item>
+        <item>الفرنسية</item>
+        <item>الهندية</item>
+        <item>الإندونيسية</item>
+        <item>الإيطالية</item>
+        <item>اليابانية</item>
+        <item>البرتغالية</item>
+        <item>الروسية</item>
+        <item>التركية</item>
+        <item>الأوكرانية</item>
+        <item>الصينية</item>
+    </string-array>
+
+    <!-- values for background color -->
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>أبيض</item>
+        <item>رمادي</item>
+        <item>أسود</item>
+    </string-array>
+
+    <!-- values for active renderer -->
+    <string-array name="property_gl_renderer_renderer_values_descriptions">
+        <item>المصيّر الافتراضي</item>
+        <item>مصيّر أناجليف</item>
+        <item>مصيّر مجسم</item>
+    </string-array>
+
+    <!-- values for skybox -->
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>بدون</item>
+        <item>بحر</item>
+        <item>رمل</item>
+    </string-array>
+</resources>

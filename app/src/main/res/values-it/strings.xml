@@ -93,18 +93,8 @@
     <string name="property_gl_renderer_renderer_description">Seleziona il renderer</string>
     <string name="property_gl_renderer_backgroundColor_label">Colore di sfondo</string>
     <string name="property_gl_renderer_backgroundColor_description">Seleziona il colore predefinito per i modelli 3D</string>
-    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
-        <item>Bianco</item>
-        <item>Grigio</item>
-        <item>Nero</item>
-    </string-array>
     <string name="property_skybox_drawer_skybox_label">SkyBox</string>
     <string name="property_skybox_drawer_skybox_description">Seleziona lo sfondo dell\'ambiente</string>
-    <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Nessuno</item>
-        <item>Mare</item>
-        <item>Sabbia</item>
-    </string-array>
     <string name="property_gui_drawer_enabled_description">Mostra o nascondi la GUI</string>
     <string name="property_gui_drawer_showFPS_label">Fotogrammi al secondo</string>
     <string name="property_gui_drawer_showFPS_description">Mostra o nascondi il contatore FPS</string>
@@ -115,35 +105,4 @@
     <string name="feature_decorator_description">Componenti che disegnano sopra il modello</string>
     <string name="feature_gui_description">Visualizza FPS, assi e informazioni</string>
     <string name="feature_renderer_description">I renderer disegnano sullo schermo</string>
-
-    <!-- Valori: Renderer GL -->
-    <string name="value_gl_renderer_renderer_renderer_default">Renderer predefinito</string>
-    <string name="value_gl_renderer_renderer_renderer_anaglyph">Renderer anaglifo</string>
-    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Renderer stereoscopico</string>
-
-    <!-- Valori: Colore GL -->
-    <string name="value_gl_renderer_backgroundColor_white">Bianco</string>
-    <string name="value_gl_renderer_backgroundColor_gray">Grigio</string>
-    <string name="value_gl_renderer_backgroundColor_black">Nero</string>
-
-    <!-- Valori: Lingua -->
-    <string name="value_settings_language_en">Inglese</string>
-    <string name="value_settings_language_es">Spagnolo</string>
-    <string name="value_settings_language_ru">Russo</string>
-    <string name="value_settings_language_zh">Cinese</string>
-    <string name="value_settings_language_de">Tedesco</string>
-    <string name="value_settings_language_fr">Francese</string>
-    <string name="value_settings_language_hi">Hindi</string>
-    <string name="value_settings_language_it">Italiano</string>
-    <string name="value_settings_language_ar">Arabo</string>
-    <string name="value_settings_language_pt">Portoghese</string>
-    <string name="value_settings_language_ja">Giapponese</string>
-    <string name="value_settings_language_tr">Turco</string>
-    <string name="value_settings_language_id">Indonesiano</string>
-    <string name="value_settings_language_uk">Ucraino</string>
-
-    <!-- Valori: Disegnatore Skybox -->
-    <string name="value_skybox_drawer_skybox_none">Nessuno</string>
-    <string name="value_skybox_drawer_skybox_sea">Mare</string>
-    <string name="value_skybox_drawer_skybox_sand">Spiaggia</string>
 </resources>

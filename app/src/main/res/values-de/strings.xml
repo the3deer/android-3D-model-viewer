@@ -28,7 +28,7 @@
 
     <string name="about_header_formats">Unterstützte Formate</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB und FBX.</string>
-    <string name="about_formats_note">Hinweis: Laden Sie Modelle mit externen Texturen bitte als einzelne .zip-Datei.</string>
+    <string name="about_formats_note">Hinweis: Laden Sie Modelle mit externen Texturen bitte als einzelne .zip Datei.</string>
 
     <string name="about_header_controls">Bedienung</string>
     <string name="about_controls_orbit">• <b>Orbit:</b> Mit einem Finger ziehen</string>
@@ -93,18 +93,8 @@
     <string name="property_gl_renderer_renderer_description">Wählen Sie den Renderer aus</string>
     <string name="property_gl_renderer_backgroundColor_label">Hintergrundfarbe</string>
     <string name="property_gl_renderer_backgroundColor_description">Wählen Sie die Standardfarbe für 3D-Modelle</string>
-    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
-        <item>Weiß</item>
-        <item>Grau</item>
-        <item>Schwarz</item>
-    </string-array>
     <string name="property_skybox_drawer_skybox_label">SkyBox</string>
     <string name="property_skybox_drawer_skybox_description">Wählen Sie den Umgebungshintergrund</string>
-    <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Keine</item>
-        <item>Meer</item>
-        <item>Sand</item>
-    </string-array>
     <string name="property_gui_drawer_enabled_description">GUI anzeigen oder ausblenden</string>
     <string name="property_gui_drawer_showFPS_label">Bilder pro Sekunde</string>
     <string name="property_gui_drawer_showFPS_description">FPS-Zähler anzeigen oder ausblenden</string>
@@ -115,35 +105,4 @@
     <string name="feature_decorator_description">Komponenten, die über dem Modell zeichnen</string>
     <string name="feature_gui_description">FPS, Achsen und Info anzeigen</string>
     <string name="feature_renderer_description">Die Renderer zeichnen auf dem Bildschirm</string>
-
-    <!-- Werte: GL-Renderer -->
-    <string name="value_gl_renderer_renderer_renderer_default">Standard-Renderer</string>
-    <string name="value_gl_renderer_renderer_renderer_anaglyph">Anaglyphen-Renderer</string>
-    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Stereoskopischer-Renderer</string>
-
-    <!-- Werte: GL-Farbe -->
-    <string name="value_gl_renderer_backgroundColor_white">Weiß</string>
-    <string name="value_gl_renderer_backgroundColor_gray">Grau</string>
-    <string name="value_gl_renderer_backgroundColor_black">Schwarz</string>
-
-    <!-- Werte: Sprache -->
-    <string name="value_settings_language_en">Englisch</string>
-    <string name="value_settings_language_es">Spanisch</string>
-    <string name="value_settings_language_ru">Russisch</string>
-    <string name="value_settings_language_zh">Chinesisch</string>
-    <string name="value_settings_language_de">Deutsch</string>
-    <string name="value_settings_language_fr">Französisch</string>
-    <string name="value_settings_language_hi">Hindi</string>
-    <string name="value_settings_language_it">Italienisch</string>
-    <string name="value_settings_language_ar">Arabisch</string>
-    <string name="value_settings_language_pt">Portugiesisch</string>
-    <string name="value_settings_language_ja">Japanisch</string>
-    <string name="value_settings_language_tr">Türkisch</string>
-    <string name="value_settings_language_id">Indonesisch</string>
-    <string name="value_settings_language_uk">Ukrainisch</string>
-
-    <!-- Werte: Skybox-Zeichner -->
-    <string name="value_skybox_drawer_skybox_none">Keine</string>
-    <string name="value_skybox_drawer_skybox_sea">Meer</string>
-    <string name="value_skybox_drawer_skybox_sand">Strand</string>
 </resources>

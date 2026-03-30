@@ -3,39 +3,39 @@
     <!-- values for language -->
     <string-array name="property_settings_language_values_descriptions">
         <item>Árabe</item>
-        <item>Alemán</item>
-        <item>Inglés</item>
-        <item>Español</item>
-        <item>Francés</item>
-        <item>Hindi</item>
-        <item>Indonesio</item>
+        <item>Alemão</item>
+        <item>Inglês</item>
+        <item>Espanhol</item>
+        <item>Francês</item>
+        <item>Híndi</item>
+        <item>Indonésio</item>
         <item>Italiano</item>
-        <item>Japonés</item>
-        <item>Portugués</item>
-        <item>Ruso</item>
+        <item>Japonês</item>
+        <item>Português</item>
+        <item>Russo</item>
         <item>Turco</item>
         <item>Ucraniano</item>
-        <item>Chino</item>
+        <item>Chinês</item>
     </string-array>
 
     <!-- values for background color -->
     <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
-        <item>Blanco</item>
-        <item>Gris</item>
-        <item>Negro</item>
+        <item>Branco</item>
+        <item>Cinza</item>
+        <item>Preto</item>
     </string-array>
 
     <!-- values for active renderer -->
     <string-array name="property_gl_renderer_renderer_values_descriptions">
-        <item>Renderizador por Defecto</item>
-        <item>Renderizador Anaglifo</item>
+        <item>Renderizador Padrão</item>
+        <item>Renderizador Anáglifo</item>
         <item>Renderizador Estereoscópico</item>
     </string-array>
 
     <!-- values for skybox -->
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Ninguno</item>
+        <item>Nenhum</item>
         <item>Mar</item>
-        <item>Arena</item>
+        <item>Areia</item>
     </string-array>
 </resources>

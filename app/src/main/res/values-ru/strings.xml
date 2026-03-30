@@ -45,7 +45,7 @@
 
     <string name="about_warning_experimental">⚠ Внимание: Этот движок является экспериментальным. Некоторые функции файлов могут отображаться некорректно.</string>
 
-    <string name="about_header_privacy">Конфиденциальность</string>
+    <string name="about_header_privacy">Конфіденційність</string>
     <string name="about_privacy_text">Это приложение не собирает и не передает личную информацию.</string>
 
     <string name="scenes">Сцены</string>
@@ -93,18 +93,8 @@
     <string name="property_gl_renderer_renderer_description">Выберите рендерер</string>
     <string name="property_gl_renderer_backgroundColor_label">Цвет фона</string>
     <string name="property_gl_renderer_backgroundColor_description">Выберите цвет по умолчанию для 3D-моделей</string>
-    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
-        <item>Белый</item>
-        <item>Серый</item>
-        <item>Черный</item>
-    </string-array>
     <string name="property_skybox_drawer_skybox_label">SkyBox</string>
     <string name="property_skybox_drawer_skybox_description">Выберите фон окружения</string>
-    <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Нет</item>
-        <item>Море</item>
-        <item>Песок</item>
-    </string-array>
     <string name="property_gui_drawer_enabled_description">Показать или скрыть интерфейс</string>
     <string name="property_gui_drawer_showFPS_label">Кадров в секунду</string>
     <string name="property_gui_drawer_showFPS_description">Показать или скрыть счетчик FPS</string>
@@ -115,35 +105,4 @@
     <string name="feature_decorator_description">Компоненты, которые рисуют поверх модели</string>
     <string name="feature_gui_description">Отображение FPS, осей и информации</string>
     <string name="feature_renderer_description">Рендереры рисуют на экране</string>
-
-    <!-- Значения: GL -->
-    <string name="value_gl_renderer_renderer_renderer_default">Рендерер по умолчанию</string>
-    <string name="value_gl_renderer_renderer_renderer_anaglyph">Анаглифный рендерер</string>
-    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Стереоскопический рендерер</string>
-
-    <!-- Значения: Цвет GL -->
-    <string name="value_gl_renderer_backgroundColor_white">Белый</string>
-    <string name="value_gl_renderer_backgroundColor_gray">Серый</string>
-    <string name="value_gl_renderer_backgroundColor_black">Черный</string>
-
-    <!-- Значения: Язык -->
-    <string name="value_settings_language_en">Английский</string>
-    <string name="value_settings_language_es">Испанский</string>
-    <string name="value_settings_language_ru">Русский</string>
-    <string name="value_settings_language_zh">Китайский</string>
-    <string name="value_settings_language_de">Немецкий</string>
-    <string name="value_settings_language_fr">Французский</string>
-    <string name="value_settings_language_hi">Хинди</string>
-    <string name="value_settings_language_it">Итальянский</string>
-    <string name="value_settings_language_ar">Арабский</string>
-    <string name="value_settings_language_pt">Португальский</string>
-    <string name="value_settings_language_ja">Японский</string>
-    <string name="value_settings_language_tr">Турецкий</string>
-    <string name="value_settings_language_id">Индонезийский</string>
-    <string name="value_settings_language_uk">Украинский</string>
-
-    <!-- Значения: Декоратор Skybox -->
-    <string name="value_skybox_drawer_skybox_none">Нет</string>
-    <string name="value_skybox_drawer_skybox_sea">Море</string>
-    <string name="value_skybox_drawer_skybox_sand">Пляж</string>
 </resources>

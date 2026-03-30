@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- values for language -->
+    <string-array name="property_settings_language_values_descriptions">
+        <item>अरबी</item>
+        <item>जर्मन</item>
+        <item>अंग्रेज़ी</item>
+        <item>स्पेनिश</item>
+        <item>फ्रांसीसी</item>
+        <item>हिन्दी</item>
+        <item>इंडोनेशियाई</item>
+        <item>इतालवी</item>
+        <item>जापानी</item>
+        <item>पुर्तगाली</item>
+        <item>रूसी</item>
+        <item>तुर्की</item>
+        <item>यूक्रेनी</item>
+        <item>चीनी</item>
+    </string-array>
+
+    <!-- values for background color -->
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>सफेद</item>
+        <item>सलेटी</item>
+        <item>काला</item>
+    </string-array>
+
+    <!-- values for active renderer -->
+    <string-array name="property_gl_renderer_renderer_values_descriptions">
+        <item>डिफ़ॉल्ट रेंडरर</item>
+        <item>एनाग्लिफ रेंडरर</item>
+        <item>स्टीरियोस्कोपिक रेंडरर</item>
+    </string-array>
+
+    <!-- values for skybox -->
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>कोई नहीं</item>
+        <item>समुद्र</item>
+        <item>रेत</item>
+    </string-array>
+</resources>

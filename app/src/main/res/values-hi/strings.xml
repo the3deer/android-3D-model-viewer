@@ -93,18 +93,8 @@
     <string name="property_gl_renderer_renderer_description">रेंडरर चुनें</string>
     <string name="property_gl_renderer_backgroundColor_label">पृष्ठभूमि का रंग</string>
     <string name="property_gl_renderer_backgroundColor_description">3D मॉडल के लिए डिफ़ॉल्ट रंग चुनें</string>
-    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
-        <item>सफेद</item>
-        <item>सलेटी</item>
-        <item>काला</item>
-    </string-array>
     <string name="property_skybox_drawer_skybox_label">स्काईबॉक्स</string>
     <string name="property_skybox_drawer_skybox_description">पर्यावरण पृष्ठभूमि चुनें</string>
-    <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>कोई नहीं</item>
-        <item>समुद्र</item>
-        <item>रेत</item>
-    </string-array>
     <string name="property_gui_drawer_enabled_description">GUI दिखाएं या छुपाएं</string>
     <string name="property_gui_drawer_showFPS_label">फ्रेम प्रति सेकंड</string>
     <string name="property_gui_drawer_showFPS_description">FPS काउंटर दिखाएं या छुपाएं</string>
@@ -115,35 +105,4 @@
     <string name="feature_decorator_description">कंपोनेंट्स जो मॉडल के ऊपर ड्रा करते हैं</string>
     <string name="feature_gui_description">FPS, अक्ष और जानकारी प्रदर्शित करें</string>
     <string name="feature_renderer_description">रेंडरर्स स्क्रीन पर ड्रा करते हैं</string>
-
-    <!-- मान: GL रेंडरर -->
-    <string name="value_gl_renderer_renderer_renderer_default">डिफ़ॉल्ट रेंडरर</string>
-    <string name="value_gl_renderer_renderer_renderer_anaglyph">एनाग्लिफ रेंडरर</string>
-    <string name="value_gl_renderer_renderer_renderer_stereoscopic">स्टीरियोस्कोपिक रेंडरर</string>
-
-    <!-- मान: GL रंग -->
-    <string name="value_gl_renderer_backgroundColor_white">सफेद</string>
-    <string name="value_gl_renderer_backgroundColor_gray">सलेटी</string>
-    <string name="value_gl_renderer_backgroundColor_black">काला</string>
-
-    <!-- मान: भाषा -->
-    <string name="value_settings_language_en">अंग्रेज़ी</string>
-    <string name="value_settings_language_es">स्पेनिश</string>
-    <string name="value_settings_language_ru">रूसी</string>
-    <string name="value_settings_language_zh">चीनी</string>
-    <string name="value_settings_language_de">जर्मन</string>
-    <string name="value_settings_language_fr">फ्रांसीसी</string>
-    <string name="value_settings_language_hi">हिन्दी</string>
-    <string name="value_settings_language_it">इतालवी</string>
-    <string name="value_settings_language_ar">अरबी</string>
-    <string name="value_settings_language_pt">पुर्तगाली</string>
-    <string name="value_settings_language_ja">जापानी</string>
-    <string name="value_settings_language_tr">तुर्की</string>
-    <string name="value_settings_language_id">इंडोनेशियाई</string>
-    <string name="value_settings_language_uk">यूक्रेनी</string>
-
-    <!-- मान: स्काईबॉक्स ड्रावर -->
-    <string name="value_skybox_drawer_skybox_none">कोई नहीं</string>
-    <string name="value_skybox_drawer_skybox_sea">समुद्र</string>
-    <string name="value_skybox_drawer_skybox_sand">समुद्र तट</string>
 </resources>

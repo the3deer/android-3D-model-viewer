@@ -93,18 +93,8 @@
     <string name="property_gl_renderer_renderer_description">Selecione o renderizador</string>
     <string name="property_gl_renderer_backgroundColor_label">Cor de Fundo</string>
     <string name="property_gl_renderer_backgroundColor_description">Selecione a cor padrão para os modelos 3D</string>
-    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
-        <item>Branco</item>
-        <item>Cinza</item>
-        <item>Preto</item>
-    </string-array>
     <string name="property_skybox_drawer_skybox_label">SkyBox</string>
     <string name="property_skybox_drawer_skybox_description">Selecione o fundo do ambiente</string>
-    <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Nenhum</item>
-        <item>Mar</item>
-        <item>Areia</item>
-    </string-array>
     <string name="property_gui_drawer_enabled_description">Mostrar ou ocultar GUI</string>
     <string name="property_gui_drawer_showFPS_label">Quadros Por Segundo</string>
     <string name="property_gui_drawer_showFPS_description">Mostrar ou ocultar contador de FPS</string>
@@ -116,34 +106,4 @@
     <string name="feature_gui_description">Exibe FPS, Eixos e Informações</string>
     <string name="feature_renderer_description">Os Renderizadores desenham na tela</string>
 
-    <!-- Valores: Renderizador GL -->
-    <string name="value_gl_renderer_renderer_renderer_default">Renderizador padrão</string>
-    <string name="value_gl_renderer_renderer_renderer_anaglyph">Renderizador anáglifo</string>
-    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Renderizador estereoscópico</string>
-
-    <!-- Valores: Cor GL -->
-    <string name="value_gl_renderer_backgroundColor_white">Branco</string>
-    <string name="value_gl_renderer_backgroundColor_gray">Cinza</string>
-    <string name="value_gl_renderer_backgroundColor_black">Preto</string>
-
-    <!-- Valores: Idioma -->
-    <string name="value_settings_language_en">Inglês</string>
-    <string name="value_settings_language_es">Espanhol</string>
-    <string name="value_settings_language_ru">Russo</string>
-    <string name="value_settings_language_zh">Chinês</string>
-    <string name="value_settings_language_de">Alemão</string>
-    <string name="value_settings_language_fr">Francês</string>
-    <string name="value_settings_language_hi">Hindi</string>
-    <string name="value_settings_language_it">Italiano</string>
-    <string name="value_settings_language_ar">Árabe</string>
-    <string name="value_settings_language_pt">Português</string>
-    <string name="value_settings_language_ja">Japonês</string>
-    <string name="value_settings_language_tr">Turco</string>
-    <string name="value_settings_language_id">Indonésio</string>
-    <string name="value_settings_language_uk">Ucraniano</string>
-
-    <!-- Valores: Skybox Drawer -->
-    <string name="value_skybox_drawer_skybox_none">Nenhum</string>
-    <string name="value_skybox_drawer_skybox_sea">Mar</string>
-    <string name="value_skybox_drawer_skybox_sand">Praia</string>
 </resources>

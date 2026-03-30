@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- values for language -->
+    <string-array name="property_settings_language_values_descriptions">
+        <item>アラビア語</item>
+        <item>ドイツ語</item>
+        <item>英語</item>
+        <item>スペイン語</item>
+        <item>フランス語</item>
+        <item>ヒンディー語</item>
+        <item>インドネシア語</item>
+        <item>イタリア語</item>
+        <item>日本語</item>
+        <item>ポルトガル語</item>
+        <item>ロシア語</item>
+        <item>トルコ語</item>
+        <item>ウクライナ語</item>
+        <item>中国語</item>
+    </string-array>
+
+    <!-- values for background color -->
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>ホワイト</item>
+        <item>グレー</item>
+        <item>ブラック</item>
+    </string-array>
+
+    <!-- values for active renderer -->
+    <string-array name="property_gl_renderer_renderer_values_descriptions">
+        <item>デフォルトレンダラー</item>
+        <item>アナグリフレンダラー</item>
+        <item>ステレオスコピックレンダラー</item>
+    </string-array>
+
+    <!-- values for skybox -->
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>なし</item>
+        <item>海</item>
+        <item>砂漠</item>
+    </string-array>
+</resources>

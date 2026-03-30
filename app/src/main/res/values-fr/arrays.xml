@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- values for language -->
+    <string-array name="property_settings_language_values_descriptions">
+        <item>Arabe</item>
+        <item>Allemand</item>
+        <item>Anglais</item>
+        <item>Espagnol</item>
+        <item>Français</item>
+        <item>Hindi</item>
+        <item>Indonésien</item>
+        <item>Italien</item>
+        <item>Japonais</item>
+        <item>Portugais</item>
+        <item>Russe</item>
+        <item>Turc</item>
+        <item>Ukrainien</item>
+        <item>Chinois</item>
+    </string-array>
+
+    <!-- values for background color -->
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>Blanc</item>
+        <item>Gris</item>
+        <item>Noir</item>
+    </string-array>
+
+    <!-- values for active renderer -->
+    <string-array name="property_gl_renderer_renderer_values_descriptions">
+        <item>Rendu par Défaut</item>
+        <item>Rendu Anaglyphe</item>
+        <item>Rendu Stéréoscopique</item>
+    </string-array>
+
+    <!-- values for skybox -->
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>Aucun</item>
+        <item>Mer</item>
+        <item>Sable</item>
+    </string-array>
+</resources>

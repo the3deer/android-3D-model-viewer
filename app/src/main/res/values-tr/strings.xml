@@ -93,18 +93,8 @@
     <string name="property_gl_renderer_renderer_description">Oluşturucuyu seçin</string>
     <string name="property_gl_renderer_backgroundColor_label">Arka Plan Rengi</string>
     <string name="property_gl_renderer_backgroundColor_description">3D modeller için varsayılan rengi seçin</string>
-    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
-        <item>Beyaz</item>
-        <item>Gri</item>
-        <item>Siyah</item>
-    </string-array>
     <string name="property_skybox_drawer_skybox_label">SkyBox</string>
     <string name="property_skybox_drawer_skybox_description">Ortam arka planını seçin</string>
-    <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Yok</item>
-        <item>Deniz</item>
-        <item>Kum</item>
-    </string-array>
     <string name="property_gui_drawer_enabled_description">GUI\'yi göster veya gizle</string>
     <string name="property_gui_drawer_showFPS_label">Saniyedeki Kare Sayısı</string>
     <string name="property_gui_drawer_showFPS_description">FPS sayacını göster veya gizle</string>
@@ -116,34 +106,4 @@
     <string name="feature_gui_description">FPS, Eksen ve Bilgileri Görüntüler</string>
     <string name="feature_renderer_description">Oluşturucular ekrana çizer</string>
 
-    <!-- Değerler: GL Oluşturucu -->
-    <string name="value_gl_renderer_renderer_renderer_default">Varsayılan Oluşturucu</string>
-    <string name="value_gl_renderer_renderer_renderer_anaglyph">Anaglif Oluşturucu</string>
-    <string name="value_gl_renderer_renderer_renderer_stereoscopic">Stereoskopik Oluşturucu</string>
-
-    <!-- Değerler: GL Renk -->
-    <string name="value_gl_renderer_backgroundColor_white">Beyaz</string>
-    <string name="value_gl_renderer_backgroundColor_gray">Gri</string>
-    <string name="value_gl_renderer_backgroundColor_black">Siyah</string>
-
-    <!-- Değerler: Dil -->
-    <string name="value_settings_language_en">İngilizce</string>
-    <string name="value_settings_language_es">İspanyolca</string>
-    <string name="value_settings_language_ru">Rusça</string>
-    <string name="value_settings_language_zh">Çince</string>
-    <string name="value_settings_language_de">Almanca</string>
-    <string name="value_settings_language_fr">Fransızca</string>
-    <string name="value_settings_language_hi">Hintçe</string>
-    <string name="value_settings_language_it">İtalyanca</string>
-    <string name="value_settings_language_ar">Arapça</string>
-    <string name="value_settings_language_pt">Portekizce</string>
-    <string name="value_settings_language_ja">Japonca</string>
-    <string name="value_settings_language_tr">Türkçe</string>
-    <string name="value_settings_language_id">Endonezyaca</string>
-    <string name="value_settings_language_uk">Ukraynaca</string>
-
-    <!-- Değerler: Skybox Çizici -->
-    <string name="value_skybox_drawer_skybox_none">Yok</string>
-    <string name="value_skybox_drawer_skybox_sea">Deniz</string>
-    <string name="value_skybox_drawer_skybox_sand">Plaj</string>
 </resources>

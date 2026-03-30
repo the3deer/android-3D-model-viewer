@@ -116,34 +116,4 @@
     <string name="feature_gui_description">显示 FPS、轴和信息</string>
     <string name="feature_renderer_description">渲染器在屏幕上绘制</string>
 
-    <!-- 值：GL 渲染器 -->
-    <string name="value_gl_renderer_renderer_renderer_default">默认渲染器</string>
-    <string name="value_gl_renderer_renderer_renderer_anaglyph">补色渲染器</string>
-    <string name="value_gl_renderer_renderer_renderer_stereoscopic">立体渲染器</string>
-
-    <!-- 值：GL 颜色 -->
-    <string name="value_gl_renderer_backgroundColor_white">白色</string>
-    <string name="value_gl_renderer_backgroundColor_gray">灰色</string>
-    <string name="value_gl_renderer_backgroundColor_black">黑色</string>
-
-    <!-- 值：语言 -->
-    <string name="value_settings_language_en">英语</string>
-    <string name="value_settings_language_es">西班牙语</string>
-    <string name="value_settings_language_ru">俄语</string>
-    <string name="value_settings_language_zh">中文</string>
-    <string name="value_settings_language_de">德语</string>
-    <string name="value_settings_language_fr">法语</string>
-    <string name="value_settings_language_hi">印地语</string>
-    <string name="value_settings_language_it">意大利语</string>
-    <string name="value_settings_language_ar">阿拉伯语</string>
-    <string name="value_settings_language_pt">葡萄牙语</string>
-    <string name="value_settings_language_ja">日语</string>
-    <string name="value_settings_language_tr">土耳其语</string>
-    <string name="value_settings_language_id">印尼语</string>
-    <string name="value_settings_language_uk">乌克兰语</string>
-
-    <!-- 值：天空盒绘制器 -->
-    <string name="value_skybox_drawer_skybox_none">无</string>
-    <string name="value_skybox_drawer_skybox_sea">海洋</string>
-    <string name="value_skybox_drawer_skybox_sand">沙滩</string>
 </resources>

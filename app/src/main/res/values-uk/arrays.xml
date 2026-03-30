@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- values for language -->
+    <string-array name="property_settings_language_values_descriptions">
+        <item>Арабська</item>
+        <item>Німецька</item>
+        <item>Англійська</item>
+        <item>Іспанська</item>
+        <item>Французька</item>
+        <item>Гінді</item>
+        <item>Індонезійська</item>
+        <item>Італійська</item>
+        <item>Японська</item>
+        <item>Португальська</item>
+        <item>Російська</item>
+        <item>Турецька</item>
+        <item>Українська</item>
+        <item>Китайська</item>
+    </string-array>
+
+    <!-- values for background color -->
+    <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
+        <item>Білий</item>
+        <item>Сірий</item>
+        <item>Чорний</item>
+    </string-array>
+
+    <!-- values for active renderer -->
+    <string-array name="property_gl_renderer_renderer_values_descriptions">
+        <item>Рендерер за замовчуванням</item>
+        <item>Анагліфний рендерер</item>
+        <item>Стереоскопічний рендерер</item>
+    </string-array>
+
+    <!-- values for skybox -->
+    <string-array name="property_skybox_drawer_skybox_values_descriptions">
+        <item>Немає</item>
+        <item>Море</item>
+        <item>Пісок</item>
+    </string-array>
+</resources>
