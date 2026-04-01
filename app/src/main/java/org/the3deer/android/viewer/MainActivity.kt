@@ -307,15 +307,32 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         getContent.launch(mimeType)
     }
 
+    /**
+     * Update the recent models' menu. That is, it adds a menu item for each URI in the history with an Icon.
+     */
     private fun updateRecentModels(navigationView: NavigationView, history: List<String>) {
         val menu = navigationView.menu
-        menu.removeGroup(R.id.group_recent)
+        val recentWrapper = menu.findItem(R.id.nav_recent_wrapper)
+        val subMenu = recentWrapper?.subMenu
 
-        history.forEachIndexed { index, uriString ->
-            val title = shortenUri(uriString)
-            menu.add(R.id.group_recent, Menu.NONE, index, title).apply {
-                icon = ContextCompat.getDrawable(this@MainActivity, getIconResForModel(uriString))
-                MenuItemCompat.setTooltipText(this, uriString)
+        if (subMenu != null) {
+            subMenu.clear()
+            history.forEachIndexed { index, uriString ->
+                val title = shortenUri(uriString)
+                subMenu.add(R.id.group_recent, Menu.NONE, index, title).apply {
+                    icon = ContextCompat.getDrawable(this@MainActivity, getIconResForModel(uriString))
+                    MenuItemCompat.setTooltipText(this, uriString)
+                }
+            }
+        } else {
+            // Fallback to old behavior if XML ID is missing or not a submenu
+            menu.removeGroup(R.id.group_recent)
+            history.forEachIndexed { index, uriString ->
+                val title = shortenUri(uriString)
+                menu.add(R.id.group_recent, Menu.NONE, index, title).apply {
+                    icon = ContextCompat.getDrawable(this@MainActivity, getIconResForModel(uriString))
+                    MenuItemCompat.setTooltipText(this, uriString)
+                }
             }
         }
     }

@@ -30,7 +30,9 @@
 
     </group>
 
-    <item android:title="@string/menu_recent_models">
+    <item
+        android:id="@+id/nav_recent_wrapper"
+        android:title="@string/menu_recent_models">
         <menu>
             <group android:id="@+id/group_recent" android:checkableBehavior="none" />
         </menu>
