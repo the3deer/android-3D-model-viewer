@@ -43,8 +43,10 @@ import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
 import org.the3deer.util.event.EventListener
 import org.the3deer.util.event.EventManager
 import java.util.EventObject
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity(), EventListener {
+class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentResolver {
 
     private val TAG = "MainActivity"
     private lateinit var appBarConfiguration: AppBarConfiguration
@@ -55,6 +57,10 @@ class MainActivity : AppCompatActivity(), EventListener {
     private val modelEngineViewModel: ModelEngineViewModel by viewModels()
 
     private lateinit var loadContentDialog: LoadContentDialog
+
+    // Future to handle synchronous-like URI resolution from background threads
+    private var pendingResolution: CompletableFuture<Uri?>? = null
+
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         Log.d(TAG, "Picked URI: $uri")
         uri?.let {
@@ -71,11 +77,17 @@ class MainActivity : AppCompatActivity(), EventListener {
         }
     }
 
+    private val resolveContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        Log.d(TAG, "Resolved URI: $uri")
+        pendingResolution?.complete(uri)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize ContentUtils with context for file operations
+        // Initialize ContentUtils with context and resolver for file operations
         ContentUtils.setContext(this)
+        ContentUtils.setContentResolver(this)
         loadContentDialog = LoadContentDialog(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -182,6 +194,8 @@ class MainActivity : AppCompatActivity(), EventListener {
         modelEngineViewModel.activeEngine.observe(this) { engine ->
             Log.i(TAG, "Active engine changed. id: ${engine?.id}")
 
+            supportActionBar?.title = shortenUri(engine.model.name)
+
             // Unregister from previous engine
             lastEngine?.remove(Constants.BEAN_ID_CONTEXT, this)
             /*lastEngine?.beanFactory?.find(EventManager::class.java)?.let { eventManager ->
@@ -220,6 +234,31 @@ class MainActivity : AppCompatActivity(), EventListener {
         }
 
         applyInitialImmersiveMode()
+    }
+
+    /**
+     * Resolves a missing resource URI by prompting the user to select the file.
+     * This method is called from background threads in the Engine (ContentUtils).
+     */
+    override fun resolveUri(uri: Uri): Uri? {
+        Log.i(TAG, "Resolving missing resource: $uri")
+
+        pendingResolution = CompletableFuture<Uri?>()
+        
+        runOnUiThread {
+            Toast.makeText(this, "Please select missing file: ${ContentUtils.getFileName(this, uri)}", Toast.LENGTH_LONG).show()
+            resolveContent.launch("*/*")
+        }
+
+        return try {
+            // Block the background thread for up to 60 seconds waiting for user input
+            pendingResolution?.get(60, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            Log.e(TAG, "Timeout or error resolving URI: $uri", e)
+            null
+        } finally {
+            pendingResolution = null
+        }
     }
 
     private fun updateScreenInsets(insets: Insets) {

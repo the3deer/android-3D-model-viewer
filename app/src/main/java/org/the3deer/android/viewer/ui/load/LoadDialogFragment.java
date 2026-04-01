@@ -58,14 +58,14 @@ public class LoadDialogFragment extends DialogFragment {
     private static final int REQUEST_CODE_OPEN_MATERIAL = 1102;
     private static final int REQUEST_CODE_OPEN_TEXTURE = 1103;
     private static final int REQUEST_CODE_ADD_FILES = 1200;
-    private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae|gltf|glb|fbx|zip|index)";
+    private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|glb|zip|index)";
 
 
     /**
      * This actions corresponds to the "dialog_load_from" string array defined in strings.xml
      */
     private enum Action {
-        REPOSITORY_THE3DEER, REPOSITORY_KHRONOS, REPOSITORY_POLYHAVEN, REPOSITORY_ASSIMP, ANDROID_EXPLORER, SAMPLES, /* deprecated */ FILE_EXPLORER
+        SAMPLES, REPOSITORY_THE3DEER, REPOSITORY_KHRONOS /*, REPOSITORY_POLYHAVEN, REPOSITORY_ASSIMP*/, ANDROID_EXPLORER  /* deprecated , FILE_EXPLORER */
     }
 
     /**
@@ -105,21 +105,21 @@ public class LoadDialogFragment extends DialogFragment {
                 case REPOSITORY_KHRONOS:
                     loadModelFromKhronos(REPO_KHRONOS_URL);
                     break;
-                case REPOSITORY_ASSIMP:
+                /*case REPOSITORY_ASSIMP:
                     loadModelFromAssimp(REPO_ASSIMP_URL);
                     break;
                 case REPOSITORY_POLYHAVEN:
                     loadModelFromPolyHaven();
-                    break;
+                    break;*/
                 case ANDROID_EXPLORER:
                     Bundle result = new Bundle();
                     result.putString("action", "pick");
                     activity.getSupportFragmentManager().setFragmentResult("app", result);
                     dismiss();
                     break;
-                case FILE_EXPLORER:
+                /*case FILE_EXPLORER:
                     loadModelFromSdCard();
-                    break;
+                    break;*/
             }
         } catch (Exception ex) {
             Log.e(TAG, ex.getMessage(),ex);
@@ -398,6 +398,6 @@ public class LoadDialogFragment extends DialogFragment {
         dismiss();
         final Bundle arguments = new Bundle();
         arguments.putString("uri", uri.toString());
-        Navigation.findNavController(activity, R.id.nav_host_fragment_content_main).navigate(R.id.nav_home, arguments);
+        activity.runOnUiThread(()->Navigation.findNavController(activity, R.id.nav_host_fragment_content_main).navigate(R.id.nav_home, arguments));
     }
 }

@@ -23,6 +23,7 @@ open class HomeFragment : Fragment() {
     val TAG: String = HomeFragment::class.java.getSimpleName()
 
     private var uriString: String = ""
+    private var modelName: String = ""
     private var modelType: String = ""
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -46,11 +47,12 @@ open class HomeFragment : Fragment() {
 
         // check arguments
         uriString = arguments?.getString("uri") ?: throw Exception("No Uri provided as argument")
+        modelName = arguments?.getString("name") ?: uriString.split("/").last()
         modelType = arguments?.getString("type") ?: uriString.split(".").last()
-        
+
         // Register model metadata
         //Model.register(uriString.toUri(), type)
-        modelEngineViewModel.initEngine(uriString, modelType)
+        modelEngineViewModel.initEngine(uriString, modelName, modelType)
 
         // Get UI binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
