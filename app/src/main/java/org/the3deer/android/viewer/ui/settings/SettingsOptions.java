@@ -18,10 +18,10 @@ public class SettingsOptions {
         return language;
     }
 
-    public void setLanguage(final String language) throws Exception {
+    public void setLanguage(final String language) {
 
         // check
-        if (language == null) throw new Exception("Language can't be null");
+        if (language == null) throw new IllegalArgumentException("Language can't be null");
 
         this.language = language;
 

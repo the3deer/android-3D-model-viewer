@@ -51,7 +51,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             screen.addPreference(category)
 
             categoryBeans.forEach { bean ->
-                val id = bean.javaClass.name
+                val beanId = bean.javaClass.name
                 val propertiesMap = beanFactory.getProperties(bean)
                 
                 val isBeanExperimental = isExperimental(bean.javaClass)
@@ -61,7 +61,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     .let { if (isBeanExperimental) "$it (Experimental)" else it }
 
                 val propertyInfos = propertiesMap.values.toList()
-                val enabledProp = propertyInfos.find { it.id == "enabled" }
+                val enabledProp = propertyInfos.find { it.fieldName == "enabled" }
                 val otherProps = propertyInfos.filter { it != enabledProp }
 
                 var masterDependencyKey: String? = null
@@ -70,7 +70,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     val toggleTitle = enabledProp.resolveLabel(context)?.takeIf { it.isNotEmpty() && it != "enabled" } ?: componentName
                     val summaryText = enabledProp.resolveDescription(context)?.takeIf { it.isNotEmpty() } ?: beanDescription
                     
-                    val masterSwitch = createSwitchPreference(context, id, bean, enabledProp, toggleTitle, summaryText)
+                    val masterSwitch = createSwitchPreference(context, beanId, bean, enabledProp, toggleTitle, summaryText)
                     category.addPreference(masterSwitch)
                     masterDependencyKey = masterSwitch.key
                 }
@@ -81,7 +81,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     // Use componentName as fallback title for list preferences (dynamic values) or if it's the primary property
                     val fallbackTitle = if (prop.valuesMethod != null || (prop.values != null && prop.values.isNotEmpty())) componentName else null
                     
-                    createPreference(context, id, bean, prop, fallbackTitle, fallbackDescription)?.let { pref ->
+                    createPreference(context, beanId, bean, prop, fallbackTitle, fallbackDescription)?.let { pref ->
                         category.addPreference(pref)
                         if (masterDependencyKey != null) {
                             pref.dependency = masterDependencyKey
@@ -228,24 +228,23 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
     private fun createSwitchPreference(context: Context, id: String, bean: Any, prop: BeanPropertyInfo, titleText: String, summaryText: String?): SwitchPreferenceCompat {
         return SwitchPreferenceCompat(context).apply {
-            key = "$id.${prop.id}"
+            key = prop.id
             title = titleText
             summary = summaryText
             try {
                 val value = prop.getValue(bean)
                 if (value is Boolean) setDefaultValue(value)
             } catch (e: Exception) {
-                Log.e("SettingsFragment", "Error getting value for ${prop.id}", e)
+                Log.e("SettingsFragment", "Error getting value for ${prop.fieldName}", e)
             }
             isIconSpaceReserved = false
         }
     }
 
-    private fun createPreference(context: Context, id: String, bean: Any, prop: BeanPropertyInfo, fallbackTitle: String?, fallbackDescription: String?): Preference? {
-        val propertyId = prop.id
-        val preferenceKey = "$id.$propertyId"
+    private fun createPreference(context: Context, beanId: String, bean: Any, prop: BeanPropertyInfo, fallbackTitle: String?, fallbackDescription: String?): Preference? {
+        val preferenceKey = prop.id
 
-        val label = prop.resolveLabel(context) ?: fallbackTitle ?: prop.id
+        val label = prop.resolveLabel(context) ?: fallbackTitle ?: prop.name
         val titleText = label.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
         val summaryText = prop.resolveDescription(context)?.takeIf { it.isNotEmpty() } ?: fallbackDescription
 
@@ -259,7 +258,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                         val value = prop.getValue(bean)
                         if (value is Boolean) setDefaultValue(value)
                     } catch (e: Exception) {
-                        Log.e("SettingsFragment", "Error getting value for ${prop.id}", e)
+                        Log.e("SettingsFragment", "Error getting value for ${prop.fieldName}", e)
                     }
                     isIconSpaceReserved = false
                 }
@@ -290,15 +289,27 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         val names = getPropertyNames(context, prop, values)
 
         // check
-        if (values.size != names.size) throw Exception("Values and names must have the same size. Property: $prop.  Values: $values. Names: $names")
+        if (values.size != names.size) throw IllegalStateException("Values and names must have the same size. Property: $prop.  Values: $values. Names: $names")
+
+        // arrays
+        var resolveValues = prop.resolveValues(context)?.map { it as String }
+
+        // check
+        if (resolveValues != null){
+            if (!resolveValues.containsAll(values) || !values.containsAll(resolveValues)) {
+                throw IllegalStateException("Values and resolveValues must be equal. Property: $prop.  Values: $values. ResolveValues: $resolveValues")
+            }
+        } else {
+            resolveValues = values
+        }
 
         pref.entries = names.toTypedArray()
-        pref.entryValues = values.map { it.toString() }.toTypedArray()
+        pref.entryValues = resolveValues.toTypedArray()
 
         val currentValue = try { prop.getValue(bean) } catch (e: Exception) { null }
-        val currentIndex = values.indexOfFirst { areEqual(it, currentValue) }
+        val currentIndex = resolveValues.indexOfFirst { areEqual(it, currentValue) }
         if (currentIndex != -1) {
-            pref.value = values[currentIndex].toString()
+            pref.value = resolveValues[currentIndex].toString()
         }
     }
 
@@ -342,7 +353,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
             try {
                 val properties = beanFactory.getProperties(bean)
-                val info = properties[propertyName] ?: return
+                val info = properties[key] ?: return
 
                 if (info.type == Boolean::class.java || info.type == java.lang.Boolean.TYPE) {
                     if (sharedPreferences.contains(key)) {
@@ -378,11 +389,11 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             }
         }
 
-        private fun getPropertyValues(context: Context, bean: Any, info: BeanPropertyInfo): List<Any> {
+        private fun getPropertyValues(context: Context, bean: Any, info: BeanPropertyInfo): List<String> {
             return try {
                 // Priority 1: Method provider
                 info.valuesMethod?.invoke(bean)?.let {
-                    return (it as List<*>).filterNotNull()
+                    return (it as List<*>).filterNotNull() as List<String>
                 }
                 
                 // Priority 2: Static values in annotation
