@@ -150,9 +150,6 @@ open class HomeFragment : Fragment() {
             engine.add("ui.settings", SettingsOptions())
             engine.add("ui.fragment", this)
 
-            // apply saved preferences
-            SettingsFragment.applySavedPreferences(engine, requireContext())
-
             // setup engine asynchronously
             engine.loadAsync({
 
@@ -161,14 +158,16 @@ open class HomeFragment : Fragment() {
 
                 // boot engine
                 engine.start()
+
+                // apply saved preferences
+                SettingsFragment.applySavedPreferences(engine, requireContext())
+
+                // debug
+                Log.i(TAG, "Engine setup finished")
+
+                // activate engine
+                modelEngineViewModel.activateEngine(uriString);
             })
-
-            // debug
-            Log.i(TAG, "Engine setup finished")
-
-            // activate engine
-            modelEngineViewModel.activateEngine(uriString);
-
         } catch (ex: Exception) {
             Log.e(TAG, "Error setting up engine", ex)
         }
