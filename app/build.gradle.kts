@@ -8,7 +8,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "org.andresoviedo.dddmodel2"
+        applicationId = "org.the3deer.android.viewer"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
