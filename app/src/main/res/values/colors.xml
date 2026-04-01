@@ -8,6 +8,8 @@
     <color name="engine_text_primary">#f0f6fc</color>
     <color name="engine_text_secondary">#8b949e</color>
 
+    <color name="design_default_color_secondary">#3fb950</color>
+
     <!-- night theme colors -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>

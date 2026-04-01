@@ -1,5 +1,6 @@
 package org.the3deer.android.viewer
 
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -40,6 +41,7 @@ import org.the3deer.android.viewer.databinding.ActivityMainBinding
 import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
+import org.the3deer.android.viewer.ui.dialogs.ModelInfoDialogFragment
 import org.the3deer.util.event.EventListener
 import org.the3deer.util.event.EventManager
 import java.util.EventObject
@@ -179,6 +181,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
 
         // Action stack buttons setup
+        binding.appBarMain.btnInfo.setOnClickListener {
+            ModelInfoDialogFragment().show(supportFragmentManager, "model_info_dialog")
+        }
         binding.appBarMain.btnScene.setOnClickListener {
             SceneDialogFragment().show(supportFragmentManager, "scene_dialog")
         }
@@ -198,20 +203,24 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
             // Unregister from previous engine
             lastEngine?.remove(Constants.BEAN_ID_CONTEXT, this)
-            /*lastEngine?.beanFactory?.find(EventManager::class.java)?.let { eventManager ->
-                val listeners = lastEngine?.beanFactory?.findAll(EventListener::class.java)
-                listeners?.remove(this)
-            }*/
 
             // Register with new engine
             engine?.add(Constants.BEAN_ID_CONTEXT, this)
-            /*engine?.beanFactory?.find(EventManager::class.java)?.let { eventManager ->
-                engine.beanFactory.addOrReplace("mainActivityListener", this)
-            }*/
 
             lastEngine = engine
             refreshOverlayButtons()
             ViewCompat.requestApplyInsets(binding.root)
+        }
+
+        // Monitor memory status to update Info button color
+        modelEngineViewModel.memoryStatus.observe(this) { status ->
+            val color = when (status) {
+                ModelEngineViewModel.MemoryStatus.OK -> ContextCompat.getColor(this, R.color.design_default_color_secondary)
+                ModelEngineViewModel.MemoryStatus.WARNING -> ContextCompat.getColor(this, android.R.color.holo_orange_light)
+                ModelEngineViewModel.MemoryStatus.CRITICAL -> ContextCompat.getColor(this, android.R.color.holo_red_light)
+                else -> ContextCompat.getColor(this, R.color.design_default_color_secondary)
+            }
+            binding.appBarMain.btnInfo.backgroundTintList = ColorStateList.valueOf(color)
         }
 
         // Handle fragment results
@@ -367,19 +376,18 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
     private fun setImmersiveMode(immersiveMode: Boolean) {
         this.immersiveMode = immersiveMode
+
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         if (immersiveMode) {
-            windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+            windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             supportActionBar?.hide()
-            binding.appBarMain.immersive.setImageResource(android.R.drawable.ic_menu_revert)
         } else {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
             supportActionBar?.show()
-            binding.appBarMain.immersive.setImageResource(android.R.drawable.ic_menu_add)
-            refreshOverlayButtons()
         }
         
+        // Update screen insets immediately
         ViewCompat.requestApplyInsets(binding.root)
     }
 
@@ -390,6 +398,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
         return result
     }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.nav_settings) {
