@@ -180,6 +180,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                     }
                     navigationView.setCheckedItem(destination.id)
                 }
+
+                // Show/hide UI actions stack based on destination. These are only for the Home fragment (3D viewer)
+                binding.appBarMain.uiActionsStack.visibility = if (destination.id == R.id.nav_home) View.VISIBLE else View.GONE
             }
 
             sharedViewModel.history.observe(this) { history ->
