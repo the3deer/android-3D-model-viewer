@@ -1,6 +1,8 @@
 package org.the3deer.android.viewer
 
+import android.content.Context
 import android.content.res.ColorStateList
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -32,10 +34,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.the3deer.android.util.ContentUtils
 import org.the3deer.android.viewer.ui.load.LoadContentDialog
-import androidx.core.net.toUri
 import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.ModelEngineViewModel
-import org.the3deer.android.engine.model.Constants
+import org.the3deer.android.engine.event.EngineEvent
+import org.the3deer.android.engine.model.Model
 import org.the3deer.android.engine.model.ModelEvent
 import org.the3deer.android.viewer.databinding.ActivityMainBinding
 import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
@@ -54,7 +56,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private var immersiveMode = false
-    
+
     private val sharedViewModel: SharedViewModel by viewModels()
     private val modelEngineViewModel: ModelEngineViewModel by viewModels()
 
@@ -63,26 +65,32 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     // Future to handle synchronous-like URI resolution from background threads
     private var pendingResolution: CompletableFuture<Uri?>? = null
 
-    private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        Log.d(TAG, "Picked URI: $uri")
-        uri?.let {
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    loadContentDialog.load(it)
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        Log.e(TAG, "Error loading uri: $it", e)
-                        Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+    private val getContent =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            Log.d(TAG, "Picked URI: $uri")
+            uri?.let {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        loadContentDialog.load(it)
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Log.e(TAG, "Error loading uri: $it", e)
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Error: ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
             }
         }
-    }
 
-    private val resolveContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        Log.d(TAG, "Resolved URI: $uri")
-        pendingResolution?.complete(uri)
-    }
+    private val resolveContent =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            Log.d(TAG, "Resolved URI: $uri")
+            pendingResolution?.complete(uri)
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,10 +109,10 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         // Listen for system bar insets to update the engine's safe area
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            
+
             // Update the shared screen object in the engine view model
             updateScreenInsets(insets)
-            
+
             windowInsets
         }
 
@@ -113,7 +121,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         binding.appBarMain.immersive.setOnClickListener {
             setImmersiveMode(!this.immersiveMode)
             PreferenceManager.getDefaultSharedPreferences(this).edit()
-                .putBoolean(MainActivity::class.java.name+".immersive", immersiveMode)
+                .putBoolean(MainActivity::class.java.name + ".immersive", immersiveMode)
                 .apply()
         }
 
@@ -131,16 +139,19 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             navigationView.setNavigationItemSelectedListener { item ->
                 when (item.groupId) {
                     R.id.group_recent -> {
-                        val uriString = MenuItemCompat.getTooltipText(item)?.toString() ?: item.title.toString().lowercase()
-                        
+                        val uriString =
+                            MenuItemCompat.getTooltipText(item)?.toString() ?: item.title.toString()
+                                .lowercase()
+
                         // Set URI and navigate
                         val arguments = Bundle()
                         arguments.putString("uri", uriString)
                         navController.navigate(R.id.nav_home, arguments)
-                        
+
                         binding.drawerLayout?.closeDrawers()
                         true
                     }
+
                     else -> {
                         when (item.itemId) {
                             R.id.nav_load, R.id.nav_settings -> {
@@ -148,8 +159,10 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                                 binding.drawerLayout?.closeDrawers()
                                 true
                             }
+
                             else -> {
-                                val handled = NavigationUI.onNavDestinationSelected(item, navController)
+                                val handled =
+                                    NavigationUI.onNavDestinationSelected(item, navController)
                                 if (handled) {
                                     binding.drawerLayout?.closeDrawers()
                                 }
@@ -195,32 +208,13 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
 
         // Monitor active engine to refresh UI buttons
-        var lastEngine: ModelEngine? = null
         modelEngineViewModel.activeEngine.observe(this) { engine ->
             Log.i(TAG, "Active engine changed. id: ${engine?.id}")
 
             supportActionBar?.title = shortenUri(engine.model.name)
 
-            // Unregister from previous engine
-            lastEngine?.remove(Constants.BEAN_ID_CONTEXT, this)
-
-            // Register with new engine
-            engine?.add(Constants.BEAN_ID_CONTEXT, this)
-
-            lastEngine = engine
-            refreshOverlayButtons()
+            refreshOverlayButtons(engine.message)
             ViewCompat.requestApplyInsets(binding.root)
-        }
-
-        // Monitor memory status to update Info button color
-        modelEngineViewModel.memoryStatus.observe(this) { status ->
-            val color = when (status) {
-                ModelEngineViewModel.MemoryStatus.OK -> ContextCompat.getColor(this, R.color.design_default_color_secondary)
-                ModelEngineViewModel.MemoryStatus.WARNING -> ContextCompat.getColor(this, android.R.color.holo_orange_light)
-                ModelEngineViewModel.MemoryStatus.CRITICAL -> ContextCompat.getColor(this, android.R.color.holo_red_light)
-                else -> ContextCompat.getColor(this, R.color.design_default_color_secondary)
-            }
-            binding.appBarMain.btnInfo.backgroundTintList = ColorStateList.valueOf(color)
         }
 
         // Handle fragment results
@@ -235,6 +229,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                         navController.navigate(R.id.nav_home, navBundle)
                     }
                 }
+
                 "navigate" -> {
                     val viewId = bundle.getInt("view")
                     navController.navigate(viewId, bundle)
@@ -253,9 +248,13 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         Log.i(TAG, "Resolving missing resource: $uri")
 
         pendingResolution = CompletableFuture<Uri?>()
-        
+
         runOnUiThread {
-            Toast.makeText(this, "Please select missing file: ${ContentUtils.getFileName(this, uri)}", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                "Please select missing file: ${ContentUtils.getFileName(this, uri)}",
+                Toast.LENGTH_LONG
+            ).show()
             resolveContent.launch("*/*")
         }
 
@@ -288,31 +287,101 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
     }
 
-    private fun refreshOverlayButtons() {
+    private fun refreshOverlayButtons(message: String) {
         runOnUiThread {
-            val engine = modelEngineViewModel.activeEngine.value
-            val model = engine?.model
-            val scene = model?.activeScene
 
-            binding.appBarMain.btnScene.isEnabled = (model?.scenes?.size ?: 0) > 1
+            Log.d(TAG, "Refreshing overlay buttons")
+
+            val engine = modelEngineViewModel.activeEngine.value ?: return@runOnUiThread
+            val model = engine.model
+            val scene = model.activeScene
+
+            when(engine.status) {
+                ModelEngine.Status.OK, ModelEngine.Status.WARNING -> {
+                    binding.loadingLayout.visibility = View.GONE
+                    binding.loadingText.text = ""
+                    Toast.makeText(this, "Model loaded successfully", Toast.LENGTH_SHORT).show()
+                }
+                ModelEngine.Status.LOADING -> {
+                    binding.loadingLayout.visibility = View.VISIBLE
+                    binding.loadingText.text = message?:"Loading..."
+                    binding.loadingText.visibility = View.VISIBLE
+                }
+                ModelEngine.Status.ERROR -> {
+                    binding.loadingLayout.visibility = View.GONE
+                    binding.loadingText.text = ""
+                    Toast.makeText(this, "Error loading model", Toast.LENGTH_SHORT).show()
+                }
+
+                else -> {}
+            }
+
+
+
+            binding.appBarMain.btnScene.isEnabled = (model.scenes?.size ?: 0) > 1
             binding.appBarMain.btnCamera.isEnabled = (scene?.cameras?.size ?: 0) > 1
             binding.appBarMain.btnAnimation.isEnabled = (scene?.animations?.size ?: 0) > 0
 
-            binding.appBarMain.btnScene.alpha = if (binding.appBarMain.btnScene.isEnabled) 1.0f else 0.5f
-            binding.appBarMain.btnCamera.alpha = if (binding.appBarMain.btnCamera.isEnabled) 1.0f else 0.5f
-            binding.appBarMain.btnAnimation.alpha = if (binding.appBarMain.btnAnimation.isEnabled) 1.0f else 0.5f
+            binding.appBarMain.btnScene.alpha =
+                if (binding.appBarMain.btnScene.isEnabled) 1.0f else 0.5f
+            binding.appBarMain.btnCamera.alpha =
+                if (binding.appBarMain.btnCamera.isEnabled) 1.0f else 0.5f
+            binding.appBarMain.btnAnimation.alpha =
+                if (binding.appBarMain.btnAnimation.isEnabled) 1.0f else 0.5f
+
+            // Handle Traffic Light status for Info button
+            val modelStatus = model.status ?: Model.Status.UNKNOWN
+            val engineStatus = engine.status ?: ModelEngine.Status.UNKNOWN
+            val color = when {
+                modelStatus == Model.Status.ERROR || engineStatus == ModelEngine.Status.ERROR -> ContextCompat.getColor(
+                    this,
+                    android.R.color.holo_red_light
+                )
+
+                modelStatus == Model.Status.WARNING || engineStatus == ModelEngine.Status.WARNING -> ContextCompat.getColor(
+                    this,
+                    android.R.color.holo_orange_light
+                )
+
+                modelStatus == Model.Status.OK && engineStatus == ModelEngine.Status.OK -> ContextCompat.getColor(
+                    this,
+                    R.color.design_default_color_secondary
+                )
+
+                else -> ContextCompat.getColor(this, R.color.design_default_color_secondary)
+            }
+            binding.appBarMain.btnInfo.backgroundTintList = ColorStateList.valueOf(color)
+
+            // Handle loading overlay visibility
+            Log.d(TAG, "Refreshing overlay buttons. model status: $modelStatus, engine status: $engineStatus")
+            if (modelStatus == Model.Status.LOADING || engineStatus == ModelEngine.Status.LOADING) {
+                binding.loadingLayout.visibility = View.VISIBLE
+                binding.loadingText.text = model.message
+            } else {
+                binding.loadingLayout.visibility = View.GONE
+            }
         }
     }
 
     override fun onEvent(event: EventObject?): Boolean {
-        if (event is ModelEvent && (event.code == ModelEvent.Code.LOADED || event.code == ModelEvent.Code.LOAD_ERROR)) {
-            refreshOverlayButtons()
-            return false
+        Log.d(TAG, "Event: $event")
+        if (event is EngineEvent){
+            refreshOverlayButtons(event.getData("message", String::class.java)
+            )
+        }
+        else if (event is ModelEvent) {
+            refreshOverlayButtons(event.getData("message", String::class.java))
         }
         return false
     }
 
     fun pick(mimeType: String) {
+
+        val connMgr = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (connMgr.restrictBackgroundStatus == ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED) {
+            Toast.makeText(this, "Warning: Background mode is enabled. It may slow down the loading process", Toast.LENGTH_LONG).show()
+        }
+
         getContent.launch(mimeType)
     }
 
@@ -329,7 +398,10 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             history.forEachIndexed { index, uriString ->
                 val title = shortenUri(uriString)
                 subMenu.add(R.id.group_recent, Menu.NONE, index, title).apply {
-                    icon = ContextCompat.getDrawable(this@MainActivity, getIconResForModel(uriString))
+                    icon = ContextCompat.getDrawable(
+                        this@MainActivity,
+                        getIconResForModel(uriString)
+                    )
                     MenuItemCompat.setTooltipText(this, uriString)
                 }
             }
@@ -339,7 +411,10 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             history.forEachIndexed { index, uriString ->
                 val title = shortenUri(uriString)
                 menu.add(R.id.group_recent, Menu.NONE, index, title).apply {
-                    icon = ContextCompat.getDrawable(this@MainActivity, getIconResForModel(uriString))
+                    icon = ContextCompat.getDrawable(
+                        this@MainActivity,
+                        getIconResForModel(uriString)
+                    )
                     MenuItemCompat.setTooltipText(this, uriString)
                 }
             }
@@ -347,17 +422,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     }
 
     private fun shortenUri(uriString: String): String {
-        if (uriString == "triangle" || uriString == "cube" || uriString == "square") {
-            return uriString.replaceFirstChar { it.uppercase() }
-        }
-        try {
-            val uri = uriString.toUri()
-            val path = uri.lastPathSegment
-            if (path != null) {
-                return if (path.length > 20) "..." + path.substring(path.length - 17) else path
-            }
-        } catch (e: Exception) { /* ignore */ }
-        return if (uriString.length > 25) "..." + uriString.substring(uriString.length - 22) else uriString
+        return uriString.split("/").last().split("?").first()
     }
 
     private fun getIconResForModel(modelName: String): Int {
@@ -369,9 +434,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     }
 
     private fun applyInitialImmersiveMode() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val isImmersiveMode = prefs.getBoolean(MainActivity::class.java.name + ".immersive", false)
-        setImmersiveMode(isImmersiveMode)
+        val immersive = PreferenceManager.getDefaultSharedPreferences(this)
+            .getBoolean(MainActivity::class.java.name + ".immersive", false)
+        setImmersiveMode(immersive)
     }
 
     private fun setImmersiveMode(immersiveMode: Boolean) {
@@ -380,13 +445,14 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         if (immersiveMode) {
             windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
-            windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            windowInsetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             supportActionBar?.hide()
         } else {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
             supportActionBar?.show()
         }
-        
+
         // Update screen insets immediately
         ViewCompat.requestApplyInsets(binding.root)
     }
