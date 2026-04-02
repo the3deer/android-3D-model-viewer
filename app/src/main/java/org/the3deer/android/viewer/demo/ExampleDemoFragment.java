@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProvider;
 import org.jetbrains.annotations.NotNull;
 import org.the3deer.android.engine.ModelEngine;
 import org.the3deer.android.engine.ModelEngineViewModel;
-import org.the3deer.android.engine.model.Model;
+import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.model.Object3D;
 import org.the3deer.android.engine.model.Scene;
 import org.the3deer.android.engine.objects.Cube;

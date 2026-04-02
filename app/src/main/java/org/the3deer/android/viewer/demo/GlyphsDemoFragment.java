@@ -12,7 +12,7 @@ import org.the3deer.android.engine.gui.Label;
 import org.the3deer.android.engine.gui.Text;
 import org.the3deer.android.engine.gui.Widget;
 import org.the3deer.android.engine.model.Camera;
-import org.the3deer.android.engine.model.Model;
+import org.the3deer.android.engine.Model;
 import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.util.bean.BeanInit;
 

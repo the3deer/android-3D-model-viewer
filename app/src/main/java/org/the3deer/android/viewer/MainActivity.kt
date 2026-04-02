@@ -1,6 +1,5 @@
 package org.the3deer.android.viewer
 
-import android.content.Context
 import android.content.res.ColorStateList
 import android.net.ConnectivityManager
 import android.net.Uri
@@ -37,7 +36,7 @@ import org.the3deer.android.viewer.ui.load.LoadContentDialog
 import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.android.engine.event.EngineEvent
-import org.the3deer.android.engine.model.Model
+import org.the3deer.android.engine.Model
 import org.the3deer.android.engine.model.ModelEvent
 import org.the3deer.android.viewer.databinding.ActivityMainBinding
 import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment

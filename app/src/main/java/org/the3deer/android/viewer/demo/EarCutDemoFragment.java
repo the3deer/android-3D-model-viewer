@@ -13,7 +13,7 @@ import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.android.engine.gui.Text;
 import org.the3deer.android.engine.model.Camera;
 import org.the3deer.android.engine.model.Constants;
-import org.the3deer.android.engine.model.Model;
+import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.model.Object3D;
 import org.the3deer.android.engine.model.Scene;
 import org.the3deer.android.engine.services.LoadListenerAdapter;
