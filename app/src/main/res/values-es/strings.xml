@@ -42,7 +42,7 @@
     <string name="about_link_source_url">https://github.com/the3deer/android-3d-model-viewer</string>
     <string name="about_link_issues_label">Reportar un problema</string>
     <string name="about_link_issues_url">https://github.com/the3deer/android-3d-model-viewer/issues</string>
-
+    <string name="about_github_desc" translatable="false"> Icono GitHub Octocat</string>
     <string name="about_warning_experimental">⚠ Advertencia: Este motor es experimental. Algunas características de los archivos podrían no renderizarse perfectamente.</string>
 
     <string name="about_header_privacy">Privacidad</string>

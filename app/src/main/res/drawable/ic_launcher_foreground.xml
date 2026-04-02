@@ -8,16 +8,22 @@
         android:translateY="14"
         android:scaleX="0.8"
         android:scaleY="0.8">
-        <!-- Merkabah (Star Tetrahedron) representation -->
+        <!-- Utah Teapot Silhouette (Precision Version) -->
+        <!-- Shifted up by 12 units to increase bottom padding -->
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M50,5 L89,72.5 L11,72.5 Z" />
+            android:pathData="M50,30 C30,30 16,38 16,56 C16,76 32,84 50,84 C68,84 84,76 84,56 C84,38 70,30 50,30 Z" />
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M50,95 L11,27.5 L89,27.5 Z" />
+            android:pathData="M18,60 C5,60 2,43 12,36 L15,41 C10,44 12,56 18,56 Z" />
         <path
-            android:strokeColor="#000000"
-            android:strokeWidth="1"
-            android:pathData="M50,5 L50,95 M11,27.5 L89,72.5 M89,27.5 L11,72.5" />
+            android:fillColor="#FFFFFF"
+            android:pathData="M82,48 C100,48 100,80 82,78 L80,73 C92,73 92,56 82,56 Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M35,33 C35,26 65,26 65,33 Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M48,26 C48,21 52,21 52,26 Z" />
     </group>
 </vector>

@@ -30,19 +30,19 @@ public class AboutFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Link to Report an Issue
+        // Link to Website
         binding.linkWebsite.setOnClickListener(v -> {
             openUrl(getString(R.string.about_link_website_url));
         });
 
-        // Link to Source Code
+        // Link to Source Code (GitHub)
         binding.linkGithub.setOnClickListener(v -> {
             openUrl(getString(R.string.about_link_source_url));
         });
 
         // Link to Report an Issue
         binding.linkIssues.setOnClickListener(v -> {
-            openUrl(getString(R.string.about_link_issues_url) + "/issues");
+            openUrl(getString(R.string.about_link_issues_url));
         });
     }
 
@@ -54,8 +54,7 @@ public class AboutFragment extends Fragment {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
         } catch (Exception e) {
-            // Handle cases where no activity can handle the intent
-            Log.i("AboutFragment", "Error opening URL: " + url+". message: "+e.getMessage());
+            Log.e("AboutFragment", "Error opening URL: " + url + ". message: " + e.getMessage());
         }
     }
 
