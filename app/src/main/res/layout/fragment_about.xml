@@ -4,30 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
+    android:orientation="vertical"
     android:background="@color/engine_dark_grey">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingLeft="24dp"
-        android:paddingRight="24dp"
-        android:paddingTop="24dp"
-        android:paddingBottom="100dp">
+        android:padding="24dp">
 
-        <!-- App Header -->
+        <!-- App Header: Icon on the left, Title/Version on the right -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:layout_marginBottom="24dp">
-
-            <ImageView
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:src="@drawable/ic_merkabah"
-                app:tint="@color/engine_accent" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -52,6 +44,12 @@
                     android:textColor="@color/engine_text_secondary" />
             </LinearLayout>
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_teapot" />
 
         <TextView
             android:layout_width="match_parent"
@@ -157,29 +155,34 @@
             android:textColor="@color/engine_accent"
             android:layout_marginBottom="8dp" />
 
-        <TextView
-            android:id="@+id/link_website"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/about_link_website_label"
-            android:textAppearance="?attr/textAppearanceBody2"
-            android:textColor="@color/engine_accent"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true" />
-
-        <TextView
+        <!-- Cool GitHub Link with Octocat -->
+        <LinearLayout
             android:id="@+id/link_github"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/about_link_source_label"
-            android:textAppearance="?attr/textAppearanceBody2"
-            android:textColor="@color/engine_accent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:padding="8dp"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@string/about_github_desc"
+                app:srcCompat="@drawable/ic_github"
+                app:tint="@color/engine_accent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/about_link_source_label"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textColor="@color/engine_accent"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/link_issues"
@@ -192,7 +195,20 @@
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
-            android:layout_marginBottom="24dp" />
+            />
+
+        <TextView
+            android:id="@+id/link_website"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_link_website_label"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="@color/engine_accent"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="24dp"/>
 
         <!-- Privacy -->
         <TextView
@@ -209,7 +225,8 @@
             android:layout_height="wrap_content"
             android:text="@string/about_privacy_text"
             android:textAppearance="?attr/textAppearanceCaption"
-            android:textColor="@color/engine_text_secondary" />
+            android:textColor="@color/engine_text_secondary"
+            android:layout_marginBottom="48dp" />
 
     </LinearLayout>
 </ScrollView>

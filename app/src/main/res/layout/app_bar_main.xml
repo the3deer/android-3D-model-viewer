@@ -7,11 +7,6 @@
     android:layout_height="match_parent"
     tools:context="org.the3deer.android.viewer.MainActivity">
 
-    <!-- Content must come first to be at the bottom of the Z-order -->
-    <include
-        android:id="@+id/content_main"
-        layout="@layout/content_main" />
-
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
@@ -28,6 +23,12 @@
             app:popupTheme="@style/Theme.AndroidModelViewer.PopupOverlay" />
 
     </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Content must have scrolling behavior to avoid being hidden by the Toolbar -->
+    <include
+        android:id="@+id/content_main"
+        layout="@layout/content_main"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <!-- Vertical stack for all actions including the toggle button -->
     <LinearLayout
