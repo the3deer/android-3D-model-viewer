@@ -73,18 +73,11 @@ open class HomeFragment : Fragment() {
             // Create an OpenGL ES context.
             glSurfaceView.setEGLContextClientVersion(3)
         } catch (e: Exception) {
-            Log.w(
-                TAG,
-                "GL ES version 3 not supported, falling back to 2.0. " + e.message
-            )
+            Log.w(TAG, "GL ES version 3 not supported, falling back to 2.0. " + e.message)
             try {
                 glSurfaceView.setEGLContextClientVersion(2)
             } catch (e2: Exception) {
-                Log.e(
-                    TAG,
-                    "Failed to set GL ES version 2.0",
-                    e2
-                )
+                Log.e(TAG, "Failed to set GL ES version 2.0", e2)
             }
         }
 

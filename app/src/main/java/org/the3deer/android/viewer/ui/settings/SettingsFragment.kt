@@ -341,7 +341,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 if (key.contains(".")) applyPreferenceToEngine(context, beanFactory, sharedPreferences, key)
             }
 
-            Log.d("SettingsFragment", "Finished restoring preferences.")
+            Log.i("SettingsFragment", "Finished restoring preferences.")
         }
 
         private fun applyPreferenceToEngine(context: Context, beanFactory: BeanFactory, sharedPreferences: SharedPreferences, key: String) {
