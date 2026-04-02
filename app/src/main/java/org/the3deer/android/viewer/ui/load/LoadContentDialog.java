@@ -129,9 +129,11 @@ public class LoadContentDialog {
                         fileExtension = "?";
                     }
 
+                    // build uri
+                    final Uri pseudoUri = Uri.withAppendedPath(uri, zipFilename);
+
                     // register all zip entries
-                    final Uri pseudoUri = Uri.parse("android://" + activity.getPackageName() + "/binary/" + zipFilename);
-                    ContentUtils.addUri(zipFilename, pseudoUri);
+                    ContentUtils.addUri(uri.toString(), pseudoUri);
                     ContentUtils.addData(pseudoUri, zipFile.getValue());
 
                     // detect model
@@ -142,7 +144,7 @@ public class LoadContentDialog {
                         case ".gltf":
                         case ".fbx":
                         case ".glb":
-                            modelFile = pseudoUri;
+                            modelFile = uri;
                             extension = fileExtension;
                             break;
                     }
