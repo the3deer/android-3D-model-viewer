@@ -58,7 +58,7 @@ public class LoadDialogFragment extends DialogFragment {
     private static final int REQUEST_CODE_OPEN_MATERIAL = 1102;
     private static final int REQUEST_CODE_OPEN_TEXTURE = 1103;
     private static final int REQUEST_CODE_ADD_FILES = 1200;
-    private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|glb|zip|index)";
+    private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae|glb|zip|index)";
 
 
     /**
