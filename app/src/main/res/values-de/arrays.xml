@@ -44,9 +44,9 @@
         <item>Stereoscopic</item>
     </string-array>
     <string-array name="renderer_values">
-        <item>org.the3deer.android.engine.renderer.DefaultRenderer</item>
-        <item>org.the3deer.android.engine.renderer.AnaglyphRenderer</item>
-        <item>org.the3deer.android.engine.renderer.StereoscopicRenderer</item>
+        <item>org.the3deer.engine.renderer.DefaultRenderer</item>
+        <item>org.the3deer.engine.renderer.AnaglyphRenderer</item>
+        <item>org.the3deer.engine.renderer.StereoscopicRenderer</item>
     </string-array>
 
     <string-array name="background_color_entries">

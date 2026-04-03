@@ -6,8 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.activityViewModels
 import androidx.preference.*
-import org.the3deer.android.engine.ModelEngine
-import org.the3deer.android.engine.ModelEngineViewModel
+import org.the3deer.engine.ModelEngine
+import org.the3deer.engine.android.ModelEngineViewModel
 import org.the3deer.android.viewer.R
 import org.the3deer.util.bean.*
 import java.util.Locale

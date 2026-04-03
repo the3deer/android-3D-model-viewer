@@ -6,7 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONObject;
-import org.the3deer.android.util.ContentUtils;
+import org.the3deer.engine.android.util.ContentUtils;
 
 import java.lang.ref.WeakReference;
 import java.net.URL;
