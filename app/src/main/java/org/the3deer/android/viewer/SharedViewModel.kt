@@ -29,9 +29,9 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
         val savedHistory = prefs.getString(SharedViewModel::class.java.name+".history", "") ?: ""
         _history.value = if (savedHistory.isEmpty()) emptyList() else savedHistory.split(",")
 	
-        // Set initial state
+        /*// Set initial state
         val savedModel = prefs.getString(SharedViewModel::class.java.name+".active_uri", "triangle") ?: "triangle"
-        _activeFragment.value = savedModel
+        _activeFragment.value = savedModel*/
     }
 
     fun setActiveFragment(uri: String) {

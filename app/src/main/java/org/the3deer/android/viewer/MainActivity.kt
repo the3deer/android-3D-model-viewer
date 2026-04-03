@@ -298,28 +298,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             val model = engine.model
             val scene = model.activeScene
 
-            when(engine.status) {
-                ModelEngine.Status.OK, ModelEngine.Status.WARNING -> {
-                    binding.loadingLayout.visibility = View.GONE
-                    binding.loadingText.text = ""
-                    Toast.makeText(this, "Model loaded successfully", Toast.LENGTH_SHORT).show()
-                }
-                ModelEngine.Status.LOADING -> {
-                    binding.loadingLayout.visibility = View.VISIBLE
-                    binding.loadingText.text = message?:"Loading..."
-                    binding.loadingText.visibility = View.VISIBLE
-                }
-                ModelEngine.Status.ERROR -> {
-                    binding.loadingLayout.visibility = View.GONE
-                    binding.loadingText.text = ""
-                    Toast.makeText(this, "Error loading model", Toast.LENGTH_SHORT).show()
-                }
-
-                else -> {}
-            }
-
-
-
             binding.appBarMain.btnScene.isEnabled = (model.scenes?.size ?: 0) > 1
             binding.appBarMain.btnCamera.isEnabled = (scene?.cameras?.size ?: 0) > 1
             binding.appBarMain.btnAnimation.isEnabled = (scene?.animations?.size ?: 0) > 0

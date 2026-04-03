@@ -44,7 +44,7 @@ open class HomeFragment : Fragment(), EventListener {
     ): View {
 
         // debug
-        Log.i(TAG, "Creating HomeFragment... " + System.identityHashCode(this))
+        Log.i(TAG, "HomeFragment onCreateView... " + System.identityHashCode(this))
 
         // check arguments
         uriString = arguments?.getString("uri") ?: throw Exception("No Uri provided as argument")
@@ -80,13 +80,15 @@ open class HomeFragment : Fragment(), EventListener {
         // Set up OpenGL Surface View using the engine's GLRenderer
         glSurfaceView.setRenderer(renderer)
         glSurfaceView.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
+
+        Log.i(TAG, "HomeFragment onCreateView finished " + System.identityHashCode(this))
         
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         // debug
-        Log.i(TAG, "HomeFragment created: " + System.identityHashCode(this))
+        Log.i(TAG, "HomeFragment onViewCreated: " + System.identityHashCode(this))
 
         super.onViewCreated(view, savedInstanceState)
 
@@ -94,60 +96,64 @@ open class HomeFragment : Fragment(), EventListener {
 
         // Observe the active engine to trigger setup
         sharedViewModel.activeFragment.observe(viewLifecycleOwner) { uriString ->
-            handler.post({ loadEngine(uriString) })
+            setupAndStartEngine(uriString)
         }
 
-        sharedViewModel.setActiveFragment(uriString)
+        handler.post { setupAndStartEngine(uriString) }
+
+        Log.i(TAG, "HomeFragment onViewCreated finished " + System.identityHashCode(this))
     }
 
     /**
      * Load, start and activate the engine for the given URI.
      */
-    private fun loadEngine(uriString : String) {
+    private fun setupAndStartEngine(uriString : String) {
         try {
 
             // debug
-            Log.i(TAG, "Loading up Engine... uri: $uriString")
+            Log.i(TAG, "setupAndStartEngine $uriString")
 
             // Initialize engine view model with this model's metadata
-            modelEngineViewModel.initEngine(uriString, modelName, modelType)
+            modelEngineViewModel.initEngine(uriString, modelName, modelType, {
 
-            // get engine
-            val engine = modelEngineViewModel.getEngine(uriString)
-                ?: throw IllegalArgumentException("Engine not initialized")
+                // get engine
+                val engine = modelEngineViewModel.getEngine(uriString)
+                    ?: throw IllegalArgumentException("Engine not initialized")
 
-            // setup engine with UI/Context components
-            engine.add("gl.surfaceView", surface)
-            engine.add("gl.renderer", renderer)
-            engine.add("ui.settings", SettingsOptions())
-            engine.add("ui.fragment", this)
+                // setup engine with UI/Context components
+                engine.add("gl.surfaceView", surface)
+                engine.add("gl.renderer", renderer)
+                engine.add("ui.settings", SettingsOptions())
+                engine.add("ui.fragment", this)
 
+                // load engine
+                modelEngineViewModel.loadEngine(uriString, {
 
-            modelEngineViewModel.loadEngine(uriString, {
-                // apply saved preferences
-                SettingsFragment.applySavedPreferences(engine, requireContext())
+                    // apply saved preferences
+                    SettingsFragment.applySavedPreferences(engine, requireContext())
 
-                // boot engine
-                modelEngineViewModel.startEngine(uriString, {
+                    // boot engine
+                    modelEngineViewModel.startEngine(uriString, {
 
-                    // check status
-                    if (engine.status == ModelEngine.Status.OK) {
+                        // check status
+                        if (engine.status == ModelEngine.Status.OK) {
 
-                        // activate engine if no error
-                        modelEngineViewModel.setActiveEngine(uriString)
+                            // activate engine if no error
+                            modelEngineViewModel.setActiveEngine(uriString)
 
-                        // log success
-                        Log.i(TAG, "Engine loading finished successfully")
+                            // log success
+                            Log.i(TAG, "setupAndStartEngine finished successfully")
 
-                    } else {
+                        } else {
 
-                        // log error
-                        Log.e(TAG, "Engine loading finished with error: ${engine.message}")
-                    }
-                })
+                            // log error
+                            Log.e(TAG, "setupAndStartEngine finished with error: ${engine.message}")
+                        }
+                    })
+                });
             });
         } catch (ex: Exception) {
-            Log.e(TAG, "Error loading Engine", ex)
+            Log.e(TAG, "setupAndStartEngine finished with exception", ex)
         }
     }
 
