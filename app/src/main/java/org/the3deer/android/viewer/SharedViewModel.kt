@@ -15,9 +15,6 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     /**
      * Navigation / UI State
      */
-    private val _activeFragment = MutableLiveData<String>()
-    var activeFragment: LiveData<String> = _activeFragment
-
     private val _modelColor = MutableLiveData<FloatArray>()
     val modelColor: LiveData<FloatArray> = _modelColor
 
@@ -28,22 +25,18 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
         // Load history
         val savedHistory = prefs.getString(SharedViewModel::class.java.name+".history", "") ?: ""
         _history.value = if (savedHistory.isEmpty()) emptyList() else savedHistory.split(",")
-	
-        /*// Set initial state
-        val savedModel = prefs.getString(SharedViewModel::class.java.name+".active_uri", "triangle") ?: "triangle"
-        _activeFragment.value = savedModel*/
     }
 
-    fun setActiveFragment(uri: String) {
-
-        this._activeFragment.value = uri;
+    /**
+     * Update the last active URI and the history.
+     */
+    fun onModelOpened(uri: String) {
         
         // Save the last active URI to preferences
         prefs.edit { putString(SharedViewModel::class.java.name+".active_uri", uri) }
 
         updateHistory(uri)
     }
-
 
     private fun updateHistory(item: String) {
         val currentHistory = _history.value?.toMutableList() ?: mutableListOf()
