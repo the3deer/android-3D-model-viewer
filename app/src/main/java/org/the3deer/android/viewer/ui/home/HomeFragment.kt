@@ -99,7 +99,7 @@ open class HomeFragment : Fragment(), EventListener {
             setupAndStartEngine(uriString)
         }
 
-        handler.post { setupAndStartEngine(uriString) }
+         sharedViewModel.setActiveFragment(uriString)
 
         Log.i(TAG, "HomeFragment onViewCreated finished " + System.identityHashCode(this))
     }
