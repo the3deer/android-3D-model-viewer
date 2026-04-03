@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import org.the3deer.engine.android.util.ContentUtils;
 
 import java.lang.ref.WeakReference;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -73,7 +73,7 @@ public class PolyHaven {
         @Override
         protected Node doInBackground(Void... voids) {
             try {
-                URL url = new URL(API_URL + "/assets?type=models");
+                URI url = URI.create(API_URL + "/assets?type=models");
                 String json = ContentUtils.read(url);
                 JSONObject assetsJson = new JSONObject(json);
 
@@ -173,7 +173,7 @@ public class PolyHaven {
         @Override
         protected String doInBackground(Void... voids) {
             try {
-                URL url = new URL(API_URL + "/files/" + assetId);
+                URI url = URI.create(API_URL + "/files/" + assetId);
                 String json = ContentUtils.read(url);
                 JSONObject files = new JSONObject(json);
                 

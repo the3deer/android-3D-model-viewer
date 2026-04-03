@@ -1,6 +1,5 @@
 package org.the3deer.android.viewer.demo;
 
-import android.net.Uri;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -187,7 +186,7 @@ public class ExampleDemoFragment extends HomeFragment {
             // this has heterogeneous faces
             //ContentUtils.setContext(getActivity());
             ColladaLoader colladaLoader = new ColladaLoader();
-            Scene obj53 = colladaLoader.load(Uri.parse("android://org.the3deer.android.viewer/assets/models/cowboy.dae"));
+            Scene obj53 = colladaLoader.load(URI.create(("android://org.the3deer.android.viewer/assets/models/cowboy.dae")));
             /*obj53.setColor(new float[] { 1.0f, 1.0f, 1f, 1.0f });
             Rescaler.rescale(obj53, 2f);
             obj53.setLocation(new float[] { 0f, 0f, 2f});
@@ -200,7 +199,7 @@ public class ExampleDemoFragment extends HomeFragment {
 
         // test loading object without normals
                     /*try {
-                        Object3D obj = Object3DBuilder.loadV5(parent, Uri.parse("android://assets/models/cube4.obj"));
+                        Object3D obj = Object3DBuilder.loadV5(parent, URI.create("android://assets/models/cube4.obj"));
                         obj.setPosition(new float[] { 0f, 2f, -2f });
                         obj.setColor(new float[] { 0.3f, 0.52f, 1f, 1.0f });
                         addObject(obj);

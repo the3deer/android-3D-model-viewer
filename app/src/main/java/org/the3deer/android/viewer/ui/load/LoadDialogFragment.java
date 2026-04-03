@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,14 +42,14 @@ public class LoadDialogFragment extends DialogFragment {
 
     private static final Logger logger = Logger.getLogger(LoadDialogFragment.class.getSimpleName());
 
-    private static final URL REPO_URL = AndroidUtils.createURL("https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/models/index");
-    private static final URL REPO_KHRONOS_URL = AndroidUtils.createURL("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/model-index.json");
-    private static final URL REPO_ASSIMP_URL = AndroidUtils.createURL("https://api.github.com/repos/assimp/assimp/contents/test/models/FBX");
+    private static final URI REPO_URL = URI.create("https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/models/index");
+    private static final URI REPO_KHRONOS_URL = URI.create("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/model-index.json");
+    private static final URI REPO_ASSIMP_URL = URI.create("https://api.github.com/repos/assimp/assimp/contents/test/models/FBX");
     /**
      * Poly Haven repository - free of charge - public domain
      * @see <a href="https://github.com/Poly-Haven/Public-API/blob/master/ToS.md" />
      */
-    private static final URL REPO_POLY_HAVEN_URL = AndroidUtils.createURL("https://api.polyhaven.com");
+    private static final URI REPO_POLY_HAVEN_URL = URI.create("https://api.polyhaven.com");
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1000;
     private static final int REQUEST_INTERNET_ACCESS = 1001;
     private static final int REQUEST_READ_CONTENT_PROVIDER = 1002;
@@ -133,7 +132,7 @@ public class LoadDialogFragment extends DialogFragment {
                 (String file) -> {
                     if (file != null) {
                         ContentUtils.provideAssets(activity);
-                        launchModelRendererActivity(Uri.parse("android://"+activity.getPackageName()+"/assets/" + file));
+                        launchModelRendererActivity(URI.create("android://"+activity.getPackageName()+"/assets/" + file));
                     }
                 });
     }
@@ -142,13 +141,13 @@ public class LoadDialogFragment extends DialogFragment {
         if (AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
             PolyHaven.load(activity, (String url) -> {
                 if (url != null) {
-                    launchModelRendererActivity(Uri.parse(url));
+                    launchModelRendererActivity(URI.create(url));
                 }
             });
         }
     }
 
-    private void loadModelFromKhronos(URL url) {
+    private void loadModelFromKhronos(URI url) {
         if (!AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) return;
 
         final ProgressDialog progress = ProgressDialog.show(activity, "", "Loading Khronos Repository...", true);
@@ -166,14 +165,14 @@ public class LoadDialogFragment extends DialogFragment {
                         JSONObject variants = jsonObject.getJSONObject("variants");
                         if (variants.has("glTF-Binary")) {
                             String filename = variants.getString("glTF-Binary");
-                            final URI baseUri = IO.getParent(url.toURI());
+                            final URI baseUri = IO.getParent(url);
                             String nameEncoded = URLEncoder.encode(name, "UTF-8").replace("+", "%20");
                             String filenameEncoded = URLEncoder.encode(filename, "UTF-8").replace("+", "%20");
                             final String uri = baseUri + nameEncoded + "/glTF-Binary/" + filenameEncoded;
                             files.add(uri);
                         } else if (variants.has("glTF")){
                             String filename = variants.getString("glTF");
-                            final URI baseUri = IO.getParent(url.toURI());
+                            final URI baseUri = IO.getParent(url);
                             String nameEncoded = URLEncoder.encode(name, "UTF-8").replace("+", "%20");
                             String filenameEncoded = URLEncoder.encode(filename, "UTF-8").replace("+", "%20");
                             final String uri = baseUri + nameEncoded + "/glTF/" + filenameEncoded;
@@ -190,7 +189,7 @@ public class LoadDialogFragment extends DialogFragment {
                         files, SUPPORTED_FILE_TYPES_REGEX,
                         (String file) -> {
                             if (file != null) {
-                                launchModelRendererActivity(Uri.parse(file));
+                                launchModelRendererActivity(URI.create(file));
                             }
                         }).create().show();
                 });
@@ -205,7 +204,7 @@ public class LoadDialogFragment extends DialogFragment {
         }).start();
     }
 
-    private void loadModelFromRepository(URL url) {
+    private void loadModelFromRepository(URI url) {
         if (!AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
             logger.log(Level.SEVERE, "Permission not granted");
             activity.runOnUiThread(() -> {
@@ -228,13 +227,9 @@ public class LoadDialogFragment extends DialogFragment {
                         (String file) -> {
                             if (file != null) {
                                 if (file.endsWith(".index")) {
-                                    try {
-                                        loadModelFromRepository(new URL(file));
-                                    } catch (MalformedURLException e) {
-                                        Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
-                                    }
+                                    loadModelFromRepository(URI.create(file));
                                 } else {
-                                    launchModelRendererActivity(Uri.parse(file));
+                                    launchModelRendererActivity(URI.create(file));
                                 }
                             }
                         }).create().show();
@@ -250,7 +245,7 @@ public class LoadDialogFragment extends DialogFragment {
         }).start();
     }
 
-    private void loadModelFromAssimp(URL url) {
+    private void loadModelFromAssimp(URI url) {
         if (!AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) return;
 
         final ProgressDialog progress = ProgressDialog.show(activity, "", "Loading Assimp Repository...", true);
@@ -275,7 +270,7 @@ public class LoadDialogFragment extends DialogFragment {
                         files, SUPPORTED_FILE_TYPES_REGEX,
                         (String file) -> {
                             if (file != null) {
-                                launchModelRendererActivity(Uri.parse(file));
+                                launchModelRendererActivity(URI.create(file));
                             }
                         }).create().show();
                 });
@@ -296,7 +291,7 @@ public class LoadDialogFragment extends DialogFragment {
                     (File file) -> {
                         if (file != null) {
                             ContentUtils.setCurrentDir(file.getParentFile());
-                            launchModelRendererActivity(Uri.parse("file://" + file.getAbsolutePath()));
+                            launchModelRendererActivity(URI.create("file://" + file.getAbsolutePath()));
                         }
                     });
         }
@@ -322,7 +317,7 @@ public class LoadDialogFragment extends DialogFragment {
     private void onLoadModel(Uri uri) throws IOException {
         ContentUtils.clearDocumentsProvided();
         loadModelParameters.put("model", uri);
-        final String fileName = ContentUtils.getFileName(getContext(), uri);
+        final String fileName = ContentUtils.getFileName(getContext(), URI.create(uri.toString()));
 
         if (fileName != null) {
             if (fileName.toLowerCase().endsWith(".obj")) {
@@ -334,19 +329,19 @@ public class LoadDialogFragment extends DialogFragment {
             } else if (fileName.toLowerCase().endsWith(".gltf")) {
                 askForRelatedFiles(3);
             } else if (fileName.toLowerCase().endsWith(".zip")) {
-                final Map<String, byte[]> zipFiles = ContentUtils.readFiles(new URL(uri.toString()));
-                Uri modelFile = null;
+                final Map<String, byte[]> zipFiles = ContentUtils.readFiles(URI.create(uri.toString()));
+                URI modelFile = null;
                 for (Map.Entry<String, byte[]> zipFile : zipFiles.entrySet()) {
                     final String zipFilename = zipFile.getKey();
                     final int dotIndex = zipFilename.lastIndexOf('.');
                     final String fileExtension = dotIndex != -1 ? zipFilename.substring(dotIndex) : "?";
 
-                    final Uri pseudoUri = Uri.parse("android://" + activity.getPackageName() + "/binary/" + zipFilename);
-                    ContentUtils.addUri(zipFilename, pseudoUri);
-                    ContentUtils.addData(pseudoUri, zipFile.getValue());
+                    final URI pseudoUrl = URI.create("android://" + activity.getPackageName() + "/binary/" + zipFilename);
+                    ContentUtils.addUri(zipFilename, pseudoUrl);
+                    ContentUtils.addData(pseudoUrl, zipFile.getValue());
 
                     if (fileExtension.matches("\\.(obj|stl|dae|gltf)")) {
-                        modelFile = pseudoUri;
+                        modelFile = URI.create(pseudoUrl.toString());
                     }
                 }
                 if (modelFile != null) {
@@ -364,8 +359,8 @@ public class LoadDialogFragment extends DialogFragment {
         }
     }
 
-    private Uri getUserSelectedModel() {
-        return (Uri) loadModelParameters.get("model");
+    private URI getUserSelectedModel() throws MalformedURLException {
+        return URI.create(loadModelParameters.get("model").toString());
     }
 
     private void askForRelatedFiles(int modelType) throws IOException {
@@ -374,13 +369,17 @@ public class LoadDialogFragment extends DialogFragment {
             case 0: // obj
                 String materialFile = WavefrontLoader.getMaterialLib(getUserSelectedModel());
                 if (materialFile == null) {
-                    launchModelRendererActivity(getUserSelectedModel());
+                    launchModelRendererActivity(URI.create(getUserSelectedModel().toString()));
                     break;
                 }
                 ContentUtils.showDialog(getActivity(), "Select material file", "This model references a material file (" + materialFile + "). Please select it", "OK", "Cancel", (DialogInterface dialog, int which) -> {
                     switch (which) {
                         case DialogInterface.BUTTON_NEGATIVE:
-                            launchModelRendererActivity(getUserSelectedModel());
+                            try {
+                                launchModelRendererActivity(URI.create(getUserSelectedModel().toString()));
+                            } catch (MalformedURLException e) {
+                                logger.log(Level.SEVERE, e.getMessage(), e);
+                            }
                             break;
                         case DialogInterface.BUTTON_POSITIVE:
                             loadModelParameters.put("file", materialFile);
@@ -389,12 +388,12 @@ public class LoadDialogFragment extends DialogFragment {
                 });
                 break;
             case 1: // stl
-                launchModelRendererActivity(getUserSelectedModel());
+                launchModelRendererActivity(URI.create(getUserSelectedModel().toString()));
                 break;
         }
     }
 
-    private void launchModelRendererActivity(Uri uri) {
+    private void launchModelRendererActivity(URI uri) {
         //sharedViewModel.setActiveFragment(uri.toString());
         dismiss();
         final Bundle arguments = new Bundle();

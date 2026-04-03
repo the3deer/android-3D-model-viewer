@@ -1,6 +1,5 @@
 package org.the3deer.android.viewer.demo;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -20,6 +19,7 @@ import org.the3deer.engine.services.LoadListenerAdapter;
 import org.the3deer.engine.services.wavefront.WavefrontLoaderTask;
 import org.the3deer.util.geometry.UnionTri;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -60,7 +60,7 @@ public class EarCutDemoFragment extends HomeFragment {
         try {
 
             WavefrontLoaderTask task = new WavefrontLoaderTask(
-                    Uri.parse("android://org.the3deer.android.viewer/assets/models/triangle1.obj"), new LoadListenerAdapter() {
+                    URI.create("android://org.the3deer.android.viewer/assets/models/triangle1.obj"), new LoadListenerAdapter() {
 
                 @Override
                 public void onLoadStart() {
@@ -88,7 +88,7 @@ public class EarCutDemoFragment extends HomeFragment {
             task.execute();
 
             WavefrontLoaderTask task2 = new WavefrontLoaderTask(
-                    Uri.parse("android://org.the3deer.android.viewer/assets/models/triangle2.obj"),
+                    URI.create("android://org.the3deer.android.viewer/assets/models/triangle2.obj"),
                     new LoadListenerAdapter() {
 
                         @Override

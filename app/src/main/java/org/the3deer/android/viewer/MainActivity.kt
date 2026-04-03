@@ -45,6 +45,7 @@ import org.the3deer.engine.event.EngineEvent
 import org.the3deer.engine.model.ModelEvent
 import org.the3deer.util.event.EventListener
 import org.the3deer.util.event.EventManager
+import java.net.URI
 import java.util.EventObject
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -62,7 +63,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     private lateinit var loadContentDialog: LoadContentDialog
 
     // Future to handle synchronous-like URI resolution from background threads
-    private var pendingResolution: CompletableFuture<Uri?>? = null
+    private var pendingResolution: CompletableFuture<URI?>? = null
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -70,7 +71,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             uri?.let {
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
-                        loadContentDialog.load(it)
+                        loadContentDialog.load(URI.create(it.toString()))
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) {
                             Log.e(TAG, "Error loading uri: $it", e)
@@ -88,7 +89,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     private val resolveContent =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             Log.d(TAG, "Resolved URI: $uri")
-            pendingResolution?.complete(uri)
+            pendingResolution?.complete(URI.create(uri.toString()))
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -240,10 +241,10 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
      * Resolves a missing resource URI by prompting the user to select the file.
      * This method is called from background threads in the Engine (ContentUtils).
      */
-    override fun resolveUri(uri: Uri): Uri? {
+    override fun resolveUri(uri: URI): URI? {
         Log.i(TAG, "Resolving missing resource: $uri")
 
-        pendingResolution = CompletableFuture<Uri?>()
+        pendingResolution = CompletableFuture<URI?>()
 
         runOnUiThread {
             Toast.makeText(

@@ -1,7 +1,6 @@
 package org.the3deer.android.viewer.ui.load;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -15,7 +14,6 @@ import org.the3deer.engine.android.util.ContentUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -89,11 +87,11 @@ public class LoadContentDialog {
      * @param uri model resource
      * @throws IOException
      */
-    public void load(Uri uri) throws IOException, InterruptedException {
+    public void load(URI uri) throws IOException, InterruptedException {
 
         // detect model type
         // example: content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3Dv5Vt6bpRbbWqAplsgXWSPOVnJa1cmWj2SQIwTejAt2kl2xistjSRKLP4S-s%3D
-        final String fileName = ContentUtils.getFileName(getActivity().getApplicationContext(), uri);
+        final String fileName = ContentUtils.getFileName(getActivity().getApplicationContext(), URI.create(uri.toString()));
         final String fileType = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase() : "unsupported";
 
         // check
@@ -110,11 +108,11 @@ public class LoadContentDialog {
                 break;
             case "zip":
                 // register resource
-                ContentUtils.addUri(fileName, uri);
+                ContentUtils.addUri(fileName, URI.create(uri.toString()));
 
                 // FIXME: potential out of memory error
-                final Map<String, byte[]> zipFiles = ContentUtils.readFiles(new URL(uri.toString()));
-                Uri modelFile = null;
+                final Map<String, byte[]> zipFiles = ContentUtils.readFiles(URI.create(uri.toString()));
+                URI modelFile = null;
                 String extension = null;
                 for (Map.Entry<String, byte[]> zipFile : zipFiles.entrySet()) {
 
@@ -128,11 +126,11 @@ public class LoadContentDialog {
                     }
 
                     // build uri
-                    final Uri pseudoUri = Uri.withAppendedPath(uri, zipFilename);
+                    final URI pseudoUri = uri.resolve(zipFilename);
 
                     // register all zip entries
-                    ContentUtils.addUri(uri.toString(), pseudoUri);
-                    ContentUtils.addData(pseudoUri, zipFile.getValue());
+                    ContentUtils.addUri(uri.toString(), URI.create(pseudoUri.toString()));
+                    ContentUtils.addData(URI.create(pseudoUri.toString()), zipFile.getValue());
 
                     // detect model
                     switch (fileExtension) {
@@ -160,7 +158,7 @@ public class LoadContentDialog {
     }
 
 
-    private void launchFragment(Uri uri, String name, String type) {
+    private void launchFragment(URI uri, String name, String type) {
         final Bundle arguments = new Bundle();
         arguments.putString("uri", uri.toString());
         arguments.putString("name", name);

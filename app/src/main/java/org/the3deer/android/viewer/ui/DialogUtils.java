@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
@@ -16,6 +15,7 @@ import org.the3deer.android.viewer.R;
 import org.the3deer.engine.android.util.AssetUtils;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +57,11 @@ public class DialogUtils {
             builder.setItems(fileListArray, (DialogInterface dialog, int which) -> {
                 documentsProvided.clear();
                 for (String asset : fileListAssets) {
-                    documentsProvided.put(asset.substring(asset.lastIndexOf("/") + 1), Uri.parse(asset));
+                    try {
+                        documentsProvided.put(asset.substring(asset.lastIndexOf("/") + 1), URI.create(asset));
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, e.getMessage(), e);
+                    }
                 }
                 callback.onClick(fileListModels.get(which));
             });
@@ -100,7 +104,11 @@ public class DialogUtils {
             builder.setAdapter(textImageAdapter, (DialogInterface dialog, int which) -> {
                 documentsProvided.clear();
                 for (String asset : fileListAssets) {
-                    documentsProvided.put(asset.substring(asset.lastIndexOf("/") + 1), Uri.parse(asset));
+                    try {
+                        documentsProvided.put(asset.substring(asset.lastIndexOf("/") + 1), URI.create(asset));
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, e.getMessage(), e);
+                    }
                 }
                 callback.onClick((String) modelList.get(which).get("url"));
             });
