@@ -1,10 +1,10 @@
 package org.the3deer.android.viewer.demo;
 
-import android.util.Log;
-
 import androidx.lifecycle.ViewModelProvider;
 
 import org.jetbrains.annotations.NotNull;
+import org.the3deer.android.viewer.ui.home.HomeFragment;
+import org.the3deer.engine.Model;
 import org.the3deer.engine.ModelEngine;
 import org.the3deer.engine.android.ModelEngineViewModel;
 import org.the3deer.engine.gui.GUI;
@@ -12,9 +12,9 @@ import org.the3deer.engine.gui.Label;
 import org.the3deer.engine.gui.Text;
 import org.the3deer.engine.gui.Widget;
 import org.the3deer.engine.model.Camera;
-import org.the3deer.engine.Model;
-import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.util.bean.BeanInit;
+
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -26,7 +26,7 @@ import javax.inject.Named;
  */
 public class GlyphsDemoFragment extends HomeFragment {
 
-    private final static String TAG = GlyphsDemoFragment.class.getSimpleName();
+    private static final Logger logger = Logger.getLogger(GlyphsDemoFragment.class.getSimpleName());
 
     @Inject
     private GUI gui;
@@ -38,7 +38,7 @@ public class GlyphsDemoFragment extends HomeFragment {
 
     @BeanInit
     public void setUp() {
-        Log.i(TAG, "Starting up...");
+        logger.info("Starting up...");
 
         ModelEngineViewModel viewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
         @NotNull Model model = viewModel.createModel("demo.glyphs");

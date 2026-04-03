@@ -9,11 +9,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import org.the3deer.android.viewer.R;
+import org.the3deer.engine.Model;
 import org.the3deer.engine.ModelEngine;
 import org.the3deer.engine.android.ModelEngineViewModel;
-import org.the3deer.engine.Model;
 import org.the3deer.engine.model.Scene;
-import org.the3deer.android.viewer.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ public class SceneDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        //Log.d(TAG, "onCreateDialog. "+viewModel.getActiveFragment().getValue());
+        //logger.config("onCreateDialog. "+viewModel.getActiveFragment().getValue());
         final ModelEngine modelEngine = viewModel.getActiveEngine();
         if (modelEngine == null) return null;
 

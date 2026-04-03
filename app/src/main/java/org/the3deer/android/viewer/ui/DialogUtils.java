@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
@@ -21,8 +20,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DialogUtils {
+
+    private static final Logger logger = Logger.getLogger(DialogUtils.class.getSimpleName());
 
     public static AlertDialog.Builder createChooserDialog(Context context, String title, CharSequence message,
                                                           List<String> fileListAssets, String fileRegex, AssetUtils.Callback callback) {
@@ -89,7 +92,7 @@ public class DialogUtils {
                         try {
                             v.setImageBitmap((Bitmap) modelList.get(Integer.parseInt(value)).get("bitmap"));
                         } catch (Exception ex) {
-                            Log.e("ContentUtils", ex.getMessage(), ex);
+                            logger.log(Level.SEVERE,  ex.getMessage(), ex);
                         }
                     }
                 }

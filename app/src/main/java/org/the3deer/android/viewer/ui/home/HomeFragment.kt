@@ -9,14 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import org.the3deer.engine.ModelEngine
-import org.the3deer.engine.android.ModelEngineViewModel
-import org.the3deer.engine.android.renderer.GLRenderer
-import org.the3deer.engine.android.renderer.GLSurfaceView
 import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.android.viewer.databinding.FragmentHomeBinding
 import org.the3deer.android.viewer.ui.settings.SettingsFragment
 import org.the3deer.android.viewer.ui.settings.SettingsOptions
+import org.the3deer.engine.ModelEngine
+import org.the3deer.engine.android.ModelEngineViewModel
+import org.the3deer.engine.android.renderer.GLRenderer
+import org.the3deer.engine.android.renderer.GLSurfaceView
 import org.the3deer.util.event.EventListener
 import java.util.EventObject
 

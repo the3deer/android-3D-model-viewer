@@ -2,7 +2,6 @@ package org.the3deer.android.viewer.providers.polyhaven;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONObject;
@@ -15,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provider for Poly Haven assets.
@@ -24,7 +25,7 @@ import java.util.TreeMap;
  */
 public class PolyHaven {
 
-    private static final String TAG = PolyHaven.class.getSimpleName();
+    private static final Logger logger = Logger.getLogger(PolyHaven.class.getSimpleName());
     private static final String API_URL = "https://api.polyhaven.com";
 
     public interface PolyHavenCallback {
@@ -98,7 +99,7 @@ public class PolyHaven {
                 }
                 return root;
             } catch (Exception e) {
-                Log.e(TAG, "Error building asset tree", e);
+                logger.log(Level.SEVERE, "Error building asset tree", e);
                 return null;
             }
         }
@@ -188,7 +189,7 @@ public class PolyHaven {
                 }
                 return null;
             } catch (Exception e) {
-                Log.e(TAG, "Error fetching file URL", e);
+                logger.log(Level.SEVERE, "Error fetching file URL", e);
                 return null;
             }
         }

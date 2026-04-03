@@ -2,14 +2,18 @@ package org.the3deer.android.viewer.ui;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
-import org.the3deer.engine.android.util.AndroidUtils;
-import org.the3deer.android.viewer.ui.load.LoadDialogFragment;
 import org.the3deer.android.viewer.R;
+import org.the3deer.android.viewer.ui.load.LoadDialogFragment;
+import org.the3deer.engine.android.util.AndroidUtils;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MainDialogFragment extends DialogFragment {
+
+    private static final Logger logger = Logger.getLogger(MainDialogFragment.class.getSimpleName());
 
     private enum Action {
         LOAD_MODEL, HELP, EXIT,
@@ -64,7 +68,7 @@ public class MainDialogFragment extends DialogFragment {
                     break;
             }
         } catch (Exception ex) {
-            Log.e("MainDialogFragment",ex.getMessage(),ex);
+            logger.log(Level.SEVERE, ex.getMessage(),ex);
             Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
         }
 

@@ -8,10 +8,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
-import org.the3deer.engine.android.util.ContentUtils;
 import org.the3deer.android.viewer.MainActivity;
 import org.the3deer.android.viewer.R;
 import org.the3deer.android.viewer.SharedViewModel;
+import org.the3deer.engine.android.util.ContentUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,8 +21,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class LoadContentDialog {
-
-    private final static String TAG = LoadContentDialog.class.getSimpleName();
 
     private final static String SUPPORTED_MODELS_EXTENSIONS = "ob,stl,dae,gltf,glb,fbx,zip";
     private final static Pattern SUPPORTED_MODELS_REGEX =

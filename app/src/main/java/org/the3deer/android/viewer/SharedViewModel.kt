@@ -1,11 +1,11 @@
 package org.the3deer.android.viewer
 
 import android.app.Application
+import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
-import androidx.core.content.edit
 
 
 class SharedViewModel(application: Application) : AndroidViewModel(application) {

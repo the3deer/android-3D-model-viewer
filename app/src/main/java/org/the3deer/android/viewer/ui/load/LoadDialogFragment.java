@@ -6,7 +6,6 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.lifecycle.ViewModelProvider;
@@ -14,16 +13,16 @@ import androidx.navigation.Navigation;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.the3deer.engine.services.wavefront.WavefrontLoader;
-import org.the3deer.engine.android.util.AndroidUtils;
-import org.the3deer.engine.android.util.AssetUtils;
-import org.the3deer.engine.android.util.ContentUtils;
-import org.the3deer.engine.android.util.FileUtils;
+import org.the3deer.android.viewer.R;
 import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.providers.polyhaven.PolyHaven;
 import org.the3deer.android.viewer.ui.DialogFragment;
 import org.the3deer.android.viewer.ui.DialogUtils;
-import org.the3deer.android.viewer.R;
+import org.the3deer.engine.android.util.AndroidUtils;
+import org.the3deer.engine.android.util.AssetUtils;
+import org.the3deer.engine.android.util.ContentUtils;
+import org.the3deer.engine.android.util.FileUtils;
+import org.the3deer.engine.services.wavefront.WavefrontLoader;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,12 +34,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.javagl.jgltf.model.io.IO;
 
 public class LoadDialogFragment extends DialogFragment {
 
-    private final static String TAG = LoadDialogFragment.class.getSimpleName();
+    private static final Logger logger = Logger.getLogger(LoadDialogFragment.class.getSimpleName());
 
     private static final URL REPO_URL = AndroidUtils.createURL("https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/models/index");
     private static final URL REPO_KHRONOS_URL = AndroidUtils.createURL("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/model-index.json");
@@ -122,7 +123,7 @@ public class LoadDialogFragment extends DialogFragment {
                     break;*/
             }
         } catch (Exception ex) {
-            Log.e(TAG, ex.getMessage(),ex);
+            logger.log(Level.SEVERE, ex.getMessage(),ex);
             Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -179,7 +180,7 @@ public class LoadDialogFragment extends DialogFragment {
                             files.add(uri);
                         }
                     } catch (Exception e){
-                        Log.e(TAG, "Error parsing item", e);
+                        logger.log(Level.SEVERE, "Error parsing item", e);
                     }
                 }
 
@@ -195,7 +196,7 @@ public class LoadDialogFragment extends DialogFragment {
                 });
 
             } catch (Exception e) {
-                Log.e(TAG, "Error loading Khronos", e);
+                logger.log(Level.SEVERE, "Error loading Khronos", e);
                 activity.runOnUiThread(() -> {
                     progress.dismiss();
                     Toast.makeText(activity, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -206,7 +207,7 @@ public class LoadDialogFragment extends DialogFragment {
 
     private void loadModelFromRepository(URL url) {
         if (!AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) {
-            Log.e(TAG, "Permission not granted");
+            logger.log(Level.SEVERE, "Permission not granted");
             activity.runOnUiThread(() -> {
                 Toast.makeText(activity, "Permission not granted", Toast.LENGTH_LONG).show();
             });
@@ -240,7 +241,7 @@ public class LoadDialogFragment extends DialogFragment {
                 });
 
             } catch (Exception e) {
-                Log.e(TAG, "Error loading Repository", e);
+                logger.log(Level.SEVERE, "Error loading Repository", e);
                 activity.runOnUiThread(() -> {
                     progress.dismiss();
                     Toast.makeText(activity, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -264,7 +265,7 @@ public class LoadDialogFragment extends DialogFragment {
                         final JSONObject jsonObject = jsonArray.getJSONObject(i);
                         files.add(jsonObject.getString("download_url"));
                     } catch (Exception e){
-                        Log.e(TAG, "Error parsing item", e);
+                        logger.log(Level.SEVERE, "Error parsing item", e);
                     }
                 }
 
@@ -280,7 +281,7 @@ public class LoadDialogFragment extends DialogFragment {
                 });
 
             } catch (Exception e) {
-                Log.e(TAG, "Error loading Assimp", e);
+                logger.log(Level.SEVERE, "Error loading Assimp", e);
                 activity.runOnUiThread(() -> {
                     progress.dismiss();
                     Toast.makeText(activity, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -312,7 +313,7 @@ public class LoadDialogFragment extends DialogFragment {
 
     private void askForFile(int requestCode, String mimeType) {
         try {
-            // Log.i(TAG,"Opening file picker...");
+            // logger.info("Opening file picker...");
         } catch (ActivityNotFoundException e) {
             Toast.makeText(activity, "Error. Please install a file content provider", Toast.LENGTH_LONG).show();
         }

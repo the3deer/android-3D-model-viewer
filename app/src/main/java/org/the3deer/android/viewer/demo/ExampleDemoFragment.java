@@ -3,15 +3,16 @@ package org.the3deer.android.viewer.demo;
 import android.net.Uri;
 import android.opengl.GLES20;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.lifecycle.ViewModelProvider;
 
 import org.jetbrains.annotations.NotNull;
+import org.the3deer.android.viewer.ui.home.HomeFragment;
+import org.the3deer.engine.Model;
 import org.the3deer.engine.ModelEngine;
 import org.the3deer.engine.android.ModelEngineViewModel;
-import org.the3deer.engine.Model;
+import org.the3deer.engine.android.util.ContentUtils;
 import org.the3deer.engine.model.Object3D;
 import org.the3deer.engine.model.Scene;
 import org.the3deer.engine.objects.Cube;
@@ -20,14 +21,13 @@ import org.the3deer.engine.services.collada.ColladaLoader;
 import org.the3deer.engine.services.wavefront.WavefrontLoader;
 import org.the3deer.engine.util.Exploder;
 import org.the3deer.engine.util.Rescaler;
-import org.the3deer.engine.android.util.ContentUtils;
-import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.util.io.IOUtils;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Demo example activity. Load distinct models in the scene.
@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class ExampleDemoFragment extends HomeFragment {
 
-    private final static String TAG = ExampleDemoFragment.class.getSimpleName();
+    private static final Logger logger = Logger.getLogger(ExampleDemoFragment.class.getSimpleName());
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,7 +47,7 @@ public class ExampleDemoFragment extends HomeFragment {
     }
 
     private void setUp() {
-        Log.i(TAG, "Starting up...");
+        logger.info("Starting up...");
 
         ModelEngineViewModel viewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
         @NotNull Model model = viewModel.createModel("demo.gui");
@@ -64,7 +64,7 @@ public class ExampleDemoFragment extends HomeFragment {
         sceneManager.addScene(mainScene);
 
         // load model
-        Log.i(TAG, "Loading demo...");
+        logger.info("Loading demo...");
 
         // list of errors found
         final List<Exception> errors = new ArrayList<>();

@@ -1,15 +1,17 @@
 package org.the3deer.android.viewer.ui.settings;
 
-import android.util.Log;
-
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.os.LocaleListCompat;
 
 import org.the3deer.util.bean.Bean;
 import org.the3deer.util.bean.BeanProperty;
 
+import java.util.logging.Logger;
+
 @Bean(name = "settings", category = "general")
 public class SettingsOptions {
+
+    private static final Logger logger = Logger.getLogger(SettingsOptions.class.getSimpleName());
 
     @BeanProperty
     private String language = "en";
@@ -31,11 +33,11 @@ public class SettingsOptions {
 
     public void setAndroidLanguage(){
 
-        Log.i("SettingsOptions", "System bridge: Switching to " + language);
+        logger.info("System bridge: Switching to " + language);
 
         final LocaleListCompat appLocales = LocaleListCompat.forLanguageTags(language);
         AppCompatDelegate.setApplicationLocales(appLocales);
 
-        Log.i("SettingsOptions", "System bridge: Switched to " + language);
+        logger.info("System bridge: Switched to " + language);
     }
 }

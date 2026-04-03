@@ -2,27 +2,28 @@ package org.the3deer.android.viewer.demo;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.lifecycle.ViewModelProvider;
 
 import org.jetbrains.annotations.NotNull;
+import org.the3deer.android.viewer.ui.home.HomeFragment;
+import org.the3deer.engine.Model;
 import org.the3deer.engine.ModelEngine;
 import org.the3deer.engine.android.ModelEngineViewModel;
 import org.the3deer.engine.gui.Text;
 import org.the3deer.engine.model.Camera;
 import org.the3deer.engine.model.Constants;
-import org.the3deer.engine.Model;
 import org.the3deer.engine.model.Object3D;
 import org.the3deer.engine.model.Scene;
 import org.the3deer.engine.services.LoadListenerAdapter;
 import org.the3deer.engine.services.wavefront.WavefrontLoaderTask;
-import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.util.geometry.UnionTri;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This activity represents the container for our 3D viewer.
@@ -31,7 +32,7 @@ import java.util.List;
  */
 public class EarCutDemoFragment extends HomeFragment {
 
-    private final static String TAG = EarCutDemoFragment.class.getSimpleName();
+    private static final Logger logger = Logger.getLogger(EarCutDemoFragment.class.getSimpleName());
 
     private Model sceneManager;
     private Camera camera;
@@ -46,7 +47,7 @@ public class EarCutDemoFragment extends HomeFragment {
     }
 
     private void setUp() {
-        Log.i(TAG, "Starting up...");
+        logger.info("Starting up...");
 
         ModelEngineViewModel modelEngineViewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
         @NotNull Model model = modelEngineViewModel.createModel("demo.earcut");
@@ -70,7 +71,7 @@ public class EarCutDemoFragment extends HomeFragment {
 
                 @Override
                 public void onLoadObject(Scene scene, Object3D data) {
-                    Log.i("PolyBoolDemoActivity", "Adding object...");
+                    logger.info("Adding object...");
                     float value = 20f;
                     data.setScale(new float[]{value, value, value});
                     data.setColor(Constants.COLOR_RED);
@@ -99,7 +100,7 @@ public class EarCutDemoFragment extends HomeFragment {
 
                         @Override
                         public void onLoadObject(Scene scene, Object3D data) {
-                            Log.i("PolyBoolDemoActivity", "Adding object...");
+                            logger.info("Adding object...");
                             float value = 20f;
                             data.setScale(new float[]{value, value, value});
                             data.setColor(Constants.COLOR_BLUE);
@@ -215,7 +216,7 @@ public class EarCutDemoFragment extends HomeFragment {
 
 
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage(), e);
+            logger.log(Level.SEVERE, e.getMessage(), e);
             Toast.makeText(getContext(), "Error loading OpenGL view:\n" + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }

@@ -3,7 +3,6 @@ package org.the3deer.android.viewer.ui.about;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +14,12 @@ import androidx.fragment.app.Fragment;
 import org.the3deer.android.viewer.R;
 import org.the3deer.android.viewer.databinding.FragmentAboutBinding;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class AboutFragment extends Fragment {
+
+    private static final Logger logger = Logger.getLogger(AboutFragment.class.getSimpleName());
 
     private FragmentAboutBinding binding;
 
@@ -54,7 +58,7 @@ public class AboutFragment extends Fragment {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
         } catch (Exception e) {
-            Log.e("AboutFragment", "Error opening URL: " + url + ". message: " + e.getMessage());
+            logger.log(Level.SEVERE,  "Error opening URL: " + url + ". message: " + e.getMessage());
         }
     }
 

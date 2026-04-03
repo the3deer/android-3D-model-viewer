@@ -5,11 +5,20 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.activityViewModels
-import androidx.preference.*
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
+import androidx.preference.SwitchPreferenceCompat
+import org.the3deer.android.viewer.R
 import org.the3deer.engine.ModelEngine
 import org.the3deer.engine.android.ModelEngineViewModel
-import org.the3deer.android.viewer.R
-import org.the3deer.util.bean.*
+import org.the3deer.util.bean.Bean
+import org.the3deer.util.bean.BeanFactory
+import org.the3deer.util.bean.BeanPropertyInfo
+import org.the3deer.util.bean.BeanUtils
+import org.the3deer.util.bean.Feature
 import java.util.Locale
 
 /**
