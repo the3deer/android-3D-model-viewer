@@ -174,8 +174,8 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
             navController.addOnDestinationChangedListener { _, destination, _ ->
                 if (destination.id == R.id.nav_home) {
-                    sharedViewModel.activeFragment.value?.let {
-                        supportActionBar?.title = shortenUri(it)
+                    modelEngineViewModel.activeEngine.value?.let {
+                        supportActionBar?.title = shortenUri(it.model.name)
                     }
                     navigationView.setCheckedItem(destination.id)
                 }
@@ -186,12 +186,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
             sharedViewModel.history.observe(this) { history ->
                 updateRecentModels(navigationView, history)
-            }
-
-            sharedViewModel.activeFragment.observe(this) { uriString ->
-                if (navController.currentDestination?.id == R.id.nav_home) {
-                    supportActionBar?.title = shortenUri(uriString)
-                }
             }
         }
 

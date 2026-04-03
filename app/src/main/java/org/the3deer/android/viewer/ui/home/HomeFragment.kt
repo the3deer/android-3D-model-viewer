@@ -92,14 +92,8 @@ open class HomeFragment : Fragment(), EventListener {
 
         super.onViewCreated(view, savedInstanceState)
 
-        // Note: Loading state observation moved to MainActivity for better lifecycle management
-
-        // Observe the active engine to trigger setup
-        sharedViewModel.activeFragment.observe(viewLifecycleOwner) { uriString ->
-            setupAndStartEngine(uriString)
-        }
-
-         sharedViewModel.setActiveFragment(uriString)
+        // Start engine setup
+        setupAndStartEngine(uriString)
 
         Log.i(TAG, "HomeFragment onViewCreated finished " + System.identityHashCode(this))
     }
@@ -121,19 +115,26 @@ open class HomeFragment : Fragment(), EventListener {
                     ?: throw IllegalArgumentException("Engine not initialized")
 
                 // setup engine with UI/Context components
-                engine.add("gl.surfaceView", surface)
-                engine.add("gl.renderer", renderer)
-                engine.add("ui.settings", SettingsOptions())
-                engine.add("ui.fragment", this)
+                engine.addOrReplace("gl.surfaceView", surface)
+                engine.addOrReplace("gl.renderer", renderer)
+                engine.addOrReplace("ui.settings", SettingsOptions())
+                engine.addOrReplace("ui.fragment", this)
 
                 // load engine
                 modelEngineViewModel.loadEngine(uriString, {
 
                     // apply saved preferences
-                    SettingsFragment.applySavedPreferences(engine, requireContext())
+                    try {
+                        SettingsFragment.applySavedPreferences(engine, requireContext())
+                    }catch(e : Exception){
+                        Log.e(TAG, "Error applying saved preferences", e)
+                    }
 
                     // boot engine
                     modelEngineViewModel.startEngine(uriString, {
+
+                        // log success
+                        Log.i(TAG, "setupAndStartEngine Activating engine...")
 
                         // check status
                         if (engine.status == ModelEngine.Status.OK) {
@@ -141,13 +142,16 @@ open class HomeFragment : Fragment(), EventListener {
                             // activate engine if no error
                             modelEngineViewModel.setActiveEngine(uriString)
 
+                            // update shared state (history, etc)
+                            sharedViewModel.onModelOpened(uriString)
+
                             // log success
-                            Log.i(TAG, "setupAndStartEngine finished successfully")
+                            Log.i(TAG, "setupAndStartEngine Engine activated successfully")
 
                         } else {
 
                             // log error
-                            Log.e(TAG, "setupAndStartEngine finished with error: ${engine.message}")
+                            Log.e(TAG, "setupAndStartEngine Starting engine finished with error: ${engine.message}")
                         }
                     })
                 });
