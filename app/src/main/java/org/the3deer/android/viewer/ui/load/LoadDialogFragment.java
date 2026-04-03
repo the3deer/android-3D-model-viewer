@@ -18,10 +18,10 @@ import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.providers.polyhaven.PolyHaven;
 import org.the3deer.android.viewer.ui.DialogFragment;
 import org.the3deer.android.viewer.ui.DialogUtils;
-import org.the3deer.engine.android.util.AndroidUtils;
-import org.the3deer.engine.android.util.AssetUtils;
-import org.the3deer.engine.android.util.ContentUtils;
-import org.the3deer.engine.android.util.FileUtils;
+import org.the3deer.android.util.AndroidUtils;
+import org.the3deer.android.util.AssetUtils;
+import org.the3deer.android.util.ContentUtils;
+import org.the3deer.android.util.FileUtils;
 import org.the3deer.engine.services.wavefront.WavefrontLoader;
 
 import java.io.File;

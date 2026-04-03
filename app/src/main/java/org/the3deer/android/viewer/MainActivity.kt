@@ -39,8 +39,8 @@ import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
 import org.the3deer.android.viewer.ui.load.LoadContentDialog
 import org.the3deer.engine.Model
 import org.the3deer.engine.ModelEngine
-import org.the3deer.engine.android.ModelEngineViewModel
-import org.the3deer.engine.android.util.ContentUtils
+import org.the3deer.android.engine.ModelEngineViewModel
+import org.the3deer.android.util.ContentUtils
 import org.the3deer.engine.event.EngineEvent
 import org.the3deer.engine.model.ModelEvent
 import org.the3deer.util.event.EventListener

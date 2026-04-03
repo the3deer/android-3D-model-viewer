@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModelProvider;
 import org.the3deer.android.viewer.R;
 import org.the3deer.engine.Model;
 import org.the3deer.engine.ModelEngine;
-import org.the3deer.engine.android.ModelEngineViewModel;
+import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.engine.animation.Animation;
 import org.the3deer.engine.model.Scene;
 

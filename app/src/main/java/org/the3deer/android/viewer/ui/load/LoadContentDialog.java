@@ -10,7 +10,7 @@ import androidx.navigation.Navigation;
 import org.the3deer.android.viewer.MainActivity;
 import org.the3deer.android.viewer.R;
 import org.the3deer.android.viewer.SharedViewModel;
-import org.the3deer.engine.android.util.ContentUtils;
+import org.the3deer.android.util.ContentUtils;
 
 import java.io.IOException;
 import java.net.URI;

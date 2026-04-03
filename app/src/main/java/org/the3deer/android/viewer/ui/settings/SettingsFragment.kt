@@ -13,7 +13,7 @@ import androidx.preference.PreferenceManager
 import androidx.preference.SwitchPreferenceCompat
 import org.the3deer.android.viewer.R
 import org.the3deer.engine.ModelEngine
-import org.the3deer.engine.android.ModelEngineViewModel
+import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.util.bean.Bean
 import org.the3deer.util.bean.BeanFactory
 import org.the3deer.util.bean.BeanPropertyInfo

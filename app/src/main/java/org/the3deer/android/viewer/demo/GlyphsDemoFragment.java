@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.engine.Model;
 import org.the3deer.engine.ModelEngine;
-import org.the3deer.engine.android.ModelEngineViewModel;
+import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.engine.gui.GUI;
 import org.the3deer.engine.gui.Label;
 import org.the3deer.engine.gui.Text;
