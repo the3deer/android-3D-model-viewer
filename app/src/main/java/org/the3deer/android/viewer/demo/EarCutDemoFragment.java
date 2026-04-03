@@ -50,7 +50,7 @@ public class EarCutDemoFragment extends HomeFragment {
 
         ModelEngineViewModel modelEngineViewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
         @NotNull Model model = modelEngineViewModel.createModel("demo.earcut");
-        ModelEngine modelEngine = modelEngineViewModel.initEngine("demo.earcut");
+        ModelEngine modelEngine = modelEngineViewModel.initEngine("demo.earcut", "demo.earcut", null, null);
 
         sceneManager = modelEngine.getBeanFactory().find(Model.class);
         camera = modelEngine.getBeanFactory().get("gui.camera", Camera.class);

@@ -174,6 +174,10 @@ open class HomeFragment : Fragment(), EventListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        
+        // Reset engine to clear resources (GPU and memory)
+        modelEngineViewModel.resetEngine(uriString)
+
         handler.removeCallbacksAndMessages(null)
         _binding = null
     }
