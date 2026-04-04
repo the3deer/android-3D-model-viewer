@@ -1,162 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="color_entries">
-        <item>Red</item>
-        <item>Green</item>
-        <item>Blue</item>
-    </string-array>
-    <string-array name="color_values">
-        <item>red</item>
-        <item>green</item>
-        <item>blue</item>
-    </string-array>
-
-    <string-array name="skybox_entries">
-        <item>Sea</item>
-        <item>Sand</item>
-    </string-array>
-    <string-array name="skybox_values">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
-
-    <string-array name="shader_lighting_entries">
-        <item>Simple</item>
-        <item>No Lighting</item>
-    </string-array>
-    <string-array name="shader_lighting_values">
-        <item>on</item>
-        <item>off</item>
-    </string-array>
-
-    <string-array name="shader_texture_entries">
-        <item>Textures Enabled</item>
-        <item>No Textures</item>
-    </string-array>
-    <string-array name="shader_texture_values">
-        <item>on</item>
-        <item>off</item>
-    </string-array>
-
-    <string-array name="renderer_entries">
-        <item>Default</item>
-        <item>Anaglyph</item>
-        <item>Stereoscopic</item>
-    </string-array>
-    <string-array name="renderer_values">
-        <item>org.the3deer.engine.renderer.DefaultRenderer</item>
-        <item>org.the3deer.engine.renderer.AnaglyphRenderer</item>
-        <item>org.the3deer.engine.renderer.StereoscopicRenderer</item>
-    </string-array>
-
-    <string-array name="background_color_entries">
-        <item>White</item>
-        <item>Gray</item>
-        <item>Black</item>
-    </string-array>
-    <string-array name="background_color_values">
-        <item>white</item>
-        <item>gray</item>
-        <item>black</item>
-    </string-array>
-
-    <string-array name="dialog_menu_items">
-        <item>Load Model</item>
-        <item>Help</item>
-        <item>Exit</item>
-    </string-array>
-
-    <string-array name="dialog_help_items">
-        <item>Demos</item>
-        <item>Help</item>
-        <item>About</item>
-    </string-array>
-
-    <string-array name="dialog_load_from">
-        <item>Samples</item>
-        <item>Repository (the3deer)</item>
-        <item>Repository (Khronos)</item>
-        <!--<item>Repository (Poly Haven)</item>
-        <item>Repository (Assimp)</item>-->
-        <item>Android Explorer</item>
-        <!-- item>File Explorer (Android &lt;= 10)</item -->
-    </string-array>
-
-    <!-- beans -->
-    <string-array name="property_settings_language_values">
-        <item>ar</item>
-        <item>de</item>
-        <item>en</item>
-        <item>es</item>
-        <item>fr</item>
-        <item>hi</item>
-        <item>id</item>
-        <item>it</item>
-        <item>ja</item>
-        <item>pt</item>
-        <item>ru</item>
-        <item>tr</item>
-        <item>uk</item>
-        <item>zh</item>
-    </string-array>
     <string-array name="property_settings_language_values_descriptions">
-        <item>Arabic</item>
-        <item>German</item>
-        <item>English</item>
-        <item>Spanish</item>
-        <item>French</item>
+        <item>Arabisch</item>
+        <item>Deutsch</item>
+        <item>Englisch</item>
+        <item>Spanisch</item>
+        <item>Französisch</item>
         <item>Hindi</item>
-        <item>Indonesian</item>
-        <item>Italian</item>
-        <item>Japanese</item>
-        <item>Portuguese</item>
-        <item>Russian</item>
-        <item>Turkish</item>
-        <item>Ukrainian</item>
-        <item>Chinese</item>
+        <item>Indonesisch</item>
+        <item>Italienisch</item>
+        <item>Japanisch</item>
+        <item>Portugiesisch</item>
+        <item>Russisch</item>
+        <item>Türkisch</item>
+        <item>Ukrainisch</item>
+        <item>Chinesisch</item>
     </string-array>
-
-    <!-- values for theme -->
     <string-array name="property_settings_theme_values_descriptions">
         <item>Helles Design</item>
         <item>Dunkles Design</item>
         <item>Systemstandard</item>
     </string-array>
-
-    <!-- values for background color -->
-    <string-array name="property_gl_renderer_backgroundColor_values">
-        <item>white</item>
-        <item>gray</item>
-        <item>black</item>
-    </string-array>
     <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
-        <item>White</item>
-        <item>Gray</item>
-        <item>Black</item>
-    </string-array>
-
-    <!-- values for active renderer -->
-    <string-array name="property_gl_renderer_renderer_values">
-        <item>renderer.default</item>
-        <item>renderer.anaglyph</item>
-        <item>renderer.stereoscopic</item>
+        <item>Weiß</item>
+        <item>Grau</item>
+        <item>Schwarz</item>
     </string-array>
     <string-array name="property_gl_renderer_renderer_values_descriptions">
-        <item>Default Renderer</item>
-        <item>Anaglyph Renderer</item>
-        <item>Stereoscopic Renderer</item>
-    </string-array>
-
-    <!-- values for skybox -->
-    <string-array name="property_skybox_drawer_skybox_values">
-        <item>none</item>
-        <item>sea</item>
-        <item>sand</item>
+        <item>Standard-Renderer</item>
+        <item>Anaglyphen-Renderer</item>
+        <item>Stereoskopischer Renderer</item>
     </string-array>
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>None</item>
-        <item>Sea</item>
+        <item>Keiner</item>
+        <item>Meer</item>
         <item>Sand</item>
+        <item>Dynamisch</item>
     </string-array>
-
 </resources>

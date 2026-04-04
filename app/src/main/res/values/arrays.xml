@@ -156,11 +156,13 @@
         <item>none</item>
         <item>sea</item>
         <item>sand</item>
+        <item>dynamic</item>
     </string-array>
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
         <item>None</item>
         <item>Sea</item>
         <item>Sand</item>
+        <item>Dynamic</item>
     </string-array>
 
 </resources>

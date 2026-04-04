@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- values for language -->
     <string-array name="property_settings_language_values_descriptions">
         <item>Árabe</item>
         <item>Alemão</item>
         <item>Inglês</item>
         <item>Espanhol</item>
         <item>Francês</item>
-        <item>Híndi</item>
+        <item>Hindi</item>
         <item>Indonésio</item>
         <item>Italiano</item>
         <item>Japonês</item>
@@ -17,32 +16,25 @@
         <item>Ucraniano</item>
         <item>Chinês</item>
     </string-array>
-
-    <!-- values for theme -->
     <string-array name="property_settings_theme_values_descriptions">
         <item>Tema Claro</item>
         <item>Tema Escuro</item>
-        <item>Padrão do Sistema</item>
+        <item>Padrão do sistema</item>
     </string-array>
-
-    <!-- values for background color -->
     <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
         <item>Branco</item>
         <item>Cinza</item>
         <item>Preto</item>
     </string-array>
-
-    <!-- values for active renderer -->
     <string-array name="property_gl_renderer_renderer_values_descriptions">
         <item>Renderizador Padrão</item>
         <item>Renderizador Anáglifo</item>
         <item>Renderizador Estereoscópico</item>
     </string-array>
-
-    <!-- values for skybox -->
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
         <item>Nenhum</item>
         <item>Mar</item>
         <item>Areia</item>
+        <item>Dinâmico</item>
     </string-array>
 </resources>

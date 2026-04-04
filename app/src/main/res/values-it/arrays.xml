@@ -44,5 +44,6 @@
         <item>Nessuno</item>
         <item>Mare</item>
         <item>Sabbia</item>
+        <item>Dinamico</item>
     </string-array>
 </resources>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- values for language -->
     <string-array name="property_settings_language_values_descriptions">
         <item>Arapça</item>
         <item>Almanca</item>
@@ -17,32 +16,25 @@
         <item>Ukraynaca</item>
         <item>Çince</item>
     </string-array>
-
-    <!-- values for theme -->
     <string-array name="property_settings_theme_values_descriptions">
         <item>Açık Tema</item>
         <item>Koyu Tema</item>
         <item>Sistem Varsayılanı</item>
     </string-array>
-
-    <!-- values for background color -->
     <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
         <item>Beyaz</item>
         <item>Gri</item>
         <item>Siyah</item>
     </string-array>
-
-    <!-- values for active renderer -->
     <string-array name="property_gl_renderer_renderer_values_descriptions">
         <item>Varsayılan Oluşturucu</item>
         <item>Anaglif Oluşturucu</item>
         <item>Stereoskopik Oluşturucu</item>
     </string-array>
-
-    <!-- values for skybox -->
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Yok</item>
+        <item>Hiçbiri</item>
         <item>Deniz</item>
         <item>Kum</item>
+        <item>Dinamik</item>
     </string-array>
 </resources>

@@ -44,5 +44,6 @@
         <item>Ninguno</item>
         <item>Mar</item>
         <item>Arena</item>
+        <item>Dinámico</item>
     </string-array>
 </resources>
