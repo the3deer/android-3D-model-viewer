@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -43,6 +44,7 @@ import org.the3deer.engine.ModelEngine
 import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.android.util.ContentUtils
 import org.the3deer.engine.event.EngineEvent
+import org.the3deer.engine.event.FPSEvent
 import org.the3deer.engine.model.ModelEvent
 import org.the3deer.util.event.EventListener
 import org.the3deer.util.event.EventManager
@@ -344,7 +346,13 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
     override fun onEvent(event: EventObject?): Boolean {
         Log.d(TAG, "Event: $event")
-        if (event is EngineEvent){
+        if (event is FPSEvent) {
+            runOnUiThread {
+                val fpsItem = binding.appBarMain.toolbar.menu.findItem(R.id.nav_fps)
+                val fpsTextView = fpsItem?.actionView?.findViewById<TextView>(R.id.tv_fps_menu)
+                fpsTextView?.text = getString(R.string.fps_label, event.fps)
+            }
+        } else if (event is EngineEvent){
             refreshOverlayButtons(event.getData("message", String::class.java)
             )
         }
@@ -437,11 +445,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        val result = super.onCreateOptionsMenu(menu)
-        if (findViewById<View>(R.id.nav_view) == null) {
-            menuInflater.inflate(R.menu.overflow, menu)
-        }
-        return result
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.overflow, menu)
+        return true
     }
 
 

@@ -57,6 +57,9 @@
     <string name="immersive">Immersive</string>
     <string name="anim">Anim</string>
 
+    <string name="fps_label">%1$d FPS</string>
+    <string name="fps_placeholder">--- FPS</string>
+
     <!-- Categories -->
     <string name="category_renderers_label">Renderers</string>
     <string name="category_gui_label">Graphical User Interface</string>
