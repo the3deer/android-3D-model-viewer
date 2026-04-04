@@ -90,6 +90,8 @@
     <!-- Bean Properties -->
     <string name="property_settings_language_label">Language</string>
     <string name="property_settings_language_description">Application Language</string>
+    <string name="property_settings_theme_label">Theme</string>
+    <string name="property_settings_theme_description">Application Theme</string>
     <string name="property_gl_renderer_renderer_label">Active Renderer</string>
     <string name="property_gl_renderer_renderer_description">Select the renderer</string>
     <string name="property_gl_renderer_backgroundColor_label">Background Color</string>

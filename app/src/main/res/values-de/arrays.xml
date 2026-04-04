@@ -116,6 +116,13 @@
         <item>Chinese</item>
     </string-array>
 
+    <!-- values for theme -->
+    <string-array name="property_settings_theme_values_descriptions">
+        <item>Helles Design</item>
+        <item>Dunkles Design</item>
+        <item>Systemstandard</item>
+    </string-array>
+
     <!-- values for background color -->
     <string-array name="property_gl_renderer_backgroundColor_values">
         <item>white</item>

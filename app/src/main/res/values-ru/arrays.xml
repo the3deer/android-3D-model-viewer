@@ -18,6 +18,13 @@
         <item>Китайский</item>
     </string-array>
 
+    <!-- values for theme -->
+    <string-array name="property_settings_theme_values_descriptions">
+        <item>Светлая тема</item>
+        <item>Темная тема</item>
+        <item>Системная по умолчанию</item>
+    </string-array>
+
     <!-- values for background color -->
     <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
         <item>Белый</item>

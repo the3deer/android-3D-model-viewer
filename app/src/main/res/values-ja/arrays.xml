@@ -18,6 +18,13 @@
         <item>中国語</item>
     </string-array>
 
+    <!-- values for theme -->
+    <string-array name="property_settings_theme_values_descriptions">
+        <item>ライトテーマ</item>
+        <item>ダークテーマ</item>
+        <item>システムのデフォルト</item>
+    </string-array>
+
     <!-- values for background color -->
     <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
         <item>ホワイト</item>

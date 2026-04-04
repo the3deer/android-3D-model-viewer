@@ -18,6 +18,13 @@
         <item>चीनी</item>
     </string-array>
 
+    <!-- values for theme -->
+    <string-array name="property_settings_theme_values_descriptions">
+        <item>हल्का विषय</item>
+        <item>डार्क विषय</item>
+        <item>सिस्टम डिफॉल्ट</item>
+    </string-array>
+
     <!-- values for background color -->
     <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
         <item>सफेद</item>

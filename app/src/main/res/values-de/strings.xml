@@ -89,6 +89,8 @@
     <!-- Bean-Eigenschaften -->
     <string name="property_settings_language_label">Sprache</string>
     <string name="property_settings_language_description">Anwendungssprache</string>
+    <string name="property_settings_theme_label">Design</string>
+    <string name="property_settings_theme_description">Anwendungsdesign</string>
     <string name="property_gl_renderer_renderer_label">Aktiver Renderer</string>
     <string name="property_gl_renderer_renderer_description">Wählen Sie den Renderer aus</string>
     <string name="property_gl_renderer_backgroundColor_label">Hintergrundfarbe</string>

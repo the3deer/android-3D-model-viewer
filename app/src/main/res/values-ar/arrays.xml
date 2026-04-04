@@ -18,6 +18,13 @@
         <item>الصينية</item>
     </string-array>
 
+    <!-- values for theme -->
+    <string-array name="property_settings_theme_values_descriptions">
+        <item>المظهر الفاتح</item>
+        <item>المظهر الداكن</item>
+        <item>افتراضي النظام</item>
+    </string-array>
+
     <!-- values for background color -->
     <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
         <item>أبيض</item>

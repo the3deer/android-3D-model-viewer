@@ -123,11 +123,14 @@ open class HomeFragment : Fragment(), EventListener {
                 // load engine
                 modelEngineViewModel.loadEngine(uriString, {
 
-                    // apply saved preferences
-                    try {
-                        SettingsFragment.applySavedPreferences(engine, requireContext())
-                    }catch(e : Exception){
-                        Log.e(TAG, "Error applying saved preferences", e)
+                    // [SAFE APPLY] Apply saved preferences (Theme, Language, OpenGL settings, etc.)
+                    // We use activity?.let to ensure we have a valid context and to skip if detaching
+                    activity?.let { activity ->
+                        try {
+                            SettingsFragment.applySavedPreferences(engine, activity)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error applying saved preferences", e)
+                        }
                     }
 
                     // boot engine

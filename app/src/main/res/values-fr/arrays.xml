@@ -18,6 +18,13 @@
         <item>Chinois</item>
     </string-array>
 
+    <!-- values for theme -->
+    <string-array name="property_settings_theme_values_descriptions">
+        <item>Thème clair</item>
+        <item>Thème sombre</item>
+        <item>Par défaut du système</item>
+    </string-array>
+
     <!-- values for background color -->
     <string-array name="property_gl_renderer_backgroundColor_values_descriptions">
         <item>Blanc</item>

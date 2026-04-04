@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.activityViewModels
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -285,7 +287,10 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                         isIconSpaceReserved = false
                         setupListPreference(context, this, bean, prop)
                     }
-                } else null
+                } else {
+                    Log.e("SettingsFragment", "No values found for ${prop.fieldName}")
+                    null
+                }
             }
         }
     }
@@ -353,6 +358,38 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             Log.i("SettingsFragment", "Finished restoring preferences.")
         }
 
+        /**
+         * Applies global preferences like Theme and Language at the Activity level.
+         * Should be called in MainActivity.onCreate.
+         */
+        fun applyGlobalPreferences(context: Context) {
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+            // Apply language
+            val languageKey = SettingsOptions::class.java.name + ".language"
+            val language = sharedPreferences.getString(languageKey, null)
+            if (language != null) {
+                val appLocales = LocaleListCompat.forLanguageTags(language)
+                if (appLocales != AppCompatDelegate.getApplicationLocales()) {
+                    AppCompatDelegate.setApplicationLocales(appLocales)
+                }
+            }
+
+            // Apply theme
+            val themeKey = SettingsOptions::class.java.name + ".theme"
+            val theme = sharedPreferences.getString(themeKey, null)
+            if (theme != null) {
+                val mode = when (theme) {
+                    "light" -> AppCompatDelegate.MODE_NIGHT_NO
+                    "dark" -> AppCompatDelegate.MODE_NIGHT_YES
+                    else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                }
+                if (AppCompatDelegate.getDefaultNightMode() != mode) {
+                    AppCompatDelegate.setDefaultNightMode(mode)
+                }
+            }
+        }
+
         private fun applyPreferenceToEngine(context: Context, beanFactory: BeanFactory, sharedPreferences: SharedPreferences, key: String) {
             val beanId = key.substringBeforeLast(".")
             val propertyName = key.substringAfterLast(".")
@@ -400,19 +437,20 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         private fun getPropertyValues(context: Context, bean: Any, info: BeanPropertyInfo): List<String> {
             return try {
-                // Priority 1: Method provider
+
+                // Priority 1: arrays.xml convention
+                info.resolveValues(context)?.let {
+                    return it.toList()
+                }
+
+                // Priority 2: Method provider
                 info.valuesMethod?.invoke(bean)?.let {
                     return (it as List<*>).filterNotNull() as List<String>
                 }
                 
-                // Priority 2: Static values in annotation
+                // Priority 3: Static values in annotation
                 if (info.values != null && info.values.isNotEmpty()) {
                     return info.values.toList()
-                }
-
-                // Priority 3: arrays.xml convention
-                info.resolveValues(context)?.let {
-                    return it.toList()
                 }
 
                 emptyList()

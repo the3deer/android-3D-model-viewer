@@ -89,6 +89,8 @@
     <!-- Bean 属性 -->
     <string name="property_settings_language_label">语言</string>
     <string name="property_settings_language_description">应用程序语言</string>
+    <string name="property_settings_theme_label">主题</string>
+    <string name="property_settings_theme_description">应用程序主题</string>
     <string name="property_gl_renderer_renderer_label">活动渲染器</string>
     <string name="property_gl_renderer_renderer_description">选择渲染器</string>
     <string name="property_gl_renderer_backgroundColor_label">背景颜色</string>

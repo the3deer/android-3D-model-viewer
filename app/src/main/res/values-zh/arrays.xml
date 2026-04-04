@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- values for theme -->
+    <string-array name="property_settings_theme_values_descriptions">
+        <item>浅色主题</item>
+        <item>深色主题</item>
+        <item>系统默认</item>
+    </string-array>
+</resources>

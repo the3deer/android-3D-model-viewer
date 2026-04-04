@@ -23,11 +23,6 @@
             android:icon="@drawable/ic_info_black_24dp"
             android:title="@string/menu_about" />
 
-        <!--<item
-            android:id="@+id/nav_demo2"
-            android:icon="@drawable/ic_settings_black_24dp"
-            android:title="Glyphs Demo" />-->
-
     </group>
 
     <item

@@ -13,7 +13,7 @@
     <string name="menu_about">О приложении</string>
     <string name="menu_recent_models">Последние модели</string>
 
-    <string name="dialog_load_title">Меню</string>
+    <string name="dialog_load_title">Menu</string>
     <string name="dialog_load_in_progress_message">Загрузка…</string>
 
     <string name="white">Белый</string>
@@ -89,6 +89,8 @@
     <!-- Свойства бинов -->
     <string name="property_settings_language_label">Язык</string>
     <string name="property_settings_language_description">Язык приложения</string>
+    <string name="property_settings_theme_label">Тема</string>
+    <string name="property_settings_theme_description">Тема приложения</string>
     <string name="property_gl_renderer_renderer_label">Активный рендерер</string>
     <string name="property_gl_renderer_renderer_description">Выберите рендерер</string>
     <string name="property_gl_renderer_backgroundColor_label">Цвет фона</string>

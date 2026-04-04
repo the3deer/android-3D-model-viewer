@@ -37,6 +37,7 @@ import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.ModelInfoDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
 import org.the3deer.android.viewer.ui.load.LoadContentDialog
+import org.the3deer.android.viewer.ui.settings.SettingsFragment
 import org.the3deer.engine.Model
 import org.the3deer.engine.ModelEngine
 import org.the3deer.android.engine.ModelEngineViewModel
@@ -93,6 +94,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply global preferences (Theme, Language) before layout inflation
+        SettingsFragment.applyGlobalPreferences(this)
+
         super.onCreate(savedInstanceState)
 
         // Initialize ContentUtils with context and resolver for file operations

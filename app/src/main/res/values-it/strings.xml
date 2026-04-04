@@ -31,7 +31,7 @@
     <string name="about_formats_note">Nota: per i modelli con texture esterne, caricarli come un unico file .zip.</string>
 
     <string name="about_header_controls">Come usare</string>
-    <string name="about_controls_orbit">• <b>Orbita:</b> Trascina con un dito</string>
+    <string name="about_controls_orbit">• <b>Orbita:</b> Trascina con unito</string>
     <string name="about_controls_pan">• <b>Panoramica:</b> Trascina con due dita</string>
     <string name="about_controls_zoom">• <b>Zoom:</b> Pizzica con due dita</string>
 
@@ -89,6 +89,8 @@
     <!-- Proprietà dei Bean -->
     <string name="property_settings_language_label">Lingua</string>
     <string name="property_settings_language_description">Lingua dell\'applicazione</string>
+    <string name="property_settings_theme_label">Tema</string>
+    <string name="property_settings_theme_description">Tema dell\'applicazione</string>
     <string name="property_gl_renderer_renderer_label">Renderer attivo</string>
     <string name="property_gl_renderer_renderer_description">Seleziona il renderer</string>
     <string name="property_gl_renderer_backgroundColor_label">Colore di sfondo</string>

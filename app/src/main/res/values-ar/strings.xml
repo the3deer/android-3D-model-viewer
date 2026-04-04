@@ -80,17 +80,19 @@
     <string name="bean_wireframe_drawer_description">يرسم الإطار السلكي للنماذج</string>
     <string name="bean_gui_label">واجهة المستخدم</string>
     <string name="bean_gui_drawer_label">واجهة المستخدم الرسومية</string>
-    <string name="bean_anaglyph_renderer_label">مصيّر أناجليف (Anaglyph)</string>
-    <string name="bean_default_renderer_label">المصيّر الافتراضي</string>
-    <string name="bean_stereoscopic_renderer_label">المصيّر المجسم (Stereoscopic)</string>
+    <string name="bean_anaglyph_renderer_label">مصير أناجليف (Anaglyph)</string>
+    <string name="bean_default_renderer_label">المصير الافتراضي</string>
+    <string name="bean_stereoscopic_renderer_label">المصير المجسم (Stereoscopic)</string>
     <string name="bean_shadow_drawer_description">إلقاء ظل للكائن على مستوى في الأرض</string>
-    <string name="bean_shadow_drawer_label">مصيّر الظلال</string>
+    <string name="bean_shadow_drawer_label">مصير الظلال</string>
 
     <!-- خصائص البينات -->
     <string name="property_settings_language_label">اللغة</string>
     <string name="property_settings_language_description">لغة التطبيق</string>
-    <string name="property_gl_renderer_renderer_label">المصيّر النشط</string>
-    <string name="property_gl_renderer_renderer_description">اختر المصيّر</string>
+    <string name="property_settings_theme_label">السمة</string>
+    <string name="property_settings_theme_description">سمة التطبيق</string>
+    <string name="property_gl_renderer_renderer_label">المصير النشط</string>
+    <string name="property_gl_renderer_renderer_description">اختر المصير</string>
     <string name="property_gl_renderer_backgroundColor_label">لون الخلفية</string>
     <string name="property_gl_renderer_backgroundColor_description">اختر اللون الافتراضي للنماذج ثلاثية الأبعاد</string>
     <string name="property_skybox_drawer_skybox_label">صندوق السماء</string>
@@ -104,5 +106,5 @@
     <string name="feature_collision_description">المكونات التي ترسم فوق النموذج</string>
     <string name="feature_decorator_description">المكونات التي ترسم فوق النموذج</string>
     <string name="feature_gui_description">عرض الإطارات والمحاور والمعلومات</string>
-    <string name="feature_renderer_description">المصيّرون يرسمون على الشاشة</string>
+    <string name="feature_renderer_description">المصيرون يرسمون على الشاشة</string>
 </resources>

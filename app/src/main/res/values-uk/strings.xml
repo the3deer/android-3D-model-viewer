@@ -30,10 +30,10 @@
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB та FBX.</string>
     <string name="about_formats_note">Примітка: Для моделей із зовнішніми текстурами завантажуйте їх як єдиний .zip архів.</string>
 
-    <string name="about_header_controls">Як використовувати</string>
-    <string name="about_controls_orbit">• <b>Обертання:</b> Перетягування одним пальцем</string>
-    <string name="about_controls_pan">• <b>Панорамування:</b> Перетягування двома пальцями</string>
-    <string name="about_controls_zoom">• <b>Масштаб:</b> Зведення/розведення двох пальців</string>
+    <string name="about_header_controls">Как использовать</string>
+    <string name="about_controls_orbit">• <b>Вращение:</b> Перетаскивание одним пальцем</string>
+    <string name="about_controls_pan">• <b>Панорамирование:</b> Перетаскивание двумя пальцами</string>
+    <string name="about_controls_zoom">• <b>Масштаб:</b> Сведение/разведение двух пальцев</string>
 
     <string name="about_header_links">Посилання проєкту</string>
     <string name="about_link_website_label">Веб-сайт</string>
@@ -89,6 +89,8 @@
     <!-- Властивості бінів -->
     <string name="property_settings_language_label">Мова</string>
     <string name="property_settings_language_description">Мова додатка</string>
+    <string name="property_settings_theme_label">Тема</string>
+    <string name="property_settings_theme_description">Тема додатка</string>
     <string name="property_gl_renderer_renderer_label">Активний рендерер</string>
     <string name="property_gl_renderer_renderer_description">Виберіть рендерер</string>
     <string name="property_gl_renderer_backgroundColor_label">Колір фону</string>

@@ -115,6 +115,17 @@
         <item>Ukrainian</item>
         <item>Chinese</item>
     </string-array>
+    <!-- values for theme -->
+    <string-array name="property_settings_theme_values">
+        <item>light</item>
+        <item>dark</item>
+        <item>auto</item>
+    </string-array>
+    <string-array name="property_settings_theme_values_descriptions">
+        <item>Light Theme</item>
+        <item>Dark Theme</item>
+        <item>System Default</item>
+    </string-array>
 
     <!-- values for background color -->
     <string-array name="property_gl_renderer_backgroundColor_values">

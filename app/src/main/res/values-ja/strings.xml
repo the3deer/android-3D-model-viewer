@@ -89,6 +89,8 @@
     <!-- Beanプロパティ -->
     <string name="property_settings_language_label">言語</string>
     <string name="property_settings_language_description">アプリの言語</string>
+    <string name="property_settings_theme_label">テーマ</string>
+    <string name="property_settings_theme_description">アプリのテーマ</string>
     <string name="property_gl_renderer_renderer_label">アクティブなレンダラー</string>
     <string name="property_gl_renderer_renderer_description">レンダラーを選択</string>
     <string name="property_gl_renderer_backgroundColor_label">背景色</string>

@@ -89,6 +89,8 @@
     <!-- बीन गुण -->
     <string name="property_settings_language_label">भाषा</string>
     <string name="property_settings_language_description">एप्लिकेशन की भाषा</string>
+    <string name="property_settings_theme_label">विषय (Theme)</string>
+    <string name="property_settings_theme_description">एप्लिकेशन का विषय</string>
     <string name="property_gl_renderer_renderer_label">सक्रिय रेंडरर</string>
     <string name="property_gl_renderer_renderer_description">रेंडरर चुनें</string>
     <string name="property_gl_renderer_backgroundColor_label">पृष्ठभूमि का रंग</string>

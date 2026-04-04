@@ -89,6 +89,8 @@
     <!-- Bean Özellikleri -->
     <string name="property_settings_language_label">Dil</string>
     <string name="property_settings_language_description">Uygulama Dili</string>
+    <string name="property_settings_theme_label">Tema</string>
+    <string name="property_settings_theme_description">Uygulama Teması</string>
     <string name="property_gl_renderer_renderer_label">Aktif Oluşturucu</string>
     <string name="property_gl_renderer_renderer_description">Oluşturucuyu seçin</string>
     <string name="property_gl_renderer_backgroundColor_label">Arka Plan Rengi</string>
