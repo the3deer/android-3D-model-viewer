@@ -32,9 +32,8 @@
         <item>Stereoskopik Oluşturucu</item>
     </string-array>
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Hiçbiri</item>
         <item>Deniz</item>
         <item>Kum</item>
-        <item>Dinamik</item>
+        <item>Gündüz/Gece</item>
     </string-array>
 </resources>

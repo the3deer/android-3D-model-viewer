@@ -9,9 +9,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import org.the3deer.engine.Model;
-import org.the3deer.engine.ModelEngine;
 import org.the3deer.android.engine.ModelEngineViewModel;
+import org.the3deer.android.engine.Model;
+import org.the3deer.android.engine.ModelEngine;
 
 public class ModelInfoDialogFragment extends DialogFragment {
 

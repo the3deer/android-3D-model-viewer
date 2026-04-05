@@ -32,6 +32,8 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.the3deer.android.engine.ModelEngineViewModel
+import org.the3deer.android.engine.util.ContentUtils
 import org.the3deer.android.viewer.databinding.ActivityMainBinding
 import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
@@ -39,13 +41,11 @@ import org.the3deer.android.viewer.ui.dialogs.ModelInfoDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
 import org.the3deer.android.viewer.ui.load.LoadContentDialog
 import org.the3deer.android.viewer.ui.settings.SettingsFragment
-import org.the3deer.engine.Model
-import org.the3deer.engine.ModelEngine
-import org.the3deer.android.engine.ModelEngineViewModel
-import org.the3deer.android.util.ContentUtils
-import org.the3deer.engine.event.EngineEvent
-import org.the3deer.engine.event.FPSEvent
-import org.the3deer.engine.model.ModelEvent
+import org.the3deer.android.engine.Model
+import org.the3deer.android.engine.ModelEngine
+import org.the3deer.android.engine.event.EngineEvent
+import org.the3deer.android.engine.event.FPSEvent
+import org.the3deer.android.engine.model.ModelEvent
 import org.the3deer.util.event.EventListener
 import org.the3deer.util.event.EventManager
 import java.net.URI
@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                         arguments.putString("uri", uriString)
                         navController.navigate(R.id.nav_home, arguments)
 
-                        binding.drawerLayout?.closeDrawers()
+                        binding.drawerLayout.closeDrawers()
                         true
                     }
 
@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                         when (item.itemId) {
                             R.id.nav_load, R.id.nav_settings -> {
                                 navController.navigate(item.itemId)
-                                binding.drawerLayout?.closeDrawers()
+                                binding.drawerLayout.closeDrawers()
                                 true
                             }
 
@@ -170,7 +170,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                                 val handled =
                                     NavigationUI.onNavDestinationSelected(item, navController)
                                 if (handled) {
-                                    binding.drawerLayout?.closeDrawers()
+                                    binding.drawerLayout.closeDrawers()
                                 }
                                 handled
                             }

@@ -41,9 +41,8 @@
 
     <!-- values for skybox -->
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>بدون</item>
         <item>بحر</item>
         <item>رمل</item>
-        <item>ديناميكي</item>
+        <item>نهار/ليل</item>
     </string-array>
 </resources>

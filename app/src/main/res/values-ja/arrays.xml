@@ -41,8 +41,8 @@
 
     <!-- values for skybox -->
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>なし</item>
         <item>海</item>
-        <item>砂漠</item>
+        <item>砂</item>
+        <item>昼/夜</item>
     </string-array>
 </resources>

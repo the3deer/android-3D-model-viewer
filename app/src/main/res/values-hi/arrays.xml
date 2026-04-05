@@ -41,8 +41,8 @@
 
     <!-- values for skybox -->
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>कोई नहीं</item>
         <item>समुद्र</item>
         <item>रेत</item>
+        <item>दिन/रात</item>
     </string-array>
 </resources>

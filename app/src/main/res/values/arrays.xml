@@ -153,16 +153,14 @@
 
     <!-- values for skybox -->
     <string-array name="property_skybox_drawer_skybox_values">
-        <item>none</item>
         <item>sea</item>
         <item>sand</item>
-        <item>dynamic</item>
+        <item>day_night</item>
     </string-array>
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>None</item>
         <item>Sea</item>
         <item>Sand</item>
-        <item>Dynamic</item>
+        <item>Day/Night</item>
     </string-array>
 
 </resources>

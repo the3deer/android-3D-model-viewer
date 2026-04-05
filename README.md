@@ -33,6 +33,13 @@ A powerful, open-source Android application for viewing and inspecting 3D models
 - **VR Ready**: Integrated Anaglyph and Stereoscopic (VR headset) rendering modes.
 - **Interactive Tools**: Wireframe toggles, skeleton visualization, bounding boxes, and ray-cast selection.
 
+Screenshots
+===========
+
+![Screenshot1](screenshots/menu.png)
+![Screenshot2](screenshots/vc.gif)
+![Screenshot3](screenshots/screenshot6-3d.png)
+
 ## Project Structure
 
 This project consists of two main components:

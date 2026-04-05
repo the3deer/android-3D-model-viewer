@@ -13,16 +13,16 @@ import androidx.navigation.Navigation;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.the3deer.android.engine.util.AndroidUtils;
+import org.the3deer.android.engine.util.AssetUtils;
+import org.the3deer.android.engine.util.ContentUtils;
+import org.the3deer.android.engine.util.FileUtils;
 import org.the3deer.android.viewer.R;
 import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.providers.polyhaven.PolyHaven;
 import org.the3deer.android.viewer.ui.DialogFragment;
 import org.the3deer.android.viewer.ui.DialogUtils;
-import org.the3deer.android.util.AndroidUtils;
-import org.the3deer.android.util.AssetUtils;
-import org.the3deer.android.util.ContentUtils;
-import org.the3deer.android.util.FileUtils;
-import org.the3deer.engine.services.wavefront.WavefrontLoader;
+import org.the3deer.android.engine.services.wavefront.WavefrontLoader;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +58,7 @@ public class LoadDialogFragment extends DialogFragment {
     private static final int REQUEST_CODE_OPEN_MATERIAL = 1102;
     private static final int REQUEST_CODE_OPEN_TEXTURE = 1103;
     private static final int REQUEST_CODE_ADD_FILES = 1200;
-    private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae|glb|zip|index)";
+    private static final String SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae|glb|fbx|zip|index)";
 
 
     /**

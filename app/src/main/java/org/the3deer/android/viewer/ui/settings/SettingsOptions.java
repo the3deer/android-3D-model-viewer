@@ -6,8 +6,8 @@ import android.os.Looper;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.os.LocaleListCompat;
 
-import org.the3deer.util.bean.Bean;
-import org.the3deer.util.bean.BeanProperty;
+import org.the3deer.bean.Bean;
+import org.the3deer.bean.BeanProperty;
 
 import java.util.logging.Logger;
 

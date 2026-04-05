@@ -32,9 +32,8 @@
         <item>Rendu stéréoscopique</item>
     </string-array>
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Aucun</item>
         <item>Mer</item>
         <item>Sable</item>
-        <item>Dynamique</item>
+        <item>Jour/Nuit</item>
     </string-array>
 </resources>

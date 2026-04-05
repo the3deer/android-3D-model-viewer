@@ -32,9 +32,8 @@
         <item>Renderizador Estereoscópico</item>
     </string-array>
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Nenhum</item>
         <item>Mar</item>
         <item>Areia</item>
-        <item>Dinâmico</item>
+        <item>Dia/Noite</item>
     </string-array>
 </resources>

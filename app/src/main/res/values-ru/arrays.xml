@@ -41,8 +41,8 @@
 
     <!-- values for skybox -->
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Нет</item>
         <item>Море</item>
         <item>Песок</item>
+        <item>День/Ночь</item>
     </string-array>
 </resources>

@@ -13,14 +13,15 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.preference.SwitchPreferenceCompat
-import org.the3deer.android.viewer.R
-import org.the3deer.engine.ModelEngine
 import org.the3deer.android.engine.ModelEngineViewModel
-import org.the3deer.util.bean.Bean
-import org.the3deer.util.bean.BeanFactory
-import org.the3deer.util.bean.BeanPropertyInfo
-import org.the3deer.util.bean.BeanUtils
-import org.the3deer.util.bean.Feature
+import org.the3deer.android.viewer.R
+import org.the3deer.android.engine.ModelEngine
+import org.the3deer.android.engine.shader.ShaderManager
+import org.the3deer.bean.Bean
+import org.the3deer.bean.BeanManager
+import org.the3deer.bean.BeanPropertyInfo
+import org.the3deer.bean.BeanUtils
+import org.the3deer.bean.Feature
 import java.util.Locale
 
 /**
@@ -342,6 +343,11 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         val engine = modelEngineViewModel.activeEngine.value ?: return
         
         applyPreferenceToEngine(requireContext(), engine.beanFactory, sharedPreferences, key)
+
+        // Special case: OpenGL Version change requires activity restart
+        if (key == ShaderManager::class.java.name + ".openGLVersion") {
+            activity?.recreate()
+        }
     }
 
     companion object {
@@ -390,15 +396,15 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             }
         }
 
-        private fun applyPreferenceToEngine(context: Context, beanFactory: BeanFactory, sharedPreferences: SharedPreferences, key: String) {
+        private fun applyPreferenceToEngine(context: Context, beanManager: BeanManager, sharedPreferences: SharedPreferences, key: String) {
             val beanId = key.substringBeforeLast(".")
             val propertyName = key.substringAfterLast(".")
             
             val beanClass = try { Class.forName(beanId) } catch (e: Exception) { null } ?: return
-            val bean = beanFactory.find(beanClass) ?: return
+            val bean = beanManager.find(beanClass) ?: return
 
             try {
-                val properties = beanFactory.getProperties(bean)
+                val properties = beanManager.getProperties(bean)
                 val info = properties[key] ?: return
 
                 if (info.type == Boolean::class.java || info.type == java.lang.Boolean.TYPE) {

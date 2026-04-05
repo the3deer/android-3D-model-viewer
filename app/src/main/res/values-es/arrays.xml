@@ -41,9 +41,8 @@
 
     <!-- values for skybox -->
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Ninguno</item>
         <item>Mar</item>
         <item>Arena</item>
-        <item>Dinámico</item>
+        <item>Día/Noche</item>
     </string-array>
 </resources>

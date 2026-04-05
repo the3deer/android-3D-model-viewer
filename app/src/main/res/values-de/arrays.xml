@@ -32,9 +32,8 @@
         <item>Stereoskopischer Renderer</item>
     </string-array>
     <string-array name="property_skybox_drawer_skybox_values_descriptions">
-        <item>Keiner</item>
         <item>Meer</item>
         <item>Sand</item>
-        <item>Dynamisch</item>
+        <item>Tag/Nacht</item>
     </string-array>
 </resources>
