@@ -5,7 +5,7 @@ import android.app.ProgressDialog;
 import android.widget.Toast;
 
 import org.json.JSONObject;
-import org.the3deer.android.engine.util.ContentUtils;
+import org.the3deer.android.util.ContentUtils;
 
 import java.lang.ref.WeakReference;
 import java.net.URI;

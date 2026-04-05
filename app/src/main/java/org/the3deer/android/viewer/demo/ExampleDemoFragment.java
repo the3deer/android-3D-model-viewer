@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.jetbrains.annotations.NotNull;
 import org.the3deer.android.engine.ModelEngineViewModel;
-import org.the3deer.android.engine.util.ContentUtils;
+import org.the3deer.android.util.ContentUtils;
 import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;

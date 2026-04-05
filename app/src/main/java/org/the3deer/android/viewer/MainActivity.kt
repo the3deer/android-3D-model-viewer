@@ -33,7 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.the3deer.android.engine.ModelEngineViewModel
-import org.the3deer.android.engine.util.ContentUtils
+import org.the3deer.android.util.ContentUtils
 import org.the3deer.android.viewer.databinding.ActivityMainBinding
 import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
