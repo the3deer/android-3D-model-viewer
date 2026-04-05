@@ -214,9 +214,12 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         modelEngineViewModel.activeEngine.observe(this) { engine ->
             Log.i(TAG, "Active engine changed. id: ${engine?.id}")
 
+            // Register this activity as a listener for the active engine
+            engine.addOrReplace(this@MainActivity.javaClass.name, this@MainActivity)
+
             supportActionBar?.title = shortenUri(engine.model.name)
 
-            refreshOverlayButtons(engine.message)
+            refreshOverlayButtons()
             ViewCompat.requestApplyInsets(binding.root)
         }
 
@@ -290,7 +293,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
     }
 
-    private fun refreshOverlayButtons(message: String) {
+    private fun refreshOverlayButtons() {
         runOnUiThread {
 
             Log.d(TAG, "Refreshing overlay buttons")
@@ -350,14 +353,23 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             runOnUiThread {
                 val fpsItem = binding.appBarMain.toolbar.menu.findItem(R.id.nav_fps)
                 val fpsTextView = fpsItem?.actionView?.findViewById<TextView>(R.id.tv_fps_menu)
-                fpsTextView?.text = getString(R.string.fps_label, event.fps)
+                if (fpsTextView != null) {
+                    fpsTextView.text = getString(R.string.fps_label, event.fps)
+                    // Change color based on FPS
+                    val color = when {
+                        event.fps >= 50 -> ContextCompat.getColor(this, android.R.color.holo_green_light)
+                        event.fps >= 30 -> ContextCompat.getColor(this, android.R.color.holo_orange_light)
+                        else -> ContextCompat.getColor(this, android.R.color.holo_red_light)
+                    }
+                    fpsTextView.setTextColor(color)
+                }
             }
         } else if (event is EngineEvent){
-            refreshOverlayButtons(event.getData("message", String::class.java)
+            refreshOverlayButtons(
             )
         }
         else if (event is ModelEvent) {
-            refreshOverlayButtons(event.getData("message", String::class.java))
+            refreshOverlayButtons()
         }
         return false
     }
