@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.jetbrains.annotations.NotNull;
 import org.the3deer.android.engine.ModelEngineViewModel;
+import org.the3deer.android.engine.gui.FontFactory;
 import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
@@ -59,7 +60,7 @@ public class GlyphsDemoFragment extends HomeFragment {
         abcd.setRelativeLocation(Widget.POSITION_MIDDLE);
         abcd.setVisible(true);
 
-        Label label = new Label("0123456789\nabcdefghij");
+        Label label = new Label(modelEngine.getBeanFactory().find(FontFactory.class),"0123456789\nabcdefghij");
         label.setVisible(true);
         gui.addChild(label);
 
