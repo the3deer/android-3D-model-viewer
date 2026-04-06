@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/nav_camera_pos"
+        android:title="Pos"
+        app:actionLayout="@layout/toolbar_camera_pos"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/nav_fps"
         android:title="FPS"
         app:actionLayout="@layout/toolbar_fps"

@@ -43,12 +43,19 @@ import org.the3deer.android.viewer.ui.load.LoadContentDialog
 import org.the3deer.android.viewer.ui.settings.SettingsFragment
 import org.the3deer.android.engine.Model
 import org.the3deer.android.engine.ModelEngine
+import org.the3deer.android.engine.camera.CameraManager
+import org.the3deer.android.engine.camera.FirstPersonCameraHandler
+import org.the3deer.android.engine.event.CameraEvent
+import org.the3deer.android.engine.event.CameraEvent.Code
 import org.the3deer.android.engine.event.EngineEvent
 import org.the3deer.android.engine.event.FPSEvent
+import org.the3deer.android.engine.event.SceneEvent
 import org.the3deer.android.engine.model.ModelEvent
+import org.the3deer.android.engine.model.Object3D
 import org.the3deer.util.event.EventListener
 import org.the3deer.util.event.EventManager
 import java.net.URI
+import java.util.Locale
 import java.util.EventObject
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -188,7 +195,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                 }
 
                 // Show/hide UI actions stack based on destination. These are only for the Home fragment (3D viewer)
-                binding.appBarMain.uiActionsStack.visibility = if (destination.id == R.id.nav_home) View.VISIBLE else View.GONE
+                binding.appBarMain.containerNormalActions.visibility = if (destination.id == R.id.nav_home) View.VISIBLE else View.GONE
             }
 
             sharedViewModel.history.observe(this) { history ->
@@ -208,6 +215,41 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
         binding.appBarMain.btnAnimation.setOnClickListener {
             AnimationDialogFragment().show(supportFragmentManager, "animation_dialog")
+        }
+
+        val gameModeToggle = {
+            val engine = modelEngineViewModel.activeEngine.value
+            if (engine != null) {
+                val cameraManager = engine.beanFactory.find(CameraManager::class.java)
+                cameraManager?.toggleController()
+                // refreshOverlayButtons() is called automatically via CameraEvent/ModelEvent
+            }
+        }
+        binding.appBarMain.btnGameMode.setOnClickListener { gameModeToggle() }
+
+        binding.appBarMain.btnGravity.setOnClickListener {
+            val engine = modelEngineViewModel.activeEngine.value ?: return@setOnClickListener
+            val cameraManager = engine.beanFactory.find(CameraManager::class.java)
+            val firstPersonHandler = cameraManager.activeController
+            
+            if (firstPersonHandler != null && firstPersonHandler is FirstPersonCameraHandler) {
+                val newGravity = !firstPersonHandler.isGravity
+                firstPersonHandler.isGravity = newGravity
+                binding.appBarMain.btnGravity.setImageResource(
+                    if (newGravity) android.R.drawable.ic_lock_idle_lock 
+                    else android.R.drawable.ic_lock_lock
+                )
+                Toast.makeText(this, if (newGravity) "Gravity ON" else "Gravity OFF (Flying)", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.appBarMain.joystickLeft.setJoystickListener { dx, dy ->
+            val camera = modelEngineViewModel.getActiveEngine()?.model?.activeScene?.activeCamera
+            camera?.joystick(dx, dy)
+        }
+        binding.appBarMain.joystickRight.setJoystickListener { dx, dy ->
+            val camera = modelEngineViewModel.getActiveEngine()?.model?.activeScene?.activeCamera
+            camera?.joystickLook(dx, dy)
         }
 
         // Monitor active engine to refresh UI buttons
@@ -296,8 +338,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     private fun refreshOverlayButtons() {
         runOnUiThread {
 
-            Log.d(TAG, "Refreshing overlay buttons")
-
             val engine = modelEngineViewModel.activeEngine.value ?: return@runOnUiThread
             val model = engine.model
             val scene = model.activeScene
@@ -336,8 +376,26 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             }
             binding.appBarMain.btnInfo.backgroundTintList = ColorStateList.valueOf(color)
 
-            // Handle loading overlay visibility
-            Log.d(TAG, "Refreshing overlay buttons. model status: $modelStatus, engine status: $engineStatus")
+            // Show gravity button only if FirstPersonCameraHandler is active
+            val cameraManager = engine.beanFactory.find(CameraManager::class.java)
+            val isFirstPerson = cameraManager?.activeController is FirstPersonCameraHandler
+            
+            if (isFirstPerson) {
+                binding.appBarMain.containerNormalActions.visibility = View.GONE
+                binding.appBarMain.containerGameActions.visibility = View.VISIBLE
+                binding.appBarMain.joystickLeft.visibility = View.VISIBLE
+                binding.appBarMain.joystickRight.visibility = View.VISIBLE
+                
+                binding.appBarMain.btnGameMode.setImageResource(android.R.drawable.ic_menu_edit)
+            } else {
+                binding.appBarMain.containerNormalActions.visibility = View.VISIBLE
+                binding.appBarMain.containerGameActions.visibility = View.GONE
+                binding.appBarMain.joystickLeft.visibility = View.GONE
+                binding.appBarMain.joystickRight.visibility = View.GONE
+
+                binding.appBarMain.btnGameMode.setImageResource(android.R.drawable.ic_menu_compass)
+            }
+            
             if (modelStatus == Model.Status.LOADING || engineStatus == ModelEngine.Status.LOADING) {
                 binding.loadingLayout.visibility = View.VISIBLE
                 binding.loadingText.text = model.message
@@ -348,7 +406,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     }
 
     override fun onEvent(event: EventObject?): Boolean {
-        Log.d(TAG, "Event: $event")
         if (event is FPSEvent) {
             runOnUiThread {
                 val fpsItem = binding.appBarMain.toolbar.menu.findItem(R.id.nav_fps)
@@ -371,6 +428,40 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         else if (event is ModelEvent) {
             refreshOverlayButtons()
         }
+        else if (event is CameraEvent) {
+            if (event.code == Code.CAMERA_UPDATED) {
+                runOnUiThread {
+                    val posItem = binding.appBarMain.toolbar.menu.findItem(R.id.nav_camera_pos)
+                    val posTextView =
+                        posItem?.actionView?.findViewById<TextView>(R.id.tv_camera_pos_menu)
+                    if (posTextView != null) {
+                        val pos = event.camera.pos
+                        posTextView.text = String.format(
+                            Locale.US,
+                            "Pos: %.1f, %.1f, %.1f",
+                            pos[0],
+                            pos[1],
+                            pos[2]
+                        )
+                    }
+                }
+            }
+            refreshOverlayButtons()
+
+        } else if (event is SceneEvent) {
+            if (event.code == SceneEvent.Code.OBJECT_SELECTED) {
+                val selected = event.getData("object", Object3D::class.java)
+                if (selected != null) {
+                    val cameraNode = selected.parentNode?.camera
+                    val activeScene = modelEngineViewModel.getActiveEngine().model.activeScene
+                    if (activeScene != null && cameraNode != null) {
+                        activeScene.activeCamera = cameraNode
+                    }
+                }
+            }
+             refreshOverlayButtons()
+        }
+
         return false
     }
 

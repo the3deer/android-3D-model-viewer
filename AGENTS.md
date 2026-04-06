@@ -7,7 +7,9 @@ Rules for AI agents
 * **MANDATORY**: Final variables everywhere whenever possible. That improves code readability, avoids misassignments and enforces good coding practices
 * **MANDATORY**: Read optional package-info.java or README.md documentation in the impacted package in case that helps
 * **MANDATORY**: Whenever possible, fix the documentation about the feature, that are the package-info files, using whatever information is available
-* **MANDATORY**: Whenever possible, use the following programming or architectural patterns: Domain Driven Design (with anorexic domain Entities). Decorator Pattern.  
+* **MANDATORY**: Whenever possible, use the following programming or architectural patterns: Domain Driven Design (with anorexic domain Entities). Decorator Pattern
+* **MANDATORY**: When talking about UI, I refer for now to the Android UI. The Engine UI is for now experimental
+* **MANDATORY**: When generating code, prefer Java for the Engine. Kotlin for the UI
 * **MANDATORY**: Kiss principle
 
 My Mantra: Simplicity is the ultimate sophistication 
