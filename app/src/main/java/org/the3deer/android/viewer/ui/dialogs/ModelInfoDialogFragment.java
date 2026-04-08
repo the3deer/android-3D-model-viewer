@@ -85,6 +85,7 @@ public class ModelInfoDialogFragment extends DialogFragment {
         info.append("--- Memory ---\n");
         info.append(getMemoryInfo()).append("\n\n");
 
+
         // active scene
         if (model != null) {
             info.append("--- Stats ---\n");
@@ -94,7 +95,13 @@ public class ModelInfoDialogFragment extends DialogFragment {
                 info.append("Cameras: ").append(model.getActiveScene().getCameras().size()).append("\n");
                 info.append("Animations: ").append(model.getActiveScene().getAnimations().size()).append("\n");
             }
+            info.append("\n");
         }
+
+        // camera info
+        info.append("--- Camera ---\n");
+        info.append(getCameraInfo());
+
         return info.toString();
     }
 
@@ -111,6 +118,15 @@ public class ModelInfoDialogFragment extends DialogFragment {
 
         return String.format(Locale.getDefault(), "Memory: %d/%d MB\nModel: %d MB",
                 usedMemory / 1024 / 1024, maxMemory / 1024 / 1024, modelMemory / 1024 / 1024);
+    }
+
+    private String getCameraInfo() {
+        final ModelEngine modelEngine = viewModel.getActiveEngine();
+        if (modelEngine != null && modelEngine.getModel().getActiveScene() != null && modelEngine.getModel().getActiveScene().getActiveCamera() != null) {
+            float[] pos = modelEngine.getModel().getActiveScene().getActiveCamera().getPos();
+            return String.format(Locale.US, "Position: %.1f, %.1f, %.1f", pos[0], pos[1], pos[2]);
+        }
+        return "Position: unknown";
     }
 
     private Dialog createSimpleDialog(final AlertDialog.Builder builder, final String title, final String message) {

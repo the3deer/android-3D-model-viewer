@@ -214,9 +214,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
 
         // Action stack buttons setup
-        binding.appBarMain.btnInfo.setOnClickListener {
-            ModelInfoDialogFragment().show(supportFragmentManager, "model_info_dialog")
-        }
         binding.appBarMain.btnScene.setOnClickListener {
             SceneDialogFragment().show(supportFragmentManager, "scene_dialog")
         }
@@ -386,7 +383,8 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
                 else -> ContextCompat.getColor(this, R.color.design_default_color_secondary)
             }
-            binding.appBarMain.btnInfo.backgroundTintList = ColorStateList.valueOf(color)
+            val infoItem = binding.appBarMain.toolbar.menu.findItem(R.id.nav_info)
+            infoItem?.icon?.setTint(color)
 
             // Show gravity button only if FirstPersonCameraHandler is active
             val cameraManager = engine.beanFactory.find(CameraManager::class.java)
@@ -441,23 +439,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             refreshOverlayButtons()
         }
         else if (event is CameraEvent) {
-            if (event.code == Code.CAMERA_UPDATED) {
-                runOnUiThread {
-                    val posItem = binding.appBarMain.toolbar.menu.findItem(R.id.nav_camera_pos)
-                    val posTextView =
-                        posItem?.actionView?.findViewById<TextView>(R.id.tv_camera_pos_menu)
-                    if (posTextView != null) {
-                        val pos = event.camera.pos
-                        posTextView.text = String.format(
-                            Locale.US,
-                            "Pos: %.1f, %.1f, %.1f",
-                            pos[0],
-                            pos[1],
-                            pos[2]
-                        )
-                    }
-                }
-            }
             refreshOverlayButtons()
 
         } else if (event is SceneEvent) {
@@ -569,6 +550,8 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.nav_settings) {
             findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.nav_settings)
+        } else if (item.itemId == R.id.nav_info) {
+            ModelInfoDialogFragment().show(supportFragmentManager, "model_info_dialog")
         }
         return super.onOptionsItemSelected(item)
     }
