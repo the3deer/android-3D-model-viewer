@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
 import org.the3deer.android.engine.ModelEngineViewModel;
+import org.the3deer.android.engine.model.Dimensions;
 
 import java.util.Locale;
 
@@ -102,6 +103,12 @@ public class ModelInfoDialogFragment extends DialogFragment {
         info.append("--- Camera ---\n");
         info.append(getCameraInfo());
 
+
+        // dimensions info
+        info.append("\n\n");
+        info.append("--- Dimensions ---\n");
+        info.append(getDimensionsInfo());
+
         return info.toString();
     }
 
@@ -126,7 +133,16 @@ public class ModelInfoDialogFragment extends DialogFragment {
             float[] pos = modelEngine.getModel().getActiveScene().getActiveCamera().getPos();
             return String.format(Locale.US, "Position: %.1f, %.1f, %.1f", pos[0], pos[1], pos[2]);
         }
-        return "Position: unknown";
+        return "Position: No active camera";
+    }
+
+    private String getDimensionsInfo() {
+        final ModelEngine modelEngine = viewModel.getActiveEngine();
+        if (modelEngine != null && modelEngine.getModel().getActiveScene() != null && modelEngine.getModel().getActiveScene().getSelectedObject() != null) {
+            Dimensions dim = modelEngine.getModel().getActiveScene().getSelectedObject().getDimensions();
+            return String.format(Locale.US, "Dimensions: %.1f, %.1f, %.1f", dim.getWidth(), dim.getHeight(), dim.getDepth());
+        }
+        return "Dimensions: No object selected";
     }
 
     private Dialog createSimpleDialog(final AlertDialog.Builder builder, final String title, final String message) {
