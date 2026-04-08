@@ -28,14 +28,10 @@ open class HomeFragment : Fragment(), EventListener {
     private var modelName: String = ""
     private var modelType: String = ""
     private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
     private val sharedViewModel: SharedViewModel by activityViewModels()
     private val modelEngineViewModel: ModelEngineViewModel by activityViewModels()
-    
     protected val handler = Handler(Looper.getMainLooper())
 
-    private var surface: GLSurfaceView? = null
-    private lateinit var renderer: GLRenderer
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,12 +50,9 @@ open class HomeFragment : Fragment(), EventListener {
         // Get UI binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        // Initialize renderer with the engine view model
-        renderer = GLRenderer(modelEngineViewModel)
-
         // Get GL Surface (from Layout)
-        surface = binding.glSurfaceView
-        val glSurfaceView = binding.glSurfaceView
+        val surface = _binding?.glSurfaceView
+        val glSurfaceView = _binding?.glSurfaceView
 
         // debug
         Log.i(TAG, "Initializing GLSurfaceView... " + System.identityHashCode(surface))
@@ -67,23 +60,23 @@ open class HomeFragment : Fragment(), EventListener {
         // configure GL Surface
         try {
             // Create an OpenGL ES context.
-            glSurfaceView.setEGLContextClientVersion(3)
+            glSurfaceView?.setEGLContextClientVersion(3)
         } catch (e: Exception) {
             Log.w(TAG, "GL ES version 3 not supported, falling back to 2.0. " + e.message)
             try {
-                glSurfaceView.setEGLContextClientVersion(2)
+                glSurfaceView?.setEGLContextClientVersion(2)
             } catch (e2: Exception) {
                 Log.e(TAG, "Failed to set GL ES version 2.0", e2)
             }
         }
 
         // Set up OpenGL Surface View using the engine's GLRenderer
-        glSurfaceView.setRenderer(renderer)
-        glSurfaceView.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
+        glSurfaceView?.setRenderer(GLRenderer(modelEngineViewModel))
+        glSurfaceView?.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
 
         Log.i(TAG, "HomeFragment onCreateView finished " + System.identityHashCode(this))
         
-        return binding.root
+        return _binding?.root ?: throw Exception("Failed to inflate layout")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -91,6 +84,24 @@ open class HomeFragment : Fragment(), EventListener {
         Log.i(TAG, "HomeFragment onViewCreated: " + System.identityHashCode(this))
 
         super.onViewCreated(view, savedInstanceState)
+
+        // Monitor active engine to refresh UI buttons
+        modelEngineViewModel.activeEngine.observe(viewLifecycleOwner) { engine ->
+            val surface = _binding?.glSurfaceView
+            if (surface != null) {
+                if (engine == null) {
+                    surface.reset()
+                    val parent = _binding?.glSurfaceView?.parent as? ViewGroup
+                    parent?.removeView(surface)
+                    _binding = null
+                    Log.i(TAG, "Binding removed: " + uriString)
+                } else if (engine.id != uriString){
+                    surface.reset()
+                    Log.i(TAG, "GL view reset called " + engine.id)
+
+                }
+            }
+        }
 
         // Start engine setup
         setupAndStartEngine(uriString)
@@ -108,20 +119,26 @@ open class HomeFragment : Fragment(), EventListener {
             Log.i(TAG, "setupAndStartEngine $uriString")
 
             // Initialize engine view model with this model's metadata
-            modelEngineViewModel.initEngine(uriString, modelName, modelType, {
+            modelEngineViewModel.initEngine(uriString, modelName, modelType) {
 
                 // get engine
                 val engine = modelEngineViewModel.getEngine(uriString)
                     ?: throw IllegalArgumentException("Engine not initialized")
 
+                // check
+                if (_binding == null){
+                    Log.e(TAG, "No binding found for id:"+uriString)
+                    return@initEngine
+                }
+
                 // setup engine with UI/Context components
-                engine.addOrReplace("gl.surfaceView", surface)
-                engine.addOrReplace("gl.renderer", renderer)
+                engine.addOrReplace("gl.surfaceView", _binding?.glSurfaceView)
+                engine.addOrReplace("gl.renderer", _binding?.glSurfaceView?.renderer)
                 engine.addOrReplace("ui.settings", SettingsOptions())
                 engine.addOrReplace("ui.fragment", this)
 
                 // load engine
-                modelEngineViewModel.loadEngine(uriString, {
+                modelEngineViewModel.loadEngine(uriString) {
 
                     // [SAFE APPLY] Apply saved preferences (Theme, Language, OpenGL settings, etc.)
                     // We use activity?.let to ensure we have a valid context and to skip if detaching
@@ -134,7 +151,7 @@ open class HomeFragment : Fragment(), EventListener {
                     }
 
                     // boot engine
-                    modelEngineViewModel.startEngine(uriString, {
+                    modelEngineViewModel.startEngine(uriString) {
 
                         // log success
                         Log.i(TAG, "setupAndStartEngine Activating engine...")
@@ -154,11 +171,14 @@ open class HomeFragment : Fragment(), EventListener {
                         } else {
 
                             // log error
-                            Log.e(TAG, "setupAndStartEngine Starting engine finished with error: ${engine.message}")
+                            Log.e(
+                                TAG,
+                                "setupAndStartEngine Starting engine finished with error: ${engine.message}"
+                            )
                         }
-                    })
-                });
-            });
+                    }
+                };
+            };
         } catch (ex: Exception) {
             Log.e(TAG, "setupAndStartEngine finished with exception", ex)
         }
@@ -171,12 +191,12 @@ open class HomeFragment : Fragment(), EventListener {
     
     override fun onResume() {
         super.onResume()
-        binding.glSurfaceView.onResume()
+        _binding?.glSurfaceView?.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        binding.glSurfaceView.onPause()
+        _binding?.glSurfaceView?.onPause()
     }
 
     override fun onDestroyView() {

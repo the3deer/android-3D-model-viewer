@@ -70,8 +70,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     private val sharedViewModel: SharedViewModel by viewModels()
     private val modelEngineViewModel: ModelEngineViewModel by viewModels()
 
-    private lateinit var loadContentDialog: LoadContentDialog
-
     // Future to handle synchronous-like URI resolution from background threads
     private var pendingResolution: CompletableFuture<URI?>? = null
 
@@ -81,7 +79,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             uri?.let {
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
-                        loadContentDialog.load(URI.create(it.toString()))
+                        LoadContentDialog(this@MainActivity).load(URI.create(it.toString()))
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) {
                             Log.e(TAG, "Error loading uri: $it", e)
@@ -111,7 +109,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         // Initialize ContentUtils with context and resolver for file operations
         ContentUtils.setContext(this)
         ContentUtils.setContentResolver(this)
-        loadContentDialog = LoadContentDialog(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -254,7 +251,10 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
         // Monitor active engine to refresh UI buttons
         modelEngineViewModel.activeEngine.observe(this) { engine ->
-            Log.i(TAG, "Active engine changed. id: ${engine?.id}")
+
+            if (engine == null) return@observe;
+
+            Log.i(TAG, "Active engine changed. id: ${engine.id}")
 
             // Register this activity as a listener for the active engine
             engine.addOrReplace(this@MainActivity.javaClass.name, this@MainActivity)
@@ -269,7 +269,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         supportFragmentManager.setFragmentResultListener("app", this) { _, bundle ->
             val action = bundle.getString("action")
             when (action) {
-                "pick" -> loadContentDialog.start()
                 "load" -> {
                     val uri = bundle.getString("uri")
                     if (uri != null) {
