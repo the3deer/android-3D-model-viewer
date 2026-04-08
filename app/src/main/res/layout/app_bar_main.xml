@@ -117,7 +117,8 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/immersive"
                 app:fabSize="mini"
-                app:srcCompat="@android:drawable/ic_menu_add" />
+                app:srcCompat="@android:drawable/ic_menu_add"
+                app:tooltipText="@string/immersive" />
         </LinearLayout>
 
     </LinearLayout>
