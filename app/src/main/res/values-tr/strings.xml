@@ -85,6 +85,7 @@
     <string name="bean_stereoscopic_renderer_label">Stereoskopik Oluşturucu</string>
     <string name="bean_shadow_drawer_description">Yerdeki bir düzlemde nesnenin gölgesini oluşturur</string>
     <string name="bean_shadow_drawer_label">Gölge Oluşturucu</string>
+    <string name="bean_shader_manager_label">Shader Yöneticisi</string>
 
     <!-- Bean Özellikleri -->
     <string name="property_settings_language_label">Dil</string>

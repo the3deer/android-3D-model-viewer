@@ -85,6 +85,7 @@
     <string name="bean_stereoscopic_renderer_label">स्टीरियोस्कोपिक रेंडरर</string>
     <string name="bean_shadow_drawer_description">जमीन पर एक समतल में वस्तु की छाया डालें</string>
     <string name="bean_shadow_drawer_label">शैडो रेंडरर</string>
+    <string name="bean_shader_manager_label">शेडर मैनेजर (Shader Manager)</string>
 
     <!-- बीन गुण -->
     <string name="property_settings_language_label">भाषा</string>

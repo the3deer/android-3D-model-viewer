@@ -85,6 +85,7 @@
     <string name="bean_stereoscopic_renderer_label">Stereoskopischer-Renderer</string>
     <string name="bean_shadow_drawer_description">Wirft einen Schatten des Objekts auf eine Ebene am Boden</string>
     <string name="bean_shadow_drawer_label">Schatten-Renderer</string>
+    <string name="bean_shader_manager_label">Shader-Manager</string>
 
     <!-- Bean-Eigenschaften -->
     <string name="property_settings_language_label">Sprache</string>

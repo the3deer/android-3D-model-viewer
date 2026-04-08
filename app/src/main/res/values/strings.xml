@@ -88,6 +88,7 @@
     <string name="bean_stereoscopic_renderer_label">Stereoscopic Renderer</string>
     <string name="bean_shadow_drawer_description">Cast a shadow of the object in a plane on the ground</string>
     <string name="bean_shadow_drawer_label">Shadow Renderer</string>
+    <string name="bean_shader_manager_label">Shader Manager</string>
 
     <!-- Bean Properties -->
     <string name="property_settings_language_label">Language</string>

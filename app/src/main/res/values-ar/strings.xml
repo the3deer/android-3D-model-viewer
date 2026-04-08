@@ -85,6 +85,7 @@
     <string name="bean_stereoscopic_renderer_label">المصير المجسم (Stereoscopic)</string>
     <string name="bean_shadow_drawer_description">إلقاء ظل للكائن على مستوى في الأرض</string>
     <string name="bean_shadow_drawer_label">مصير الظلال</string>
+    <string name="bean_shader_manager_label">مدير المظلل</string>
 
     <!-- خصائص البينات -->
     <string name="property_settings_language_label">اللغة</string>

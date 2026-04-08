@@ -85,6 +85,7 @@
     <string name="bean_stereoscopic_renderer_label">立体渲染器</string>
     <string name="bean_shadow_drawer_description">在地面平面上投射对象的阴影</string>
     <string name="bean_shadow_drawer_label">阴影渲染器</string>
+    <string name="bean_shader_manager_label">着色器管理器</string>
 
     <!-- Bean 属性 -->
     <string name="property_settings_language_label">语言</string>

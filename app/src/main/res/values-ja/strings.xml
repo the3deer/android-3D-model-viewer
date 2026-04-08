@@ -85,6 +85,7 @@
     <string name="bean_stereoscopic_renderer_label">ステレオスコピックレンダラー</string>
     <string name="bean_shadow_drawer_description">地面の平面にオブジェクトの影を投影します</string>
     <string name="bean_shadow_drawer_label">シャドウレンダラー</string>
+    <string name="bean_shader_manager_label">シェーダーマネージャー</string>
 
     <!-- Beanプロパティ -->
     <string name="property_settings_language_label">言語</string>

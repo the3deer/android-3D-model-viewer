@@ -85,6 +85,7 @@
     <string name="bean_stereoscopic_renderer_label">Rendu stéréoscopique</string>
     <string name="bean_shadow_drawer_description">Projette une ombre de l\'objet sur un plan au sol</string>
     <string name="bean_shadow_drawer_label">Rendu des ombres</string>
+    <string name="bean_shader_manager_label">Gestionnaire de Shaders</string>
 
     <!-- Propriétés de Bean -->
     <string name="property_settings_language_label">Langue</string>

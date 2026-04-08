@@ -85,6 +85,7 @@
     <string name="bean_stereoscopic_renderer_label">Стереоскопический рендерер</string>
     <string name="bean_shadow_drawer_description">Отражать тень объекта на плоскость на земле</string>
     <string name="bean_shadow_drawer_label">Рендерер теней</string>
+    <string name="bean_shader_manager_label">Менеджер шейдеров</string>
 
     <!-- Свойства бинов -->
     <string name="property_settings_language_label">Язык</string>

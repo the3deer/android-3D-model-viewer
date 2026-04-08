@@ -85,6 +85,7 @@
     <string name="bean_stereoscopic_renderer_label">Renderizador Estereoscópico</string>
     <string name="bean_shadow_drawer_description">Proyecta una sombra del objeto en un plano en el suelo</string>
     <string name="bean_shadow_drawer_label">Renderizador de Sombras</string>
+    <string name="bean_shader_manager_label">Gestor de Shaders</string>
 
     <!-- Propiedades de Bean -->
     <string name="property_settings_language_label">Lenguaje</string>
