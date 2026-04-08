@@ -87,7 +87,7 @@ public class DialogUtils {
             }
 
             final String[] from = {"name", "image"};
-            final int[] to = {R.id.textView, R.id.imageView};
+            final int[] to = {R.id.nav_header_subtitle, R.id.imageView};
             final ListAdapter textImageAdapter = new SimpleAdapter(context, modelList, R.layout.list_text_with_image, from, to) {
                 @Override
                 public void setViewImage(ImageView v, String value) {

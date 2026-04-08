@@ -1,8 +1,10 @@
 package org.the3deer.android.viewer
 
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.ConnectivityManager
 import android.net.Uri
+import androidx.core.net.toUri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -146,6 +148,17 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         binding.navView?.let { navigationView ->
+
+            // Setup email link in navigation header
+            val headerView = navigationView.getHeaderView(0)
+            headerView?.findViewById<TextView>(R.id.nav_header_subtitle)?.setOnClickListener {
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = ("mailto:" + getString(R.string.nav_header_subtitle)).toUri()
+                    putExtra(Intent.EXTRA_SUBJECT, "Support Request - Android 3D Model Viewer")
+                }
+                startActivity(Intent.createChooser(intent, "Send email..."))
+            }
+
             navigationView.setNavigationItemSelectedListener { item ->
                 when (item.groupId) {
                     R.id.group_recent -> {
