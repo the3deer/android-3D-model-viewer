@@ -14,16 +14,31 @@ class JoystickView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
+    // outerPaint: used for the background circle of the joystick. 
+    // Low alpha (50) keeps it subtle on all backgrounds.
     private val outerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
         alpha = 50
         style = Paint.Style.FILL
     }
 
+    // innerPaint: used for the movable thumb/stick. 
+    // Higher alpha (180) and a shadow layer provide visibility and depth.
     private val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
-        alpha = 150
+        alpha = 180
         style = Paint.Style.FILL
+        // Shadow adds a 3D effect and improves visibility on white backgrounds
+        setShadowLayer(5f, 0f, 2f, Color.argb(100, 0, 0, 0))
+    }
+
+    // borderPaint: used to outline the joystick components.
+    // Essential for visibility when the fragment background is also white.
+    private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.BLACK
+        alpha = 80
+        style = Paint.Style.STROKE
+        strokeWidth = 2f
     }
 
     private var centerX = 0f
@@ -56,8 +71,13 @@ class JoystickView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        // Outer circle
         canvas.drawCircle(centerX, centerY, baseRadius, outerPaint)
+        canvas.drawCircle(centerX, centerY, baseRadius, borderPaint)
+
+        // Inner circle (hat)
         canvas.drawCircle(touchX, touchY, hatRadius, innerPaint)
+        canvas.drawCircle(touchX, touchY, hatRadius, borderPaint)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
