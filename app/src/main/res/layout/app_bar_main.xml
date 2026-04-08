@@ -123,23 +123,29 @@
 
     </LinearLayout>
 
-    <!-- Joysticks -->
-    <org.the3deer.android.viewer.ui.JoystickView
-        android:id="@+id/joystick_left"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_gravity="bottom|start"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="32dp"
-        android:visibility="gone" />
+    <!-- Joysticks Container -->
+    <FrameLayout
+        android:id="@+id/container_joysticks"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
-    <org.the3deer.android.viewer.ui.JoystickView
-        android:id="@+id/joystick_right"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="72dp"
-        android:layout_marginBottom="32dp"
-        android:visibility="gone" />
+        <org.the3deer.android.viewer.ui.JoystickView
+            android:id="@+id/joystick_left"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="bottom|start"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="32dp" />
+
+        <org.the3deer.android.viewer.ui.JoystickView
+            android:id="@+id/joystick_right"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="72dp"
+            android:layout_marginBottom="32dp" />
+
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

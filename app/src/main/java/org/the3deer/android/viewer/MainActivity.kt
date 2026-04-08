@@ -126,8 +126,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             // Apply insets as padding to UI elements to avoid overlapping system bars
             binding.appBarMain.appBarLayout.setPadding(0, insets.top, 0, 0)
             binding.appBarMain.containerActionsRoot.setPadding(0, 0, insets.right, insets.bottom)
-            binding.appBarMain.joystickLeft.setPadding(insets.left, 0, 0, insets.bottom)
-            binding.appBarMain.joystickRight.setPadding(0, 0, insets.right, insets.bottom)
+            binding.appBarMain.containerJoysticks.setPadding(insets.left, 0, insets.right, insets.bottom)
 
             // Update the shared screen object in the engine view model
             updateScreenInsets(insets)
@@ -212,7 +211,10 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                 }
 
                 // Show/hide UI actions stack based on destination. These are only for the Home fragment (3D viewer)
-                binding.appBarMain.containerNormalActions.visibility = if (destination.id == R.id.nav_home) View.VISIBLE else View.GONE
+                binding.appBarMain.containerActionsRoot.visibility = if (destination.id == R.id.nav_home) View.VISIBLE else View.GONE
+                
+                // Refresh all overlay elements (including joysticks) based on new destination
+                refreshOverlayButtons()
             }
 
             sharedViewModel.history.observe(this) { history ->
@@ -407,22 +409,21 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             val infoItem = binding.appBarMain.toolbar.menu.findItem(R.id.nav_info)
             infoItem?.icon?.setTint(color)
 
-            // Show gravity button only if FirstPersonCameraHandler is active
+            // Show joysticks and toggle action containers based on First Person Mode AND current destination
+            val isHome = findNavController(R.id.nav_host_fragment_content_main).currentDestination?.id == R.id.nav_home
             val cameraManager = engine.beanFactory.find(CameraManager::class.java)
             val isFirstPerson = cameraManager?.activeController is FirstPersonCameraHandler
-            
+
             if (isFirstPerson) {
                 binding.appBarMain.containerNormalActions.visibility = View.GONE
                 binding.appBarMain.containerGameActions.visibility = View.VISIBLE
-                binding.appBarMain.joystickLeft.visibility = View.VISIBLE
-                binding.appBarMain.joystickRight.visibility = View.VISIBLE
+                binding.appBarMain.containerJoysticks.visibility = if (isHome) View.VISIBLE else View.GONE
                 
                 binding.appBarMain.btnGameMode.setImageResource(android.R.drawable.ic_menu_edit)
             } else {
                 binding.appBarMain.containerNormalActions.visibility = View.VISIBLE
                 binding.appBarMain.containerGameActions.visibility = View.GONE
-                binding.appBarMain.joystickLeft.visibility = View.GONE
-                binding.appBarMain.joystickRight.visibility = View.GONE
+                binding.appBarMain.containerJoysticks.visibility = View.GONE
 
                 binding.appBarMain.btnGameMode.setImageResource(android.R.drawable.ic_menu_compass)
             }
