@@ -5,21 +5,35 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
 import org.the3deer.android.engine.ModelEngineViewModel;
 
+import java.util.Locale;
+
 public class ModelInfoDialogFragment extends DialogFragment {
 
     private ModelEngineViewModel viewModel;
 
-    private Observer<String> observer;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable updateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            final Dialog dialog = getDialog();
+            if (dialog instanceof AlertDialog) {
+                ((AlertDialog) dialog).setMessage(buildInfoText());
+            }
+            handler.postDelayed(this, 5000);
+        }
+    };
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,18 +56,7 @@ public class ModelInfoDialogFragment extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        final Dialog dialog = getDialog();
-        if (dialog instanceof AlertDialog) {
-            final AlertDialog alertDialog = (AlertDialog) dialog;
-            observer = (info) -> {
-                final ModelEngine modelEngine = viewModel.getActiveEngine();
-                if (modelEngine != null && modelEngine.getModel() != null) {
-                    alertDialog.setMessage(buildInfoText());
-                }
-            };
-            // Observe memory info and update the dialog message in real-time
-            viewModel.memoryInfo.observe(this, observer);
-        }
+        handler.post(updateRunnable);
     }
 
     /**
@@ -80,7 +83,7 @@ public class ModelInfoDialogFragment extends DialogFragment {
 
         // memory info
         info.append("--- Memory ---\n");
-        info.append(viewModel.memoryInfo.getValue()).append("\n\n");
+        info.append(getMemoryInfo()).append("\n\n");
 
         // active scene
         if (model != null) {
@@ -95,6 +98,21 @@ public class ModelInfoDialogFragment extends DialogFragment {
         return info.toString();
     }
 
+    private String getMemoryInfo() {
+        Runtime runtime = Runtime.getRuntime();
+        long usedMemory = (runtime.totalMemory() - runtime.freeMemory());
+        long maxMemory = runtime.maxMemory();
+
+        long modelMemory = 0;
+        final ModelEngine active = viewModel.getActiveEngine();
+        if (active != null && active.getModel() != null) {
+            modelMemory = active.getModel().getMemoryUsage();
+        }
+
+        return String.format(Locale.getDefault(), "Memory: %d/%d MB\nModel: %d MB",
+                usedMemory / 1024 / 1024, maxMemory / 1024 / 1024, modelMemory / 1024 / 1024);
+    }
+
     private Dialog createSimpleDialog(final AlertDialog.Builder builder, final String title, final String message) {
         builder.setTitle(title)
                 .setMessage(message)
@@ -105,10 +123,7 @@ public class ModelInfoDialogFragment extends DialogFragment {
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        if (observer != null) {
-            viewModel.memoryInfo.removeObserver(observer);
-            observer = null;
-        }
+        handler.removeCallbacks(updateRunnable);
     }
 
     @Override
