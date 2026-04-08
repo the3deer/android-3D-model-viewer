@@ -5,14 +5,12 @@
     android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     tools:context="org.the3deer.android.viewer.MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
         android:background="?attr/colorPrimary"
         android:theme="@style/Theme.AndroidModelViewer.AppBarOverlay">
 
@@ -27,8 +25,7 @@
 
     <include
         android:id="@+id/content_main"
-        layout="@layout/content_main"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        layout="@layout/content_main" />
 
     <!-- Main Action Column (Fixed to Bottom-Right) -->
     <LinearLayout
@@ -37,9 +34,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="32dp"
         android:clipToPadding="false"
-        android:fitsSystemWindows="true"
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
@@ -133,8 +129,7 @@
         android:layout_height="150dp"
         android:layout_gravity="bottom|start"
         android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
-        android:fitsSystemWindows="true"
+        android:layout_marginBottom="32dp"
         android:visibility="gone" />
 
     <org.the3deer.android.viewer.ui.JoystickView
@@ -143,8 +138,7 @@
         android:layout_height="150dp"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="72dp"
-        android:layout_marginBottom="16dp"
-        android:fitsSystemWindows="true"
+        android:layout_marginBottom="32dp"
         android:visibility="gone" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

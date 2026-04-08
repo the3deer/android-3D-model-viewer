@@ -122,6 +122,12 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
 
+            // Apply insets as padding to UI elements to avoid overlapping system bars
+            binding.appBarMain.appBarLayout.setPadding(0, insets.top, 0, 0)
+            binding.appBarMain.containerActionsRoot.setPadding(0, 0, insets.right, insets.bottom)
+            binding.appBarMain.joystickLeft.setPadding(insets.left, 0, 0, insets.bottom)
+            binding.appBarMain.joystickRight.setPadding(0, 0, insets.right, insets.bottom)
+
             // Update the shared screen object in the engine view model
             updateScreenInsets(insets)
 
@@ -331,7 +337,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             screen.setInsets(insets.left, insets.top, insets.right, insets.bottom)
 
             // Update toolbar height (including status bar if visible)
-            val toolbarHeight = if (immersiveMode) 0 else binding.appBarMain.toolbar.height
+            val toolbarHeight = if (immersiveMode) 0 else (binding.appBarMain.toolbar.height + insets.top)
             screen.setToolbarHeight(toolbarHeight)
 
             Log.d(TAG, "Shared Screen insets updated: $insets, toolbar=$toolbarHeight")
@@ -531,9 +537,11 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             windowInsetsController.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             supportActionBar?.hide()
+            binding.appBarMain.appBarLayout.visibility = View.GONE
         } else {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
             supportActionBar?.show()
+            binding.appBarMain.appBarLayout.visibility = View.VISIBLE
         }
 
         // Update screen insets immediately

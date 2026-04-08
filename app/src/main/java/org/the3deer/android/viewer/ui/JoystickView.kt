@@ -42,9 +42,12 @@ class JoystickView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        centerX = w / 2f
-        centerY = h / 2f
-        baseRadius = min(w, h) / 3f
+        val availableWidth = w - paddingLeft - paddingRight
+        val availableHeight = h - paddingTop - paddingBottom
+
+        centerX = paddingLeft + availableWidth / 2f
+        centerY = paddingTop + availableHeight / 2f
+        baseRadius = min(availableWidth, availableHeight) / 3f
         hatRadius = baseRadius / 2f
         
         touchX = centerX
