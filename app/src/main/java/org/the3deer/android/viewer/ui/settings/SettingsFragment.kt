@@ -17,11 +17,11 @@ import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.android.viewer.R
 import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.shader.ShaderManager
-import org.the3deer.bean.Bean
-import org.the3deer.bean.BeanManager
-import org.the3deer.bean.BeanPropertyInfo
-import org.the3deer.bean.BeanUtils
-import org.the3deer.bean.Feature
+import org.the3deer.util.bean.Bean
+import org.the3deer.util.bean.BeanManager
+import org.the3deer.util.bean.BeanPropertyInfo
+import org.the3deer.util.bean.BeanUtils
+import org.the3deer.util.bean.Feature
 import java.util.Locale
 
 /**

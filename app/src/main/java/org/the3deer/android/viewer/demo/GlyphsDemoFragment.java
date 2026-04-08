@@ -13,7 +13,7 @@ import org.the3deer.android.engine.gui.Label;
 import org.the3deer.android.engine.gui.Text;
 import org.the3deer.android.engine.gui.Widget;
 import org.the3deer.android.engine.model.Camera;
-import org.the3deer.bean.BeanInit;
+import org.the3deer.util.bean.BeanInit;
 
 import java.util.logging.Logger;
 
