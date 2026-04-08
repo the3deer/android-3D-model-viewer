@@ -56,6 +56,10 @@
     <string name="immersive">इमर्सिव</string>
     <string name="anim">एनिम</string>
 
+    <string name="tooltip_no_scenes">इस मॉडल में केवल एक दृश्य है</string>
+    <string name="tooltip_no_cameras">इस मॉडल में केवल एक कैमरा है</string>
+    <string name="tooltip_no_animations">इस मॉडल में कोई एनिमेशन नहीं है</string>
+
     <!-- श्रेणियां -->
     <string name="category_decorators_label">डेकोरेटर्स</string>
     <string name="category_renderers_label">रेंडरर्स</string>

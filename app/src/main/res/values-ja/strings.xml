@@ -56,6 +56,10 @@
     <string name="immersive">イマーシブ</string>
     <string name="anim">アニメ</string>
 
+    <string name="tooltip_no_scenes">このモデルにはシーンが1つしかありません</string>
+    <string name="tooltip_no_cameras">このモデルにはカメラが1つしかありません</string>
+    <string name="tooltip_no_animations">このモデルにはアニメーションがありません</string>
+
     <!-- カテゴリ -->
     <string name="category_decorators_label">デコレータ</string>
     <string name="category_renderers_label">レンダラー</string>

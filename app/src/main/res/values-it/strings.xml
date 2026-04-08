@@ -56,6 +56,10 @@
     <string name="immersive">Immersivo</string>
     <string name="anim">Anim</string>
 
+    <string name="tooltip_no_scenes">Questo modello ha una sola scena</string>
+    <string name="tooltip_no_cameras">Questo modello ha una sola telecamera</string>
+    <string name="tooltip_no_animations">Questo modello non ha animazioni</string>
+
     <!-- Categorie -->
     <string name="category_decorators_label">Decoratori</string>
     <string name="category_renderers_label">Renderer</string>

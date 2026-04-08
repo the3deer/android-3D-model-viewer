@@ -108,4 +108,8 @@
     <string name="feature_decorator_description">المكونات التي ترسم فوق النموذج</string>
     <string name="feature_gui_description">عرض الإطارات والمحاور والمعلومات</string>
     <string name="feature_renderer_description">المصيرون يرسمون على الشاشة</string>
+
+    <string name="tooltip_no_scenes">هذا النموذج يحتوي على مشهد واحد فقط</string>
+    <string name="tooltip_no_cameras">هذا النموذج يحتوي على كاميرا واحدة فقط</string>
+    <string name="tooltip_no_animations">هذا النموذج لا يحتوي على رسوم متحركة</string>
 </resources>

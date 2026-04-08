@@ -56,6 +56,10 @@
     <string name="immersive">Погружение</string>
     <string name="anim">Аним</string>
 
+    <string name="tooltip_no_scenes">Эта модель имеет только одну сцену</string>
+    <string name="tooltip_no_cameras">Эта модель имеет только одну камеру</string>
+    <string name="tooltip_no_animations">Эта модель не имеет анимаций</string>
+
     <!-- Категории -->
     <string name="category_renderers_label">Рендереры</string>
     <string name="category_gui_label">Графический интерфейс</string>

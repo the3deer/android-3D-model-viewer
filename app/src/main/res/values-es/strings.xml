@@ -108,4 +108,8 @@
     <string name="feature_decorator_description">Componentes que dibujan sobre el modelo</string>
     <string name="feature_gui_description">Muestra FPS, Ejes e Información</string>
     <string name="feature_renderer_description">Los Renderizadores dibujan en la pantalla</string>
+
+    <string name="tooltip_no_scenes">Este modelo tiene solo una escena</string>
+    <string name="tooltip_no_cameras">Este modelo tiene solo una cámara</string>
+    <string name="tooltip_no_animations">Este modelo no tiene animaciones</string>
 </resources>

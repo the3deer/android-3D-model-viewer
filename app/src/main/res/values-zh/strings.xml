@@ -56,6 +56,10 @@
     <string name="immersive">沉浸式</string>
     <string name="anim">动画</string>
 
+    <string name="tooltip_no_scenes">该模型只有一个场景</string>
+    <string name="tooltip_no_cameras">该模型只有一个相机</string>
+    <string name="tooltip_no_animations">该模型没有动画</string>
+
     <!-- 类别 -->
     <string name="category_decorators_label">装饰器</string>
     <string name="category_renderers_label">渲染器</string>

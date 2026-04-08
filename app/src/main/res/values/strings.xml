@@ -57,6 +57,10 @@
     <string name="immersive">Immersive</string>
     <string name="anim">Anim</string>
 
+    <string name="tooltip_no_scenes">This model has only one scene</string>
+    <string name="tooltip_no_cameras">This model has only one camera</string>
+    <string name="tooltip_no_animations">This model has no animations</string>
+
     <string name="fps_label" translatable="false">%1$d FPS</string>
 
     <!-- Categories -->

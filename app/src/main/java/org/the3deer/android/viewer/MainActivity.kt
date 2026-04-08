@@ -22,6 +22,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.appcompat.widget.TooltipCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -221,12 +222,24 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
         // Action stack buttons setup
         binding.appBarMain.btnScene.setOnClickListener {
+            if (binding.appBarMain.btnScene.alpha < 1.0f) {
+                Toast.makeText(this, R.string.tooltip_no_scenes, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             SceneDialogFragment().show(supportFragmentManager, "scene_dialog")
         }
         binding.appBarMain.btnCamera.setOnClickListener {
+            if (binding.appBarMain.btnCamera.alpha < 1.0f) {
+                Toast.makeText(this, R.string.tooltip_no_cameras, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             CameraDialogFragment().show(supportFragmentManager, "camera_dialog")
         }
         binding.appBarMain.btnAnimation.setOnClickListener {
+            if (binding.appBarMain.btnAnimation.alpha < 1.0f) {
+                Toast.makeText(this, R.string.tooltip_no_animations, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             AnimationDialogFragment().show(supportFragmentManager, "animation_dialog")
         }
 
@@ -357,16 +370,18 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             val model = engine.model
             val scene = model.activeScene
 
-            binding.appBarMain.btnScene.isEnabled = (model.scenes?.size ?: 0) > 1
-            binding.appBarMain.btnCamera.isEnabled = (scene?.cameras?.size ?: 0) > 1
-            binding.appBarMain.btnAnimation.isEnabled = (scene?.animations?.size ?: 0) > 0
+            val scenesEnabled = (model.scenes?.size ?: 0) > 1
+            val camerasEnabled = (scene?.cameras?.size ?: 0) > 1
+            val animationsEnabled = (scene?.animations?.size ?: 0) > 0
 
-            binding.appBarMain.btnScene.alpha =
-                if (binding.appBarMain.btnScene.isEnabled) 1.0f else 0.5f
-            binding.appBarMain.btnCamera.alpha =
-                if (binding.appBarMain.btnCamera.isEnabled) 1.0f else 0.5f
-            binding.appBarMain.btnAnimation.alpha =
-                if (binding.appBarMain.btnAnimation.isEnabled) 1.0f else 0.5f
+            binding.appBarMain.btnScene.alpha = if (scenesEnabled) 1.0f else 0.5f
+            binding.appBarMain.btnCamera.alpha = if (camerasEnabled) 1.0f else 0.5f
+            binding.appBarMain.btnAnimation.alpha = if (animationsEnabled) 1.0f else 0.5f
+
+            // Set tooltips for long-press support
+            TooltipCompat.setTooltipText(binding.appBarMain.btnScene, if (scenesEnabled) null else getString(R.string.tooltip_no_scenes))
+            TooltipCompat.setTooltipText(binding.appBarMain.btnCamera, if (camerasEnabled) null else getString(R.string.tooltip_no_cameras))
+            TooltipCompat.setTooltipText(binding.appBarMain.btnAnimation, if (animationsEnabled) null else getString(R.string.tooltip_no_animations))
 
             // Handle Traffic Light status for Info button
             val modelStatus = model.status ?: Model.Status.UNKNOWN

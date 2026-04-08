@@ -108,4 +108,8 @@
     <string name="feature_decorator_description">Composants qui dessinent par-dessus le modèle</string>
     <string name="feature_gui_description">Affiche FPS, axes et infos</string>
     <string name="feature_renderer_description">Les moteurs de rendu dessinent sur l\'écran</string>
+
+    <string name="tooltip_no_scenes">Ce modèle n\'a qu\'une seule scène</string>
+    <string name="tooltip_no_cameras">Ce modèle n\'a qu\'une seule caméra</string>
+    <string name="tooltip_no_animations">Ce modèle n\'a pas d\'animations</string>
 </resources>

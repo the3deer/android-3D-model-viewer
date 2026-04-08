@@ -109,4 +109,7 @@
     <string name="feature_gui_description">Exibe FPS, Eixos e Informações</string>
     <string name="feature_renderer_description">Os Renderizadores desenham na tela</string>
 
+    <string name="tooltip_no_scenes">Este modelo tem apenas uma cena</string>
+    <string name="tooltip_no_cameras">Este modelo tem apenas uma câmera</string>
+    <string name="tooltip_no_animations">Este modelo não tem animações</string>
 </resources>

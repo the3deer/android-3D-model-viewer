@@ -56,6 +56,10 @@
     <string name="immersive">Занурення</string>
     <string name="anim">Анім</string>
 
+    <string name="tooltip_no_scenes">Ця модель має лише одну сцену</string>
+    <string name="tooltip_no_cameras">Ця модель має лише одну камеру</string>
+    <string name="tooltip_no_animations">Ця модель не має анімацій</string>
+
     <!-- Категорії -->
     <string name="category_decorators_label">Декоратори</string>
     <string name="category_renderers_label">Рендерери</string>

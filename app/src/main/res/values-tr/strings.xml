@@ -56,6 +56,10 @@
     <string name="immersive">Sürükleyici</string>
     <string name="anim">Anim</string>
 
+    <string name="tooltip_no_scenes">Bu modelin sadece bir sahnesi var</string>
+    <string name="tooltip_no_cameras">Bu modelin sadece bir kamerası var</string>
+    <string name="tooltip_no_animations">Bu modelin animasyonu yok</string>
+
     <!-- Kategoriler -->
     <string name="category_decorators_label">Dekoratörler</string>
     <string name="category_renderers_label">Oluşturucular (Renderers)</string>
