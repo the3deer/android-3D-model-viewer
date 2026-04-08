@@ -374,9 +374,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             val camerasEnabled = (scene?.cameras?.size ?: 0) > 1
             val animationsEnabled = (scene?.animations?.size ?: 0) > 0
 
-            binding.appBarMain.btnScene.alpha = if (scenesEnabled) 1.0f else 0.5f
-            binding.appBarMain.btnCamera.alpha = if (camerasEnabled) 1.0f else 0.5f
-            binding.appBarMain.btnAnimation.alpha = if (animationsEnabled) 1.0f else 0.5f
+            binding.appBarMain.btnScene.alpha = if (scenesEnabled) 1.0f else 0.25f
+            binding.appBarMain.btnCamera.alpha = if (camerasEnabled) 1.0f else 0.25f
+            binding.appBarMain.btnAnimation.alpha = if (animationsEnabled) 1.0f else 0.25f
 
             // Set tooltips for long-press support
             TooltipCompat.setTooltipText(binding.appBarMain.btnScene, if (scenesEnabled) null else getString(R.string.tooltip_no_scenes))
