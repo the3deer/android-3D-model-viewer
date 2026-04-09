@@ -1,28 +1,26 @@
 package org.the3deer.android.viewer.ui.load;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.the3deer.android.engine.services.wavefront.WavefrontLoader;
 import org.the3deer.android.util.AndroidUtils;
 import org.the3deer.android.util.AssetUtils;
 import org.the3deer.android.util.ContentUtils;
 import org.the3deer.android.util.FileUtils;
+import org.the3deer.android.viewer.MainActivity;
 import org.the3deer.android.viewer.R;
-import org.the3deer.android.viewer.SharedViewModel;
 import org.the3deer.android.viewer.providers.polyhaven.PolyHaven;
 import org.the3deer.android.viewer.ui.DialogFragment;
 import org.the3deer.android.viewer.ui.DialogUtils;
-import org.the3deer.android.engine.services.wavefront.WavefrontLoader;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,8 +71,6 @@ public class LoadDialogFragment extends DialogFragment {
      */
     private final Map<String, Object> loadModelParameters = new HashMap<>();
 
-    private SharedViewModel sharedViewModel;
-
     public static LoadDialogFragment newInstance(int title, String[] items) {
         LoadDialogFragment frag = new LoadDialogFragment();
         Bundle args = new Bundle();
@@ -87,7 +83,6 @@ public class LoadDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
     @Override
@@ -150,11 +145,13 @@ public class LoadDialogFragment extends DialogFragment {
     private void loadModelFromKhronos(URI url) {
         if (!AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) return;
 
-        final ProgressDialog progress = ProgressDialog.show(activity, "", "Loading Khronos Repository...", true);
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).setLoading(true, "Loading Khronos Repository...");
+        }
         
         new Thread(() -> {
             try {
-                // read json
+                // read JSON
                 final String json = ContentUtils.read(url);
                 final JSONArray jsonArray = new JSONArray(json);
                 final List<String> files = new ArrayList<>();
@@ -184,7 +181,9 @@ public class LoadDialogFragment extends DialogFragment {
                 }
 
                 activity.runOnUiThread(() -> {
-                    progress.dismiss();
+                    if (activity instanceof MainActivity) {
+                        ((MainActivity) activity).setLoading(false, null);
+                    }
                     DialogUtils.createChooserDialog(activity, "Select file", null,
                         files, SUPPORTED_FILE_TYPES_REGEX,
                         (String file) -> {
@@ -197,7 +196,9 @@ public class LoadDialogFragment extends DialogFragment {
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Error loading Khronos", e);
                 activity.runOnUiThread(() -> {
-                    progress.dismiss();
+                    if (activity instanceof MainActivity) {
+                        ((MainActivity) activity).setLoading(false, null);
+                    }
                     Toast.makeText(activity, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
             }
@@ -213,7 +214,9 @@ public class LoadDialogFragment extends DialogFragment {
             return;
         };
 
-        final ProgressDialog progress = ProgressDialog.show(activity, "", "Loading Repository...", true);
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).setLoading(true, "Loading Repository...");
+        }
         
         new Thread(() -> {
             try {
@@ -221,7 +224,9 @@ public class LoadDialogFragment extends DialogFragment {
                 final List<String> files = ContentUtils.readLines(url.toString());
 
                 activity.runOnUiThread(() -> {
-                    progress.dismiss();
+                    if (activity instanceof MainActivity) {
+                        ((MainActivity) activity).setLoading(false, null);
+                    }
                     DialogUtils.createChooserDialog(activity, "Select file", null,
                         files, SUPPORTED_FILE_TYPES_REGEX,
                         (String file) -> {
@@ -238,7 +243,9 @@ public class LoadDialogFragment extends DialogFragment {
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Error loading Repository", e);
                 activity.runOnUiThread(() -> {
-                    progress.dismiss();
+                    if (activity instanceof MainActivity) {
+                        ((MainActivity) activity).setLoading(false, null);
+                    }
                     Toast.makeText(activity, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
             }
@@ -248,7 +255,9 @@ public class LoadDialogFragment extends DialogFragment {
     private void loadModelFromAssimp(URI url) {
         if (!AndroidUtils.checkPermission(activity, Manifest.permission.INTERNET, REQUEST_INTERNET_ACCESS)) return;
 
-        final ProgressDialog progress = ProgressDialog.show(activity, "", "Loading Assimp Repository...", true);
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).setLoading(true, "Loading Assimp Repository...");
+        }
         
         new Thread(() -> {
             try {
@@ -265,7 +274,9 @@ public class LoadDialogFragment extends DialogFragment {
                 }
 
                 activity.runOnUiThread(() -> {
-                    progress.dismiss();
+                    if (activity instanceof MainActivity) {
+                        ((MainActivity) activity).setLoading(false, null);
+                    }
                     DialogUtils.createChooserDialog(activity, "Select file", null,
                         files, SUPPORTED_FILE_TYPES_REGEX,
                         (String file) -> {
@@ -278,7 +289,9 @@ public class LoadDialogFragment extends DialogFragment {
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Error loading Assimp", e);
                 activity.runOnUiThread(() -> {
-                    progress.dismiss();
+                    if (activity instanceof MainActivity) {
+                        ((MainActivity) activity).setLoading(false, null);
+                    }
                     Toast.makeText(activity, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
             }

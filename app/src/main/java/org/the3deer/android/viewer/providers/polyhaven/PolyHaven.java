@@ -1,11 +1,11 @@
 package org.the3deer.android.viewer.providers.polyhaven;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.widget.Toast;
 
 import org.json.JSONObject;
 import org.the3deer.android.util.ContentUtils;
+import org.the3deer.android.viewer.MainActivity;
 
 import java.lang.ref.WeakReference;
 import java.net.URI;
@@ -52,7 +52,6 @@ public class PolyHaven {
     private static class LoadAssetsTask extends android.os.AsyncTask<Void, Void, Node> {
         private final WeakReference<Activity> activityRef;
         private final PolyHavenCallback callback;
-        private ProgressDialog dialog;
 
         LoadAssetsTask(Activity activity, PolyHavenCallback callback) {
             this.activityRef = new WeakReference<>(activity);
@@ -62,11 +61,8 @@ public class PolyHaven {
         @Override
         protected void onPreExecute() {
             Activity activity = activityRef.get();
-            if (activity != null) {
-                dialog = new ProgressDialog(activity);
-                dialog.setMessage("Fetching Poly Haven repository...");
-                dialog.setCancelable(false);
-                dialog.show();
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).setLoading(true, "Fetching Poly Haven repository...");
             }
         }
 
@@ -106,8 +102,10 @@ public class PolyHaven {
 
         @Override
         protected void onPostExecute(Node root) {
-            if (dialog != null) dialog.dismiss();
             Activity activity = activityRef.get();
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).setLoading(false, null);
+            }
             if (activity == null) return;
 
             if (root == null) {
@@ -152,7 +150,6 @@ public class PolyHaven {
         private final WeakReference<Activity> activityRef;
         private final String assetId;
         private final PolyHavenCallback callback;
-        private ProgressDialog dialog;
 
         FetchFileTask(Activity activity, String assetId, PolyHavenCallback callback) {
             this.activityRef = new WeakReference<>(activity);
@@ -163,10 +160,8 @@ public class PolyHaven {
         @Override
         protected void onPreExecute() {
             Activity activity = activityRef.get();
-            if (activity != null) {
-                dialog = new ProgressDialog(activity);
-                dialog.setMessage("Getting download links for " + assetId + "...");
-                dialog.show();
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).setLoading(true, "Getting download links for " + assetId + "...");
             }
         }
 
@@ -196,11 +191,13 @@ public class PolyHaven {
 
         @Override
         protected void onPostExecute(String url) {
-            if (dialog != null) dialog.dismiss();
+            Activity activity = activityRef.get();
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).setLoading(false, null);
+            }
             if (url != null) {
                 callback.onModelSelected(url);
             } else {
-                Activity activity = activityRef.get();
                 if (activity != null) {
                     Toast.makeText(activity, "Could not find GLTF file for this asset", Toast.LENGTH_SHORT).show();
                 }

@@ -319,6 +319,19 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     }
 
     /**
+     * Sets the loading state of the activity.
+     * This shows/hides a full-screen overlay with a progress bar and message.
+     */
+    fun setLoading(loading: Boolean, message: CharSequence? = null) {
+        runOnUiThread {
+            binding.loadingLayout.visibility = if (loading) View.VISIBLE else View.GONE
+            if (loading && message != null) {
+                binding.loadingText.text = message
+            }
+        }
+    }
+
+    /**
      * Resolves a missing resource URI by prompting the user to select the file.
      * This method is called from background threads in the Engine (ContentUtils).
      */
