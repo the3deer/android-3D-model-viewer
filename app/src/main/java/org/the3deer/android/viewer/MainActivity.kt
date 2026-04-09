@@ -12,11 +12,13 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
+import androidx.core.view.GravityCompat
 import androidx.core.view.MenuItemCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -316,6 +318,49 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
 
         applyInitialImmersiveMode()
+
+        // Handle back press to prompt user before exiting from Home screen
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // 1. If drawer is open, close it
+                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                    return
+                }
+
+                val navController = findNavController(R.id.nav_host_fragment_content_main)
+
+                // 2. If we are NOT on the Home screen, let the system handle it (go back to Home)
+                if (navController.currentDestination?.id != R.id.nav_home) {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                    return
+                }
+
+                // 3. We are on Home screen, show the prompt with the 4 drawer options + Exit
+                val items = arrayOf(
+                    getString(R.string.menu_home),
+                    getString(R.string.menu_load),
+                    getString(R.string.menu_settings),
+                    getString(R.string.menu_about),
+                    "Exit"
+                )
+
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(this@MainActivity)
+                    .setTitle(R.string.dialog_load_title) // "Menu"
+                    .setItems(items) { _, which ->
+                        when (which) {
+                            0 -> {} // Home - Do nothing, stay here
+                            1 -> navController.navigate(R.id.nav_load)
+                            2 -> navController.navigate(R.id.nav_settings)
+                            3 -> navController.navigate(R.id.nav_about)
+                            4 -> finish() // Exit the app
+                        }
+                    }
+                    .show()
+            }
+        })
     }
 
     /**
