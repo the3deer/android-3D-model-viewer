@@ -16,10 +16,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class LoadContentDialog {
 
+    private static final Logger logger = Logger.getLogger(LoadContentDialog.class.getSimpleName());
     private final static String SUPPORTED_MODELS_EXTENSIONS = "ob,stl,dae,gltf,glb,fbx,zip";
     private final static Pattern SUPPORTED_MODELS_REGEX =
             Pattern.compile("(?i).*\\.(obj|stl|dae|gltf|glb|fbx|zip|index)");
@@ -108,8 +110,15 @@ public class LoadContentDialog {
                 launchFragment(uri, fileName, fileType);
                 break;
             case "zip":
+
+                // sanitize filename
+                final String fileNameSanitized = fileName.replaceAll(" ", "+");
+
+                // create uri
+                final URI dataUri = URI.create("android://" + getActivity().getPackageName() + "/binary/" + fileNameSanitized);
+
                 // register resource
-                ContentUtils.addUri(fileName, URI.create(uri.toString()));
+                ContentUtils.addUri(fileName, dataUri);
 
                 // FIXME: potential out of memory error
                 final Map<String, byte[]> zipFiles = ContentUtils.readFiles(URI.create(uri.toString()));
@@ -123,15 +132,18 @@ public class LoadContentDialog {
                     if (dotIndex != -1) {
                         fileExtension = zipFilename.substring(dotIndex);
                     } else {
-                        fileExtension = "?";
+                        continue; // it's probably a folder. ignore it
                     }
 
+                    // sanitize filename
+                    final String fileNameEntrySanitized = zipFilename.replaceAll(" ", "+");
+
                     // build uri
-                    final URI pseudoUri = uri.resolve(zipFilename);
+                    final URI pseudoUri = dataUri.resolve(fileNameEntrySanitized);
 
                     // register all zip entries
-                    ContentUtils.addUri(uri.toString(), URI.create(pseudoUri.toString()));
-                    ContentUtils.addData(URI.create(pseudoUri.toString()), zipFile.getValue());
+                    ContentUtils.addUri(fileNameEntrySanitized, pseudoUri);
+                    ContentUtils.addData(pseudoUri, zipFile.getValue());
 
                     // detect model
                     switch (fileExtension) {
@@ -141,7 +153,8 @@ public class LoadContentDialog {
                         case ".gltf":
                         case ".fbx":
                         case ".glb":
-                            modelFile = uri;
+                            modelFile = pseudoUri;
+                            logger.info("Found model in zip:");
                             extension = fileExtension;
                             break;
                     }
