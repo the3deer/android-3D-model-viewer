@@ -17,6 +17,7 @@ import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
 import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.android.engine.model.Dimensions;
+import org.the3deer.android.engine.model.Object3D;
 
 import java.util.Locale;
 
@@ -106,7 +107,9 @@ public class ModelInfoDialogFragment extends DialogFragment {
 
         // dimensions info
         info.append("\n\n");
-        info.append("--- Dimensions ---\n");
+        info.append("--- Object ---\n");
+        info.append(getCenterInfo());
+        info.append("\n");
         info.append(getDimensionsInfo());
 
         return info.toString();
@@ -134,6 +137,28 @@ public class ModelInfoDialogFragment extends DialogFragment {
             return String.format(Locale.US, "Position: %.1f, %.1f, %.1f", pos[0], pos[1], pos[2]);
         }
         return "Position: No active camera";
+    }
+
+    private String getPositionInfo() {
+        final ModelEngine modelEngine = viewModel.getActiveEngine();
+        if (modelEngine != null && modelEngine.getModel().getActiveScene() != null) {
+            Object3D selectedObject = modelEngine.getModel().getActiveScene().getSelectedObject();
+            if (selectedObject != null) {
+                return String.format(Locale.US, "Position: %.1f, %.1f, %.1f", selectedObject.getLocationX(), selectedObject.getLocationY(), selectedObject.getLocationZ());
+            }
+        }
+        return "Position: No object selected";
+    }
+
+    private String getCenterInfo() {
+        final ModelEngine modelEngine = viewModel.getActiveEngine();
+        if (modelEngine != null && modelEngine.getModel().getActiveScene() != null) {
+            Object3D selectedObject = modelEngine.getModel().getActiveScene().getSelectedObject();
+            if (selectedObject != null) {
+                return String.format(Locale.US, "Center: %.1f, %.1f, %.1f", selectedObject.getBoundingBox().getCenter()[0], selectedObject.getBoundingBox().getCenter()[1], selectedObject.getBoundingBox().getCenter()[2]);
+            }
+        }
+        return "Center: No object selected";
     }
 
     private String getDimensionsInfo() {
