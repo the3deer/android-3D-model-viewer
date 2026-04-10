@@ -104,6 +104,7 @@ public class LoadContentDialog {
             case "dae":
             case "gltf":
             case "glb":
+            case "fbx":
                 launchFragment(uri, fileName, fileType);
                 break;
             case "zip":

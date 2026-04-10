@@ -302,6 +302,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         supportFragmentManager.setFragmentResultListener("app", this) { _, bundle ->
             val action = bundle.getString("action")
             when (action) {
+                "pick" -> {
+                    LoadContentDialog(this@MainActivity).start()
+                }
                 "load" -> {
                     val uri = bundle.getString("uri")
                     if (uri != null) {
@@ -426,71 +429,75 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     private fun refreshOverlayButtons() {
         runOnUiThread {
 
-            val engine = modelEngineViewModel.activeEngine.value ?: return@runOnUiThread
-            val model = engine.model
-            val scene = model.activeScene
+            try {
+                val engine = modelEngineViewModel.activeEngine.value ?: return@runOnUiThread
+                val model = engine.model
+                val scene = model.activeScene
 
-            val scenesEnabled = (model.scenes?.size ?: 0) > 1
-            val camerasEnabled = (scene?.cameras?.size ?: 0) > 1
-            val animationsEnabled = (scene?.animations?.size ?: 0) > 0
+                val scenesEnabled = (model.scenes?.size ?: 0) > 1
+                val camerasEnabled = (scene?.cameras?.size ?: 0) > 1
+                val animationsEnabled = (scene?.animations?.size ?: 0) > 0
 
-            binding.appBarMain.btnScene.alpha = if (scenesEnabled) 1.0f else 0.25f
-            binding.appBarMain.btnCamera.alpha = if (camerasEnabled) 1.0f else 0.25f
-            binding.appBarMain.btnAnimation.alpha = if (animationsEnabled) 1.0f else 0.25f
+                binding.appBarMain.btnScene.alpha = if (scenesEnabled) 1.0f else 0.25f
+                binding.appBarMain.btnCamera.alpha = if (camerasEnabled) 1.0f else 0.25f
+                binding.appBarMain.btnAnimation.alpha = if (animationsEnabled) 1.0f else 0.25f
 
-            // Set tooltips for long-press support
-            TooltipCompat.setTooltipText(binding.appBarMain.btnScene, if (scenesEnabled) null else getString(R.string.tooltip_no_scenes))
-            TooltipCompat.setTooltipText(binding.appBarMain.btnCamera, if (camerasEnabled) null else getString(R.string.tooltip_no_cameras))
-            TooltipCompat.setTooltipText(binding.appBarMain.btnAnimation, if (animationsEnabled) null else getString(R.string.tooltip_no_animations))
+                // Set tooltips for long-press support
+                TooltipCompat.setTooltipText(binding.appBarMain.btnScene, if (scenesEnabled) null else getString(R.string.tooltip_no_scenes))
+                TooltipCompat.setTooltipText(binding.appBarMain.btnCamera, if (camerasEnabled) null else getString(R.string.tooltip_no_cameras))
+                TooltipCompat.setTooltipText(binding.appBarMain.btnAnimation, if (animationsEnabled) null else getString(R.string.tooltip_no_animations))
 
-            // Handle Traffic Light status for Info button
-            val modelStatus = model.status ?: Model.Status.UNKNOWN
-            val engineStatus = engine.status ?: ModelEngine.Status.UNKNOWN
-            val color = when {
-                modelStatus == Model.Status.ERROR || engineStatus == ModelEngine.Status.ERROR -> ContextCompat.getColor(
-                    this,
-                    android.R.color.holo_red_light
-                )
+                // Handle Traffic Light status for Info button
+                val modelStatus = model.status ?: Model.Status.UNKNOWN
+                val engineStatus = engine.status ?: ModelEngine.Status.UNKNOWN
+                val color = when {
+                    modelStatus == Model.Status.ERROR || engineStatus == ModelEngine.Status.ERROR -> ContextCompat.getColor(
+                        this,
+                        android.R.color.holo_red_light
+                    )
 
-                modelStatus == Model.Status.WARNING || engineStatus == ModelEngine.Status.WARNING -> ContextCompat.getColor(
-                    this,
-                    android.R.color.holo_orange_light
-                )
+                    modelStatus == Model.Status.WARNING || engineStatus == ModelEngine.Status.WARNING -> ContextCompat.getColor(
+                        this,
+                        android.R.color.holo_orange_light
+                    )
 
-                modelStatus == Model.Status.OK && engineStatus == ModelEngine.Status.OK -> ContextCompat.getColor(
-                    this,
-                    R.color.design_default_color_secondary
-                )
+                    modelStatus == Model.Status.OK && engineStatus == ModelEngine.Status.OK -> ContextCompat.getColor(
+                        this,
+                        R.color.design_default_color_secondary
+                    )
 
-                else -> ContextCompat.getColor(this, R.color.design_default_color_secondary)
-            }
-            val infoItem = binding.appBarMain.toolbar.menu.findItem(R.id.nav_info)
-            infoItem?.icon?.setTint(color)
+                    else -> ContextCompat.getColor(this, R.color.design_default_color_secondary)
+                }
+                val infoItem = binding.appBarMain.toolbar.menu.findItem(R.id.nav_info)
+                infoItem?.icon?.setTint(color)
 
-            // Show joysticks and toggle action containers based on First Person Mode AND current destination
-            val isHome = findNavController(R.id.nav_host_fragment_content_main).currentDestination?.id == R.id.nav_home
-            val cameraManager = engine.beanFactory.find(CameraManager::class.java)
-            val isFirstPerson = cameraManager?.activeController is FirstPersonCameraHandler
+                // Show joysticks and toggle action containers based on First Person Mode AND current destination
+                val isHome = findNavController(R.id.nav_host_fragment_content_main).currentDestination?.id == R.id.nav_home
+                val cameraManager = engine.beanFactory.find(CameraManager::class.java)
+                val isFirstPerson = cameraManager?.activeController is FirstPersonCameraHandler
 
-            if (isFirstPerson) {
-                binding.appBarMain.containerNormalActions.visibility = View.GONE
-                binding.appBarMain.containerGameActions.visibility = View.VISIBLE
-                binding.appBarMain.containerJoysticks.visibility = if (isHome) View.VISIBLE else View.GONE
-                
-                binding.appBarMain.btnGameMode.setImageResource(android.R.drawable.ic_menu_edit)
-            } else {
-                binding.appBarMain.containerNormalActions.visibility = View.VISIBLE
-                binding.appBarMain.containerGameActions.visibility = View.GONE
-                binding.appBarMain.containerJoysticks.visibility = View.GONE
+                if (isFirstPerson) {
+                    binding.appBarMain.containerNormalActions.visibility = View.GONE
+                    binding.appBarMain.containerGameActions.visibility = View.VISIBLE
+                    binding.appBarMain.containerJoysticks.visibility = if (isHome) View.VISIBLE else View.GONE
 
-                binding.appBarMain.btnGameMode.setImageResource(android.R.drawable.ic_menu_compass)
-            }
-            
-            if (modelStatus == Model.Status.LOADING || engineStatus == ModelEngine.Status.LOADING) {
-                binding.loadingLayout.visibility = View.VISIBLE
-                binding.loadingText.text = model.message
-            } else {
-                binding.loadingLayout.visibility = View.GONE
+                    binding.appBarMain.btnGameMode.setImageResource(android.R.drawable.ic_menu_edit)
+                } else {
+                    binding.appBarMain.containerNormalActions.visibility = View.VISIBLE
+                    binding.appBarMain.containerGameActions.visibility = View.GONE
+                    binding.appBarMain.containerJoysticks.visibility = View.GONE
+
+                    binding.appBarMain.btnGameMode.setImageResource(android.R.drawable.ic_menu_compass)
+                }
+
+                if (modelStatus == Model.Status.LOADING || engineStatus == ModelEngine.Status.LOADING) {
+                    binding.loadingLayout.visibility = View.VISIBLE
+                    binding.loadingText.text = model.message
+                } else {
+                    binding.loadingLayout.visibility = View.GONE
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity","Error refreshing overlay buttons", e)
             }
         }
     }
