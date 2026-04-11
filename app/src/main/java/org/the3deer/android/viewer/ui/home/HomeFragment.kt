@@ -9,14 +9,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.preference.PreferenceManager
+import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.android.engine.renderer.GLRenderer
 import org.the3deer.android.engine.renderer.GLSurfaceView
+import org.the3deer.android.engine.shader.ShaderManager
 import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.android.viewer.databinding.FragmentHomeBinding
 import org.the3deer.android.viewer.ui.settings.SettingsFragment
 import org.the3deer.android.viewer.ui.settings.SettingsOptions
-import org.the3deer.android.engine.ModelEngine
 import org.the3deer.util.event.EventListener
 import java.util.EventObject
 
@@ -51,18 +53,23 @@ open class HomeFragment : Fragment(), EventListener {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
         // Get GL Surface (from Layout)
-        val surface = _binding?.glSurfaceView
         val glSurfaceView = _binding?.glSurfaceView
-
-        // debug
-        Log.i(TAG, "Initializing GLSurfaceView... " + System.identityHashCode(surface))
 
         // configure GL Surface
         try {
+
+            // Get desired OpenGL version from preferences
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            val openGLVersionKey = ShaderManager::class.java.name + ".openGLVersion"
+            val openGLVersion = sharedPreferences.getString(openGLVersionKey, "3")?.toIntOrNull() ?: 3
+
+            // debug
+            Log.i(TAG, "Initializing GLSurfaceView with OpenGL ES $openGLVersion ... " + System.identityHashCode(glSurfaceView))
+
             // Create an OpenGL ES context.
-            glSurfaceView?.setEGLContextClientVersion(3)
+            glSurfaceView?.setEGLContextClientVersion(openGLVersion)
         } catch (e: Exception) {
-            Log.w(TAG, "GL ES version 3 not supported, falling back to 2.0. " + e.message)
+            Log.w(TAG, "GL ES version not supported, falling back to 2.0. " + e.message)
             try {
                 glSurfaceView?.setEGLContextClientVersion(2)
             } catch (e2: Exception) {

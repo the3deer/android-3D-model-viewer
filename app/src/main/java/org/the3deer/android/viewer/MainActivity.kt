@@ -302,6 +302,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         supportFragmentManager.setFragmentResultListener("app", this) { _, bundle ->
             val action = bundle.getString("action")
             when (action) {
+                "restart" -> {
+                    recreate()
+                }
                 "pick" -> {
                     LoadContentDialog(this@MainActivity).start()
                 }

@@ -346,7 +346,9 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         // Special case: OpenGL Version change requires activity restart
         if (key == ShaderManager::class.java.name + ".openGLVersion") {
-            activity?.recreate()
+            val bundle = Bundle()
+            bundle.putString("action", "restart")
+            requireActivity().supportFragmentManager.setFragmentResult("app", bundle)
         }
     }
 
