@@ -8,10 +8,10 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "org.the3deer.android.viewer"
+        applicationId = "org.andresoviedo.dddmodel2"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
+        versionCode = 51
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -19,7 +19,7 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("android-model-viewer.jks")
+            storeFile = file("android-model-viewer-old.jks")
             storePassword = System.getenv("RELEASE_STORE_PASSWORD")
             keyAlias = "android-3d-model-viewer"
             keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
