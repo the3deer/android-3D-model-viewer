@@ -9,13 +9,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import org.the3deer.android.engine.ModelEngineViewModel;
-import org.the3deer.android.viewer.R;
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
+import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.android.engine.model.Scene;
+import org.the3deer.android.viewer.R;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SceneDialogFragment extends DialogFragment {
@@ -34,20 +33,22 @@ public class SceneDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         //logger.config("onCreateDialog. "+viewModel.getActiveFragment().getValue());
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
         final ModelEngine modelEngine = viewModel.getActiveEngine();
-        if (modelEngine == null) return null;
+        if (modelEngine == null) return createNotAvailableDialog(builder, "ModelEngine is null");
 
         final Model sceneManager = modelEngine.getBeanFactory().find(Model.class);
-        if (sceneManager == null) return null;
+        if (sceneManager == null) return createNotAvailableDialog(builder, "SceneManager is null");
 
         final List<Scene> scenes = sceneManager.getScenes();
+        if (scenes == null || scenes.isEmpty()) return createNotAvailableDialog(builder, "No scenes available");
+
         final String[] sceneNames = new String[scenes.size()];
         for (int i = 0; i < scenes.size(); i++) {
             sceneNames[i] = scenes.get(i).getName();
         }
 
-        ArrayList selectedItems = new ArrayList();  // Where we track the selected items
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         // Set the dialog title.
         builder.setTitle(R.string.scenes)
                 // Specify the list array, the items to be selected by default (null for
@@ -78,6 +79,21 @@ public class SceneDialogFragment extends DialogFragment {
                             }
                         })*/;
 
+        return builder.create();
+    }
+
+    /**
+     * Helper method to create a simple "Not Available" dialog.
+     */
+    private Dialog createNotAvailableDialog(AlertDialog.Builder builder, String message) {
+        builder.setTitle(getString(R.string.app_name))
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
         return builder.create();
     }
 

@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentActivity;
 
@@ -32,9 +33,14 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
     }
 
     @Override
+    @NonNull
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        final FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return super.onCreateDialog(savedInstanceState);
+        }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity)
                 //.setIcon(R.drawable.ic_launcher)
                 .setTitle(title)
                 /*.setPositiveButton(R.string.dialog_ok,
