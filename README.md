@@ -51,8 +51,8 @@ This project consists of two main components:
 For detailed information, please refer to the following guides:
 
 - **[Application Documentation](./doc/README.md)**: Details on UI architecture, reactive data flow, and app-specific features.
-- **[Engine Documentation](./engine/doc/README.md)**: Deep dive into the 3D engine API, Scene Graph, and rendering pipeline.
-- **[Engine Integration](./engine/README.md)**: How to use the engine as a standalone library.
+- **[Engine Integration](https://github.com/the3deer/android-3D-engine/)**: How to use the engine as a standalone library.
+- **[Engine Documentation](https://github.com/the3deer/android-3D-engine/doc)**: Deep dive into the 3D engine API, Scene Graph, and rendering pipeline.
 
 ## Getting Started
 
