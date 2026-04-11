@@ -1,7 +1,6 @@
 package org.the3deer.android.viewer
 
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.net.ConnectivityManager
 import android.net.Uri
 import androidx.core.net.toUri
@@ -51,7 +50,6 @@ import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.camera.CameraManager
 import org.the3deer.android.engine.camera.FirstPersonCameraHandler
 import org.the3deer.android.engine.event.CameraEvent
-import org.the3deer.android.engine.event.CameraEvent.Code
 import org.the3deer.android.engine.event.EngineEvent
 import org.the3deer.android.engine.event.FPSEvent
 import org.the3deer.android.engine.event.SceneEvent
@@ -59,13 +57,28 @@ import org.the3deer.android.engine.model.ModelEvent
 import org.the3deer.android.engine.model.Object3D
 import org.the3deer.util.event.EventListener
 import org.the3deer.util.event.EventManager
+import org.the3deer.android.engine.services.LoaderRegistry
+import org.the3deer.android.engine.services.collada.ColladaLoaderTask
+import org.the3deer.android.engine.services.fbx.FbxLoaderTask
+import org.the3deer.android.engine.services.gltf.GltfLoaderTask
+import org.the3deer.android.engine.services.stl.STLLoaderTask
+import org.the3deer.android.engine.services.wavefront.WavefrontLoaderTask
 import java.net.URI
-import java.util.Locale
 import java.util.EventObject
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentResolver {
+
+    init {
+        // Register only the formats your game uses
+        LoaderRegistry.register("obj") { uri, listener -> WavefrontLoaderTask(uri, listener) }
+        LoaderRegistry.register("gltf") { uri, listener -> GltfLoaderTask(uri, listener) }
+        LoaderRegistry.register("glb") { uri, listener -> GltfLoaderTask(uri, listener) }
+        LoaderRegistry.register("fbx") { uri, listener -> FbxLoaderTask(uri, listener) }
+        LoaderRegistry.register("stl") { uri, listener -> STLLoaderTask(uri, listener) }
+        LoaderRegistry.register("dae") { uri, listener -> ColladaLoaderTask(uri, listener) }
+    }
 
     private val TAG = "MainActivity"
     private lateinit var appBarConfiguration: AppBarConfiguration
@@ -324,6 +337,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
 
         applyInitialImmersiveMode()
+        checkNotification()
 
         // Handle back press to prompt user before exiting from Home screen
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -408,6 +422,31 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             null
         } finally {
             pendingResolution = null
+        }
+    }
+
+    private fun checkNotification() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val notified = prefs.getBoolean("notification.v5.1", true)
+        if (!notified) {
+            // TODO: Update this with your NEW package name
+            val newPackageName = "org.the3deer.android.viewer" 
+            val newAppName = getString(R.string.app_name)
+
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dialog_new_version_title)
+                .setMessage(getString(R.string.dialog_new_version_message, newAppName))
+                .setPositiveButton(R.string.dialog_new_version_button) { _, _ ->
+                    // Optional: Mark as notified so it doesn't show again
+                    prefs.edit().putBoolean("notification.v5.1", true).apply()
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, "market://details?id=$newPackageName".toUri()))
+                    } catch (e: Exception) {
+                        startActivity(Intent(Intent.ACTION_VIEW, "https://play.google.com/store/apps/details?id=$newPackageName".toUri()))
+                    }
+                }
+                .setNegativeButton(R.string.dialog_new_version_later, null)
+                .show()
         }
     }
 

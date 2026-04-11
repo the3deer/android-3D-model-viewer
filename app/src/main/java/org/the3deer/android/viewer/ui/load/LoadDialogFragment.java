@@ -1,9 +1,7 @@
 package org.the3deer.android.viewer.ui.load;
 
 import android.Manifest;
-import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -11,7 +9,6 @@ import androidx.navigation.Navigation;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.the3deer.android.engine.services.wavefront.WavefrontLoader;
 import org.the3deer.android.util.AndroidUtils;
 import org.the3deer.android.util.AssetUtils;
 import org.the3deer.android.util.ContentUtils;
@@ -23,14 +20,10 @@ import org.the3deer.android.viewer.ui.DialogFragment;
 import org.the3deer.android.viewer.ui.DialogUtils;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,9 +43,7 @@ public class LoadDialogFragment extends DialogFragment {
     private static final URI REPO_POLY_HAVEN_URL = URI.create("https://api.polyhaven.com");
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1000;
     private static final int REQUEST_INTERNET_ACCESS = 1001;
-    private static final int REQUEST_READ_CONTENT_PROVIDER = 1002;
 
-    private static final int REQUEST_CODE_LOAD_MODEL = 1101;
     private static final int REQUEST_CODE_OPEN_MATERIAL = 1102;
     private static final int REQUEST_CODE_OPEN_TEXTURE = 1103;
     private static final int REQUEST_CODE_ADD_FILES = 1200;
@@ -65,11 +56,6 @@ public class LoadDialogFragment extends DialogFragment {
     private enum Action {
         SAMPLES, REPOSITORY_THE3DEER, REPOSITORY_KHRONOS /*, REPOSITORY_POLYHAVEN, REPOSITORY_ASSIMP*/, ANDROID_EXPLORER  /* deprecated , FILE_EXPLORER */
     }
-
-    /**
-     * Load file user data
-     */
-    private final Map<String, Object> loadModelParameters = new HashMap<>();
 
     public static LoadDialogFragment newInstance(int title, String[] items) {
         LoadDialogFragment frag = new LoadDialogFragment();
@@ -307,102 +293,6 @@ public class LoadDialogFragment extends DialogFragment {
                             launchModelRendererActivity(URI.create("file://" + file.getAbsolutePath()));
                         }
                     });
-        }
-    }
-
-    private void loadModelFromContentProvider() {
-        if (AndroidUtils.checkPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE, REQUEST_READ_CONTENT_PROVIDER)) {
-            loadModelParameters.clear();
-            ContentUtils.clearDocumentsProvided();
-            ContentUtils.setCurrentDir(null);
-            askForFile(REQUEST_CODE_LOAD_MODEL, "*/*");
-        }
-    }
-
-    private void askForFile(int requestCode, String mimeType) {
-        try {
-            // logger.info("Opening file picker...");
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(activity, "Error. Please install a file content provider", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void onLoadModel(Uri uri) throws IOException {
-        ContentUtils.clearDocumentsProvided();
-        loadModelParameters.put("model", uri);
-        final String fileName = ContentUtils.getFileName(getContext(), URI.create(uri.toString()));
-
-        if (fileName != null) {
-            if (fileName.toLowerCase().endsWith(".obj")) {
-                askForRelatedFiles(0);
-            } else if (fileName.toLowerCase().endsWith(".stl")) {
-                askForRelatedFiles(1);
-            } else if (fileName.toLowerCase().endsWith(".dae")) {
-                askForRelatedFiles(2);
-            } else if (fileName.toLowerCase().endsWith(".gltf")) {
-                askForRelatedFiles(3);
-            } else if (fileName.toLowerCase().endsWith(".zip")) {
-                final Map<String, byte[]> zipFiles = ContentUtils.readFiles(URI.create(uri.toString()));
-                URI modelFile = null;
-                for (Map.Entry<String, byte[]> zipFile : zipFiles.entrySet()) {
-                    final String zipFilename = zipFile.getKey();
-                    final int dotIndex = zipFilename.lastIndexOf('.');
-                    final String fileExtension = dotIndex != -1 ? zipFilename.substring(dotIndex) : "?";
-
-                    final URI pseudoUrl = URI.create("android://" + activity.getPackageName() + "/binary/" + zipFilename);
-                    ContentUtils.addUri(zipFilename, pseudoUrl);
-                    ContentUtils.addData(pseudoUrl, zipFile.getValue());
-
-                    if (fileExtension.matches("\\.(obj|stl|dae|gltf)")) {
-                        modelFile = URI.create(pseudoUrl.toString());
-                    }
-                }
-                if (modelFile != null) {
-                    launchModelRendererActivity(modelFile);
-                }
-            }
-        } else {
-            ContentUtils.showListDialog(getActivity(), "Select type", new String[]{"Wavefront (*.obj)", "Stereolithography (*.stl)", "Collada (*.dae)"}, (dialog, which) -> {
-                try {
-                    askForRelatedFiles(which);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        }
-    }
-
-    private URI getUserSelectedModel() throws MalformedURLException {
-        return URI.create(loadModelParameters.get("model").toString());
-    }
-
-    private void askForRelatedFiles(int modelType) throws IOException {
-        loadModelParameters.put("type", modelType);
-        switch (modelType) {
-            case 0: // obj
-                String materialFile = WavefrontLoader.getMaterialLib(getUserSelectedModel());
-                if (materialFile == null) {
-                    launchModelRendererActivity(URI.create(getUserSelectedModel().toString()));
-                    break;
-                }
-                ContentUtils.showDialog(getActivity(), "Select material file", "This model references a material file (" + materialFile + "). Please select it", "OK", "Cancel", (DialogInterface dialog, int which) -> {
-                    switch (which) {
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            try {
-                                launchModelRendererActivity(URI.create(getUserSelectedModel().toString()));
-                            } catch (MalformedURLException e) {
-                                logger.log(Level.SEVERE, e.getMessage(), e);
-                            }
-                            break;
-                        case DialogInterface.BUTTON_POSITIVE:
-                            loadModelParameters.put("file", materialFile);
-                            askForFile(REQUEST_CODE_OPEN_MATERIAL, "*/*");
-                    }
-                });
-                break;
-            case 1: // stl
-                launchModelRendererActivity(URI.create(getUserSelectedModel().toString()));
-                break;
         }
     }
 
