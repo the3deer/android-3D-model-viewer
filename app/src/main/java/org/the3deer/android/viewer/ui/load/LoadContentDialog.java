@@ -155,7 +155,7 @@ public class LoadContentDialog {
                         case ".glb":
                             modelFile = pseudoUri;
                             logger.info("Found model in zip:");
-                            extension = fileExtension;
+                            extension = fileExtension.substring(1);
                             break;
                     }
                 }

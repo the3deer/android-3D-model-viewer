@@ -21,6 +21,12 @@
     <string name="black">Black</string>
     <string name="ok">OK</string>
 
+    <!-- New Version / Rename Notification -->
+    <string name="dialog_new_version_title">New Version Available</string>
+    <string name="dialog_new_version_message">We have moved! This app is now \"<b>%1$s</b>\". Please download the latest version from the Google Play Store to continue receiving updates.</string>
+    <string name="dialog_new_version_button">Go to Play Store</string>
+    <string name="dialog_new_version_later">Later</string>
+
     <!-- About Screen -->
     <string name="about_title_app">3D Model Viewer</string>
     <string name="about_version">Version 1.0.0</string>
