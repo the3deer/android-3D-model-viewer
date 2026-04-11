@@ -2,7 +2,7 @@
 
 A powerful, open-source Android application for viewing and inspecting 3D models. Built with a modular architecture and powered by a custom OpenGL ES 2.0/3.0 engine.
 
-## News (29/03/2026)
+## News (10/04/2026)
 
 **Version 5.0.0** *
 
@@ -20,10 +20,9 @@ A powerful, open-source Android application for viewing and inspecting 3D models
 * DAE & GLTF parsers completely rewritten / re-designed from scratch (assisted by AI)
 * FBX: **basic** support added. The FBX parser is possible thanks to ufbx (https://github.com/ufbx/ufbx)
     * FBX Features: **static** models only with diffuse textures (no animation / rigging)
+* **Game Camera**. Added 1 new Camera Controller that supports 2 joysticks to control a new Camera that can go anywhere
 
-
-* **Not yet published on Play Store!**
-* **This release is possible thanks to Gemini (AI)**
+* **This release is possible thanks to the AI (Gemini)**
 
 ## Key Features
 
@@ -59,8 +58,8 @@ For detailed information, please refer to the following guides:
 
 ### Installation
 You can install the app via:
-- **Google Play**: [Download](https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2)
-- **F-Droid**: [Download](https://f-droid.org/en/packages/org.andresoviedo.dddmodel2/)
+- **Google Play**: [Download](https://play.google.com/store/apps/details?id=org.the3deer.android.viewer)
+- **F-Droid**: [Download](https://f-droid.org/en/packages/org.the3deer.android.viewer/)
 
 ### Building from Source
 ```bash
