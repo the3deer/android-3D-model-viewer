@@ -16,8 +16,10 @@ import androidx.lifecycle.ViewModelProvider;
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
 import org.the3deer.android.engine.ModelEngineViewModel;
+import org.the3deer.android.engine.model.Camera;
 import org.the3deer.android.engine.model.Dimensions;
 import org.the3deer.android.engine.model.Object3D;
+import org.the3deer.android.engine.model.Scene;
 
 import java.util.Locale;
 
@@ -104,13 +106,15 @@ public class ModelInfoDialogFragment extends DialogFragment {
         info.append("--- Camera ---\n");
         info.append(getCameraInfo());
 
+        // scene info
+        info.append("\n\n");
+        info.append("--- Scene ---\n");
+        info.append(getSceneDimensionsInfo());
 
-        // dimensions info
+        // object info
         info.append("\n\n");
         info.append("--- Object ---\n");
-        info.append(getCenterInfo());
-        info.append("\n");
-        info.append(getDimensionsInfo());
+        info.append(getSelectedObjectInfo());
 
         return info.toString();
     }
@@ -130,11 +134,35 @@ public class ModelInfoDialogFragment extends DialogFragment {
                 usedMemory / 1024 / 1024, maxMemory / 1024 / 1024, modelMemory / 1024 / 1024);
     }
 
+    private String getSceneDimensionsInfo() {
+        final ModelEngine modelEngine = viewModel.getActiveEngine();
+        if (modelEngine != null && modelEngine.getModel().getActiveScene() != null) {
+            Dimensions dimensions = modelEngine.getModel().getActiveScene().getDimensions();
+            final StringBuilder sb = new StringBuilder();
+            sb.append(String.format(Locale.US, "Dimensions: %.1f, %.1f, %.1f", dimensions.getWidth(), dimensions.getHeight(), dimensions.getDepth()));
+            float[] view = modelEngine.getModel().getActiveScene().getActiveCamera().getView();
+            sb.append("\nView: ").append(String.format(Locale.US, "%.1f, %.1f, %.1f", view[0], view[1], view[2]));
+            return sb.toString();
+        }
+        return "Dimensions: No active scene";
+    }
+
     private String getCameraInfo() {
         final ModelEngine modelEngine = viewModel.getActiveEngine();
-        if (modelEngine != null && modelEngine.getModel().getActiveScene() != null && modelEngine.getModel().getActiveScene().getActiveCamera() != null) {
-            float[] pos = modelEngine.getModel().getActiveScene().getActiveCamera().getPos();
-            return String.format(Locale.US, "Position: %.1f, %.1f, %.1f", pos[0], pos[1], pos[2]);
+        if (modelEngine != null) {
+            final Scene activeScene = modelEngine.getModel().getActiveScene();
+            if (activeScene != null) {
+                final Camera activeCamera = activeScene.getActiveCamera();
+                if (activeCamera != null) {
+                    float[] pos = activeCamera.getPos();
+                    final StringBuilder sb = new StringBuilder();
+                    sb.append(String.format(Locale.US, "Position: %.1f, %.1f, %.1f", pos[0], pos[1], pos[2]));
+                    float[] view = activeCamera.getView();
+                    sb.append("\nView: ").append(String.format(Locale.US, "%.1f, %.1f, %.1f", view[0], view[1], view[2]));
+                    sb.append("\nProjection: ").append(String.format(Locale.US, "Near: %.1f, Far: %.1f, FOV: %.1f", activeCamera.getProjection().getNear(), activeCamera.getProjection().getFar(), activeCamera.getProjection().getFov()));
+                    return sb.toString();
+                }
+            }
         }
         return "Position: No active camera";
     }
@@ -150,22 +178,25 @@ public class ModelInfoDialogFragment extends DialogFragment {
         return "Position: No object selected";
     }
 
-    private String getCenterInfo() {
+    private String getSelectedObjectInfo() {
         final ModelEngine modelEngine = viewModel.getActiveEngine();
         if (modelEngine != null && modelEngine.getModel().getActiveScene() != null) {
             Object3D selectedObject = modelEngine.getModel().getActiveScene().getSelectedObject();
             if (selectedObject != null) {
-                return String.format(Locale.US, "Center: %.1f, %.1f, %.1f", selectedObject.getBoundingBox().getCenter()[0], selectedObject.getBoundingBox().getCenter()[1], selectedObject.getBoundingBox().getCenter()[2]);
+                Dimensions dim = modelEngine.getModel().getActiveScene().getSelectedObject().getDimensions();
+                final StringBuilder sb = new StringBuilder();
+                sb.append(String.format(Locale.US, "Dimensions: %.1f, %.1f, %.1f", dim.getWidth(), dim.getHeight(), dim.getDepth()));
+                sb.append("\n").append(String.format(Locale.US, "Center: %.1f, %.1f, %.1f", selectedObject.getBoundingBox().getCenter()[0], selectedObject.getBoundingBox().getCenter()[1], selectedObject.getBoundingBox().getCenter()[2]));
+                return sb.toString();
             }
         }
-        return "Center: No object selected";
+        return "Dimensions: No object selected";
     }
 
     private String getDimensionsInfo() {
         final ModelEngine modelEngine = viewModel.getActiveEngine();
         if (modelEngine != null && modelEngine.getModel().getActiveScene() != null && modelEngine.getModel().getActiveScene().getSelectedObject() != null) {
-            Dimensions dim = modelEngine.getModel().getActiveScene().getSelectedObject().getDimensions();
-            return String.format(Locale.US, "Dimensions: %.1f, %.1f, %.1f", dim.getWidth(), dim.getHeight(), dim.getDepth());
+
         }
         return "Dimensions: No object selected";
     }

@@ -78,7 +78,7 @@ open class HomeFragment : Fragment(), EventListener {
         }
 
         // Set up OpenGL Surface View using the engine's GLRenderer
-        glSurfaceView?.setRenderer(GLRenderer(modelEngineViewModel))
+        glSurfaceView?.setRenderer(GLRenderer(modelEngineViewModel.glScreen, modelEngineViewModel))
         glSurfaceView?.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
 
         Log.i(TAG, "HomeFragment onCreateView finished " + System.identityHashCode(this))

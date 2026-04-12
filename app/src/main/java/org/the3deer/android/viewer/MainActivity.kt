@@ -451,7 +451,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     }
 
     private fun updateScreenInsets(insets: Insets) {
-        modelEngineViewModel.glScreen.value?.let { screen ->
+        modelEngineViewModel.glScreen?.let { screen ->
             screen.setInsets(insets.left, insets.top, insets.right, insets.bottom)
 
             // Update toolbar height (including status bar if visible)
