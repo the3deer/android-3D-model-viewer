@@ -130,7 +130,10 @@ open class HomeFragment : Fragment(), EventListener {
 
                 // get engine
                 val engine = modelEngineViewModel.getEngine(uriString)
-                    ?: throw IllegalArgumentException("Engine not initialized")
+                if (engine == null){
+                    Log.e(TAG, "Engine not initialized")
+                    return@initEngine
+                }
 
                 // check
                 if (_binding == null){
