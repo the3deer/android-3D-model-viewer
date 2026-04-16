@@ -11,7 +11,7 @@ android {
         applicationId = "org.andresoviedo.dddmodel2"
         minSdk = 24
         targetSdk = 36
-        versionCode = 54
+        versionCode = 55
         versionName = "5.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
