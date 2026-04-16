@@ -11,8 +11,8 @@ android {
         applicationId = "org.the3deer.android.viewer"
         minSdk = 24
         targetSdk = 36
-        versionCode = 5
-        versionName = "5.0.1"
+        versionCode = 6
+        versionName = "5.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
