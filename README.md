@@ -2,9 +2,9 @@
 
 A powerful, open-source Android application for viewing and inspecting 3D models. Built with a modular architecture and powered by a custom OpenGL ES 2.0/3.0 engine.
 
-## News (11/04/2026)
+## News (16/04/2026)
 
-**Version 5.0.1** *
+**Version 5.0.2** *
 
 * **Engine** improvements
     * OpenGL shaders upgraded to **OpenGL 3**. OpenGL 2 shaders is still supported (for older phones)
