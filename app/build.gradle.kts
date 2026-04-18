@@ -11,8 +11,8 @@ android {
         applicationId = "org.the3deer.android.viewer"
         minSdk = 24
         targetSdk = 36
-        versionCode = 6
-        versionName = "5.0.2"
+        versionCode = 7
+        versionName = "5.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -21,7 +21,7 @@ android {
         create("release") {
             storeFile = file("android-model-viewer.jks")
             storePassword = System.getenv("RELEASE_STORE_PASSWORD")
-            keyAlias = "android-3d-model-viewer"
+            keyAlias = "android-model-viewer"
             keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
         }
     }
