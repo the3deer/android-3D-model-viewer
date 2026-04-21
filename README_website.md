@@ -56,7 +56,7 @@ cd android-3D-model-viewer
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 # 4. Launch the application
-adb shell am start -n org.andresoviedo.dddmodel2/org.the3deer.android.viewer.MainActivity
+adb shell am start -n org.the3deer.android.viewer/org.the3deer.android.viewer.MainActivity
 ```
 
 ## Architecture
@@ -82,8 +82,8 @@ A typical user interaction follows this reactive pattern:
 ### Download
 Get the app from your favorite store:
 
-<a href="https://f-droid.org/en/packages/org.andresoviedo.dddmodel2/"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" width="215" alt="Get in on F-Droid"></a>
-<a href="https://play.google.com/store/apps/details?id=org.andresoviedo.dddmodel2"><img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" width="215" alt="Get it on Google Play"></a>
+<a href="https://f-droid.org/en/packages/org.the3deer.android.viewer/"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" width="215" alt="Get in on F-Droid"></a>
+<a href="https://play.google.com/store/apps/details?id=org.the3deer.android.viewer"><img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" width="215" alt="Get it on Google Play"></a>
 
 ### Demo Video
 See an overview of the application's features in action (note: video is from a previous version).
