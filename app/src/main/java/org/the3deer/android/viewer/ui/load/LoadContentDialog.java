@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 public class LoadContentDialog {
 
     private static final Logger logger = Logger.getLogger(LoadContentDialog.class.getSimpleName());
-    private final static String SUPPORTED_MODELS_EXTENSIONS = "ob,stl,dae,gltf,glb,fbx,zip";
+    private final static String SUPPORTED_MODELS_EXTENSIONS = "obj,stl,dae,gltf,glb,fbx,zip";
     private final static Pattern SUPPORTED_MODELS_REGEX =
             Pattern.compile("(?i).*\\.(obj|stl|dae|gltf|glb|fbx|zip|index)");
     /**
