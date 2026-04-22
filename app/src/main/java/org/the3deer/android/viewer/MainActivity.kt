@@ -634,7 +634,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     }
 
     private fun shortenUri(uriString: String): String {
-        return uriString.split("/").last().split("?").first()
+        return ContentUtils.getFileName(applicationContext, URI.create(uriString)) ?: uriString
     }
 
     private fun getIconResForModel(modelName: String): Int {
