@@ -92,9 +92,20 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     private var pendingResolution: CompletableFuture<URI?>? = null
 
     private val getContent =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
             Log.d(TAG, "Picked URI: $uri")
             uri?.let {
+                // [SAFE APPLY] Request persistent URI permission for content:// URIs immediately
+                if (it.toString().startsWith("content://")) {
+                    try {
+                        val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        contentResolver.takePersistableUriPermission(it, flags)
+                        Log.i(TAG, "Successfully took persistable URI permission for: $it")
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to take persistable URI permission: $it", e)
+                    }
+                }
+
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
                         LoadContentDialog(this@MainActivity).load(URI.create(it.toString()))
@@ -186,10 +197,21 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                         val uriString =
                             MenuItemCompat.getTooltipText(item)?.toString() ?: item.title.toString()
                                 .lowercase()
+                        val title = item.title.toString()
 
                         // Set URI and navigate
                         val arguments = Bundle()
                         arguments.putString("uri", uriString)
+                        arguments.putString("name", title)
+
+                        // Try to find the type in history
+                        sharedViewModel.history.value?.find { it.startsWith("$uriString|$title|") }?.let {
+                            val parts = it.split("|")
+                            if (parts.size > 2) {
+                                arguments.putString("type", parts[2])
+                            }
+                        }
+
                         navController.navigate(R.id.nav_home, arguments)
 
                         binding.drawerLayout.closeDrawers()
@@ -301,6 +323,20 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             if (engine == null) return@observe;
 
             Log.i(TAG, "Active engine changed. id: ${engine.id}")
+
+            // [SAFE APPLY] If loading failed with an error, show a prompt to remove from history
+            if (engine.status == ModelEngine.Status.ERROR || engine.model.status == Model.Status.ERROR) {
+                val message = if (engine.status == ModelEngine.Status.ERROR) engine.message else engine.model.message
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                    .setTitle("Loading Error")
+                    .setMessage("Failed to load model. Would you like to remove it from history?\n\nError: $message")
+                    .setPositiveButton("Remove") { _, _ ->
+                        sharedViewModel.removeFromHistory(engine.id)
+                        Toast.makeText(this, "Removed from history", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Keep", null)
+                    .show()
+            }
 
             // Register this activity as a listener for the active engine
             engine.addOrReplace(this@MainActivity.javaClass.name, this@MainActivity)
@@ -594,7 +630,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             Toast.makeText(this, "Warning: Background mode is enabled. It may slow down the loading process", Toast.LENGTH_LONG).show()
         }
 
-        getContent.launch(mimeType)
+        getContent.launch(arrayOf(mimeType))
     }
 
     /**
@@ -607,8 +643,10 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
         if (subMenu != null) {
             subMenu.clear()
-            history.forEachIndexed { index, uriString ->
-                val title = shortenUri(uriString)
+            history.forEachIndexed { index, historyItem ->
+                val parts = historyItem.split("|")
+                val uriString = parts[0]
+                val title = if (parts.size > 1) parts[1] else shortenUri(uriString)
                 subMenu.add(R.id.group_recent, Menu.NONE, index, title).apply {
                     icon = ContextCompat.getDrawable(
                         this@MainActivity,
@@ -620,8 +658,10 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         } else {
             // Fallback to old behavior if XML ID is missing or not a submenu
             menu.removeGroup(R.id.group_recent)
-            history.forEachIndexed { index, uriString ->
-                val title = shortenUri(uriString)
+            history.forEachIndexed { index, historyItem ->
+                val parts = historyItem.split("|")
+                val uriString = parts[0]
+                val title = if (parts.size > 1) parts[1] else shortenUri(uriString)
                 menu.add(R.id.group_recent, Menu.NONE, index, title).apply {
                     icon = ContextCompat.getDrawable(
                         this@MainActivity,
@@ -633,8 +673,21 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
     }
 
-    private fun shortenUri(uriString: String): String {
-        return ContentUtils.getFileName(applicationContext, URI.create(uriString)) ?: uriString
+    private fun shortenUri(uriString: String?): String {
+        if (uriString.isNullOrBlank()) return "?"
+
+        // If it doesn't look like a URI (no scheme), don't try to parse it.
+        // This avoids IllegalArgumentException on strings with spaces or special chars.
+        if (!uriString.contains(":/")) {
+            return uriString.substringAfterLast('/')
+        }
+
+        return try {
+            ContentUtils.getFileName(applicationContext, URI.create(uriString)) ?: uriString
+        } catch (e: Exception) {
+            Log.w(TAG, "Not a valid URI: $uriString")
+            uriString.substringAfterLast('/')
+        }
     }
 
     private fun getIconResForModel(modelName: String): Int {

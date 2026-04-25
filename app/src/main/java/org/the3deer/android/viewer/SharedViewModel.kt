@@ -24,28 +24,48 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     init {
         // Load history
         val savedHistory = prefs.getString(SharedViewModel::class.java.name+".history", "") ?: ""
-        _history.value = if (savedHistory.isEmpty()) emptyList() else savedHistory.split(",")
+        _history.value = if (savedHistory.isEmpty()) {
+            emptyList()
+        } else if (savedHistory.contains("\n")) {
+            savedHistory.split("\n")
+        } else {
+            savedHistory.split(",")
+        }
     }
 
     /**
      * Update the last active URI and the history.
      */
-    fun onModelOpened(uri: String) {
+    fun onModelOpened(uri: String, name: String, type: String) {
         
         // Save the last active URI to preferences
         prefs.edit { putString(SharedViewModel::class.java.name+".active_uri", uri) }
 
-        updateHistory(uri)
+        updateHistory(uri, name, type)
     }
 
-    private fun updateHistory(item: String) {
+    private fun updateHistory(uri: String, name: String, type: String) {
         val currentHistory = _history.value?.toMutableList() ?: mutableListOf()
-        currentHistory.remove(item)
-        currentHistory.add(0, item)
+        
+        // Remove existing entries for this URI (checking both old and new format)
+        currentHistory.removeAll { it == uri || it.startsWith("$uri|") }
+        
+        // Add new entry with name and type
+        currentHistory.add(0, "$uri|$name|$type")
+        
         val newHistory = currentHistory.take(10)
         _history.value = newHistory
         
-        prefs.edit { putString(SharedViewModel::class.java.name+".history", newHistory.joinToString(",")) }
+        // Use newline as separator to avoid issues with commas in URIs
+        prefs.edit { putString(SharedViewModel::class.java.name+".history", newHistory.joinToString("\n")) }
+    }
+
+    fun removeFromHistory(uri: String) {
+        val currentHistory = _history.value?.toMutableList() ?: mutableListOf()
+        if (currentHistory.removeAll { it == uri || it.startsWith("$uri|") }) {
+            _history.value = currentHistory
+            prefs.edit { putString(SharedViewModel::class.java.name+".history", currentHistory.joinToString("\n")) }
+        }
     }
 
     fun updateModelColor(color: String) {

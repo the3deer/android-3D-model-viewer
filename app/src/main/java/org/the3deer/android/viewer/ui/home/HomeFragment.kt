@@ -173,7 +173,7 @@ open class HomeFragment : Fragment(), EventListener {
                             modelEngineViewModel.setActiveEngine(uriString)
 
                             // update shared state (history, etc)
-                            sharedViewModel.onModelOpened(uriString)
+                            sharedViewModel.onModelOpened(uriString, modelName, modelType)
 
                             // log success
                             Log.i(TAG, "setupAndStartEngine Engine activated successfully")
