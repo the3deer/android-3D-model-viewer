@@ -1,11 +1,11 @@
-package org.the3deer.android.viewer.providers.polyhaven;
+package org.the3deer.android.viewer.providers;
 
 import android.app.Activity;
 import android.widget.Toast;
 
 import org.json.JSONObject;
-import org.the3deer.android.util.ContentUtils;
 import org.the3deer.android.viewer.MainActivity;
+import org.the3deer.android.viewer.util.ContentUtils;
 
 import java.lang.ref.WeakReference;
 import java.net.URI;
@@ -23,10 +23,32 @@ import java.util.logging.Logger;
  * 
  * @author Gemini AI
  */
-public class PolyHaven {
+public class PolyHavenModelProvider implements ModelProvider {
 
-    private static final Logger logger = Logger.getLogger(PolyHaven.class.getSimpleName());
+    private static final Logger logger = Logger.getLogger(PolyHavenModelProvider.class.getSimpleName());
     private static final String API_URL = "https://api.polyhaven.com";
+
+    @Override
+    public Object list() {
+        return listAssets();
+    }
+
+    @Override
+    public void load(Activity activity, Callback callback) {
+        new LoadAssetsTask(activity, url -> {
+            if (url != null) {
+                callback.onModelSelected(URI.create(url));
+            } else {
+                callback.onModelSelected(null);
+            }
+        }).execute();
+    }
+
+    @Override
+    public URI resolve(String id) {
+        String url = resolveAssetUrl(id);
+        return url != null ? URI.create(url) : null;
+    }
 
     public interface PolyHavenCallback {
         void onModelSelected(String url);
@@ -34,6 +56,72 @@ public class PolyHaven {
 
     public static void load(Activity activity, PolyHavenCallback callback) {
         new LoadAssetsTask(activity, callback).execute();
+    }
+
+    /**
+     * Returns a hierarchical map of Poly Haven models.
+     */
+    @SuppressWarnings("unchecked")
+    public static Map<String, Object> listAssets() {
+        Map<String, Object> root = new TreeMap<>();
+        try {
+            URI url = URI.create(API_URL + "/assets?type=models");
+            String json = ContentUtils.read(url);
+            JSONObject assetsJson = new JSONObject(json);
+
+            Iterator<String> keys = assetsJson.keys();
+            while (keys.hasNext()) {
+                String id = keys.next();
+                JSONObject asset = assetsJson.getJSONObject(id);
+                if (asset.has("categories")) {
+                    org.json.JSONArray cats = asset.getJSONArray("categories");
+
+                    Map<String, Object> current = root;
+                    for (int i = 0; i < cats.length(); i++) {
+                        String cat = cats.getString(i);
+                        if (!current.containsKey(cat)) {
+                            current.put(cat, new TreeMap<String, Object>());
+                        }
+                        Object next = current.get(cat);
+                        if (next instanceof Map) {
+                            current = (Map<String, Object>) next;
+                        }
+                    }
+                    if (!current.containsKey("_assets")) {
+                        current.put("_assets", new ArrayList<String>());
+                    }
+                    Object assets = current.get("_assets");
+                    if (assets instanceof List) {
+                        ((List<String>) assets).add(id);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error listing Poly Haven assets", e);
+        }
+        return root;
+    }
+
+    /**
+     * Resolves a Poly Haven asset ID to a real GLTF URL.
+     */
+    public static String resolveAssetUrl(String assetId) {
+        try {
+            URI url = URI.create(API_URL + "/files/" + assetId);
+            String json = ContentUtils.read(url);
+            JSONObject files = new JSONObject(json);
+            if (files.has("gltf")) {
+                JSONObject gltfObj = files.getJSONObject("gltf");
+                String res = gltfObj.has("1k") ? "1k" : (String) gltfObj.keys().next();
+                JSONObject bestRes = gltfObj.getJSONObject(res);
+                if (bestRes.has("gltf")) {
+                    return bestRes.getJSONObject("gltf").getString("url");
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error fetching Poly Haven URL for " + assetId, e);
+        }
+        return null;
     }
 
     /**
