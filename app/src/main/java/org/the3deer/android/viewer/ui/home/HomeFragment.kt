@@ -125,8 +125,10 @@ open class HomeFragment : Fragment(), EventListener {
             // debug
             Log.i(TAG, "setupAndStartEngine $uriString")
 
+            val textureBaseUri = arguments?.getString("textureBaseUri")?.let { java.net.URI.create(it) }
+
             // Initialize engine view model with this model's metadata
-            modelEngineViewModel.initEngine(uriString, modelName, modelType) {
+            modelEngineViewModel.initEngine(uriString) {
 
                 // get engine
                 val engine = modelEngineViewModel.getEngine(uriString)
@@ -134,6 +136,11 @@ open class HomeFragment : Fragment(), EventListener {
                     Log.e(TAG, "Engine not initialized")
                     return@initEngine
                 }
+
+                // set technical metadata
+                engine.model.name = modelName
+                engine.model.type = modelType
+                engine.model.textureBaseUri = textureBaseUri
 
                 // check
                 if (_binding == null){

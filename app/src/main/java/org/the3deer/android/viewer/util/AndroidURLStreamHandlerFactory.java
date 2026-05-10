@@ -8,7 +8,7 @@ public class AndroidURLStreamHandlerFactory implements URLStreamHandlerFactory {
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
         if ("android".equals(protocol)) {
-            return new org.the3deer.android.viewer.util.assets.Handler();
+            return new org.the3deer.android.viewer.util.android.Handler();
         } else if ("content".equals(protocol)){
             return new org.the3deer.android.viewer.util.content.Handler();
         }

@@ -1,9 +1,8 @@
 package org.the3deer.android.viewer.providers
 
 import android.app.Activity
-import android.widget.Toast
+import org.the3deer.android.engine.Model
 import org.the3deer.android.viewer.MainActivity
-import org.the3deer.android.viewer.providers.ModelProvider
 import org.the3deer.android.viewer.ui.DialogUtils
 import org.the3deer.android.viewer.util.ContentUtils
 import java.net.URI
@@ -41,7 +40,7 @@ class RepositoryModelProvider(private val repoUrl: URI = REPO_URL) : ModelProvid
                             if (file.endsWith(".index")) {
                                 RepositoryModelProvider(URI.create(file)).load(activity, callback)
                             } else {
-                                callback.onModelSelected(URI.create(file))
+                                callback.onModelSelected(resolve(file))
                             }
                         } else {
                             callback.onModelSelected(null)
@@ -54,18 +53,18 @@ class RepositoryModelProvider(private val repoUrl: URI = REPO_URL) : ModelProvid
                     if (activity is MainActivity) {
                         activity.setLoading(false, null)
                     }
-                    Toast.makeText(activity, "Error: " + e.message, Toast.LENGTH_LONG).show()
                     callback.onModelSelected(null)
                 }
             }
         }.start()
     }
 
-    override fun resolve(id: String): URI? {
-        return try {
-            URI.create(id)
-        } catch (e: Exception) {
-            null
-        }
+    override fun resolve(id: String): Model {
+        val uri = URI.create(id)
+        val name = uri.path.substringAfterLast("/").substringBeforeLast(".")
+        val model = Model(uri)
+        model.name = name
+        model.type = id.substringAfterLast(".", "gltf")
+        return model
     }
 }

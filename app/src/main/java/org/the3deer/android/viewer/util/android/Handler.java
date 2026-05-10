@@ -1,4 +1,4 @@
-package org.the3deer.android.viewer.util.assets;
+package org.the3deer.android.viewer.util.android;
 
 import org.the3deer.android.viewer.util.AndroidURLConnection;
 
@@ -7,7 +7,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
 /**
- *  App's assets URL handler
+ *  App's internal android:// URL handler
  */
 public class Handler extends URLStreamHandler {
 

@@ -2,7 +2,7 @@ package org.the3deer.android.viewer.providers
 
 import android.Manifest
 import android.app.Activity
-import org.the3deer.android.viewer.providers.ModelProvider
+import org.the3deer.android.engine.Model
 import org.the3deer.android.viewer.util.AndroidUtils
 import org.the3deer.android.viewer.util.ContentUtils
 import org.the3deer.android.viewer.util.FileUtils
@@ -24,7 +24,7 @@ class SdCardModelProvider : ModelProvider {
             FileUtils.createChooserDialog(activity, "Select file", null, null, SUPPORTED_FILE_TYPES_REGEX) { file ->
                 if (file != null) {
                     ContentUtils.setCurrentDir(file.parentFile)
-                    callback.onModelSelected(URI.create("file://" + file.absolutePath))
+                    callback.onModelSelected(resolve(file.absolutePath))
                 } else {
                     callback.onModelSelected(null)
                 }
@@ -32,11 +32,11 @@ class SdCardModelProvider : ModelProvider {
         }
     }
 
-    override fun resolve(id: String): URI? {
-        return try {
-            URI.create("file://$id")
-        } catch (e: Exception) {
-            null
-        }
+    override fun resolve(id: String): Model {
+        val uri = URI.create("file://$id")
+        val model = Model(uri)
+        model.name = id.substringAfterLast("/")
+        model.type = id.substringAfterLast(".", "gltf")
+        return model
     }
 }

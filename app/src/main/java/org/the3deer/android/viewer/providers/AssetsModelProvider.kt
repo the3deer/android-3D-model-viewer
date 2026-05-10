@@ -2,7 +2,7 @@ package org.the3deer.android.viewer.providers
 
 import android.app.Activity
 import android.app.Application
-import org.the3deer.android.viewer.providers.ModelProvider
+import org.the3deer.android.engine.Model
 import org.the3deer.android.viewer.util.AssetUtils
 import org.the3deer.android.viewer.util.ContentUtils
 import java.net.URI
@@ -32,14 +32,19 @@ class AssetsModelProvider(private val application: Application) : ModelProvider 
         AssetUtils.createChooserDialog(activity, "Select file", null, "models", SUPPORTED_FILE_TYPES_REGEX) { file ->
             if (file != null) {
                 ContentUtils.provideAssets(activity)
-                callback.onModelSelected(URI.create("android://" + activity.packageName + "/assets/" + file))
+                callback.onModelSelected(resolve(file))
             } else {
                 callback.onModelSelected(null)
             }
         }
     }
 
-    override fun resolve(id: String): URI? {
-        return URI.create("android://" + application.packageName + "/assets/models/" + id)
+    override fun resolve(id: String): Model {
+        val path = if (id.startsWith("models/")) id else "models/$id"
+        val uri = URI.create("android://" + application.packageName + "/assets/" + path.replace(" ", "+"))
+        val model = Model(uri)
+        model.name = id.substringAfterLast("/")
+        model.type = id.substringAfterLast(".", "gltf")
+        return model
     }
 }

@@ -6,11 +6,11 @@ import android.widget.Toast;
 
 import androidx.navigation.Navigation;
 
+import org.the3deer.android.engine.Model;
 import org.the3deer.android.viewer.R;
 import org.the3deer.android.viewer.providers.*;
 import org.the3deer.android.viewer.ui.DialogFragment;
 
-import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,8 +72,8 @@ public class LoadDialogFragment extends DialogFragment {
         try {
             ModelProvider provider = action.getProvider(activity.getApplication());
             if (provider != null) {
-                provider.load(activity, uri -> {
-                    if (uri != null) launchModelRendererActivity(uri);
+                provider.load(activity, (model) -> {
+                    if (model != null) launchModelRendererActivity(model);
                 });
                 
                 // If it's the Android Explorer, we dismiss immediately because it triggers an external activity
@@ -85,10 +85,15 @@ public class LoadDialogFragment extends DialogFragment {
         }
     }
 
-    private void launchModelRendererActivity(URI uri) {
+    private void launchModelRendererActivity(Model model) {
         dismiss();
         final Bundle arguments = new Bundle();
-        arguments.putString("uri", uri.toString());
+        arguments.putString("uri", model.getUri().toString());
+        if (model.getName() != null) arguments.putString("name", model.getName());
+        if (model.getType() != null) arguments.putString("type", model.getType());
+        if (model.getTextureBaseUri() != null) {
+            arguments.putString("textureBaseUri", model.getTextureBaseUri().toString());
+        }
         activity.runOnUiThread(()->Navigation.findNavController(activity, R.id.nav_host_fragment_content_main).navigate(R.id.nav_home, arguments));
     }
 }

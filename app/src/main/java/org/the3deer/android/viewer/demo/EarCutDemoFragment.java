@@ -51,7 +51,7 @@ public class EarCutDemoFragment extends HomeFragment {
 
         ModelEngineViewModel modelEngineViewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
         @NotNull Model model = modelEngineViewModel.createModel("demo.earcut");
-        ModelEngine modelEngine = modelEngineViewModel.initEngine("demo.earcut", "demo.earcut", null, null);
+        ModelEngine modelEngine = modelEngineViewModel.initEngine("demo.earcut", null);
 
         sceneManager = modelEngine.getBeanFactory().find(Model.class);
         camera = modelEngine.getBeanFactory().get("gui.camera", Camera.class);
@@ -59,8 +59,9 @@ public class EarCutDemoFragment extends HomeFragment {
 
         try {
 
+            URI uri = URI.create("android://org.the3deer.android.viewer/assets/models/triangle1.obj");
             WavefrontLoaderTask task = new WavefrontLoaderTask(
-                    URI.create("android://org.the3deer.android.viewer/assets/models/triangle1.obj"), new LoadListenerAdapter() {
+                    new Model(uri), new LoadListenerAdapter() {
 
                 @Override
                 public void onLoadStart() {
@@ -87,8 +88,9 @@ public class EarCutDemoFragment extends HomeFragment {
             });
             task.execute();
 
+            URI uri1 = URI.create("android://org.the3deer.android.viewer/assets/models/triangle2.obj");
             WavefrontLoaderTask task2 = new WavefrontLoaderTask(
-                    URI.create("android://org.the3deer.android.viewer/assets/models/triangle2.obj"),
+                    new Model(uri1),
                     new LoadListenerAdapter() {
 
                         @Override

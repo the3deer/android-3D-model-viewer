@@ -1,6 +1,7 @@
 package org.the3deer.android.viewer.providers
 
 import android.app.Activity
+import org.the3deer.android.engine.Model
 import java.net.URI
 
 /**
@@ -9,7 +10,7 @@ import java.net.URI
 interface ModelProvider {
 
     interface Callback {
-        fun onModelSelected(uri: URI?)
+        fun onModelSelected(model: Model?)
     }
 
     /**
@@ -24,7 +25,7 @@ interface ModelProvider {
     fun load(activity: Activity, callback: Callback)
 
     /**
-     * Resolves a model ID to a loadable URI.
+     * Resolves a model ID to its loadable metadata.
      */
-    fun resolve(id: String): URI?
+    fun resolve(id: String): Model?
 }

@@ -73,12 +73,12 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
     init {
         // Register only the formats your game uses
-        LoaderRegistry.register("obj") { uri, listener -> WavefrontLoaderTask(uri, listener) }
-        LoaderRegistry.register("gltf") { uri, listener -> GltfLoaderTask(uri, listener) }
-        LoaderRegistry.register("glb") { uri, listener -> GltfLoaderTask(uri, listener) }
-        LoaderRegistry.register("fbx") { uri, listener -> FbxLoaderTask(uri, listener) }
-        LoaderRegistry.register("stl") { uri, listener -> STLLoaderTask(uri, listener) }
-        LoaderRegistry.register("dae") { uri, listener -> ColladaLoaderTask(uri, listener) }
+        LoaderRegistry.register("obj") { model, listener -> WavefrontLoaderTask(model, listener) }
+        LoaderRegistry.register("gltf") { model, listener -> GltfLoaderTask(model, listener) }
+        LoaderRegistry.register("glb") { model, listener -> GltfLoaderTask(model, listener) }
+        LoaderRegistry.register("fbx") { model, listener -> FbxLoaderTask(model, listener) }
+        LoaderRegistry.register("stl") { model, listener -> STLLoaderTask(model, listener) }
+        LoaderRegistry.register("dae") { model, listener -> ColladaLoaderTask(model, listener) }
     }
 
     private val TAG = "MainActivity"
@@ -342,7 +342,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             // Register this activity as a listener for the active engine
             engine.addOrReplace(this@MainActivity.javaClass.name, this@MainActivity)
 
-            supportActionBar?.title = shortenUri(engine.model.name)
+            supportActionBar?.title = shortenUri(engine.model.name ?: engine.model.uri.toString())
 
             refreshOverlayButtons()
             ViewCompat.requestApplyInsets(binding.root)
@@ -356,7 +356,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                     recreate()
                 }
                 "pick" -> {
-                    LoadContentDialog(this@MainActivity).start()
+                    pick("*/*")
                 }
                 "load" -> {
                     val uri = bundle.getString("uri")
