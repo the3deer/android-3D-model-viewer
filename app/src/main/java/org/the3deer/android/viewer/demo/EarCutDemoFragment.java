@@ -5,11 +5,9 @@ import android.widget.Toast;
 
 import androidx.lifecycle.ViewModelProvider;
 
-import org.jetbrains.annotations.NotNull;
-import org.the3deer.android.engine.ModelEngineViewModel;
-import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
+import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.android.engine.gui.Text;
 import org.the3deer.android.engine.model.Camera;
 import org.the3deer.android.engine.model.Constants;
@@ -17,6 +15,7 @@ import org.the3deer.android.engine.model.Object3D;
 import org.the3deer.android.engine.model.Scene;
 import org.the3deer.android.engine.services.LoadListenerAdapter;
 import org.the3deer.android.engine.services.wavefront.WavefrontLoaderTask;
+import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.util.geometry.UnionTri;
 
 import java.net.URI;
@@ -50,8 +49,8 @@ public class EarCutDemoFragment extends HomeFragment {
         logger.info("Starting up...");
 
         ModelEngineViewModel modelEngineViewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
-        @NotNull Model model = modelEngineViewModel.createModel("demo.earcut");
-        ModelEngine modelEngine = modelEngineViewModel.initEngine("demo.earcut", null);
+        Model model = new Model(java.net.URI.create("demo.earcut"));
+        ModelEngine modelEngine = modelEngineViewModel.initEngine(model, null);
 
         sceneManager = modelEngine.getBeanFactory().find(Model.class);
         camera = modelEngine.getBeanFactory().get("gui.camera", Camera.class);

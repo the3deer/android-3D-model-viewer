@@ -42,8 +42,8 @@ public class GlyphsDemoFragment extends HomeFragment {
         logger.info("Starting up...");
 
         ModelEngineViewModel viewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
-        @NotNull Model model = viewModel.createModel("demo.glyphs");
-        ModelEngine modelEngine = viewModel.initEngine("demo.glyphs", null);
+        Model model = new Model(java.net.URI.create("demo.glyphs"));
+        ModelEngine modelEngine = viewModel.initEngine(model, null);
 
         abcd = Text.allocate(null,10, 6);
         abcd.setMargin(Widget.PADDING_01);

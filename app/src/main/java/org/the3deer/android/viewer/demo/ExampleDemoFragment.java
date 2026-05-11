@@ -49,8 +49,8 @@ public class ExampleDemoFragment extends HomeFragment {
         logger.info("Starting up...");
 
         ModelEngineViewModel viewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
-        @NotNull Model model = viewModel.createModel("demo.gui");
-        ModelEngine modelEngine = viewModel.initEngine("demo.gui", null);
+        Model model = new Model(java.net.URI.create("demo.gui"));
+        ModelEngine modelEngine = viewModel.initEngine(model, null);
 
         // preload assets
         ContentUtils.provideAssets(getActivity());

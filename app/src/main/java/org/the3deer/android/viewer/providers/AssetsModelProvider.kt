@@ -19,7 +19,7 @@ class AssetsModelProvider(private val application: Application) : ModelProvider 
             val list = application.assets.list("models")
             if (list != null) {
                 for (file in list) {
-                    uris.add(URI.create("android://" + application.packageName + "/assets/models/" + file))
+                    uris.add(URI.create("android://" + application.packageName + "/assets/models/" + file.replace(" ", "+")))
                 }
             }
         } catch (e: Exception) {
@@ -32,19 +32,19 @@ class AssetsModelProvider(private val application: Application) : ModelProvider 
         AssetUtils.createChooserDialog(activity, "Select file", null, "models", SUPPORTED_FILE_TYPES_REGEX) { file ->
             if (file != null) {
                 ContentUtils.provideAssets(activity)
-                callback.onModelSelected(resolve(file))
+                callback.onModelSelected(resolve(URI.create("android://" + application.packageName + "/assets/" + file.replace(" ", "+"))))
             } else {
                 callback.onModelSelected(null)
             }
         }
     }
 
-    override fun resolve(id: String): Model {
-        val path = if (id.startsWith("models/")) id else "models/$id"
-        val uri = URI.create("android://" + application.packageName + "/assets/" + path.replace(" ", "+"))
+    override fun resolve(uri: URI): Model {
         val model = Model(uri)
-        model.name = id.substringAfterLast("/")
-        model.type = id.substringAfterLast(".", "gltf")
+        val path = uri.path
+        model.name = path.substringAfterLast("/")
+        model.type = path.substringAfterLast(".", "gltf")
+        model.provider = "Assets"
         return model
     }
 }

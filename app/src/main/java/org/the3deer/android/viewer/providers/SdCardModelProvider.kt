@@ -24,7 +24,7 @@ class SdCardModelProvider : ModelProvider {
             FileUtils.createChooserDialog(activity, "Select file", null, null, SUPPORTED_FILE_TYPES_REGEX) { file ->
                 if (file != null) {
                     ContentUtils.setCurrentDir(file.parentFile)
-                    callback.onModelSelected(resolve(file.absolutePath))
+                    callback.onModelSelected(resolve(file.toURI()))
                 } else {
                     callback.onModelSelected(null)
                 }
@@ -32,11 +32,12 @@ class SdCardModelProvider : ModelProvider {
         }
     }
 
-    override fun resolve(id: String): Model {
-        val uri = URI.create("file://$id")
+    override fun resolve(uri: URI): Model {
         val model = Model(uri)
-        model.name = id.substringAfterLast("/")
-        model.type = id.substringAfterLast(".", "gltf")
+        val path = uri.path
+        model.name = path.substringAfterLast("/")
+        model.type = path.substringAfterLast(".", "gltf")
+        model.provider = "SD Card"
         return model
     }
 }

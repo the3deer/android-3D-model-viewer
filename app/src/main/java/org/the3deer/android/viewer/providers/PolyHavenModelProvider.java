@@ -11,6 +11,7 @@ import org.the3deer.android.viewer.util.ContentUtils;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,10 +37,9 @@ public class PolyHavenModelProvider implements ModelProvider {
 
     @Override
     public void load(Activity activity, Callback callback) {
-        new LoadAssetsTask(activity, (url, textureBaseUrl) -> {
+        new LoadAssetsTask(activity, (assetId, url, includes) -> {
             if (url != null) {
-                // For direct selection from dialog, we resolve it to Model
-                callback.onModelSelected(buildModel(url, url, textureBaseUrl)); 
+                callback.onModelSelected(buildModel(URI.create(url), url, includes)); 
             } else {
                 callback.onModelSelected(null);
             }
@@ -47,37 +47,68 @@ public class PolyHavenModelProvider implements ModelProvider {
     }
     
     @Override
-    public Model resolve(String id) {
-        ModelMetadata meta = resolveAssetMetadata(id);
+    public Model resolve(URI uri) {
+        // If it's already an absolute URL from this provider, just extract the ID and re-resolve
+        String assetId = null;
+        String uriString = uri.toString();
+        
+        if (uri.isAbsolute() && uri.getHost() != null && uri.getHost().contains("polyhaven")) {
+            String path = uri.getPath();
+            if (path != null) {
+                int lastSlash = path.lastIndexOf('/');
+                int lastDot = path.lastIndexOf('.');
+                if (lastSlash != -1 && lastDot > lastSlash) {
+                    assetId = path.substring(lastSlash + 1, lastDot).replace("_1k", "").replace("_2k", "").replace("_4k", "");
+                }
+            }
+        } else {
+            // Assume it's a relative Asset ID
+            assetId = uriString;
+        }
+        
+        if (assetId == null) return null;
+
+        ModelMetadata meta = resolveAssetMetadata(assetId);
         if (meta != null) {
-            return buildModel(id, meta.url, meta.textureBaseUrl);
+            return buildModel(URI.create(meta.url), meta.url, meta.includes);
         }
         return null;
     }
     
-    private Model buildModel(String id, String url, String textureBaseUrl) {
-        URI uri = URI.create(url);
-        Model model = new Model(uri);
-        model.setName(id);
+    private Model buildModel(URI identity, String url, Map<String, String> includes) {
+        Model model = new Model(identity);
+        model.setUriModel(URI.create(url));
+        
+        // Extract name from the absolute URL
+        String path = identity.getPath();
+        if (path != null) {
+            String fileName = path.substring(path.lastIndexOf('/') + 1);
+            model.setName(fileName.substring(0, fileName.lastIndexOf('.')));
+        }
+        
         model.setType("gltf");
         model.setLicense("CC0");
-        if (textureBaseUrl != null) {
-            model.setTextureBaseUri(URI.create(textureBaseUrl));
+        model.setProvider("Poly Haven");
+        
+        if (includes != null) {
+            for (Map.Entry<String, String> entry : includes.entrySet()) {
+                model.addUri(entry.getKey(), URI.create(entry.getValue()));
+            }
         }
         return model;
     }
 
     public static class ModelMetadata {
         public final String url;
-        public final String textureBaseUrl;
-        public ModelMetadata(String url, String textureBaseUrl) {
+        public final Map<String, String> includes;
+        public ModelMetadata(String url, Map<String, String> includes) {
             this.url = url;
-            this.textureBaseUrl = textureBaseUrl;
+            this.includes = includes;
         }
     }
 
     public interface PolyHavenCallback {
-        void onModelSelected(String url, String textureBaseUrl);
+        void onModelSelected(String assetId, String url, Map<String, String> includes);
     }
 
     /**
@@ -110,11 +141,11 @@ public class PolyHavenModelProvider implements ModelProvider {
                         }
                     }
                     if (!current.containsKey("_assets")) {
-                        current.put("_assets", new ArrayList<String>());
+                        current.put("_assets", new ArrayList<URI>());
                     }
                     Object assets = current.get("_assets");
                     if (assets instanceof List) {
-                        ((List<String>) assets).add(id);
+                        ((List<URI>) assets).add(URI.create(id)); // IDs are relative here
                     }
                 }
             }
@@ -125,28 +156,37 @@ public class PolyHavenModelProvider implements ModelProvider {
     }
 
     /**
-     * Resolves a Poly Haven asset ID to a real GLTF URL and texture base.
+     * Resolves a Poly Haven asset ID to a real GLTF URL and all its dependencies.
      */
     public static ModelMetadata resolveAssetMetadata(String assetId) {
+        logger.info("Resolving asset metadata... id: " + assetId);
         try {
             URI url = URI.create(API_URL + "/files/" + assetId);
             String json = ContentUtils.read(url);
             JSONObject files = new JSONObject(json);
             if (files.has("gltf")) {
-                JSONObject gltfObj = files.getJSONObject("gltf");
-                String res = gltfObj.has("1k") ? "1k" : (String) gltfObj.keys().next();
-                JSONObject bestRes = gltfObj.getJSONObject(res);
-                if (bestRes.has("gltf")) {
-                    String gltfUrl = bestRes.getJSONObject("gltf").getString("url");
-                    String textureBaseUrl = null;
-                    if (bestRes.has("textures")) {
-                        JSONObject textures = bestRes.getJSONObject("textures");
-                        if (textures.length() > 0) {
-                            String firstTexUrl = textures.getJSONObject((String) textures.keys().next()).getString("url");
-                            textureBaseUrl = firstTexUrl.substring(0, firstTexUrl.lastIndexOf('/') + 1);
+                JSONObject gltfResolutions = files.getJSONObject("gltf");
+                
+                // Prefer 1k
+                String res = gltfResolutions.has("1k") ? "1k" : (gltfResolutions.keys().hasNext() ? (String) gltfResolutions.keys().next() : null);
+                if (res != null && !gltfResolutions.isNull(res)) {
+                    JSONObject resObj = gltfResolutions.getJSONObject(res);
+                    if (resObj.has("gltf")) {
+                        JSONObject target = resObj.getJSONObject("gltf");
+                        String gltfUrl = target.getString("url");
+                        Map<String, String> includes = new HashMap<>();
+
+                        if (target.has("include")) {
+                            JSONObject include = target.getJSONObject("include");
+                            Iterator<String> keys = include.keys();
+                            while (keys.hasNext()) {
+                                String key = keys.next();
+                                includes.put(key, include.getJSONObject(key).getString("url"));
+                            }
                         }
+
+                        return new ModelMetadata(gltfUrl, includes);
                     }
-                    return new ModelMetadata(gltfUrl, textureBaseUrl);
                 }
             }
         } catch (Exception e) {
@@ -296,7 +336,7 @@ public class PolyHavenModelProvider implements ModelProvider {
                 ((MainActivity) activity).setLoading(false, null);
             }
             if (meta != null) {
-                callback.onModelSelected(meta.url, meta.textureBaseUrl);
+                callback.onModelSelected(assetId, meta.url, meta.includes);
             } else {
                 if (activity != null) {
                     Toast.makeText(activity, "Could not find GLTF file for this asset", Toast.LENGTH_SHORT).show();

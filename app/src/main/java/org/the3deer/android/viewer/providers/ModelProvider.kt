@@ -25,7 +25,7 @@ interface ModelProvider {
     fun load(activity: Activity, callback: Callback)
 
     /**
-     * Resolves a model ID to its loadable metadata.
+     * Resolves a model URI to its fully populated entity.
      */
-    fun resolve(id: String): Model?
+    fun resolve(uri: URI): Model?
 }

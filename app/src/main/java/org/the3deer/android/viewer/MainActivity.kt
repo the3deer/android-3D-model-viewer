@@ -200,20 +200,39 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                                 .lowercase()
                         val title = item.title.toString()
 
-                        // Set URI and navigate
-                        val arguments = Bundle()
-                        arguments.putString("uri", uriString)
-                        arguments.putString("name", title)
+                        // Check if we have provider info in history
+                        val historyEntry = sharedViewModel.history.value?.find { it.startsWith("$uriString|$title|") }
+                        val parts = historyEntry?.split("|")
+                        val provider = if (parts != null && parts.size > 3) parts[3] else null
 
-                        // Try to find the type in history
-                        sharedViewModel.history.value?.find { it.startsWith("$uriString|$title|") }?.let {
-                            val parts = it.split("|")
-                            if (parts.size > 2) {
+                        if (!provider.isNullOrEmpty()) {
+                            // If we have a provider, re-resolve the model to get all technical mappings
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                val resolvedModel = sharedViewModel.resolveModel(provider, java.net.URI.create(uriString))
+                                withContext(Dispatchers.Main) {
+                                    if (resolvedModel != null) {
+                                        sharedViewModel.loadModel(resolvedModel)
+                                    } else {
+                                        // Fallback to simple load if resolution fails
+                                        val arguments = Bundle().apply {
+                                            putString("uri", uriString)
+                                            putString("name", title)
+                                            if (parts != null && parts.size > 2) putString("type", parts[2])
+                                        }
+                                        navController.navigate(R.id.nav_home, arguments)
+                                    }
+                                }
+                            }
+                        } else {
+                            // Legacy fallback / simple load
+                            val arguments = Bundle()
+                            arguments.putString("uri", uriString)
+                            arguments.putString("name", title)
+                            if (parts != null && parts.size > 2) {
                                 arguments.putString("type", parts[2])
                             }
+                            navController.navigate(R.id.nav_home, arguments)
                         }
-
-                        navController.navigate(R.id.nav_home, arguments)
 
                         binding.drawerLayout.closeDrawers()
                         true
@@ -243,7 +262,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             navController.addOnDestinationChangedListener { _, destination, _ ->
                 if (destination.id == R.id.nav_home) {
                     modelEngineViewModel.activeEngine.value?.let {
-                        supportActionBar?.title = shortenUri(it.model.name)
+                        supportActionBar?.title = shortenUri(it.model.name ?: it.model.uri.toString())
                     }
                     navigationView.setCheckedItem(destination.id)
                 }
@@ -258,6 +277,35 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             sharedViewModel.history.observe(this) { history ->
                 updateRecentModels(navigationView, history)
             }
+        }
+
+        // Listen for AI-triggered application actions from SharedViewModel
+        sharedViewModel.navigationRequest.observe(this) { screenId ->
+            val navId = when (screenId.lowercase()) {
+                "home" -> R.id.nav_home
+                "settings" -> R.id.nav_settings
+                "about" -> R.id.nav_about
+                "load" -> R.id.nav_load
+                else -> null
+            }
+            navId?.let { findNavController(R.id.nav_host_fragment_content_main).navigate(it) }
+        }
+        sharedViewModel.loadRequest.observe(this) { model ->
+            val arguments = Bundle().apply {
+                putString("uri", model.uri.toString())
+                putString("name", model.name)
+                putString("type", model.type)
+                putString("provider", model.provider)
+                
+                // Flat serialize technical mappings into the bundle
+                model.includes.forEach { (key, value) ->
+                    putString("include." + key, value.toString())
+                }
+            }
+            findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.nav_home, arguments)
+        }
+        sharedViewModel.exitRequest.observe(this) {
+            finish()
         }
 
         // Action stack buttons setup

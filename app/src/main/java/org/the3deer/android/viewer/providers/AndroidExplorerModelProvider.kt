@@ -22,7 +22,7 @@ class AndroidExplorerModelProvider : ModelProvider {
         }
     }
 
-    override fun resolve(id: String): Model? {
+    override fun resolve(uri: URI): Model? {
         return null
     }
 }

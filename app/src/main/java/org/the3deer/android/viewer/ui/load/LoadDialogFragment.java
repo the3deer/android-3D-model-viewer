@@ -4,11 +4,17 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import androidx.navigation.Navigation;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 
-import org.the3deer.android.engine.Model;
-import org.the3deer.android.viewer.R;
-import org.the3deer.android.viewer.providers.*;
+import org.the3deer.android.viewer.SharedViewModel;
+import org.the3deer.android.viewer.providers.AndroidExplorerModelProvider;
+import org.the3deer.android.viewer.providers.AssetsModelProvider;
+import org.the3deer.android.viewer.providers.KhronosModelProvider;
+import org.the3deer.android.viewer.providers.ModelProvider;
+import org.the3deer.android.viewer.providers.PolyHavenModelProvider;
+import org.the3deer.android.viewer.providers.RepositoryModelProvider;
+import org.the3deer.android.viewer.providers.SdCardModelProvider;
 import org.the3deer.android.viewer.ui.DialogFragment;
 
 import java.util.logging.Level;
@@ -17,6 +23,8 @@ import java.util.logging.Logger;
 public class LoadDialogFragment extends DialogFragment {
 
     private static final Logger logger = Logger.getLogger(LoadDialogFragment.class.getSimpleName());
+
+    private SharedViewModel sharedViewModel;
 
     /**
      * This actions corresponds to the "dialog_load_from" string array defined in strings.xml
@@ -59,8 +67,9 @@ public class LoadDialogFragment extends DialogFragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
     @Override
@@ -73,7 +82,10 @@ public class LoadDialogFragment extends DialogFragment {
             ModelProvider provider = action.getProvider(activity.getApplication());
             if (provider != null) {
                 provider.load(activity, (model) -> {
-                    if (model != null) launchModelRendererActivity(model);
+                    if (model != null) {
+                        dismiss();
+                        sharedViewModel.loadModel(model);
+                    }
                 });
                 
                 // If it's the Android Explorer, we dismiss immediately because it triggers an external activity
@@ -83,17 +95,5 @@ public class LoadDialogFragment extends DialogFragment {
             logger.log(Level.SEVERE, ex.getMessage(),ex);
             Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
         }
-    }
-
-    private void launchModelRendererActivity(Model model) {
-        dismiss();
-        final Bundle arguments = new Bundle();
-        arguments.putString("uri", model.getUri().toString());
-        if (model.getName() != null) arguments.putString("name", model.getName());
-        if (model.getType() != null) arguments.putString("type", model.getType());
-        if (model.getTextureBaseUri() != null) {
-            arguments.putString("textureBaseUri", model.getTextureBaseUri().toString());
-        }
-        activity.runOnUiThread(()->Navigation.findNavController(activity, R.id.nav_host_fragment_content_main).navigate(R.id.nav_home, arguments));
     }
 }

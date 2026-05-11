@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceManager
+import org.the3deer.android.engine.Model
 import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.android.engine.renderer.GLRenderer
@@ -125,10 +126,32 @@ open class HomeFragment : Fragment(), EventListener {
             // debug
             Log.i(TAG, "setupAndStartEngine $uriString")
 
-            val textureBaseUri = arguments?.getString("textureBaseUri")?.let { java.net.URI.create(it) }
+            // 1. Check if the Model instance is already in the SharedViewModel (Technical Handoff)
+            var model = sharedViewModel.loadRequest.value
+            if (model != null && model.uri.toString() == uriString) {
+                Log.i(TAG, "Using pre-hydrated model instance from SharedViewModel")
+            } else {
+                // 2. Fallback: Create and populate the model from the Bundle (Scenario B: History/Re-entry)
+                Log.i(TAG, "Building new model instance from Bundle arguments")
+                model = Model(java.net.URI.create(uriString))
+                model.name = modelName
+                model.type = modelType
+                model.provider = arguments?.getString("provider")
 
-            // Initialize engine view model with this model's metadata
-            modelEngineViewModel.initEngine(uriString) {
+                // Flat deserialize technical mappings from the bundle
+                arguments?.let { bundle ->
+                    bundle.keySet().filter { it.startsWith("include.") }.forEach { key ->
+                        val value = bundle.getString(key)
+                        if (value != null) {
+                            val modelKey = key.substring("include.".length)
+                            model.addUri(modelKey, java.net.URI.create(value))
+                        }
+                    }
+                }
+            }
+
+            // 3. Hand the fully populated model to the Engine
+            modelEngineViewModel.initEngine(model) {
 
                 // get engine
                 val engine = modelEngineViewModel.getEngine(uriString)
@@ -136,11 +159,6 @@ open class HomeFragment : Fragment(), EventListener {
                     Log.e(TAG, "Engine not initialized")
                     return@initEngine
                 }
-
-                // set technical metadata
-                engine.model.name = modelName
-                engine.model.type = modelType
-                engine.model.textureBaseUri = textureBaseUri
 
                 // check
                 if (_binding == null){
@@ -180,7 +198,7 @@ open class HomeFragment : Fragment(), EventListener {
                             modelEngineViewModel.setActiveEngine(uriString)
 
                             // update shared state (history, etc)
-                            sharedViewModel.onModelOpened(uriString, modelName, modelType)
+                            sharedViewModel.onModelOpened(engine.model, arguments?.getString("provider"))
 
                             // log success
                             Log.i(TAG, "setupAndStartEngine Engine activated successfully")

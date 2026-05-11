@@ -103,7 +103,7 @@ class KhronosModelProvider : ModelProvider {
                         files, SUPPORTED_FILE_TYPES_REGEX
                     ) { file ->
                         if (file != null) {
-                            callback.onModelSelected(resolve(file))
+                            callback.onModelSelected(resolve(URI.create(file)))
                         } else {
                             callback.onModelSelected(null)
                         }
@@ -122,13 +122,12 @@ class KhronosModelProvider : ModelProvider {
         }.start()
     }
 
-    override fun resolve(id: String): Model {
-        val uri = URI.create(id)
-        val name = uri.path.substringAfterLast("/").substringBeforeLast(".")
+    override fun resolve(uri: URI): Model {
         val model = Model(uri)
-        model.name = name
+        model.name = uri.path.substringAfterLast("/").substringBeforeLast(".")
         model.type = "gltf"
         model.license = "CC0"
+        model.provider = "Khronos"
         return model
     }
 }

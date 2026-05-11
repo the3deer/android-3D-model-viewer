@@ -40,7 +40,7 @@ class RepositoryModelProvider(private val repoUrl: URI = REPO_URL) : ModelProvid
                             if (file.endsWith(".index")) {
                                 RepositoryModelProvider(URI.create(file)).load(activity, callback)
                             } else {
-                                callback.onModelSelected(resolve(file))
+                                callback.onModelSelected(resolve(URI.create(file)))
                             }
                         } else {
                             callback.onModelSelected(null)
@@ -59,12 +59,11 @@ class RepositoryModelProvider(private val repoUrl: URI = REPO_URL) : ModelProvid
         }.start()
     }
 
-    override fun resolve(id: String): Model {
-        val uri = URI.create(id)
-        val name = uri.path.substringAfterLast("/").substringBeforeLast(".")
+    override fun resolve(uri: URI): Model {
         val model = Model(uri)
-        model.name = name
-        model.type = id.substringAfterLast(".", "gltf")
+        model.name = uri.path.substringAfterLast("/").substringBeforeLast(".")
+        model.type = uri.path.substringAfterLast(".", "gltf")
+        model.provider = "the3deer"
         return model
     }
 }
