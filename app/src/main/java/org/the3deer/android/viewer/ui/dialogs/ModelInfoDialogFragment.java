@@ -82,7 +82,11 @@ public class ModelInfoDialogFragment extends DialogFragment {
         if (model != null) {
             info.append("Model: ").append(model.getName()).append("\n");
             info.append("Type: ").append(model.getType()).append("\n");
-            info.append("Uri: ").append(model.getUri()).append("\n\n");
+            info.append("Source: ").append(model.getUri()).append("\n");
+            if (model.getUriModel() != null && !model.getUriModel().equals(model.getUri())) {
+                info.append("Location: ").append(model.getUriModel()).append("\n");
+            }
+            info.append("\n");
         }
 
         // memory info
