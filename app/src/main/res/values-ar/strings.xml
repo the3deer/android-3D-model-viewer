@@ -112,4 +112,6 @@
     <string name="tooltip_no_scenes">هذا النموذج يحتوي على مشهد واحد فقط</string>
     <string name="tooltip_no_cameras">هذا النموذج يحتوي على كاميرا واحدة فقط</string>
     <string name="tooltip_no_animations">هذا النموذج لا يحتوي على رسوم متحركة</string>
+    <string name="property_shader_manager_openGLVersion_label">إصدار OpenGL</string>
+    <string name="property_shader_manager_openGLVersion_description">حدد إصدار OpenGL ES للعرض والمظللات</string>
 </resources>

@@ -112,4 +112,6 @@
     <string name="feature_decorator_description">モデルの上に描画されるコンポーネント</string>
     <string name="feature_gui_description">FPS、座標軸、情報の表示</string>
     <string name="feature_renderer_description">レンダラーが画面に描画します</string>
+    <string name="property_shader_manager_openGLVersion_label">OpenGL バージョン</string>
+    <string name="property_shader_manager_openGLVersion_description">レンダリングとシェーダーの OpenGL ES バージョンを選択します</string>
 </resources>

@@ -113,4 +113,6 @@
     <string name="feature_gui_description">Відображення FPS, осей та інформації</string>
     <string name="feature_renderer_description">Рендерери малюють на екрані</string>
 
+    <string name="property_shader_manager_openGLVersion_label">Версія OpenGL</string>
+    <string name="property_shader_manager_openGLVersion_description">Виберіть версію OpenGL ES для рендеринга та шейдерів</string>
 </resources>

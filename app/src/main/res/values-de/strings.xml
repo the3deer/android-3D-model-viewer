@@ -112,4 +112,6 @@
     <string name="tooltip_no_scenes">Dieses Modell hat nur eine Szene</string>
     <string name="tooltip_no_cameras">Dieses Modell hat nur eine Kamera</string>
     <string name="tooltip_no_animations">Dieses Modell hat keine Animationen</string>
+    <string name="property_shader_manager_openGLVersion_label">OpenGL-Version</string>
+    <string name="property_shader_manager_openGLVersion_description">Wählen Sie die OpenGL ES-Version für Rendering und Shader aus</string>
 </resources>

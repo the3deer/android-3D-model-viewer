@@ -115,6 +115,8 @@
     <string name="property_gui_drawer_showFPS_label">Frames Per Second</string>
     <string name="property_gui_drawer_showFPS_description">Show or hide FPS counter</string>
     <string name="property_shadow_drawer_enabled_description">Enable or disable shadows rendering</string>
+    <string name="property_shader_manager_openGLVersion_label">OpenGL Version</string>
+    <string name="property_shader_manager_openGLVersion_description">Select the OpenGL ES version for rendering and shaders</string>
 
     <!-- Features -->
     <string name="feature_collision_description">Components that draw on top of the model</string>

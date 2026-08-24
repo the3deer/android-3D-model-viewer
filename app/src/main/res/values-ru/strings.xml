@@ -112,4 +112,6 @@
     <string name="feature_decorator_description">Компоненты, которые рисуют поверх модели</string>
     <string name="feature_gui_description">Отображение FPS, осей и информации</string>
     <string name="feature_renderer_description">Рендереры рисуют на экране</string>
+    <string name="property_shader_manager_openGLVersion_label">Версия OpenGL</string>
+    <string name="property_shader_manager_openGLVersion_description">Выберите версию OpenGL ES для рендеринга и шейдеров</string>
 </resources>

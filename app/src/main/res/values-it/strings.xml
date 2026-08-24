@@ -112,4 +112,6 @@
     <string name="feature_decorator_description">Componenti che disegnano sopra il modello</string>
     <string name="feature_gui_description">Visualizza FPS, assi e informazioni</string>
     <string name="feature_renderer_description">I renderer disegnano sullo schermo</string>
+    <string name="property_shader_manager_openGLVersion_label">Versione OpenGL</string>
+    <string name="property_shader_manager_openGLVersion_description">Seleziona la versione di OpenGL ES per il rendering e gli shader</string>
 </resources>

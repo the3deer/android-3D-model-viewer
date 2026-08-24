@@ -123,4 +123,6 @@
     <string name="feature_gui_description">显示 FPS、轴和信息</string>
     <string name="feature_renderer_description">渲染器在屏幕上绘制</string>
 
+    <string name="property_shader_manager_openGLVersion_label">OpenGL 版本</string>
+    <string name="property_shader_manager_openGLVersion_description">选择渲染和着色器的 OpenGL ES 版本</string>
 </resources>

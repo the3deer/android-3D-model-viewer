@@ -112,4 +112,6 @@
     <string name="feature_decorator_description">कंपोनेंट्स जो मॉडल के ऊपर ड्रा करते हैं</string>
     <string name="feature_gui_description">FPS, अक्ष और जानकारी प्रदर्शित करें</string>
     <string name="feature_renderer_description">रेंडरर्स स्क्रीन पर ड्रा करते हैं</string>
+    <string name="property_shader_manager_openGLVersion_label">OpenGL संस्करण</string>
+    <string name="property_shader_manager_openGLVersion_description">रेंडरिंग और शेडर्स के लिए OpenGL ES संस्करण चुनें</string>
 </resources>

@@ -113,4 +113,6 @@
     <string name="feature_gui_description">FPS, Eksen ve Bilgileri Görüntüler</string>
     <string name="feature_renderer_description">Oluşturucular ekrana çizer</string>
 
+    <string name="property_shader_manager_openGLVersion_label">OpenGL Sürümü</string>
+    <string name="property_shader_manager_openGLVersion_description">İşleme ve gölgelendiriciler için OpenGL ES sürümünü seçin</string>
 </resources>
