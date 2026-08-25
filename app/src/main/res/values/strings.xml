@@ -20,6 +20,7 @@
     <string name="gray">Gray</string>
     <string name="black">Black</string>
     <string name="ok">OK</string>
+    <string name="enabled">Enabled</string>
 
     <!-- New Version / Rename Notification -->
     <string name="dialog_new_version_title">New Version Available</string>
@@ -70,14 +71,21 @@
     <string name="fps_label" translatable="false">%1$d FPS</string>
 
     <!-- Categories -->
-    <string name="category_renderers_label">Renderers</string>
+    <string name="category_rendering_label">Rendering</string>
+    <string name="category_rendering_description">Low-level rendering settings, shaders, and core engine parameters</string>
     <string name="category_gui_label">Graphical User Interface</string>
+    <string name="category_gui_description">On-screen overlays, FPS counter, and user interface controls</string>
     <string name="category_general_label">General</string>
+    <string name="category_general_description">Global application preferences like language and theme</string>
     <string name="category_decorators_label">Decorators</string>
+    <string name="category_decorators_description">Visual helpers, bounding boxes, skyboxes, and extra debug views</string>
 
     <!-- Beans -->
     <string name="bean_settings_label">General Settings</string>
     <string name="bean_gl_renderer_label">OpenGL Settings</string>
+    <string name="bean_gl_renderer_description">Configuration of the rendering engine</string>
+    <string name="bean_font_manager_label">Font Manager</string>
+    <string name="bean_font_manager_description">Configuration of the text renderer</string>
     <string name="bean_animation_controller_label">Animation Controller</string>
     <string name="bean_collision_drawer_label">Collision Points Drawer</string>
     <string name="bean_collision_drawer_description">Draw points where the ray-object collisions take place</string>
@@ -99,6 +107,7 @@
     <string name="bean_shadow_drawer_description">Cast a shadow of the object in a plane on the ground</string>
     <string name="bean_shadow_drawer_label">Shadow Renderer</string>
     <string name="bean_shader_manager_label">Shader Manager</string>
+    <string name="bean_shader_manager_description">Configuration of the OpenGL and Shaders version</string>
 
     <!-- Bean Properties -->
     <string name="property_settings_language_label">Language</string>
@@ -117,6 +126,8 @@
     <string name="property_shadow_drawer_enabled_description">Enable or disable shadows rendering</string>
     <string name="property_shader_manager_openGLVersion_label">OpenGL Version</string>
     <string name="property_shader_manager_openGLVersion_description">Select the OpenGL ES version for rendering and shaders</string>
+    <string name="property_font_manager_factory_label">Font Factory</string>
+    <string name="property_font_manager_factory_description">Select the font implementation for rendering text</string>
 
     <!-- Features -->
     <string name="feature_collision_description">Components that draw on top of the model</string>

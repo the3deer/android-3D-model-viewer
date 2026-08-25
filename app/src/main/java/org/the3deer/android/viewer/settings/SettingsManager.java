@@ -177,10 +177,23 @@ public class SettingsManager {
                         ? beanAnn.name() : BeanUtils.getSnakeCase(beanClass);
 
                 // 1. Hydrate bean metadata
-                final String localizedBeanLabel = resolveBeanLabel(context, technicalBeanName);
+                String localizedBeanLabel = resolveBeanLabel(context, technicalBeanName);
+                if (localizedBeanLabel == null || localizedBeanLabel.equals(technicalBeanName)) {
+                    if (beanAnn != null && !beanAnn.name().isEmpty()) {
+                        localizedBeanLabel = beanAnn.name();
+                    }
+                }
+                
                 bean.setName(isExperimental(beanClass) ? localizedBeanLabel + " (Experimental)" : localizedBeanLabel);
-                bean.setDescription(getDescription(context, technicalBeanName));
+
+                String description = getDescription(context, technicalBeanName);
+                if (description == null && beanAnn != null && !beanAnn.description().isEmpty()) {
+                    description = beanAnn.description();
+                }
+                bean.setDescription(description);
+                
                 bean.setCategory(getCategory(context, beanClass));
+                bean.setCategoryDescription(getCategoryDescription(context, beanClass));
 
                 // 2. Hydrate all properties
                 for (Object entryValue : bean.getProperties().values()) {
@@ -281,29 +294,7 @@ public class SettingsManager {
     }
 
     public static String getCategory(Context context, Class<?> beanClass) {
-        String category = null;
-
-        // 1. Check @Bean
-        Bean bean = beanClass.getAnnotation(Bean.class);
-        if (bean != null && !bean.category().isEmpty()) {
-            category = bean.category();
-        }
-
-        // 2. Check @Feature on Class
-        if (category == null) {
-            Feature feature = beanClass.getAnnotation(Feature.class);
-            if (feature != null && !feature.category().isEmpty()) {
-                category = feature.category();
-            }
-        }
-
-        // 3. Check @Feature on Package
-        if (category == null && beanClass.getPackage() != null) {
-            Feature pkgFeature = beanClass.getPackage().getAnnotation(Feature.class);
-            if (pkgFeature != null && !pkgFeature.category().isEmpty()) {
-                category = pkgFeature.category();
-            }
-        }
+        String category = getCategoryTechnical(beanClass);
 
         if (category != null) {
             int resId = context.getResources().getIdentifier("category_" + category + "_label", "string", context.getPackageName());
@@ -312,6 +303,41 @@ public class SettingsManager {
         }
 
         return "General";
+    }
+
+    public static String getCategoryDescription(Context context, Class<?> beanClass) {
+        String category = getCategoryTechnical(beanClass);
+
+        if (category != null) {
+            int resId = context.getResources().getIdentifier("category_" + category + "_description", "string", context.getPackageName());
+            if (resId != 0) return context.getString(resId);
+        }
+
+        return null;
+    }
+
+    public static String getCategoryTechnical(Class<?> beanClass) {
+        // 1. Check @Bean
+        Bean bean = beanClass.getAnnotation(Bean.class);
+        if (bean != null && !bean.category().isEmpty()) {
+            return bean.category();
+        }
+
+        // 2. Check @Feature on Class
+        Feature feature = beanClass.getAnnotation(Feature.class);
+        if (feature != null && !feature.category().isEmpty()) {
+            return feature.category();
+        }
+
+        // 3. Check @Feature on Package
+        if (beanClass.getPackage() != null) {
+            Feature pkgFeature = beanClass.getPackage().getAnnotation(Feature.class);
+            if (pkgFeature != null && !pkgFeature.category().isEmpty()) {
+                return pkgFeature.category();
+            }
+        }
+
+        return null;
     }
 
     public static boolean isExperimental(Class<?> beanClass) {
