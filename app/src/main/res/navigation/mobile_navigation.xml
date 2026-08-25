@@ -19,7 +19,7 @@
 
     <dialog
         android:id="@+id/nav_settings"
-        android:name="org.the3deer.android.viewer.ui.settings.SettingsDialogFragment"
+        android:name="org.the3deer.android.viewer.settings.SettingsDialogFragment"
         android:label="@string/menu_settings"
         tools:layout="@layout/fragment_settings" />
 
@@ -59,17 +59,22 @@
             app:nullable="false" />
     </fragment>-->
 
-    <!--<fragment
+    <!-- fragment
         android:id="@+id/nav_demo2"
-        android:name="org.the3deer.android.viewer.demo.GlyphsDemoFragment"
-        android:label="Glyphs demo"
+        android:name="org.the3deer.android.viewer.demo.TextDemoFragment"
+        android:label="Text demo"
         tools:layout="@layout/fragment_home">
         <argument
             android:name="uri"
             app:argType="string"
-            android:defaultValue="android://org.the3deer.android.viewer/demos/glyphs_demo"
+            android:defaultValue="android://org.the3deer.android.viewer/text_demo"
             app:nullable="false" />
-    </fragment>-->
+        <argument
+            android:name="type"
+            app:argType="string"
+            android:defaultValue="custom"
+            app:nullable="false" />
+    </fragment -->
 
     <!--<fragment
         android:id="@+id/nav_demo3"

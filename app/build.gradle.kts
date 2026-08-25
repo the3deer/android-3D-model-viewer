@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "org.the3deer.android.viewer"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 13
         versionName = "5.0.7"
@@ -69,7 +69,6 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.preference.ktx)
-    implementation(libs.androidx.core.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

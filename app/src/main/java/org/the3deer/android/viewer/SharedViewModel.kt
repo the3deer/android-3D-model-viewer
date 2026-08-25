@@ -5,16 +5,28 @@ import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.preference.PreferenceManager
 import org.the3deer.android.engine.Model
-import org.the3deer.android.viewer.ai.AppAPI
-import org.the3deer.android.viewer.providers.*
-import java.net.URI
+import org.the3deer.android.viewer.api.AppAPI
+import org.the3deer.android.viewer.api.AppAPIImpl
+import org.the3deer.android.viewer.providers.ProviderManager
+import org.the3deer.android.viewer.settings.AppSettings
+import org.the3deer.android.viewer.settings.SettingsManager
 
-class SharedViewModel(application: Application) : AndroidViewModel(application), AppAPI {
+class SharedViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val prefs = PreferenceManager.getDefaultSharedPreferences(application)
-    private val remoteConfig = FirebaseRemoteConfig.getInstance()
+    private val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(application)
+    val appSettings = AppSettings()
+    val settings = SettingsManager(this, appSettings)
+    val providerManager = ProviderManager(application)
+
+    val api: AppAPI = AppAPIImpl(
+        application,
+        settings,
+        providerManager,
+        onNavigate = { _navigationRequest.postValue(it) },
+        onLoadModel = { _loadRequest.postValue(it) },
+        onExit = { _exitRequest.postValue(Unit) }
+    )
 
     /**
      * Navigation / UI State
@@ -31,9 +43,12 @@ class SharedViewModel(application: Application) : AndroidViewModel(application),
     private val _history = MutableLiveData<List<String>>()
     val history: LiveData<List<String>> = _history
 
+    private val _restartRequest = MutableLiveData<Unit>()
+    val restartRequest: LiveData<Unit> = _restartRequest
+
     init {
-        // Load history
-        val savedHistory = prefs.getString(SharedViewModel::class.java.name+".history", "") ?: ""
+        // Load history from AppSettings
+        val savedHistory = prefs.getString(appSettings.javaClass.name + ".history", "") ?: ""
         _history.value = if (savedHistory.isEmpty()) {
             emptyList()
         } else if (savedHistory.contains("\n")) {
@@ -51,8 +66,8 @@ class SharedViewModel(application: Application) : AndroidViewModel(application),
         val name = model.name ?: uri
         val type = model.type ?: "gltf"
         
-        // Save the last active URI to preferences
-        prefs.edit { putString(SharedViewModel::class.java.name+".active_uri", uri) }
+        // Save the last active URI to AppSettings (and persist)
+        prefs.edit { putString(appSettings.javaClass.name + ".activeUri", uri) }
 
         updateHistory(uri, name, type, provider)
     }
@@ -69,71 +84,20 @@ class SharedViewModel(application: Application) : AndroidViewModel(application),
         val newHistory = currentHistory.take(10)
         _history.value = newHistory
         
-        // Use newline as separator to avoid issues with commas in URIs
-        prefs.edit { putString(SharedViewModel::class.java.name+".history", newHistory.joinToString("\n")) }
+        // Save history to AppSettings (and persist)
+        prefs.edit { putString(appSettings.javaClass.name + ".history", newHistory.joinToString("\n")) }
     }
 
     fun removeFromHistory(uri: String) {
         val currentHistory = _history.value?.toMutableList() ?: mutableListOf()
         if (currentHistory.removeAll { it == uri || it.startsWith("$uri|") }) {
             _history.value = currentHistory
-            prefs.edit { putString(SharedViewModel::class.java.name+".history", currentHistory.joinToString("\n")) }
+            prefs.edit { putString(appSettings.javaClass.name + ".history", currentHistory.joinToString("\n")) }
         }
     }
 
-    // --- AppAPI Implementation ---
-
-    override fun navigate(screenId: String) {
-        _navigationRequest.postValue(screenId)
+    fun requestRestart() {
+        _restartRequest.postValue(Unit)
     }
 
-    override fun loadModel(model: Model) {
-        if (model.uriModel == null && !model.provider.isNullOrEmpty()) {
-            // Re-hydrate model to get absolute URLs and included files
-            val hydrated = resolveModel(model.provider!!, model.uri)
-            if (hydrated != null) {
-                _loadRequest.postValue(hydrated)
-                return
-            }
-        }
-        _loadRequest.postValue(model)
-    }
-
-    override fun setAppSetting(key: String, value: Any) {
-        prefs.edit {
-            when (value) {
-                is String -> putString(key, value)
-                is Boolean -> putBoolean(key, value)
-                is Int -> putInt(key, value)
-                is Float -> putFloat(key, value)
-                is Long -> putLong(key, value)
-            }
-        }
-    }
-
-    override fun exitApp() {
-        _exitRequest.postValue(Unit)
-    }
-
-    override fun getProviders(): List<String> {
-        return listOf("Assets", "Khronos", "Poly Haven", "the3deer")
-    }
-
-    override fun listModels(provider: String): Any {
-        return getProvider(provider)?.list() ?: emptyList<URI>()
-    }
-
-    override fun resolveModel(provider: String, uri: URI): Model? {
-        return getProvider(provider)?.resolve(uri)
-    }
-
-    private fun getProvider(provider: String): ModelProvider? {
-        return when (provider.lowercase()) {
-            "assets" -> AssetsModelProvider(getApplication())
-            "khronos" -> KhronosModelProvider()
-            "poly haven", "polyhaven" -> PolyHavenModelProvider()
-            "the3deer" -> RepositoryModelProvider()
-            else -> null
-        }
-    }
 }

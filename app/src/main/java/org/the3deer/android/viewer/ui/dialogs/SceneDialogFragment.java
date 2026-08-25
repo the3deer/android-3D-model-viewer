@@ -15,6 +15,7 @@ import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.android.engine.model.Scene;
 import org.the3deer.android.viewer.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SceneDialogFragment extends DialogFragment {
@@ -40,10 +41,9 @@ public class SceneDialogFragment extends DialogFragment {
 
         final Model sceneManager = modelEngine.getBeanFactory().find(Model.class);
         if (sceneManager == null) return createNotAvailableDialog(builder, "SceneManager is null");
+        if (sceneManager.getScenes().isEmpty()) return createNotAvailableDialog(builder, "No scenes available");
 
-        final List<Scene> scenes = sceneManager.getScenes();
-        if (scenes == null || scenes.isEmpty()) return createNotAvailableDialog(builder, "No scenes available");
-
+        final List<Scene> scenes = new ArrayList<>(sceneManager.getScenes().values());
         final String[] sceneNames = new String[scenes.size()];
         for (int i = 0; i < scenes.size(); i++) {
             sceneNames[i] = scenes.get(i).getName();

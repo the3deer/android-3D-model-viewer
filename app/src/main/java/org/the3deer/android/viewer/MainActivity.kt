@@ -3,7 +3,6 @@ package org.the3deer.android.viewer
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Uri
-import androidx.core.net.toUri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -15,15 +14,16 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.TooltipCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
+import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.core.view.MenuItemCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.appcompat.widget.TooltipCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -36,17 +36,9 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.the3deer.android.engine.ModelEngineViewModel
-import org.the3deer.android.viewer.util.ContentUtils
-import org.the3deer.android.viewer.databinding.ActivityMainBinding
-import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
-import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
-import org.the3deer.android.viewer.ui.dialogs.ModelInfoDialogFragment
-import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
-import org.the3deer.android.viewer.ui.load.LoadContentDialog
-import org.the3deer.android.viewer.ui.settings.SettingsFragment
 import org.the3deer.android.engine.Model
 import org.the3deer.android.engine.ModelEngine
+import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.android.engine.camera.CameraManager
 import org.the3deer.android.engine.camera.FirstPersonCameraHandler
 import org.the3deer.android.engine.event.CameraEvent
@@ -55,15 +47,22 @@ import org.the3deer.android.engine.event.FPSEvent
 import org.the3deer.android.engine.event.SceneEvent
 import org.the3deer.android.engine.model.ModelEvent
 import org.the3deer.android.engine.model.Object3D
-import org.the3deer.util.event.EventListener
-import org.the3deer.util.event.EventManager
 import org.the3deer.android.engine.services.LoaderRegistry
 import org.the3deer.android.engine.services.collada.ColladaLoaderTask
 import org.the3deer.android.engine.services.fbx.FbxLoaderTask
 import org.the3deer.android.engine.services.gltf.GltfLoaderTask
 import org.the3deer.android.engine.services.stl.STLLoaderTask
 import org.the3deer.android.engine.services.wavefront.WavefrontLoaderTask
-import java.io.File
+import org.the3deer.android.viewer.databinding.ActivityMainBinding
+import org.the3deer.android.viewer.settings.SettingsFragment
+import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
+import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
+import org.the3deer.android.viewer.ui.dialogs.ModelInfoDialogFragment
+import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
+import org.the3deer.android.viewer.ui.load.LoadContentDialog
+import org.the3deer.android.viewer.util.ContentUtils
+import org.the3deer.util.event.EventListener
+import org.the3deer.util.event.EventManager
 import java.net.URI
 import java.util.EventObject
 import java.util.concurrent.CompletableFuture
@@ -204,35 +203,15 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                         val historyEntry = sharedViewModel.history.value?.find { it.startsWith("$uriString|$title|") }
                         val parts = historyEntry?.split("|")
                         val provider = if (parts != null && parts.size > 3) parts[3] else null
+                        val type = if (parts != null && parts.size > 2) parts[2] else null
 
-                        if (!provider.isNullOrEmpty()) {
-                            // If we have a provider, re-resolve the model to get all technical mappings
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                val resolvedModel = sharedViewModel.resolveModel(provider, java.net.URI.create(uriString))
-                                withContext(Dispatchers.Main) {
-                                    if (resolvedModel != null) {
-                                        sharedViewModel.loadModel(resolvedModel)
-                                    } else {
-                                        // Fallback to simple load if resolution fails
-                                        val arguments = Bundle().apply {
-                                            putString("uri", uriString)
-                                            putString("name", title)
-                                            if (parts != null && parts.size > 2) putString("type", parts[2])
-                                        }
-                                        navController.navigate(R.id.nav_home, arguments)
-                                    }
-                                }
-                            }
-                        } else {
-                            // Legacy fallback / simple load
-                            val arguments = Bundle()
-                            arguments.putString("uri", uriString)
-                            arguments.putString("name", title)
-                            if (parts != null && parts.size > 2) {
-                                arguments.putString("type", parts[2])
-                            }
-                            navController.navigate(R.id.nav_home, arguments)
+                        // Use AppAPI to load the model. It will handle resolution if needed.
+                        val model = Model(java.net.URI.create(uriString)).apply {
+                            setName(title)
+                            setType(type)
+                            setProvider(provider)
                         }
+                        sharedViewModel.api.loadModel(model)
 
                         binding.drawerLayout.closeDrawers()
                         true
@@ -290,6 +269,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             }
             navId?.let { findNavController(R.id.nav_host_fragment_content_main).navigate(it) }
         }
+        sharedViewModel.restartRequest.observe(this) {
+            recreate()
+        }
         sharedViewModel.loadRequest.observe(this) { model ->
             val arguments = Bundle().apply {
                 putString("uri", model.uri.toString())
@@ -303,6 +285,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                 }
             }
             findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.nav_home, arguments)
+        }
+        modelEngineViewModel.loadRequest.observe(this) { model ->
+            sharedViewModel.api.loadModel(model)
         }
         sharedViewModel.exitRequest.observe(this) {
             finish()

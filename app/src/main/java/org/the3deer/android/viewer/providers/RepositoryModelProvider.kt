@@ -3,8 +3,8 @@ package org.the3deer.android.viewer.providers
 import android.app.Activity
 import org.the3deer.android.engine.Model
 import org.the3deer.android.viewer.MainActivity
-import org.the3deer.android.viewer.ui.DialogUtils
 import org.the3deer.android.viewer.util.ContentUtils
+import org.the3deer.android.viewer.util.DialogUtils
 import java.net.URI
 import java.util.logging.Level
 import java.util.logging.Logger

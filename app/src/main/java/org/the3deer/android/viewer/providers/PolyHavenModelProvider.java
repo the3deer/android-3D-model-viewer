@@ -29,6 +29,10 @@ public class PolyHavenModelProvider implements ModelProvider {
 
     private static final Logger logger = Logger.getLogger(PolyHavenModelProvider.class.getSimpleName());
     private static final String API_URL = "https://api.polyhaven.com";
+    private static final Map<String, String> HEADERS = new HashMap<>();
+    static {
+        HEADERS.put("User-Agent", "AndroidModelViewer/1.0 (Mobile; +https://github.com/the3deer/android-3D-model-viewer)");
+    }
 
     @Override
     public Object list() {
@@ -89,7 +93,7 @@ public class PolyHavenModelProvider implements ModelProvider {
         model.setType("gltf");
         model.setLicense("CC0");
         model.setProvider("Poly Haven");
-        
+
         if (includes != null) {
             for (Map.Entry<String, String> entry : includes.entrySet()) {
                 model.addUri(entry.getKey(), URI.create(entry.getValue()));
@@ -119,7 +123,7 @@ public class PolyHavenModelProvider implements ModelProvider {
         Map<String, Object> root = new TreeMap<>();
         try {
             URI url = URI.create(API_URL + "/assets?type=models");
-            String json = ContentUtils.read(url);
+            String json = ContentUtils.read(url, HEADERS);
             JSONObject assetsJson = new JSONObject(json);
 
             Iterator<String> keys = assetsJson.keys();
@@ -162,7 +166,7 @@ public class PolyHavenModelProvider implements ModelProvider {
         logger.info("Resolving asset metadata... id: " + assetId);
         try {
             URI url = URI.create(API_URL + "/files/" + assetId);
-            String json = ContentUtils.read(url);
+            String json = ContentUtils.read(url, HEADERS);
             JSONObject files = new JSONObject(json);
             if (files.has("gltf")) {
                 JSONObject gltfResolutions = files.getJSONObject("gltf");
@@ -229,7 +233,7 @@ public class PolyHavenModelProvider implements ModelProvider {
         protected Node doInBackground(Void... voids) {
             try {
                 URI url = URI.create(API_URL + "/assets?type=models");
-                String json = ContentUtils.read(url);
+                String json = ContentUtils.read(url, HEADERS);
                 JSONObject assetsJson = new JSONObject(json);
 
                 Node root = new Node("Root");

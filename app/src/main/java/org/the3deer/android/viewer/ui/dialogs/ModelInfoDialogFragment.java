@@ -187,7 +187,7 @@ public class ModelInfoDialogFragment extends DialogFragment {
         if (modelEngine != null && modelEngine.getModel().getActiveScene() != null) {
             Object3D selectedObject = modelEngine.getModel().getActiveScene().getSelectedObject();
             if (selectedObject != null) {
-                Dimensions dim = modelEngine.getModel().getActiveScene().getSelectedObject().getDimensions();
+                Dimensions dim = modelEngine.getModel().getActiveScene().getSelectedObject().getCurrentDimensions();
                 final StringBuilder sb = new StringBuilder();
                 sb.append(String.format(Locale.US, "Dimensions: %.1f, %.1f, %.1f", dim.getWidth(), dim.getHeight(), dim.getDepth()));
                 sb.append("\n").append(String.format(Locale.US, "Center: %.1f, %.1f, %.1f", selectedObject.getBoundingBox().getCenter()[0], selectedObject.getBoundingBox().getCenter()[1], selectedObject.getBoundingBox().getCenter()[2]));

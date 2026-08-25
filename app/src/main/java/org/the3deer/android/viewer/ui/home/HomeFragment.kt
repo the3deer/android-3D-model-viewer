@@ -18,8 +18,7 @@ import org.the3deer.android.engine.renderer.GLSurfaceView
 import org.the3deer.android.engine.shader.ShaderManager
 import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.android.viewer.databinding.FragmentHomeBinding
-import org.the3deer.android.viewer.ui.settings.SettingsFragment
-import org.the3deer.android.viewer.ui.settings.SettingsOptions
+import org.the3deer.android.viewer.settings.SettingsFragment
 import org.the3deer.util.event.EventListener
 import java.util.EventObject
 
@@ -150,73 +149,103 @@ open class HomeFragment : Fragment(), EventListener {
                 }
             }
 
-            // 3. Hand the fully populated model to the Engine
-            modelEngineViewModel.initEngine(model) {
-
-                // get engine
-                val engine = modelEngineViewModel.getEngine(uriString)
-                if (engine == null){
-                    Log.e(TAG, "Engine not initialized")
-                    return@initEngine
-                }
-
-                // check
-                if (_binding == null){
-                    Log.e(TAG, "No binding found for id:"+uriString)
-                    return@initEngine
-                }
-
-                // setup engine with UI/Context components
-                engine.addOrReplace("gl.surfaceView", _binding?.glSurfaceView)
-                engine.addOrReplace("gl.renderer", _binding?.glSurfaceView?.renderer)
-                engine.addOrReplace("ui.settings", SettingsOptions())
-                engine.addOrReplace("ui.fragment", this)
-
-                // load engine
-                modelEngineViewModel.loadEngine(uriString) {
-
-                    // [SAFE APPLY] Apply saved preferences (Theme, Language, OpenGL settings, etc.)
-                    // We use activity?.let to ensure we have a valid context and to skip if detaching
-                    activity?.let { activity ->
-                        try {
-                            SettingsFragment.applySavedPreferences(engine, activity)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error applying saved preferences", e)
-                        }
-                    }
-
-                    // boot engine
-                    modelEngineViewModel.startEngine(uriString) {
-
-                        // log success
-                        Log.i(TAG, "setupAndStartEngine Activating engine...")
-
-                        // check status
-                        if (engine.status == ModelEngine.Status.OK) {
-
-                            // activate engine if no error
-                            modelEngineViewModel.setActiveEngine(uriString)
-
-                            // update shared state (history, etc)
-                            sharedViewModel.onModelOpened(engine.model, arguments?.getString("provider"))
-
-                            // log success
-                            Log.i(TAG, "setupAndStartEngine Engine activated successfully")
-
+            // 3. Resolution Phase: If the model has a provider and no includes, re-resolve it fully.
+            // This is critical for History reload to fetch textures and absolute URLs.
+            Thread {
+                try {
+                    val provider = model.provider
+                    if (provider != null && model.includes.isEmpty()) {
+                        Log.i(TAG, "Resolving model metadata for provider: $provider")
+                        val resolved = sharedViewModel.providerManager.resolveModel(provider, model.uri)
+                        if (resolved != null) {
+                            model.setUriModel(resolved.uriModel)
+                            model.name = resolved.name
+                            model.type = resolved.type
+                            resolved.includes.forEach { (k, v) -> model.addUri(k, v) }
+                            Log.i(TAG, "Model resolved successfully with ${model.includes.size} includes")
                         } else {
-
-                            // log error
-                            Log.e(
-                                TAG,
-                                "setupAndStartEngine Starting engine finished with error: ${engine.message}"
-                            )
+                            Log.w(TAG, "Provider $provider failed to resolve model ${model.uri}")
                         }
                     }
-                };
-            };
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error during model resolution", e)
+                } finally {
+                    // 4. Proceed to Engine Initialization on the UI thread
+                    handler.post {
+                        initEngineInternal(model, uriString)
+                    }
+                }
+            }.start()
         } catch (ex: Exception) {
             Log.e(TAG, "setupAndStartEngine finished with exception", ex)
         }
+    }
+
+    private fun initEngineInternal(model: Model, uriString: String) {
+        // 5. Hand the fully populated model to the Engine
+        modelEngineViewModel.initEngine(model) {
+
+            // get engine
+            val engine = modelEngineViewModel.getEngine(uriString)
+            if (engine == null){
+                Log.e(TAG, "Engine not initialized")
+                return@initEngine
+            }
+
+            // check
+            if (_binding == null){
+                Log.e(TAG, "No binding found for id:"+uriString)
+                return@initEngine
+            }
+
+            // setup engine with UI/Context components
+            engine.addOrReplace("gl.surfaceView", _binding?.glSurfaceView)
+            engine.addOrReplace("gl.renderer", _binding?.glSurfaceView?.renderer)
+            engine.addOrReplace("ui.fragment", this)
+            //engine.addOrReplace("ai.system", org.the3deer.android.viewer.ai.SystemAIAssistant())
+
+            // load engine
+            modelEngineViewModel.loadEngine(uriString) {
+
+                // [SAFE APPLY] Apply saved preferences (Theme, Language, OpenGL settings, etc.)
+                // We use activity?.let to ensure we have a valid context and to skip if detaching
+                activity?.let { activity ->
+                    try {
+                        SettingsFragment.applySavedPreferences(engine, activity)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error applying saved preferences", e)
+                    }
+                }
+
+                // boot engine
+                modelEngineViewModel.startEngine(uriString) {
+
+                    // log success
+                    Log.i(TAG, "setupAndStartEngine Activating engine...")
+
+                    // check status
+                    if (engine.status == ModelEngine.Status.OK) {
+
+                        // activate engine if no error
+                        modelEngineViewModel.setActiveEngine(uriString)
+
+                        // update shared state (history, etc)
+                        sharedViewModel.onModelOpened(engine.model, arguments?.getString("provider"))
+
+                        // log success
+                        Log.i(TAG, "setupAndStartEngine Engine activated successfully")
+
+                    } else {
+
+                        // log error
+                        Log.e(
+                            TAG,
+                            "setupAndStartEngine Starting engine finished with error: ${engine.message}"
+                        )
+                    }
+                }
+            };
+        };
     }
 
     override fun onEvent(event: EventObject?): Boolean {

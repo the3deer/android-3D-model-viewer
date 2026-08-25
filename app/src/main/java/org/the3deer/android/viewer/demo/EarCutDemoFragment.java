@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModelProvider;
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
 import org.the3deer.android.engine.ModelEngineViewModel;
-import org.the3deer.android.engine.gui.Text;
 import org.the3deer.android.engine.model.Camera;
 import org.the3deer.android.engine.model.Constants;
 import org.the3deer.android.engine.model.Object3D;
@@ -20,6 +19,7 @@ import org.the3deer.util.geometry.UnionTri;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,7 +35,6 @@ public class EarCutDemoFragment extends HomeFragment {
 
     private Model sceneManager;
     private Camera camera;
-    private Text abcd;
 
 
     @Override
@@ -186,7 +185,7 @@ public class EarCutDemoFragment extends HomeFragment {
 
                         scene.addObject(data2);*/
 
-                                List<Scene> scenes = sceneManager.getScenes();
+                                Collection<Scene> scenes = sceneManager.getScenes().values();
                                 List<Object3D> objects = new ArrayList<>();
                                 for (Scene s : scenes) {
                                     objects.addAll(s.getObjects());

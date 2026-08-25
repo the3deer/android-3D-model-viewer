@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -10,7 +9,7 @@
     android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
     android:background="?android:attr/selectableItemBackground"
     android:baselineAligned="false"
-    android:layout_marginTop="4dp"
+    android:layout_marginTop="8dp"
     android:gravity="center_vertical">
 
     <RelativeLayout

@@ -84,7 +84,7 @@ public class LoadDialogFragment extends DialogFragment {
                 provider.load(activity, (model) -> {
                     if (model != null) {
                         dismiss();
-                        sharedViewModel.loadModel(model);
+                        sharedViewModel.getApi().loadModel(model);
                     }
                 });
                 

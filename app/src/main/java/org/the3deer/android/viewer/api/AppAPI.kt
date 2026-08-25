@@ -1,6 +1,8 @@
-package org.the3deer.android.viewer.ai
+package org.the3deer.android.viewer.api
 
 import org.the3deer.android.engine.Model
+import org.the3deer.util.bean.BeanInfo
+import org.the3deer.util.bean.BeanPropertyInfo
 
 /**
  * Agnostic contract for interacting with the Android Application.
@@ -21,7 +23,7 @@ interface AppAPI {
     /**
      * Changes application-wide settings (language, theme).
      */
-    fun setAppSetting(key: String, value: Any)
+    fun updateSetting(key: String, value: Any)
 
     /**
      * Closes the application.
@@ -42,4 +44,14 @@ interface AppAPI {
      * Resolves a model URI to its metadata for a specific provider.
      */
     fun resolveModel(provider: String, uri: java.net.URI): Model?
+
+    /**
+     * Returns the list of managed components (beans) and their properties.
+     */
+    fun getBeans(): List<BeanInfo>
+
+    /**
+     * Returns the list of managed properties.
+     */
+    fun listSettings(): List<BeanPropertyInfo>
 }

@@ -21,8 +21,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +91,9 @@ public class ContentUtils {
                     final String[] files2 = activity.getAssets().list(directory + "/" + assetNameSanitized);
                     if (files2 == null) continue;
                     if (files2.length == 0) {
-                        documentsProvided.put(document, URI.create("android://" + activity.getPackageName() + "/assets/models/" + assetNameSanitized));
+                        URI uri = URI.create("android://" + activity.getPackageName() + "/assets/" + directory + "/" + assetNameSanitized);
+                        documentsProvided.put(document, uri);
+                        documentsProvided.put(directory + "/" + document, uri);
                     }
                 }
             }
@@ -113,6 +117,10 @@ public class ContentUtils {
     }
 
     public static InputStream getInputStream(URI uri) throws IOException {
+        return getInputStream(uri, null);
+    }
+
+    public static InputStream getInputStream(URI uri, Map<String, String> headers) throws IOException {
         if (uri == null) throw new IllegalArgumentException("uri cannot be null");
 
         if (context == null){
@@ -126,15 +134,19 @@ public class ContentUtils {
 
         logger.finest("Opening stream ..." + uri);
         if (uri.getScheme() != null && uri.getScheme().equals("android")) {
-            if (uri.getPath().startsWith("/binary/")) {
+            /*if (uri.getPath().startsWith("/binary/")) {
                 final String path = uri.getPath().substring("/binary/".length());
                 final URI pathUri = uri.resolve(path.replace(" ","+").replace("%20", "+"));
                 byte[] buf = binariesProvided.get(pathUri);
                 if (buf != null) return new ByteArrayInputStream(buf, 0, buf.length);
                 else throw new FileNotFoundException("File not found: " + pathUri);
             }
-            else if (uri.getPath().startsWith("/assets/")) {
-                final String path = uri.getPath().substring("/assets/".length());
+            else */if (uri.getPath().startsWith("/assets/")) {
+                String path = uri.getPath().substring("/assets/".length()).replace("+", " ");
+                if (path.startsWith("models/models/")) {
+                    logger.warning("Redundant models/ prefix detected in URI path. Stripping it: " + path);
+                    path = path.substring("models/".length());
+                }
                 logger.config("Opening asset: " + path);
                 return context.getAssets().open(path);
             } else if (uri.getPath().startsWith("/res/drawable/")){
@@ -148,7 +160,14 @@ public class ContentUtils {
             }
         }
         else if (uri.getScheme() != null && (uri.getScheme().equals("http") || uri.getScheme().equals("https"))) {
-            return new BufferedInputStream(uri.toURL().openConnection().getInputStream(),8192);
+            final URLConnection conn = uri.toURL().openConnection();
+            if (headers != null && conn instanceof HttpURLConnection) {
+                final HttpURLConnection httpConn = (HttpURLConnection) conn;
+                for (Map.Entry<String, String> header : headers.entrySet()) {
+                    httpConn.setRequestProperty(header.getKey(), header.getValue());
+                }
+            }
+            return new BufferedInputStream(conn.getInputStream(), 8192);
         }
 
         // Handle content:// or file://
@@ -197,15 +216,27 @@ public class ContentUtils {
     }
 
     public static List<String> readLines(String uriString) {
-        return IOUtils.readLines(uriString);
+        return readLines(uriString, null);
+    }
+
+    public static List<String> readLines(String uriString, Map<String, String> headers) {
+        return IOUtils.readLines(uriString, headers);
     }
 
     public static String read(URL url) throws IOException {
-        return IOUtils.read(url);
+        return read(url, null);
+    }
+
+    public static String read(URL url, Map<String, String> headers) throws IOException {
+        return IOUtils.read(url, headers);
     }
 
     public static String read(URI uri) throws IOException {
-        return IOUtils.read(uri);
+        return read(uri, null);
+    }
+
+    public static String read(URI uri, Map<String, String> headers) throws IOException {
+        return IOUtils.read(uri, headers);
     }
 
     public static long getAvailableMemory() {
@@ -363,10 +394,17 @@ public class ContentUtils {
 
 
     public static InputStream getInputStream(String uriString) throws IOException {
+        if (uriString == null) return null;
         uriString = uriString.replace('\\','/');
+
+        // 1. Try provided documents/binaries
         URI uri = getUri(uriString);
-        if (uri == null) uri = getUri("models/"+uriString);
-        if (uri == null) uri = getUri("models/"+uriString.replace(' ', '+'));
+        if (uri == null && !uriString.startsWith(MODELS_FOLDER + "/")) {
+            uri = getUri(MODELS_FOLDER + "/" + uriString);
+        }
+        if (uri == null && uriString.startsWith(MODELS_FOLDER + "/")) {
+            uri = getUri(uriString.substring(MODELS_FOLDER.length() + 1));
+        }
         if (uri == null && currentDir != null) {
             File relativeFile = new File(currentDir, uriString);
             if (relativeFile.exists()) {
@@ -375,14 +413,14 @@ public class ContentUtils {
         }
         if (uri != null) return getInputStream(uri);
         
-        // try direct URI
+        // 2. try direct URI
         try {
-            uri = URI.create(uriString);
-            if (uri.getScheme() != null) {
-                return getInputStream(uri);
+            URI directUri = URI.create(uriString);
+            if (directUri.getScheme() != null) {
+                return getInputStream(directUri);
             }
-        } catch (Exception e) {
-            // not a valid URI, ignore
+        } catch (IllegalArgumentException e) {
+            // not a valid URI, ignore and continue
         }
 
         // If we have a resolver and we are not on the main thread, we can try to resolve it

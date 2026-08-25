@@ -1,7 +1,8 @@
-package org.the3deer.android.viewer.ui.settings;
+package org.the3deer.android.viewer.settings;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.os.LocaleListCompat;
@@ -9,14 +10,21 @@ import androidx.core.os.LocaleListCompat;
 import org.the3deer.util.bean.Bean;
 import org.the3deer.util.bean.BeanProperty;
 
-import java.util.logging.Logger;
-
+/**
+ * Application-level settings state and Android OS bridge. It holds the following settings:
+ * <ul>
+ *     <li>Language</li>
+ *     <li>Theme</li>
+ *     <li>AI key</li>
+ *     <li>AI model</li>
+ * </ul>
+ */
 @Bean(name = "settings", category = "general")
-public class SettingsOptions {
+public class AppSettings {
 
-    private static final Logger logger = Logger.getLogger(SettingsOptions.class.getSimpleName());
+    private static final String TAG = AppSettings.class.getSimpleName();
 
-    @BeanProperty(values = {"en","es"})
+    @BeanProperty(values = {"en", "es"})
     private String language = "en";
 
     @BeanProperty(values = {"auto", "light", "dark"})
@@ -27,30 +35,21 @@ public class SettingsOptions {
     }
 
     public void setLanguage(final String language) {
-
-        // check
         if (language == null) throw new IllegalArgumentException("Language can't be null");
-
         this.language = language;
-
-        // call android bridge
         setAndroidLanguage();
     }
 
-    public void setAndroidLanguage(){
-
+    public void setAndroidLanguage() {
         final LocaleListCompat appLocales = LocaleListCompat.forLanguageTags(language);
-
-        // check
         if (appLocales.equals(AppCompatDelegate.getApplicationLocales())) {
             return;
         }
 
-        logger.info("System bridge: Switching to " + language);
-
+        Log.i(TAG, "System bridge: Switching to " + language);
         new Handler(Looper.getMainLooper()).post(() -> {
             AppCompatDelegate.setApplicationLocales(appLocales);
-            logger.info("System bridge: Switched to " + language);
+            Log.i(TAG, "System bridge: Switched to " + language);
         });
     }
 
@@ -59,30 +58,21 @@ public class SettingsOptions {
     }
 
     public void setTheme(final String theme) {
-
-        // check
         if (theme == null) throw new IllegalArgumentException("Theme can't be null");
-
         this.theme = theme;
-
-        // call android bridge
         setAndroidTheme();
     }
 
     public void setAndroidTheme() {
-
         final int mode = getMode(theme);
-
-        // check
         if (AppCompatDelegate.getDefaultNightMode() == mode) {
             return;
         }
 
-        logger.info("System bridge: Switching theme to " + theme);
-
+        Log.i(TAG, "System bridge: Switching theme to " + theme);
         new Handler(Looper.getMainLooper()).post(() -> {
             AppCompatDelegate.setDefaultNightMode(mode);
-            logger.info("System bridge: Switched theme to " + theme);
+            Log.i(TAG, "System bridge: Switched theme to " + theme);
         });
     }
 

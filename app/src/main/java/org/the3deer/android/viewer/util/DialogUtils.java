@@ -1,4 +1,4 @@
-package org.the3deer.android.viewer.ui;
+package org.the3deer.android.viewer.util;
 
 import static org.the3deer.android.viewer.util.ContentUtils.documentsProvided;
 
@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 
-import org.the3deer.android.viewer.util.AssetUtils;
 import org.the3deer.android.viewer.R;
 
 import java.io.ByteArrayInputStream;
