@@ -11,6 +11,7 @@ import org.the3deer.util.bean.BeanInfo;
 import org.the3deer.util.bean.BeanManager;
 import org.the3deer.util.bean.BeanPropertyInfo;
 import org.the3deer.util.bean.BeanUtils;
+import org.the3deer.util.bean.Feature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -280,18 +281,52 @@ public class SettingsManager {
     }
 
     public static String getCategory(Context context, Class<?> beanClass) {
+        String category = null;
+
+        // 1. Check @Bean
         Bean bean = beanClass.getAnnotation(Bean.class);
         if (bean != null && !bean.category().isEmpty()) {
-            int resId = context.getResources().getIdentifier("category_" + bean.category() + "_label", "string", context.getPackageName());
-            if (resId != 0) return context.getString(resId);
-            return bean.category();
+            category = bean.category();
         }
+
+        // 2. Check @Feature on Class
+        if (category == null) {
+            Feature feature = beanClass.getAnnotation(Feature.class);
+            if (feature != null && !feature.category().isEmpty()) {
+                category = feature.category();
+            }
+        }
+
+        // 3. Check @Feature on Package
+        if (category == null && beanClass.getPackage() != null) {
+            Feature pkgFeature = beanClass.getPackage().getAnnotation(Feature.class);
+            if (pkgFeature != null && !pkgFeature.category().isEmpty()) {
+                category = pkgFeature.category();
+            }
+        }
+
+        if (category != null) {
+            int resId = context.getResources().getIdentifier("category_" + category + "_label", "string", context.getPackageName());
+            if (resId != 0) return context.getString(resId);
+            return category;
+        }
+
         return "General";
     }
 
     public static boolean isExperimental(Class<?> beanClass) {
         Bean bean = beanClass.getAnnotation(Bean.class);
-        return bean != null && bean.experimental();
+        if (bean != null && bean.experimental()) return true;
+
+        Feature feature = beanClass.getAnnotation(Feature.class);
+        if (feature != null && feature.experimental()) return true;
+
+        if (beanClass.getPackage() != null) {
+            Feature pkgFeature = beanClass.getPackage().getAnnotation(Feature.class);
+            if (pkgFeature != null && pkgFeature.experimental()) return true;
+        }
+
+        return false;
     }
 
     public static List<String> getPropertyValues(Context context, String beanName, String propertyName, BeanPropertyInfo info) {
