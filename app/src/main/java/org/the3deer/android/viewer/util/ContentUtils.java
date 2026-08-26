@@ -55,6 +55,11 @@ public class ContentUtils {
     public static final Map<String, URI> documentsProvided = new HashMap<>();
     private static final Map<URI, byte[]> binariesProvided = new HashMap<>();
 
+    public static final Map<String, String> DEFAULT_HEADERS = new HashMap<>();
+    static {
+        DEFAULT_HEADERS.put("User-Agent", "AndroidModelViewer/1.0 (Mobile; +https://github.com/the3deer/android-3D-model-viewer)");
+    }
+
     private static Context context = null;
     private static File currentDir = null;
     private static ContentResolver contentResolver = null;
@@ -160,10 +165,11 @@ public class ContentUtils {
             }
         }
         else if (uri.getScheme() != null && (uri.getScheme().equals("http") || uri.getScheme().equals("https"))) {
+            final Map<String, String> finalHeaders = headers != null ? headers : DEFAULT_HEADERS;
             final URLConnection conn = uri.toURL().openConnection();
-            if (headers != null && conn instanceof HttpURLConnection) {
+            if (conn instanceof HttpURLConnection) {
                 final HttpURLConnection httpConn = (HttpURLConnection) conn;
-                for (Map.Entry<String, String> header : headers.entrySet()) {
+                for (Map.Entry<String, String> header : finalHeaders.entrySet()) {
                     httpConn.setRequestProperty(header.getKey(), header.getValue());
                 }
             }
@@ -220,7 +226,7 @@ public class ContentUtils {
     }
 
     public static List<String> readLines(String uriString, Map<String, String> headers) {
-        return IOUtils.readLines(uriString, headers);
+        return IOUtils.readLines(uriString, headers != null ? headers : DEFAULT_HEADERS);
     }
 
     public static String read(URL url) throws IOException {
@@ -228,7 +234,7 @@ public class ContentUtils {
     }
 
     public static String read(URL url, Map<String, String> headers) throws IOException {
-        return IOUtils.read(url, headers);
+        return IOUtils.read(url, headers != null ? headers : DEFAULT_HEADERS);
     }
 
     public static String read(URI uri) throws IOException {
@@ -236,7 +242,7 @@ public class ContentUtils {
     }
 
     public static String read(URI uri, Map<String, String> headers) throws IOException {
-        return IOUtils.read(uri, headers);
+        return IOUtils.read(uri, headers != null ? headers : DEFAULT_HEADERS);
     }
 
     public static long getAvailableMemory() {
