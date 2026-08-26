@@ -60,38 +60,38 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
                 var masterDependencyKey: String? = null
 
-                // Always add a header for the bean if it has a description to ensure it's visible.
-                // This header acts as the component title and description.
-                if (bean.description != null && !bean.description.isEmpty()) {
-                    category.addPreference(Preference(context).apply {
-                        layoutResource = R.layout.preference_category
-                        title = bean.name
-                        summary = bean.description
-                        isSelectable = false
-                        isIconSpaceReserved = false
-                    })
-                }
-
                 if (enabledProp != null) {
-                    val masterSwitch = createSwitchPreference(context, enabledProp)
-                    
-                    // If we already added a header with the same name, rename the switch to "Enabled"
-                    if (bean.description != null && !bean.description.isEmpty()) {
-                        masterSwitch.title = context.getString(R.string.enabled)
+                    // Bean has a master 'enabled' toggle.
+                    // If it has NO other properties, simplify to a single switch.
+                    // If it HAS other properties, this switch acts as a master dependency.
+                    val masterSwitch = createSwitchPreference(context, enabledProp).apply {
+                        title = bean.name
+                        summary = enabledProp.description
                     }
-                    
                     category.addPreference(masterSwitch)
                     masterDependencyKey = masterSwitch.key
-                } else if (bean.description == null || bean.description.isEmpty()) {
-                    // If no enabled prop AND no description, we still need a header to show the bean name
-                    category.addPreference(Preference(context).apply {
-                        layoutResource = R.layout.preference_category
-                        title = bean.name
-                        isSelectable = false
-                        isIconSpaceReserved = false
-                    })
+                } else {
+                    // No master toggle. Add a descriptive header if a description exists.
+                    if (bean.description != null && !bean.description.isEmpty()) {
+                        category.addPreference(Preference(context).apply {
+                            layoutResource = R.layout.preference_category
+                            title = bean.name
+                            summary = bean.description
+                            isSelectable = false
+                            isIconSpaceReserved = false
+                        })
+                    } else {
+                        // Just a title header if no description
+                        category.addPreference(Preference(context).apply {
+                            layoutResource = R.layout.preference_category
+                            title = bean.name
+                            isSelectable = false
+                            isIconSpaceReserved = false
+                        })
+                    }
                 }
 
+                // Add all other properties (indented/dependent if a master switch exists)
                 otherProps.forEach { prop ->
                     createPreference(context, prop)?.let { pref ->
                         category.addPreference(pref)
