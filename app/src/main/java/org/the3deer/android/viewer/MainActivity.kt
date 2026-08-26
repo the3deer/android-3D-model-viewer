@@ -59,7 +59,6 @@ import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.ModelInfoDialogFragment
 import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
-import org.the3deer.android.viewer.ui.load.LoadContentDialog
 import org.the3deer.android.viewer.util.ContentUtils
 import org.the3deer.util.event.EventListener
 import org.the3deer.util.event.EventManager
@@ -108,7 +107,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
-                        LoadContentDialog(this@MainActivity).load(URI.create(it.toString()))
+                        loadModel(it)
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) {
                             Log.e(TAG, "Error loading uri: $it", e)
@@ -211,7 +210,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                             setType(type)
                             setProvider(provider)
                         }
-                        sharedViewModel.api.loadModel(model)
+                        sharedViewModel.loadModel(model)
 
                         binding.drawerLayout.closeDrawers()
                         true
@@ -287,7 +286,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.nav_home, arguments)
         }
         modelEngineViewModel.loadRequest.observe(this) { model ->
-            sharedViewModel.api.loadModel(model)
+            sharedViewModel.loadModel(model)
         }
         sharedViewModel.exitRequest.observe(this) {
             finish()
@@ -665,6 +664,33 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         }
 
         getContent.launch(arrayOf(mimeType))
+    }
+
+    private fun loadModel(uri: Uri) {
+        val uriString = uri.toString()
+        val javaUri = URI.create(uriString)
+
+        // detect model type
+        val fileName = ContentUtils.getFileName(applicationContext, javaUri)
+        val fileType = fileName?.substringAfterLast('.', "unsupported")?.lowercase() ?: "unsupported"
+
+        // check
+        if (fileName == null) throw IllegalArgumentException("No filename found for $uri")
+
+        // check extension
+        val supported = listOf("obj", "stl", "dae", "gltf", "glb", "fbx", "zip")
+        if (fileType !in supported) {
+            throw IllegalArgumentException(
+                "Unknown extension: $fileName. Valid extensions are ${supported.joinToString(", ")}"
+            )
+        }
+
+        // Use AppAPI to load the model. It will handle resolution if needed.
+        val model = Model(javaUri).apply {
+            setName(fileName.substringBeforeLast('.'))
+            setType(fileType)
+        }
+        sharedViewModel.loadModel(model)
     }
 
     /**

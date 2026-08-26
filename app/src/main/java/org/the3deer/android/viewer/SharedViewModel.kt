@@ -19,14 +19,7 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     val settings = SettingsManager(this, appSettings)
     val providerManager = ProviderManager(application)
 
-    val api: AppAPI = AppAPIImpl(
-        application,
-        settings,
-        providerManager,
-        onNavigate = { _navigationRequest.postValue(it) },
-        onLoadModel = { _loadRequest.postValue(it) },
-        onExit = { _exitRequest.postValue(Unit) }
-    )
+    val api: AppAPI = AppAPIImpl(this)
 
     /**
      * Navigation / UI State
@@ -98,6 +91,26 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
 
     fun requestRestart() {
         _restartRequest.postValue(Unit)
+    }
+
+    fun navigate(screenId: String) {
+        _navigationRequest.postValue(screenId)
+    }
+
+    fun loadModel(model: Model) {
+        if (model.uriModel == null && !model.provider.isNullOrEmpty()) {
+            // Re-hydrate model to get absolute URLs and included files
+            val hydrated = providerManager.resolveModel(model.provider!!, model.uri)
+            if (hydrated != null) {
+                _loadRequest.postValue(hydrated)
+                return
+            }
+        }
+        _loadRequest.postValue(model)
+    }
+
+    fun exitApp() {
+        _exitRequest.postValue(Unit)
     }
 
 }
