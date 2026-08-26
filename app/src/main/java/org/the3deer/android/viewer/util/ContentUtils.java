@@ -142,7 +142,7 @@ public class ContentUtils {
                 else throw new FileNotFoundException("File not found: " + pathUri);
             }
             else */if (uri.getPath().startsWith("/assets/")) {
-                String path = uri.getPath().substring("/assets/".length()).replace("+", " ");
+                String path = uri.getPath().substring("/assets/".length());
                 if (path.startsWith("models/models/")) {
                     logger.warning("Redundant models/ prefix detected in URI path. Stripping it: " + path);
                     path = path.substring("models/".length());
