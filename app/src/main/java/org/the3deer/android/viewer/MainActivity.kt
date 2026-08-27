@@ -523,8 +523,8 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         modelEngineViewModel.glScreen?.let { screen ->
             screen.setInsets(insets.left, insets.top, insets.right, insets.bottom)
 
-            // Update toolbar height (including status bar if visible)
-            val toolbarHeight = if (immersiveMode) 0 else (binding.appBarMain.toolbar.height + insets.top)
+            // Update toolbar height
+            val toolbarHeight = if (immersiveMode) 0 else binding.appBarMain.toolbar.height
             screen.setToolbarHeight(toolbarHeight)
 
             Log.d(TAG, "Shared Screen insets updated: $insets, toolbar=$toolbarHeight")
