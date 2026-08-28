@@ -546,7 +546,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                 val scene = model.activeScene
 
                 val scenesEnabled = (model.scenes?.size ?: 0) > 1
-                val camerasEnabled = (scene?.cameras?.size ?: 0) > 1
+                val camerasEnabled = (model?.cameras?.size ?: 0) > 1
                 val animationsEnabled = (scene?.animations?.size ?: 0) > 0
 
                 binding.appBarMain.btnScene.alpha = if (scenesEnabled) 1.0f else 0.25f

@@ -144,9 +144,13 @@ public class ModelInfoDialogFragment extends DialogFragment {
             Dimensions dimensions = modelEngine.getModel().getActiveScene().getDimensions();
             final StringBuilder sb = new StringBuilder();
             sb.append(String.format(Locale.US, "Dimensions: %.1f, %.1f, %.1f", dimensions.getWidth(), dimensions.getHeight(), dimensions.getDepth()));
-            float[] view = modelEngine.getModel().getActiveScene().getActiveCamera().getView();
-            sb.append("\nView: ").append(String.format(Locale.US, "%.1f, %.1f, %.1f", view[0], view[1], view[2]));
-            return sb.toString();
+            final Camera activeCamera = modelEngine.getModel().getActiveScene().getActiveCamera();
+            if (activeCamera != null) {
+                float[] view = activeCamera.getView();
+                sb.append("\nView: ").append(String.format(Locale.US, "%.1f, %.1f, %.1f", view[0], view[1], view[2]));
+                return sb.toString();
+            }
+            return sb.append("\nView: No active camera").toString();
         }
         return "Dimensions: No active scene";
     }

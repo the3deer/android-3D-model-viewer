@@ -9,14 +9,15 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import org.the3deer.android.engine.ModelEngineViewModel;
-import org.the3deer.android.viewer.R;
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
+import org.the3deer.android.engine.ModelEngineViewModel;
+import org.the3deer.android.engine.camera.CameraManager;
 import org.the3deer.android.engine.model.Camera;
 import org.the3deer.android.engine.model.Scene;
+import org.the3deer.android.viewer.R;
 
-import java.util.List;
+import java.util.Map;
 
 public class CameraDialogFragment extends DialogFragment {
 
@@ -46,14 +47,21 @@ public class CameraDialogFragment extends DialogFragment {
         final Scene activeScene = engineModel.getActiveScene();
         if (activeScene == null) return createNotAvailableDialog(builder, "No active scene");
 
+        final CameraManager cameraManager = modelEngine.getBeanFactory().find(CameraManager.class);
+
         // current camera
-        final List<Camera> cameras = engineModel.getCameras();
+        final Map<String, Camera> cameras = engineModel.getCameras();
         if (cameras.isEmpty()) return createNotAvailableDialog(builder, "No cameras available");
+        final Camera[] camerasArray = cameras.values().toArray(new Camera[0]);
 
         // build names
         final String[] cameraNames = new String[cameras.size()];
-        for (int i = 0; i < cameras.size(); i++) {
-            cameraNames[i] = cameras.get(i).getName();
+        int selectedIndex = 0;
+        for (int i=0; i<camerasArray.length; i++) {
+            cameraNames[i] = camerasArray[i].getName();
+            if (camerasArray[i] == activeScene.getActiveCamera()) {
+                selectedIndex = i;
+            }
         }
 
         // Set the dialog title.
@@ -61,11 +69,15 @@ public class CameraDialogFragment extends DialogFragment {
                 // Specify the list array, the items to be selected by default (null for
                 // none), and the listener through which to receive callbacks when items
                 // are selected.
-                .setSingleChoiceItems(cameraNames, 0, new DialogInterface.OnClickListener() {
+                .setSingleChoiceItems(cameraNames, selectedIndex, new DialogInterface.OnClickListener() {
 
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        activeScene.setActiveCamera(cameras.get(i));
+                        if (cameraManager != null) {
+                            cameraManager.setActiveCamera(camerasArray[i]);
+                        } else {
+                            activeScene.setActiveCamera(camerasArray[i]);
+                        }
                     }})
 
 
