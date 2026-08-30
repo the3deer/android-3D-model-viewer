@@ -25,7 +25,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
@@ -81,6 +81,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
     private val TAG = "MainActivity"
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
     private var immersiveMode = false
 
@@ -170,7 +171,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
         val navHostFragment =
             (supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment?)!!
-        val navController = navHostFragment.navController
+        navController = navHostFragment.navController
 
         appBarConfiguration = AppBarConfiguration(
             setOf(R.id.nav_home, R.id.nav_settings, R.id.nav_about),
@@ -266,10 +267,13 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                 "load" -> R.id.nav_load
                 else -> null
             }
-            navId?.let { findNavController(R.id.nav_host_fragment_content_main).navigate(it) }
+            navId?.let { navController.navigate(it) }
         }
-        sharedViewModel.restartRequest.observe(this) {
-            recreate()
+        sharedViewModel.restartRequest.observe(this) { timestamp ->
+            if (timestamp != null) {
+                sharedViewModel.clearRestartRequest()
+                recreate()
+            }
         }
         sharedViewModel.loadRequest.observe(this) { model ->
             val arguments = Bundle().apply {
@@ -283,7 +287,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                     putString("include." + key, value.toString())
                 }
             }
-            findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.nav_home, arguments)
+            navController.navigate(R.id.nav_home, arguments)
         }
         modelEngineViewModel.loadRequest.observe(this) { model ->
             sharedViewModel.loadModel(model)
@@ -416,8 +420,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
                     return
                 }
-
-                val navController = findNavController(R.id.nav_host_fragment_content_main)
 
                 // 2. If we are NOT on the Home screen, let the system handle it (go back to Home)
                 if (navController.currentDestination?.id != R.id.nav_home) {
@@ -583,7 +585,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                 infoItem?.icon?.setTint(color)
 
                 // Show joysticks and toggle action containers based on First Person Mode AND current destination
-                val isHome = findNavController(R.id.nav_host_fragment_content_main).currentDestination?.id == R.id.nav_home
+                val isHome = navController.currentDestination?.id == R.id.nav_home
                 val cameraManager = engine.beanFactory.find(CameraManager::class.java)
                 val isFirstPerson = cameraManager?.activeController is FirstPersonCameraHandler
 
@@ -793,7 +795,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.nav_settings) {
-            findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.nav_settings)
+            navController.navigate(R.id.nav_settings)
         } else if (item.itemId == R.id.nav_info) {
             ModelInfoDialogFragment().show(supportFragmentManager, "model_info_dialog")
         }
@@ -801,7 +803,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }

@@ -36,8 +36,8 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     private val _history = MutableLiveData<List<String>>()
     val history: LiveData<List<String>> = _history
 
-    private val _restartRequest = MutableLiveData<Unit>()
-    val restartRequest: LiveData<Unit> = _restartRequest
+    private val _restartRequest = MutableLiveData<Long?>()
+    val restartRequest: LiveData<Long?> = _restartRequest
 
     init {
         // Load history from AppSettings
@@ -90,7 +90,11 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun requestRestart() {
-        _restartRequest.postValue(Unit)
+        _restartRequest.postValue(System.currentTimeMillis())
+    }
+
+    fun clearRestartRequest() {
+        _restartRequest.postValue(null)
     }
 
     fun navigate(screenId: String) {

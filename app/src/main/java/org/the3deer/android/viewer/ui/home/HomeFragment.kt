@@ -170,9 +170,11 @@ open class HomeFragment : Fragment(), EventListener {
                 } catch (e: Exception) {
                     Log.e(TAG, "Error during model resolution", e)
                 } finally {
-                    // 4. Proceed to Engine Initialization on the UI thread
+                    // 4. Proceed to Engine Initialization on the UI thread if not destroyed
                     handler.post {
-                        initEngineInternal(model, uriString)
+                        if (_binding != null) {
+                            initEngineInternal(model, uriString)
+                        }
                     }
                 }
             }.start()
@@ -194,7 +196,7 @@ open class HomeFragment : Fragment(), EventListener {
 
             // check
             if (_binding == null){
-                Log.e(TAG, "No binding found for id:"+uriString)
+                Log.w(TAG, "No binding found for id (fragment probably destroyed): "+uriString)
                 return@initEngine
             }
 

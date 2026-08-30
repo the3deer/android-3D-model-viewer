@@ -16,7 +16,6 @@ import androidx.preference.PreferenceManager
 import androidx.preference.SwitchPreferenceCompat
 import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.ModelEngineViewModel
-import org.the3deer.android.engine.shader.ShaderManager
 import org.the3deer.android.viewer.R
 import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.util.bean.BeanInfo
@@ -212,13 +211,6 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         val value = sharedPreferences.all[key]
         if (value != null) {
             sharedViewModel.api.updateSetting(key, value)
-        }
-
-        // Special case: OpenGL Version change requires activity restart
-        if (key == ShaderManager::class.java.name + ".openGLVersion") {
-            val bundle = Bundle()
-            bundle.putString("action", "restart")
-            requireActivity().supportFragmentManager.setFragmentResult("app", bundle)
         }
     }
 
