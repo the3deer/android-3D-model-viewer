@@ -28,7 +28,6 @@ public class GUIDemoFragment extends HomeFragment {
     private GUI gui;
 
     @Inject
-    @Named("gui.camera")
     private Camera camera;
 
     @Inject

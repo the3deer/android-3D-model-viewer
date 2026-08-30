@@ -96,7 +96,7 @@ public class ModelInfoDialogFragment extends DialogFragment {
 
         // active scene
         if (model != null) {
-            info.append("--- Stats ---\n");
+            info.append("--- Model ---\n");
             info.append("Scenes: ").append(model.getScenes().size()).append("\n");
             if (model.getActiveScene() != null) {
                 info.append("Objects: ").append(model.getActiveScene().getObjects().size()).append("\n");
@@ -109,6 +109,11 @@ public class ModelInfoDialogFragment extends DialogFragment {
         // camera info
         info.append("--- Camera ---\n");
         info.append(getCameraInfo());
+
+        // camera info
+        info.append("\n\n");
+        info.append("--- Projection ---\n");
+        info.append(getProjectionInfo());
 
         // scene info
         info.append("\n\n");
@@ -167,12 +172,33 @@ public class ModelInfoDialogFragment extends DialogFragment {
                     sb.append(String.format(Locale.US, "Position: %.1f, %.1f, %.1f", pos[0], pos[1], pos[2]));
                     float[] view = activeCamera.getView();
                     sb.append("\nView: ").append(String.format(Locale.US, "%.1f, %.1f, %.1f", view[0], view[1], view[2]));
+                    float[] target = activeCamera.getController().getTarget();
+                    sb.append("\nTarget: ").append(String.format(Locale.US, "%.1f, %.1f, %.1f", target[0], target[1], target[2]));
+                    return sb.toString();
+                }
+            }
+        }
+        return "No active camera";
+    }
+
+    private String getProjectionInfo() {
+        final ModelEngine modelEngine = viewModel.getActiveEngine();
+        if (modelEngine != null) {
+            final Scene activeScene = modelEngine.getModel().getActiveScene();
+            if (activeScene != null) {
+                final Camera activeCamera = activeScene.getActiveCamera();
+                if (activeCamera != null && activeCamera.getProjection() != null) {
+                    float[] pos = activeCamera.getPos();
+                    final StringBuilder sb = new StringBuilder();
+                    sb.append(String.format(Locale.US, "Class: %s", activeCamera.getProjection().getClass().getSimpleName()));
+                    float[] view = activeCamera.getView();
+                    sb.append("\nRatio: ").append(String.format(Locale.US, "Ratio: %.1f", activeCamera.getProjection().getAspectRatio()));
                     sb.append("\nProjection: ").append(String.format(Locale.US, "Near: %.1f, Far: %.1f, FOV: %.1f", activeCamera.getProjection().getNear(), activeCamera.getProjection().getFar(), activeCamera.getProjection().getFov()));
                     return sb.toString();
                 }
             }
         }
-        return "Position: No active camera";
+        return "No active projection";
     }
 
     private String getPositionInfo() {

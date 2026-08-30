@@ -52,7 +52,7 @@ public class EarCutDemoFragment extends HomeFragment {
         ModelEngine modelEngine = modelEngineViewModel.initEngine(model, null);
 
         sceneManager = modelEngine.getBeanFactory().find(Model.class);
-        camera = modelEngine.getBeanFactory().get("gui.camera", Camera.class);
+        camera = modelEngine.getBeanFactory().find(Camera.class, "gui");
         //camera.getPos()[2]=0;
 
         try {
