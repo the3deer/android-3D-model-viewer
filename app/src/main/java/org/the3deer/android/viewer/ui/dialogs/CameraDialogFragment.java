@@ -50,7 +50,7 @@ public class CameraDialogFragment extends DialogFragment {
         final CameraManager cameraManager = modelEngine.getBeanFactory().find(CameraManager.class);
 
         // current camera
-        final Map<String, Camera> cameras = engineModel.getCameras();
+        final Map<String, Camera> cameras = engineModel.getAllCameras();
         if (cameras.isEmpty()) return createNotAvailableDialog(builder, "No cameras available");
         final Camera[] camerasArray = cameras.values().toArray(new Camera[0]);
 

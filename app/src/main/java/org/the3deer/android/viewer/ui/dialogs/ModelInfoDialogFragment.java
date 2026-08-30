@@ -147,15 +147,8 @@ public class ModelInfoDialogFragment extends DialogFragment {
         final ModelEngine modelEngine = viewModel.getActiveEngine();
         if (modelEngine != null && modelEngine.getModel().getActiveScene() != null) {
             Dimensions dimensions = modelEngine.getModel().getActiveScene().getDimensions();
-            final StringBuilder sb = new StringBuilder();
-            sb.append(String.format(Locale.US, "Dimensions: %.1f, %.1f, %.1f", dimensions.getWidth(), dimensions.getHeight(), dimensions.getDepth()));
-            final Camera activeCamera = modelEngine.getModel().getActiveScene().getActiveCamera();
-            if (activeCamera != null) {
-                float[] view = activeCamera.getView();
-                sb.append("\nView: ").append(String.format(Locale.US, "%.1f, %.1f, %.1f", view[0], view[1], view[2]));
-                return sb.toString();
-            }
-            return sb.append("\nView: No active camera").toString();
+            return String.format(Locale.US, "Dimensions: %.1f, %.1f, %.1f", dimensions.getWidth(), dimensions.getHeight(), dimensions.getDepth()) +
+                    String.format(Locale.US, "\nCenter: %.1f, %.1f, %.1f", dimensions.getCenter()[0], dimensions.getCenter()[1], dimensions.getCenter()[2]);
         }
         return "Dimensions: No active scene";
     }
@@ -192,8 +185,8 @@ public class ModelInfoDialogFragment extends DialogFragment {
                     final StringBuilder sb = new StringBuilder();
                     sb.append(String.format(Locale.US, "Class: %s", activeCamera.getProjection().getClass().getSimpleName()));
                     float[] view = activeCamera.getView();
-                    sb.append("\nRatio: ").append(String.format(Locale.US, "Ratio: %.1f", activeCamera.getProjection().getAspectRatio()));
-                    sb.append("\nProjection: ").append(String.format(Locale.US, "Near: %.1f, Far: %.1f, FOV: %.1f", activeCamera.getProjection().getNear(), activeCamera.getProjection().getFar(), activeCamera.getProjection().getFov()));
+                    sb.append("\nRatio: ").append(String.format(Locale.US, "%.1f", activeCamera.getProjection().getAspectRatio()));
+                    sb.append(String.format(Locale.US, "\nNear: %.1f, Far: %.1f, FOV: %.1f", activeCamera.getProjection().getNear(), activeCamera.getProjection().getFar(), activeCamera.getProjection().getFov()));
                     return sb.toString();
                 }
             }
