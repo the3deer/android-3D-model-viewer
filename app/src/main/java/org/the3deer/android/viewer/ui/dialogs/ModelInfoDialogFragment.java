@@ -186,7 +186,7 @@ public class ModelInfoDialogFragment extends DialogFragment {
                     sb.append(String.format(Locale.US, "Class: %s", activeCamera.getProjection().getClass().getSimpleName()));
                     float[] view = activeCamera.getView();
                     sb.append("\nRatio: ").append(String.format(Locale.US, "%.1f", activeCamera.getProjection().getAspectRatio()));
-                    sb.append(String.format(Locale.US, "\nNear: %.1f, Far: %.1f, FOV: %.1f", activeCamera.getProjection().getNear(), activeCamera.getProjection().getFar(), activeCamera.getProjection().getFov()));
+                    sb.append(String.format(Locale.US, "\nNear: %.3f, Far: %.1f, FOV: %.1f", activeCamera.getProjection().getNear(), activeCamera.getProjection().getFar(), activeCamera.getProjection().getFov()));
                     return sb.toString();
                 }
             }
