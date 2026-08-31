@@ -24,16 +24,16 @@
     <!-- Про додаток -->
     <string name="about_title_app">Переглядач 3D-моделей</string>
     <string name="about_version">Версія 1.0.0</string>
-    <string name="about_intro">Проєкт із відкритим вихідним кодом, присвячений вивченню 3D-рендерингу на Android з використанням OpenGL ES.</string>
+    <string name="about_intro">3D-рушій рендерингу з відкритим вихідним кодом для Android, що використовує OpenGL ES.</string>
 
     <string name="about_header_formats">Підтримувані формати</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB та FBX.</string>
     <string name="about_formats_note">Примітка: Для моделей із зовнішніми текстурами завантажуйте їх як єдиний .zip архів.</string>
 
-    <string name="about_header_controls">Как использовать</string>
-    <string name="about_controls_orbit">• <b>Вращение:</b> Перетаскивание одним пальцем</string>
-    <string name="about_controls_pan">• <b>Панорамирование:</b> Перетаскивание двумя пальцами</string>
-    <string name="about_controls_zoom">• <b>Масштаб:</b> Сведение/разведение двух пальцев</string>
+    <string name="about_header_controls">Як використовувати</string>
+    <string name="about_controls_orbit">• <b>Обертання:</b> Перетягування одним пальцем</string>
+    <string name="about_controls_pan">• <b>Панорамування:</b> Перетягування двома пальцями</string>
+    <string name="about_controls_zoom">• <b>Масштаб:</b> Зведення/розведення двох пальців</string>
 
     <string name="about_header_links">Посилання проєкту</string>
     <string name="about_link_website_label">Веб-сайт</string>
@@ -50,25 +50,36 @@
 
     <string name="scenes">Сцени</string>
     <string name="cameras">Камери</string>
-    <string name="animations">Анімації</string>
+    <string name="animations">Animations</string>
     <string name="scene">Сцена</string>
     <string name="camera">Камера</string>
     <string name="immersive">Занурення</string>
-    <string name="anim">Анім</string>
+    <string name="anim">Аним</string>
 
     <string name="tooltip_no_scenes">Ця модель має лише одну сцену</string>
     <string name="tooltip_no_cameras">Ця модель має лише одну камеру</string>
     <string name="tooltip_no_animations">Ця модель не має анімацій</string>
 
     <!-- Категорії -->
-    <string name="category_decorators_label">Декоратори</string>
-    <string name="category_renderers_label">Рендерери</string>
-    <string name="category_gui_label">Графічний інтерфейс</string>
+    <string name="category_render_label">Рендер</string>
+    <string name="category_render_description">Налаштування рендерингу сцени</string>
+    <string name="category_gui_label">Інтерфейс користувача</string>
+    <string name="category_gui_description">Екранні індикатори та елементи керування навігацією</string>
     <string name="category_general_label">Загальні</string>
+    <string name="category_general_description">Глобальні налаштування додатка</string>
+    <string name="category_decorators_label">Декоратори</string>
+    <string name="category_decorators_description">Візуальні помічники</string>
+    <string name="category_debug_label">Налагодження</string>
+    <string name="category_debug_description">Інструменти для усунення несправностей та діагностики</string>
+    <string name="category_opengl_label">Графічний API</string>
+    <string name="category_opengl_description">Конфігурація OpenGL ES</string>
 
     <!-- Біни -->
     <string name="bean_settings_label">Загальні налаштування</string>
     <string name="bean_gl_renderer_label">Налаштування OpenGL</string>
+    <string name="bean_gl_renderer_description">Конфігурація рушія рендерингу</string>
+    <string name="bean_font_manager_label">Менеджер шрифтів</string>
+    <string name="bean_font_manager_description">Параметри рендерингу тексту</string>
     <string name="bean_animation_controller_label">Контролер анімації</string>
     <string name="bean_collision_drawer_label">Відмальовування точок зіткнення</string>
     <string name="bean_collision_drawer_description">Малювати точки, де відбуваються зіткнення променя з об’єктом</string>
@@ -90,6 +101,7 @@
     <string name="bean_shadow_drawer_description">Відбивати тінь об’єкта на площину на землі</string>
     <string name="bean_shadow_drawer_label">Рендерер тіней</string>
     <string name="bean_shader_manager_label">Менеджер шейдерів</string>
+    <string name="bean_shader_manager_description">Конфігурація версій OpenGL та шейдерів</string>
 
     <!-- Властивості бінів -->
     <string name="property_settings_language_label">Мова</string>
@@ -106,13 +118,15 @@
     <string name="property_gui_drawer_showFPS_label">Кадрів на секунду</string>
     <string name="property_gui_drawer_showFPS_description">Показати або приховати лічильник FPS</string>
     <string name="property_shadow_drawer_enabled_description">Увімкнути або вимкнути рендеринг тіней</string>
+    <string name="property_shader_manager_openGLVersion_label">Версія OpenGL</string>
+    <string name="property_shader_manager_openGLVersion_description">Виберіть версію OpenGL ES для рендеринга та шейдерів</string>
+    <string name="property_font_manager_factory_label">Фабрика шрифтів</string>
+    <string name="property_font_manager_factory_description">Виберіть реалізацію шрифту для рендерингу тексту</string>
 
     <!-- Особливості -->
     <string name="feature_collision_description">Компоненти, які малюють поверх моделі</string>
     <string name="feature_decorator_description">Компоненти, які малюють поверх моделі</string>
     <string name="feature_gui_description">Відображення FPS, осей та інформації</string>
-    <string name="feature_renderer_description">Рендерери малюють на екрані</string>
+    <string name="feature_renderer_description">Рендеринг основного рушія</string>
 
-    <string name="property_shader_manager_openGLVersion_label">Версія OpenGL</string>
-    <string name="property_shader_manager_openGLVersion_description">Виберіть версію OpenGL ES для рендеринга та шейдерів</string>
 </resources>

@@ -31,7 +31,7 @@
     <!-- About Screen -->
     <string name="about_title_app">3D Model Viewer</string>
     <string name="about_version">Version 1.0.0</string>
-    <string name="about_intro">An open-source project dedicated to learning 3D rendering on Android using OpenGL ES.</string>
+    <string name="about_intro">An open-source 3D rendering engine for Android using OpenGL ES.</string>
 
     <string name="about_header_formats">Supported Formats</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB, and FBX.</string>
@@ -71,21 +71,25 @@
     <string name="fps_label" translatable="false">%1$d FPS</string>
 
     <!-- Categories -->
-    <string name="category_rendering_label">Rendering</string>
-    <string name="category_rendering_description">Low-level rendering settings, shaders, and core engine parameters</string>
-    <string name="category_gui_label">Graphical User Interface</string>
-    <string name="category_gui_description">On-screen overlays, FPS counter, and user interface controls</string>
+    <string name="category_render_label">Render</string>
+    <string name="category_render_description">Scene rendering settings</string>
+    <string name="category_gui_label">User Interface</string>
+    <string name="category_gui_description">On-screen displays and navigation controls</string>
     <string name="category_general_label">General</string>
-    <string name="category_general_description">Global application preferences like language and theme</string>
+    <string name="category_general_description">Global application preferences</string>
     <string name="category_decorators_label">Decorators</string>
-    <string name="category_decorators_description">Visual helpers, bounding boxes, skyboxes, and extra debug views</string>
+    <string name="category_decorators_description">Visual helpers</string>
+    <string name="category_debug_label">Debug</string>
+    <string name="category_debug_description">Troubleshooting and diagnostic tools</string>
+    <string name="category_opengl_label">Graphics API</string>
+    <string name="category_opengl_description">OpenGL ES configuration</string>
 
     <!-- Beans -->
     <string name="bean_settings_label">General Settings</string>
     <string name="bean_gl_renderer_label">OpenGL Settings</string>
     <string name="bean_gl_renderer_description">Configuration of the rendering engine</string>
     <string name="bean_font_manager_label">Font Manager</string>
-    <string name="bean_font_manager_description">Configuration of the text renderer</string>
+    <string name="bean_font_manager_description">Text rendering options</string>
     <string name="bean_animation_controller_label">Animation Controller</string>
     <string name="bean_collision_drawer_label">Collision Points Drawer</string>
     <string name="bean_collision_drawer_description">Draw points where the ray-object collisions take place</string>
@@ -133,5 +137,5 @@
     <string name="feature_collision_description">Components that draw on top of the model</string>
     <string name="feature_decorator_description">Components that draw on top of the model</string>
     <string name="feature_gui_description">Display FPS, Axis and Info</string>
-    <string name="feature_renderer_description">The Renderers draws on the screen</string>
+    <string name="feature_renderer_description">Core engine rendering</string>
 </resources>

@@ -24,7 +24,7 @@
     <!-- के बारे में स्क्रीन -->
     <string name="about_title_app">3D मॉडल व्यूअर</string>
     <string name="about_version">संस्करण 1.0.0</string>
-    <string name="about_intro">OpenGL ES का उपयोग करके Android पर 3D रेंडरिंग सीखने के लिए समर्पित एक ओपन-सोर्स प्रोजेक्ट।</string>
+    <string name="about_intro">OpenGL ES का उपयोग करने वाला Android के लिए एक ओपन-सोर्स 3D रेंडरिंग इंजन।</string>
 
     <string name="about_header_formats">समर्थित प्रारूप</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB, और FBX।</string>
@@ -61,14 +61,25 @@
     <string name="tooltip_no_animations">इस मॉडल में कोई एनिमेशन नहीं है</string>
 
     <!-- श्रेणियां -->
-    <string name="category_decorators_label">डेकोरेटर्स</string>
-    <string name="category_renderers_label">रेंडरर्स</string>
-    <string name="category_gui_label">ग्राफिकल यूजर इंटरफेस</string>
+    <string name="category_render_label">रेंडर</string>
+    <string name="category_render_description">दृश्य रेंडरिंग सेटिंग्स</string>
+    <string name="category_gui_label">यूजर इंटरफेस</string>
+    <string name="category_gui_description">ऑन-स्क्रीन डिस्प्ले और नेविगेशन नियंत्रण</string>
     <string name="category_general_label">सामान्य</string>
+    <string name="category_general_description">वैश्विक अनुप्रयोग प्राथमिकताएं</string>
+    <string name="category_decorators_label">डेकोरेटर्स</string>
+    <string name="category_decorators_description">दृश्य सहायक</string>
+    <string name="category_debug_label">डिबग</string>
+    <string name="category_debug_description">समस्या निवारण और नैदानिक उपकरण</string>
+    <string name="category_opengl_label">ग्राफिक्स API</string>
+    <string name="category_opengl_description">OpenGL ES कॉन्फ़िगरेशन</string>
 
     <!-- बीन्स -->
     <string name="bean_settings_label">सामान्य सेटिंग्स</string>
     <string name="bean_gl_renderer_label">OpenGL सेटिंग्स</string>
+    <string name="bean_gl_renderer_description">रेंडरिंग इंजन का कॉन्फ़िगरेशन</string>
+    <string name="bean_font_manager_label">फ़ॉन्ट मैनेजर</string>
+    <string name="bean_font_manager_description">टेक्स्ट रेंडरिंग विकल्प</string>
     <string name="bean_animation_controller_label">एनिमेशन कंट्रोलर</string>
     <string name="bean_collision_drawer_label">टक्कर बिंदु ड्रावर</string>
     <string name="bean_collision_drawer_description">उन बिंदुओं को ड्रा करें जहां किरण-वस्तु की टक्कर होती है</string>
@@ -90,6 +101,7 @@
     <string name="bean_shadow_drawer_description">जमीन पर एक समतल में वस्तु की छाया डालें</string>
     <string name="bean_shadow_drawer_label">शैडो रेंडरर</string>
     <string name="bean_shader_manager_label">शेडर मैनेजर (Shader Manager)</string>
+    <string name="bean_shader_manager_description">OpenGL और शेडर्स संस्करण का कॉन्फ़िगरेशन</string>
 
     <!-- बीन गुण -->
     <string name="property_settings_language_label">भाषा</string>
@@ -106,12 +118,15 @@
     <string name="property_gui_drawer_showFPS_label">फ्रेम प्रति सेकंड</string>
     <string name="property_gui_drawer_showFPS_description">FPS काउंटर दिखाएं या छुपाएं</string>
     <string name="property_shadow_drawer_enabled_description">छाया रेंडरिंग सक्षम या अक्षम करें</string>
+    <string name="property_shader_manager_openGLVersion_label">OpenGL संस्करण</string>
+    <string name="property_shader_manager_openGLVersion_description">रेंडरिंग और शेडर्स के लिए OpenGL ES संस्करण चुनें</string>
+    <string name="property_font_manager_factory_label">फ़ॉन्ट फैक्ट्री</string>
+    <string name="property_font_manager_factory_description">टेक्स्ट रेंडरिंग के लिए फ़ॉन्ट कार्यान्वयन चुनें</string>
 
     <!-- विशेषताएं -->
     <string name="feature_collision_description">कंपोनेंट्स जो मॉडल के ऊपर ड्रा करते हैं</string>
     <string name="feature_decorator_description">कंपोनेंट्स जो मॉडल के ऊपर ड्रा करते हैं</string>
     <string name="feature_gui_description">FPS, अक्ष और जानकारी प्रदर्शित करें</string>
-    <string name="feature_renderer_description">रेंडरर्स स्क्रीन पर ड्रा करते हैं</string>
-    <string name="property_shader_manager_openGLVersion_label">OpenGL संस्करण</string>
-    <string name="property_shader_manager_openGLVersion_description">रेंडरिंग और शेडर्स के लिए OpenGL ES संस्करण चुनें</string>
+    <string name="feature_renderer_description">कोर इंजन रेंडरिंग</string>
+
 </resources>

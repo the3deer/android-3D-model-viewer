@@ -24,7 +24,7 @@
     <!-- شاشة حول -->
     <string name="about_title_app">عارض نماذج ثلاثية الأبعاد</string>
     <string name="about_version">الإصدار 1.0.0</string>
-    <string name="about_intro">مشروع مفتوح المصدر مخصص لتعلم الرندر ثلاثي الأبعاد على أندرويد باستخدام OpenGL ES.</string>
+    <string name="about_intro">محرك رندر ثلاثي الأبعاد مفتوح المصدر لنظام أندرويد باستخدام OpenGL ES.</string>
 
     <string name="about_header_formats">التنسيقات المدعومة</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB, و FBX.</string>
@@ -56,15 +56,30 @@
     <string name="immersive">غامر</string>
     <string name="anim">تحريك</string>
 
+    <string name="tooltip_no_scenes">هذا النموذج يحتوي على مشهد واحد فقط</string>
+    <string name="tooltip_no_cameras">هذا النموذج يحتوي على كاميرا واحدة فقط</string>
+    <string name="tooltip_no_animations">هذا النموذج لا يحتوي على رسوم متحركة</string>
+
     <!-- الفئات -->
-    <string name="category_decorators_label">المزينون (Decorators)</string>
-    <string name="category_renderers_label">المصيّرون (Renderers)</string>
-    <string name="category_gui_label">واجهة المستخدم الرسومية</string>
+    <string name="category_render_label">رندر</string>
+    <string name="category_render_description">إعدادات رندر المشهد</string>
+    <string name="category_gui_label">واجهة المستخدم</string>
+    <string name="category_gui_description">شاشات العرض وعناصر التحكم في التنقل</string>
     <string name="category_general_label">عام</string>
+    <string name="category_general_description">تفضيلات التطبيق العالمية</string>
+    <string name="category_decorators_label">المزينون (Decorators)</string>
+    <string name="category_decorators_description">مساعدات بصرية</string>
+    <string name="category_debug_label">تصحيح الأخطاء</string>
+    <string name="category_debug_description">أدوات استكشاف الأخطاء وإصلاحها والتشخيص</string>
+    <string name="category_opengl_label">واجهة برمجة تطبيقات الرسومات</string>
+    <string name="category_opengl_description">تكوين OpenGL ES</string>
 
     <!-- البينات (Beans) -->
     <string name="bean_settings_label">الإعدادات العامة</string>
     <string name="bean_gl_renderer_label">إعدادات OpenGL</string>
+    <string name="bean_gl_renderer_description">تكوين محرك الرندر</string>
+    <string name="bean_font_manager_label">مدير الخطوط</string>
+    <string name="bean_font_manager_description">خيارات رندر النص</string>
     <string name="bean_animation_controller_label">متحكم الرسوم المتحركة</string>
     <string name="bean_collision_drawer_label">راسم نقاط التصادم</string>
     <string name="bean_collision_drawer_description">رسم النقاط التي تحدث فيها تصادمات الشعاع مع الكائن</string>
@@ -78,7 +93,7 @@
     <string name="bean_skybox_drawer_description">يرسم صندوق سماء ثلاثي الأبعاد كخلفية للمشهد</string>
     <string name="bean_wireframe_drawer_label">راسم الإطار السلكي</string>
     <string name="bean_wireframe_drawer_description">يرسم الإطار السلكي للنماذج</string>
-    <string name="bean_gui_label">واجهة المستخدم</string>
+    <string name="bean_gui_label">GUI</string>
     <string name="bean_gui_drawer_label">واجهة المستخدم الرسومية</string>
     <string name="bean_anaglyph_renderer_label">مصير أناجليف (Anaglyph)</string>
     <string name="bean_default_renderer_label">المصير الافتراضي</string>
@@ -86,6 +101,7 @@
     <string name="bean_shadow_drawer_description">إلقاء ظل للكائن على مستوى في الأرض</string>
     <string name="bean_shadow_drawer_label">مصير الظلال</string>
     <string name="bean_shader_manager_label">مدير المظلل</string>
+    <string name="bean_shader_manager_description">تكوين إصدار OpenGL والمظللات</string>
 
     <!-- خصائص البينات -->
     <string name="property_settings_language_label">اللغة</string>
@@ -102,16 +118,15 @@
     <string name="property_gui_drawer_showFPS_label">الإطارات في الثانية</string>
     <string name="property_gui_drawer_showFPS_description">إظهار أو إخفاء عداد الإطارات (FPS)</string>
     <string name="property_shadow_drawer_enabled_description">تمكين أو تعطيل رندر الظلال</string>
+    <string name="property_shader_manager_openGLVersion_label">إصدار OpenGL</string>
+    <string name="property_shader_manager_openGLVersion_description">حدد إصدار OpenGL ES للعرض والمظللات</string>
+    <string name="property_font_manager_factory_label">مصنع الخطوط</string>
+    <string name="property_font_manager_factory_description">حدد تنفيذ الخط لرندر النص</string>
 
     <!-- الميزات -->
     <string name="feature_collision_description">المكونات التي ترسم فوق النموذج</string>
     <string name="feature_decorator_description">المكونات التي ترسم فوق النموذج</string>
     <string name="feature_gui_description">عرض الإطارات والمحاور والمعلومات</string>
-    <string name="feature_renderer_description">المصيرون يرسمون على الشاشة</string>
+    <string name="feature_renderer_description">رندر المحرك الأساسي</string>
 
-    <string name="tooltip_no_scenes">هذا النموذج يحتوي على مشهد واحد فقط</string>
-    <string name="tooltip_no_cameras">هذا النموذج يحتوي على كاميرا واحدة فقط</string>
-    <string name="tooltip_no_animations">هذا النموذج لا يحتوي على رسوم متحركة</string>
-    <string name="property_shader_manager_openGLVersion_label">إصدار OpenGL</string>
-    <string name="property_shader_manager_openGLVersion_description">حدد إصدار OpenGL ES للعرض والمظللات</string>
 </resources>

@@ -24,7 +24,7 @@
     <!-- Hakkında Ekranı -->
     <string name="about_title_app">3D Model Görüntüleyici</string>
     <string name="about_version">Sürüm 1.0.0</string>
-    <string name="about_intro">OpenGL ES kullanarak Android üzerinde 3D oluşturmayı öğrenmeye adanmış açık kaynaklı bir proje.</string>
+    <string name="about_intro">OpenGL ES kullanan Android için açık kaynaklı bir 3D oluşturma motoru.</string>
 
     <string name="about_header_formats">Desteklenen Formatlar</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB ve FBX.</string>
@@ -61,14 +61,25 @@
     <string name="tooltip_no_animations">Bu modelin animasyonu yok</string>
 
     <!-- Kategoriler -->
-    <string name="category_decorators_label">Dekoratörler</string>
-    <string name="category_renderers_label">Oluşturucular (Renderers)</string>
-    <string name="category_gui_label">Grafik Kullanıcı Arayüzü</string>
+    <string name="category_render_label">Oluştur</string>
+    <string name="category_render_description">Sahne oluşturma ayarları</string>
+    <string name="category_gui_label">Kullanıcı Arayüzü</string>
+    <string name="category_gui_description">Ekran göstergeleri ve navigasyon kontrolleri</string>
     <string name="category_general_label">Genel</string>
+    <string name="category_general_description">Küresel uygulama tercihleri</string>
+    <string name="category_decorators_label">Dekoratörler</string>
+    <string name="category_decorators_description">Görsel yardımcılar</string>
+    <string name="category_debug_label">Hata Ayıkla</string>
+    <string name="category_debug_description">Sorun giderme ve teşhis araçları</string>
+    <string name="category_opengl_label">Grafik API\'si</string>
+    <string name="category_opengl_description">OpenGL ES yapılandırması</string>
 
-    <!-- Bean'ler -->
+    <!-- Bean\'ler -->
     <string name="bean_settings_label">Genel Ayarlar</string>
     <string name="bean_gl_renderer_label">OpenGL Ayarları</string>
+    <string name="bean_gl_renderer_description">Oluşturma motorunun yapılandırması</string>
+    <string name="bean_font_manager_label">Yazı Tipi Yöneticisi</string>
+    <string name="bean_font_manager_description">Metin oluşturma seçenekleri</string>
     <string name="bean_animation_controller_label">Animasyon Kontrolörü</string>
     <string name="bean_collision_drawer_label">Çarpışma Noktaları Çizici</string>
     <string name="bean_collision_drawer_description">Işın-nesne çarpışmalarının gerçekleştiği noktaları çizer</string>
@@ -90,6 +101,7 @@
     <string name="bean_shadow_drawer_description">Yerdeki bir düzlemde nesnenin gölgesini oluşturur</string>
     <string name="bean_shadow_drawer_label">Gölge Oluşturucu</string>
     <string name="bean_shader_manager_label">Shader Yöneticisi</string>
+    <string name="bean_shader_manager_description">OpenGL ve Shader sürümü yapılandırması</string>
 
     <!-- Bean Özellikleri -->
     <string name="property_settings_language_label">Dil</string>
@@ -106,13 +118,15 @@
     <string name="property_gui_drawer_showFPS_label">Saniyedeki Kare Sayısı</string>
     <string name="property_gui_drawer_showFPS_description">FPS sayacını göster veya gizle</string>
     <string name="property_shadow_drawer_enabled_description">Gölge oluşturmayı etkinleştirin veya devre dışı bırakın</string>
+    <string name="property_shader_manager_openGLVersion_label">OpenGL Sürümü</string>
+    <string name="property_shader_manager_openGLVersion_description">İşleme ve gölgelendiriciler için OpenGL ES sürümünü seçin</string>
+    <string name="property_font_manager_factory_label">Yazı Tipi Fabrikası</string>
+    <string name="property_font_manager_factory_description">Metin oluşturma için yazı tipi uygulamasını seçin</string>
 
     <!-- Özellikler -->
     <string name="feature_collision_description">Modelin üzerine çizen bileşenler</string>
     <string name="feature_decorator_description">Modelin üzerine çizen bileşenler</string>
     <string name="feature_gui_description">FPS, Eksen ve Bilgileri Görüntüler</string>
-    <string name="feature_renderer_description">Oluşturucular ekrana çizer</string>
+    <string name="feature_renderer_description">Çekirdek motor oluşturma</string>
 
-    <string name="property_shader_manager_openGLVersion_label">OpenGL Sürümü</string>
-    <string name="property_shader_manager_openGLVersion_description">İşleme ve gölgelendiriciler için OpenGL ES sürümünü seçin</string>
 </resources>

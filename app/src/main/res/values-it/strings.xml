@@ -24,7 +24,7 @@
     <!-- Schermata Informazioni -->
     <string name="about_title_app">Visualizzatore di modelli 3D</string>
     <string name="about_version">Versione 1.0.0</string>
-    <string name="about_intro">Un progetto open-source dedicato all\'apprendimento del rendering 3D su Android utilizzando OpenGL ES.</string>
+    <string name="about_intro">Un motore di rendering 3D open-source per Android che utilizza OpenGL ES.</string>
 
     <string name="about_header_formats">Formati supportati</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB e FBX.</string>
@@ -61,14 +61,25 @@
     <string name="tooltip_no_animations">Questo modello non ha animazioni</string>
 
     <!-- Categorie -->
-    <string name="category_decorators_label">Decoratori</string>
-    <string name="category_renderers_label">Renderer</string>
-    <string name="category_gui_label">Interfaccia grafica utente</string>
+    <string name="category_render_label">Render</string>
+    <string name="category_render_description">Impostazioni di rendering della scena</string>
+    <string name="category_gui_label">Interfaccia utente</string>
+    <string name="category_gui_description">Visualizzazioni a schermo e controlli di navigazione</string>
     <string name="category_general_label">Generale</string>
+    <string name="category_general_description">Preferenze globali dell\'applicazione</string>
+    <string name="category_decorators_label">Decoratori</string>
+    <string name="category_decorators_description">Aiuti visivi</string>
+    <string name="category_debug_label">Debug</string>
+    <string name="category_debug_description">Strumenti di risoluzione dei problemi e diagnostica</string>
+    <string name="category_opengl_label">API grafica</string>
+    <string name="category_opengl_description">Configurazione OpenGL ES</string>
 
     <!-- Bean -->
     <string name="bean_settings_label">Impostazioni generali</string>
     <string name="bean_gl_renderer_label">Impostazioni OpenGL</string>
+    <string name="bean_gl_renderer_description">Configurazione del motore di rendering</string>
+    <string name="bean_font_manager_label">Gestore caratteri</string>
+    <string name="bean_font_manager_description">Opzioni di rendering del testo</string>
     <string name="bean_animation_controller_label">Controller animazione</string>
     <string name="bean_collision_drawer_label">Disegnatore punti di collisione</string>
     <string name="bean_collision_drawer_description">Disegna i punti in cui avvengono le collisioni raggio-oggetto</string>
@@ -90,6 +101,7 @@
     <string name="bean_shadow_drawer_description">Proietta un\'ombra dell\'oggetto su un piano a terra</string>
     <string name="bean_shadow_drawer_label">Renderer ombre</string>
     <string name="bean_shader_manager_label">Gestore Shader</string>
+    <string name="bean_shader_manager_description">Configurazione della versione OpenGL e degli Shader</string>
 
     <!-- Proprietà dei Bean -->
     <string name="property_settings_language_label">Lingua</string>
@@ -106,12 +118,15 @@
     <string name="property_gui_drawer_showFPS_label">Fotogrammi al secondo</string>
     <string name="property_gui_drawer_showFPS_description">Mostra o nascondi il contatore FPS</string>
     <string name="property_shadow_drawer_enabled_description">Abilita o disabilita il rendering delle ombre</string>
+    <string name="property_shader_manager_openGLVersion_label">Versione OpenGL</string>
+    <string name="property_shader_manager_openGLVersion_description">Seleziona la versione di OpenGL ES per il rendering e gli shader</string>
+    <string name="property_font_manager_factory_label">Fabbrica caratteri</string>
+    <string name="property_font_manager_factory_description">Seleziona l\'implementazione del carattere per il rendering del testo</string>
 
     <!-- Caratteristiche -->
     <string name="feature_collision_description">Componenti che disegnano sopra il modello</string>
     <string name="feature_decorator_description">Componenti che disegnano sopra il modello</string>
     <string name="feature_gui_description">Visualizza FPS, assi e informazioni</string>
-    <string name="feature_renderer_description">I renderer disegnano sullo schermo</string>
-    <string name="property_shader_manager_openGLVersion_label">Versione OpenGL</string>
-    <string name="property_shader_manager_openGLVersion_description">Seleziona la versione di OpenGL ES per il rendering e gli shader</string>
+    <string name="feature_renderer_description">Rendering del motore principale</string>
+
 </resources>

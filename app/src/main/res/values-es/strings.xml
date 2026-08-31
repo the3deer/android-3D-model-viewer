@@ -24,7 +24,7 @@
     <!-- Pantalla Acerca de -->
     <string name="about_title_app">Visor de Modelos 3D</string>
     <string name="about_version">Versión 1.0.0</string>
-    <string name="about_intro">Un proyecto de código abierto dedicado al aprendizaje de renderizado 3D en Android usando OpenGL ES.</string>
+    <string name="about_intro">Un motor de renderizado 3D de código abierto para Android que utiliza OpenGL ES.</string>
 
     <string name="about_header_formats">Formatos Soportados</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB y FBX.</string>
@@ -58,9 +58,17 @@
 
     <!-- Categorías -->
     <string name="category_decorators_label">Decoradores</string>
-    <string name="category_renderers_label">Renderizadores</string>
-    <string name="category_gui_label">Interfaz Gráfica de Usuario</string>
+    <string name="category_render_label">Renderizado</string>
+    <string name="category_render_description">Ajustes de renderizado de la escena</string>
+    <string name="category_gui_label">Interfaz de Usuario</string>
+    <string name="category_gui_description">Visualizaciones en pantalla y controles de navegación</string>
     <string name="category_general_label">General</string>
+    <string name="category_general_description">Preferencias globales de la aplicación</string>
+    <string name="category_decorators_description">Ayudas visuales</string>
+    <string name="category_debug_label">Depuración</string>
+    <string name="category_debug_description">Herramientas de diagnóstico y resolución de problemas</string>
+    <string name="category_opengl_label">API de Gráficos</string>
+    <string name="category_opengl_description">Configuración de OpenGL ES</string>
 
     <!-- Beans -->
     <string name="bean_settings_label">Configuración General</string>
@@ -79,7 +87,7 @@
     <string name="bean_wireframe_drawer_label">Dibujante de Wireframe</string>
     <string name="bean_wireframe_drawer_description">Dibuja el wireframe de los modelos</string>
     <string name="bean_gui_label">GUI</string>
-    <string name="bean_gui_drawer_label">Interfaz Gráfica de Usuario</string>
+    <string name="bean_gui_drawer_label">Interfaz de Usuario</string>
     <string name="bean_anaglyph_renderer_label">Renderizador Anaglifo</string>
     <string name="bean_default_renderer_label">Renderizador por Defecto</string>
     <string name="bean_stereoscopic_renderer_label">Renderizador Estereoscópico</string>
@@ -99,7 +107,7 @@
     <string name="property_skybox_drawer_skybox_label">Fondo</string>
     <string name="property_skybox_drawer_skybox_description">Seleccione el fondo del entorno</string>
     <string name="property_gui_drawer_enabled_description">Mostrar u ocultar GUI</string>
-    <string name="property_gui_drawer_showFPS_label">Frames Por Segundo</string>
+    <string name="property_gui_drawer_showFPS_label">Fotogramas por Segundo</string>
     <string name="property_gui_drawer_showFPS_description">Mostrar u ocultar contador de FPS</string>
     <string name="property_shadow_drawer_enabled_description">Activar o desactivar el renderizado de sombras</string>
 
@@ -107,7 +115,7 @@
     <string name="feature_collision_description">Componentes que dibujan sobre el modelo</string>
     <string name="feature_decorator_description">Componentes que dibujan sobre el modelo</string>
     <string name="feature_gui_description">Muestra FPS, Ejes e Información</string>
-    <string name="feature_renderer_description">Los Renderizadores dibujan en la pantalla</string>
+    <string name="feature_renderer_description">Renderizado principal del motor</string>
 
     <string name="tooltip_no_scenes">Este modelo tiene solo una escena</string>
     <string name="tooltip_no_cameras">Este modelo tiene solo una cámara</string>
