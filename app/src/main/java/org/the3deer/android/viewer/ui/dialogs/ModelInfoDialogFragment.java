@@ -165,8 +165,8 @@ public class ModelInfoDialogFragment extends DialogFragment {
                     sb.append(String.format(Locale.US, "Position: %.1f, %.1f, %.1f", pos[0], pos[1], pos[2]));
                     float[] view = activeCamera.getView();
                     sb.append("\nView: ").append(String.format(Locale.US, "%.1f, %.1f, %.1f", view[0], view[1], view[2]));
-                    float[] target = activeCamera.getController().getTarget();
-                    sb.append("\nTarget: ").append(String.format(Locale.US, "%.1f, %.1f, %.1f", target[0], target[1], target[2]));
+                    float[] up = activeCamera.getUp();
+                    sb.append("\nUp: ").append(String.format(Locale.US, "%.1f, %.1f, %.1f", up[0], up[1], up[2]));
                     return sb.toString();
                 }
             }
