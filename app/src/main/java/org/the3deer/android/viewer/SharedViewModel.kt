@@ -58,21 +58,22 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
         val uri = model.uri.toString()
         val name = model.name ?: uri
         val type = model.type ?: "gltf"
+        val location = model.uriModel?.toString()
         
         // Save the last active URI to AppSettings (and persist)
         prefs.edit { putString(appSettings.javaClass.name + ".activeUri", uri) }
 
-        updateHistory(uri, name, type, provider)
+        updateHistory(uri, name, type, provider, location)
     }
 
-    private fun updateHistory(uri: String, name: String, type: String, provider: String?) {
+    private fun updateHistory(uri: String, name: String, type: String, provider: String?, location: String?) {
         val currentHistory = _history.value?.toMutableList() ?: mutableListOf()
         
         // Remove existing entries for this URI (checking both old and new format)
         currentHistory.removeAll { it == uri || it.startsWith("$uri|") }
         
-        // Add new entry with name, type and provider
-        currentHistory.add(0, "$uri|$name|$type|${provider ?: ""}")
+        // Add new entry with name, type, provider and location
+        currentHistory.add(0, "$uri|$name|$type|${provider ?: ""}|${location ?: ""}")
         
         val newHistory = currentHistory.take(10)
         _history.value = newHistory

@@ -136,6 +136,7 @@ open class HomeFragment : Fragment(), EventListener {
                 model.name = modelName
                 model.type = modelType
                 model.provider = arguments?.getString("provider")
+                arguments?.getString("location")?.let { model.setUriModel(java.net.URI.create(it)) }
 
                 // Flat deserialize technical mappings from the bundle
                 arguments?.let { bundle ->

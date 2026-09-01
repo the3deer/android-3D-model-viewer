@@ -199,17 +199,19 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                                 .lowercase()
                         val title = item.title.toString()
 
-                        // Check if we have provider info in history
+                        // Check if we have provider and location info in history
                         val historyEntry = sharedViewModel.history.value?.find { it.startsWith("$uriString|$title|") }
                         val parts = historyEntry?.split("|")
                         val provider = if (parts != null && parts.size > 3) parts[3] else null
                         val type = if (parts != null && parts.size > 2) parts[2] else null
+                        val location = if (parts != null && parts.size > 4 && parts[4].isNotEmpty()) parts[4] else null
 
                         // Use AppAPI to load the model. It will handle resolution if needed.
                         val model = Model(java.net.URI.create(uriString)).apply {
                             setName(title)
                             setType(type)
                             setProvider(provider)
+                            if (location != null) setUriModel(URI.create(location))
                         }
                         sharedViewModel.loadModel(model)
 
@@ -281,6 +283,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                 putString("name", model.name)
                 putString("type", model.type)
                 putString("provider", model.provider)
+                model.uriModel?.let { putString("location", it.toString()) }
                 
                 // Flat serialize technical mappings into the bundle
                 model.includes.forEach { (key, value) ->
