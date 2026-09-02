@@ -80,7 +80,7 @@ public class ModelInfoDialogFragment extends DialogFragment {
 
         // model info
         if (model != null) {
-            info.append("Model: ").append(model.getName()).append("\n");
+            info.append("Name: ").append(model.getName()).append("\n");
             info.append("Type: ").append(model.getType()).append("\n");
             info.append("Source: ").append(model.getUri()).append("\n");
             if (model.getUriModel() != null) {
@@ -96,7 +96,7 @@ public class ModelInfoDialogFragment extends DialogFragment {
 
         // active scene
         if (model != null) {
-            info.append("--- Model ---\n");
+            info.append("--- Stats ---\n");
             info.append("Scenes: ").append(model.getScenes().size()).append("\n");
             if (model.getActiveScene() != null) {
                 info.append("Objects: ").append(model.getActiveScene().getObjects().size()).append("\n");
