@@ -11,6 +11,7 @@ class ProviderManager(private val application: Application) {
         "assets" to AssetsModelProvider(application),
         "khronos" to KhronosModelProvider(),
         "poly haven" to PolyHavenModelProvider(),
+        "open-source-3d-assets" to OpenSource3DAssetsModelProvider(),
         "the3deer" to RepositoryModelProvider()
     )
 

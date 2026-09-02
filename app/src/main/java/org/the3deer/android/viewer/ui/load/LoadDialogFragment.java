@@ -12,6 +12,7 @@ import org.the3deer.android.viewer.providers.AndroidExplorerModelProvider;
 import org.the3deer.android.viewer.providers.AssetsModelProvider;
 import org.the3deer.android.viewer.providers.KhronosModelProvider;
 import org.the3deer.android.viewer.providers.ModelProvider;
+import org.the3deer.android.viewer.providers.OpenSource3DAssetsModelProvider;
 import org.the3deer.android.viewer.providers.PolyHavenModelProvider;
 import org.the3deer.android.viewer.providers.RepositoryModelProvider;
 import org.the3deer.android.viewer.providers.SdCardModelProvider;
@@ -33,7 +34,8 @@ public class LoadDialogFragment extends DialogFragment {
         SAMPLES, 
         REPOSITORY_THE3DEER, 
         REPOSITORY_KHRONOS, 
-        REPOSITORY_POLYHAVEN, 
+        REPOSITORY_OPEN_SOURCE_3D_ASSETS,
+        REPOSITORY_POLYHAVEN,
         ANDROID_EXPLORER,
         FILE_EXPLORER;
 
@@ -45,6 +47,8 @@ public class LoadDialogFragment extends DialogFragment {
                     return new RepositoryModelProvider();
                 case REPOSITORY_KHRONOS:
                     return new KhronosModelProvider();
+                case REPOSITORY_OPEN_SOURCE_3D_ASSETS:
+                    return new OpenSource3DAssetsModelProvider();
                 case REPOSITORY_POLYHAVEN:
                     return new PolyHavenModelProvider();
                 case ANDROID_EXPLORER:
