@@ -16,6 +16,19 @@
     <string name="dialog_load_title">メニュー</string>
     <string name="dialog_load_in_progress_message">読み込み中…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">アプリのストレージとキャッシュの管理</string>
+    <string name="preference_manage_storage_summary">Androidのシステム設定を開いてストレージ使用状況の確認やキャッシュの消去を行います</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">サンプル</string>
+    <string name="provider_the3deer">リポジトリ (the3deer)</string>
+    <string name="provider_khronos">リポジトリ (Khronos)</string>
+    <string name="provider_open_source_3d_assets">リポジトリ (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">リポジトリ (Poly Haven)</string>
+    <string name="provider_android_explorer">Androidエクスプローラー</string>
+    <string name="provider_sdcard">ファイルエクスプローラー</string>
+
     <string name="white">ホワイト</string>
     <string name="gray">グレー</string>
     <string name="black">ブラック</string>
@@ -24,7 +37,7 @@
     <!-- アプリについて -->
     <string name="about_title_app">3Dモデルビューア</string>
     <string name="about_version">バージョン 1.0.0</string>
-    <string name="about_intro">OpenGL ESを使用したAndroid上での3Dレンダリング学習に特化したオープンソースプロジェクトです。</string>
+    <string name="about_intro">OpenGL ESを使用したAndroid向けのオープンソース3Dレンダリングエンジン。</string>
 
     <string name="about_header_formats">対応フォーマット</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB, FBX。</string>
@@ -61,14 +74,25 @@
     <string name="tooltip_no_animations">このモデルにはアニメーションがありません</string>
 
     <!-- カテゴリ -->
-    <string name="category_decorators_label">デコレータ</string>
-    <string name="category_renderers_label">レンダラー</string>
-    <string name="category_gui_label">グラフィカルユーザーインターフェース</string>
+    <string name="category_render_label">レンダー</string>
+    <string name="category_render_description">シーンのレンダリング設定</string>
+    <string name="category_gui_label">ユーザーインターフェース</string>
+    <string name="category_gui_description">画面表示とナビゲーションコントロール</string>
     <string name="category_general_label">全般</string>
+    <string name="category_general_description">アプリの全体設定</string>
+    <string name="category_decorators_label">デコレータ</string>
+    <string name="category_decorators_description">視覚的な補助ツール</string>
+    <string name="category_debug_label">デバッグ</string>
+    <string name="category_debug_description">トラブルシューティングと診断ツール</string>
+    <string name="category_opengl_label">グラフィックスAPI</string>
+    <string name="category_opengl_description">OpenGL ESの設定</string>
 
     <!-- Bean -->
     <string name="bean_settings_label">全般設定</string>
     <string name="bean_gl_renderer_label">OpenGL設定</string>
+    <string name="bean_gl_renderer_description">レンダリングエンジンの設定</string>
+    <string name="bean_font_manager_label">フォントマネージャー</string>
+    <string name="bean_font_manager_description">テキストレンダリングのオプション</string>
     <string name="bean_animation_controller_label">アニメーションコントローラー</string>
     <string name="bean_collision_drawer_label">衝突点ドロワー</string>
     <string name="bean_collision_drawer_description">レイとオブジェクトの衝突が発生するポイントを描画します</string>
@@ -90,6 +114,7 @@
     <string name="bean_shadow_drawer_description">地面の平面にオブジェクトの影を投影します</string>
     <string name="bean_shadow_drawer_label">シャドウレンダラー</string>
     <string name="bean_shader_manager_label">シェーダーマネージャー</string>
+    <string name="bean_shader_manager_description">OpenGLとシェーダーバージョンの設定</string>
 
     <!-- Beanプロパティ -->
     <string name="property_settings_language_label">言語</string>
@@ -106,10 +131,15 @@
     <string name="property_gui_drawer_showFPS_label">フレーム/秒</string>
     <string name="property_gui_drawer_showFPS_description">FPSカウンターの表示/非表示</string>
     <string name="property_shadow_drawer_enabled_description">シャドウレンダリングを有効または無効にします</string>
+    <string name="property_shader_manager_openGLVersion_label">OpenGL バージョン</string>
+    <string name="property_shader_manager_openGLVersion_description">レンダリングとシェーダーの OpenGL ES バージョンを選択します</string>
+    <string name="property_font_manager_factory_label">フォントファクトリー</string>
+    <string name="property_font_manager_factory_description">テキストレンダリングのフォント実装を選択</string>
 
     <!-- 機能 -->
     <string name="feature_collision_description">モデルの上に描画されるコンポーネント</string>
     <string name="feature_decorator_description">モデルの上に描画されるコンポーネント</string>
     <string name="feature_gui_description">FPS、座標軸、情報の表示</string>
-    <string name="feature_renderer_description">レンダラーが画面に描画します</string>
+    <string name="feature_renderer_description">コアエンジンのレンダリング</string>
+
 </resources>

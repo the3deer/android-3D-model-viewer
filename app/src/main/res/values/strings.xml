@@ -16,10 +16,24 @@
     <string name="dialog_load_title">Menu</string>
     <string name="dialog_load_in_progress_message">Loading…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">Manage App Storage &amp; Cache</string>
+    <string name="preference_manage_storage_summary">Open Android System Settings to view storage usage or clear cache</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">Samples</string>
+    <string name="provider_the3deer">Repository (the3deer)</string>
+    <string name="provider_khronos">Repository (Khronos)</string>
+    <string name="provider_open_source_3d_assets">Repository (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">Repository (Poly Haven)</string>
+    <string name="provider_android_explorer">Android Explorer</string>
+    <string name="provider_sdcard">File Explorer</string>
+
     <string name="white">White</string>
     <string name="gray">Gray</string>
     <string name="black">Black</string>
     <string name="ok">OK</string>
+    <string name="enabled">Enabled</string>
 
     <!-- New Version / Rename Notification -->
     <string name="dialog_new_version_title">New Version Available</string>
@@ -30,7 +44,7 @@
     <!-- About Screen -->
     <string name="about_title_app">3D Model Viewer</string>
     <string name="about_version">Version 1.0.0</string>
-    <string name="about_intro">An open-source project dedicated to learning 3D rendering on Android using OpenGL ES.</string>
+    <string name="about_intro">An open-source 3D rendering engine for Android using OpenGL ES.</string>
 
     <string name="about_header_formats">Supported Formats</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB, and FBX.</string>
@@ -70,14 +84,25 @@
     <string name="fps_label" translatable="false">%1$d FPS</string>
 
     <!-- Categories -->
-    <string name="category_renderers_label">Renderers</string>
-    <string name="category_gui_label">Graphical User Interface</string>
+    <string name="category_render_label">Render</string>
+    <string name="category_render_description">Scene rendering settings</string>
+    <string name="category_gui_label">User Interface</string>
+    <string name="category_gui_description">On-screen displays and navigation controls</string>
     <string name="category_general_label">General</string>
+    <string name="category_general_description">Global application preferences</string>
     <string name="category_decorators_label">Decorators</string>
+    <string name="category_decorators_description">Visual helpers</string>
+    <string name="category_debug_label">Debug</string>
+    <string name="category_debug_description">Troubleshooting and diagnostic tools</string>
+    <string name="category_opengl_label">Graphics API</string>
+    <string name="category_opengl_description">OpenGL ES configuration</string>
 
     <!-- Beans -->
     <string name="bean_settings_label">General Settings</string>
     <string name="bean_gl_renderer_label">OpenGL Settings</string>
+    <string name="bean_gl_renderer_description">Configuration of the rendering engine</string>
+    <string name="bean_font_manager_label">Font Manager</string>
+    <string name="bean_font_manager_description">Text rendering options</string>
     <string name="bean_animation_controller_label">Animation Controller</string>
     <string name="bean_collision_drawer_label">Collision Points Drawer</string>
     <string name="bean_collision_drawer_description">Draw points where the ray-object collisions take place</string>
@@ -99,6 +124,7 @@
     <string name="bean_shadow_drawer_description">Cast a shadow of the object in a plane on the ground</string>
     <string name="bean_shadow_drawer_label">Shadow Renderer</string>
     <string name="bean_shader_manager_label">Shader Manager</string>
+    <string name="bean_shader_manager_description">Configuration of the OpenGL and Shaders version</string>
 
     <!-- Bean Properties -->
     <string name="property_settings_language_label">Language</string>
@@ -115,10 +141,14 @@
     <string name="property_gui_drawer_showFPS_label">Frames Per Second</string>
     <string name="property_gui_drawer_showFPS_description">Show or hide FPS counter</string>
     <string name="property_shadow_drawer_enabled_description">Enable or disable shadows rendering</string>
+    <string name="property_shader_manager_openGLVersion_label">OpenGL Version</string>
+    <string name="property_shader_manager_openGLVersion_description">Select the OpenGL ES version for rendering and shaders</string>
+    <string name="property_font_manager_factory_label">Font Factory</string>
+    <string name="property_font_manager_factory_description">Select the font implementation for rendering text</string>
 
     <!-- Features -->
     <string name="feature_collision_description">Components that draw on top of the model</string>
     <string name="feature_decorator_description">Components that draw on top of the model</string>
     <string name="feature_gui_description">Display FPS, Axis and Info</string>
-    <string name="feature_renderer_description">The Renderers draws on the screen</string>
+    <string name="feature_renderer_description">Core engine rendering</string>
 </resources>

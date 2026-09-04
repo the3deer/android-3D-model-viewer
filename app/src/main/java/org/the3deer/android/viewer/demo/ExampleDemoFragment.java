@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.jetbrains.annotations.NotNull;
 import org.the3deer.android.engine.ModelEngineViewModel;
-import org.the3deer.android.util.ContentUtils;
+import org.the3deer.android.viewer.util.ContentUtils;
 import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
@@ -49,8 +49,8 @@ public class ExampleDemoFragment extends HomeFragment {
         logger.info("Starting up...");
 
         ModelEngineViewModel viewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
-        @NotNull Model model = viewModel.createModel("demo.gui");
-        ModelEngine modelEngine = viewModel.initEngine("demo.gui", "demo.gui", null, null);
+        Model model = new Model(java.net.URI.create("demo.gui"));
+        ModelEngine modelEngine = viewModel.initEngine(model, null);
 
         // preload assets
         ContentUtils.provideAssets(getActivity());

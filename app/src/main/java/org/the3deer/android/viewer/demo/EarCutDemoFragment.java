@@ -5,22 +5,21 @@ import android.widget.Toast;
 
 import androidx.lifecycle.ViewModelProvider;
 
-import org.jetbrains.annotations.NotNull;
-import org.the3deer.android.engine.ModelEngineViewModel;
-import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.android.engine.Model;
 import org.the3deer.android.engine.ModelEngine;
-import org.the3deer.android.engine.gui.Text;
+import org.the3deer.android.engine.ModelEngineViewModel;
 import org.the3deer.android.engine.model.Camera;
 import org.the3deer.android.engine.model.Constants;
 import org.the3deer.android.engine.model.Object3D;
 import org.the3deer.android.engine.model.Scene;
 import org.the3deer.android.engine.services.LoadListenerAdapter;
 import org.the3deer.android.engine.services.wavefront.WavefrontLoaderTask;
+import org.the3deer.android.viewer.ui.home.HomeFragment;
 import org.the3deer.util.geometry.UnionTri;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +35,6 @@ public class EarCutDemoFragment extends HomeFragment {
 
     private Model sceneManager;
     private Camera camera;
-    private Text abcd;
 
 
     @Override
@@ -50,17 +48,18 @@ public class EarCutDemoFragment extends HomeFragment {
         logger.info("Starting up...");
 
         ModelEngineViewModel modelEngineViewModel = new ViewModelProvider(requireActivity()).get(ModelEngineViewModel.class);
-        @NotNull Model model = modelEngineViewModel.createModel("demo.earcut");
-        ModelEngine modelEngine = modelEngineViewModel.initEngine("demo.earcut", "demo.earcut", null, null);
+        Model model = new Model(java.net.URI.create("demo.earcut"));
+        ModelEngine modelEngine = modelEngineViewModel.initEngine(model, null);
 
         sceneManager = modelEngine.getBeanFactory().find(Model.class);
-        camera = modelEngine.getBeanFactory().get("gui.camera", Camera.class);
+        camera = modelEngine.getBeanFactory().find(Camera.class, "gui");
         //camera.getPos()[2]=0;
 
         try {
 
+            URI uri = URI.create("android://org.the3deer.android.viewer/assets/models/triangle1.obj");
             WavefrontLoaderTask task = new WavefrontLoaderTask(
-                    URI.create("android://org.the3deer.android.viewer/assets/models/triangle1.obj"), new LoadListenerAdapter() {
+                    new Model(uri), new LoadListenerAdapter() {
 
                 @Override
                 public void onLoadStart() {
@@ -87,8 +86,9 @@ public class EarCutDemoFragment extends HomeFragment {
             });
             task.execute();
 
+            URI uri1 = URI.create("android://org.the3deer.android.viewer/assets/models/triangle2.obj");
             WavefrontLoaderTask task2 = new WavefrontLoaderTask(
-                    URI.create("android://org.the3deer.android.viewer/assets/models/triangle2.obj"),
+                    new Model(uri1),
                     new LoadListenerAdapter() {
 
                         @Override
@@ -185,7 +185,7 @@ public class EarCutDemoFragment extends HomeFragment {
 
                         scene.addObject(data2);*/
 
-                                List<Scene> scenes = sceneManager.getScenes();
+                                Collection<Scene> scenes = sceneManager.getScenes().values();
                                 List<Object3D> objects = new ArrayList<>();
                                 for (Scene s : scenes) {
                                     objects.addAll(s.getObjects());

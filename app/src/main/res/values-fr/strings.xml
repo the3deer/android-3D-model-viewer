@@ -16,6 +16,19 @@
     <string name="dialog_load_title">Menu</string>
     <string name="dialog_load_in_progress_message">Chargement…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">Gérer le stockage et le cache de l\'application</string>
+    <string name="preference_manage_storage_summary">Ouvrir les paramètres système d\'Android pour afficher l\'utilisation du stockage ou vider le cache</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">Échantillons</string>
+    <string name="provider_the3deer">Dépôt (the3deer)</string>
+    <string name="provider_khronos">Dépôt (Khronos)</string>
+    <string name="provider_open_source_3d_assets">Dépôt (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">Dépôt (Poly Haven)</string>
+    <string name="provider_android_explorer">Explorateur Android</string>
+    <string name="provider_sdcard">Explorateur de fichiers</string>
+
     <string name="white">Blanc</string>
     <string name="gray">Gris</string>
     <string name="black">Noir</string>
@@ -24,7 +37,7 @@
     <!-- Écran À propos -->
     <string name="about_title_app">Visionneuse de modèles 3D</string>
     <string name="about_version">Version 1.0.0</string>
-    <string name="about_intro">Un projet open-source dédié à l\'apprentissage du rendu 3D sur Android via OpenGL ES.</string>
+    <string name="about_intro">Un moteur de rendu 3D open-source pour Android utilisant OpenGL ES.</string>
 
     <string name="about_header_formats">Formats supportés</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB et FBX.</string>
@@ -56,15 +69,30 @@
     <string name="immersive">Immersif</string>
     <string name="anim">Anim</string>
 
+    <string name="tooltip_no_scenes">Ce modèle n\'a qu\'une seule scène</string>
+    <string name="tooltip_no_cameras">Ce modèle n\'a qu\'une seule caméra</string>
+    <string name="tooltip_no_animations">Ce modèle n\'a pas d\'animations</string>
+
     <!-- Catégories -->
-    <string name="category_decorators_label">Décorateurs</string>
-    <string name="category_renderers_label">Rendu</string>
-    <string name="category_gui_label">Interface graphique</string>
+    <string name="category_render_label">Rendu</string>
+    <string name="category_render_description">Paramètres de rendu de la scène</string>
+    <string name="category_gui_label">Interface utilisateur</string>
+    <string name="category_gui_description">Affichages à l\'écran et commandes de navigation</string>
     <string name="category_general_label">Général</string>
+    <string name="category_general_description">Préférences globales de l\'application</string>
+    <string name="category_decorators_label">Décorateurs</string>
+    <string name="category_decorators_description">Aides visuelles</string>
+    <string name="category_debug_label">Débogage</string>
+    <string name="category_debug_description">Outils de dépannage et de diagnostic</string>
+    <string name="category_opengl_label">API graphique</string>
+    <string name="category_opengl_description">Configuration OpenGL ES</string>
 
     <!-- Beans -->
     <string name="bean_settings_label">Paramètres généraux</string>
     <string name="bean_gl_renderer_label">Paramètres OpenGL</string>
+    <string name="bean_gl_renderer_description">Configuration du moteur de rendu</string>
+    <string name="bean_font_manager_label">Gestionnaire de polices</string>
+    <string name="bean_font_manager_description">Options de rendu du texte</string>
     <string name="bean_animation_controller_label">Contrôleur d\'animation</string>
     <string name="bean_collision_drawer_label">Dessinateur de points de collision</string>
     <string name="bean_collision_drawer_description">Dessine les points où les collisions rayon-objet ont lieu</string>
@@ -86,6 +114,7 @@
     <string name="bean_shadow_drawer_description">Projette une ombre de l\'objet sur un plan au sol</string>
     <string name="bean_shadow_drawer_label">Rendu des ombres</string>
     <string name="bean_shader_manager_label">Gestionnaire de Shaders</string>
+    <string name="bean_shader_manager_description">Configuration de la version OpenGL et des shaders</string>
 
     <!-- Propriétés de Bean -->
     <string name="property_settings_language_label">Langue</string>
@@ -102,14 +131,15 @@
     <string name="property_gui_drawer_showFPS_label">Images par seconde</string>
     <string name="property_gui_drawer_showFPS_description">Afficher ou masquer le compteur FPS</string>
     <string name="property_shadow_drawer_enabled_description">Activer ou désactiver le rendu des ombres</string>
+    <string name="property_shader_manager_openGLVersion_label">Version OpenGL</string>
+    <string name="property_shader_manager_openGLVersion_description">Sélectionnez la version d\'OpenGL ES pour le rendu et les shaders</string>
+    <string name="property_font_manager_factory_label">Fabrique de polices</string>
+    <string name="property_font_manager_factory_description">Sélectionnez l\'implémentation de la police pour le rendu du texte</string>
 
     <!-- Fonctionnalités -->
     <string name="feature_collision_description">Composants qui dessinent par-dessus le modèle</string>
     <string name="feature_decorator_description">Composants qui dessinent par-dessus le modèle</string>
     <string name="feature_gui_description">Affiche FPS, axes et infos</string>
-    <string name="feature_renderer_description">Les moteurs de rendu dessinent sur l\'écran</string>
+    <string name="feature_renderer_description">Rendu du moteur principal</string>
 
-    <string name="tooltip_no_scenes">Ce modèle n\'a qu\'une seule scène</string>
-    <string name="tooltip_no_cameras">Ce modèle n\'a qu\'une seule caméra</string>
-    <string name="tooltip_no_animations">Ce modèle n\'a pas d\'animations</string>
 </resources>

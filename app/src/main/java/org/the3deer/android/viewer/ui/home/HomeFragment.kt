@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceManager
+import org.the3deer.android.engine.Model
 import org.the3deer.android.engine.ModelEngine
 import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.android.engine.renderer.GLRenderer
@@ -17,8 +18,7 @@ import org.the3deer.android.engine.renderer.GLSurfaceView
 import org.the3deer.android.engine.shader.ShaderManager
 import org.the3deer.android.viewer.SharedViewModel
 import org.the3deer.android.viewer.databinding.FragmentHomeBinding
-import org.the3deer.android.viewer.ui.settings.SettingsFragment
-import org.the3deer.android.viewer.ui.settings.SettingsOptions
+import org.the3deer.android.viewer.settings.SettingsFragment
 import org.the3deer.util.event.EventListener
 import java.util.EventObject
 
@@ -27,8 +27,6 @@ open class HomeFragment : Fragment(), EventListener {
     val TAG: String = HomeFragment::class.java.simpleName
 
     private var uriString: String = ""
-    private var modelName: String = ""
-    private var modelType: String = ""
     private var _binding: FragmentHomeBinding? = null
     private val sharedViewModel: SharedViewModel by activityViewModels()
     private val modelEngineViewModel: ModelEngineViewModel by activityViewModels()
@@ -46,8 +44,6 @@ open class HomeFragment : Fragment(), EventListener {
 
         // check arguments
         uriString = arguments?.getString("uri") ?: throw Exception("No Uri provided as argument")
-        modelName = arguments?.getString("name") ?: uriString.split("/").last()
-        modelType = arguments?.getString("type") ?: uriString.split(".").last()
 
         // Get UI binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -119,79 +115,88 @@ open class HomeFragment : Fragment(), EventListener {
     /**
      * Load, start and activate the engine for the given URI.
      */
-    private fun setupAndStartEngine(uriString : String) {
+    private fun setupAndStartEngine(uriString: String) {
         try {
-
             // debug
             Log.i(TAG, "setupAndStartEngine $uriString")
 
-            // Initialize engine view model with this model's metadata
-            modelEngineViewModel.initEngine(uriString, modelName, modelType) {
+            var model = sharedViewModel.loadRequest.value
+            if (model == null || model.uri.toString() != uriString) {
+                val provider = arguments?.getString("provider") ?: ""
+                model = sharedViewModel.providerManager.resolveModel(provider, java.net.URI.create(uriString))
+            }
 
-                // get engine
-                val engine = modelEngineViewModel.getEngine(uriString)
-                if (engine == null){
-                    Log.e(TAG, "Engine not initialized")
-                    return@initEngine
-                }
-
-                // check
-                if (_binding == null){
-                    Log.e(TAG, "No binding found for id:"+uriString)
-                    return@initEngine
-                }
-
-                // setup engine with UI/Context components
-                engine.addOrReplace("gl.surfaceView", _binding?.glSurfaceView)
-                engine.addOrReplace("gl.renderer", _binding?.glSurfaceView?.renderer)
-                engine.addOrReplace("ui.settings", SettingsOptions())
-                engine.addOrReplace("ui.fragment", this)
-
-                // load engine
-                modelEngineViewModel.loadEngine(uriString) {
-
-                    // [SAFE APPLY] Apply saved preferences (Theme, Language, OpenGL settings, etc.)
-                    // We use activity?.let to ensure we have a valid context and to skip if detaching
-                    activity?.let { activity ->
-                        try {
-                            SettingsFragment.applySavedPreferences(engine, activity)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error applying saved preferences", e)
-                        }
-                    }
-
-                    // boot engine
-                    modelEngineViewModel.startEngine(uriString) {
-
-                        // log success
-                        Log.i(TAG, "setupAndStartEngine Activating engine...")
-
-                        // check status
-                        if (engine.status == ModelEngine.Status.OK) {
-
-                            // activate engine if no error
-                            modelEngineViewModel.setActiveEngine(uriString)
-
-                            // update shared state (history, etc)
-                            sharedViewModel.onModelOpened(uriString, modelName, modelType)
-
-                            // log success
-                            Log.i(TAG, "setupAndStartEngine Engine activated successfully")
-
-                        } else {
-
-                            // log error
-                            Log.e(
-                                TAG,
-                                "setupAndStartEngine Starting engine finished with error: ${engine.message}"
-                            )
-                        }
-                    }
-                };
-            };
+            initEngineInternal(model, uriString)
         } catch (ex: Exception) {
             Log.e(TAG, "setupAndStartEngine finished with exception", ex)
         }
+    }
+
+    private fun initEngineInternal(model: Model, uriString: String) {
+        // 5. Hand the fully populated model to the Engine
+        modelEngineViewModel.initEngine(model) {
+
+            // get engine
+            val engine = modelEngineViewModel.getEngine(uriString)
+            if (engine == null){
+                Log.e(TAG, "Engine not initialized")
+                return@initEngine
+            }
+
+            // check
+            if (_binding == null){
+                Log.w(TAG, "No binding found for id (fragment probably destroyed): "+uriString)
+                return@initEngine
+            }
+
+            // setup engine with UI/Context components
+            engine.addOrReplace("gl.surfaceView", _binding?.glSurfaceView)
+            engine.addOrReplace("gl.renderer", _binding?.glSurfaceView?.renderer)
+            engine.addOrReplace("ui.fragment", this)
+            //engine.addOrReplace("ai.system", org.the3deer.android.viewer.ai.SystemAIAssistant())
+
+            // load engine
+            modelEngineViewModel.loadEngine(uriString) {
+
+                // [SAFE APPLY] Apply saved preferences (Theme, Language, OpenGL settings, etc.)
+                // We use activity?.let to ensure we have a valid context and to skip if detaching
+                activity?.let { activity ->
+                    try {
+                        SettingsFragment.applySavedPreferences(engine, activity)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error applying saved preferences", e)
+                    }
+                }
+
+                // boot engine
+                modelEngineViewModel.startEngine(uriString) {
+
+                    // log success
+                    Log.i(TAG, "setupAndStartEngine Activating engine...")
+
+                    // check status
+                    if (engine.status == ModelEngine.Status.OK) {
+
+                        // activate engine if no error
+                        modelEngineViewModel.setActiveEngine(uriString)
+
+                        // update shared state (history, etc)
+                        sharedViewModel.onModelOpened(engine.model)
+
+                        // log success
+                        Log.i(TAG, "setupAndStartEngine Engine activated successfully")
+
+                    } else {
+
+                        // log error
+                        Log.e(
+                            TAG,
+                            "setupAndStartEngine Starting engine finished with error: ${engine.message}"
+                        )
+                    }
+                }
+            };
+        };
     }
 
     override fun onEvent(event: EventObject?): Boolean {

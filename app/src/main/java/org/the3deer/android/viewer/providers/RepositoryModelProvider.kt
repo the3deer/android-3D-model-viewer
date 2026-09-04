@@ -1,0 +1,70 @@
+package org.the3deer.android.viewer.providers
+
+import android.app.Activity
+import org.the3deer.android.engine.Model
+import org.the3deer.android.viewer.MainActivity
+import org.the3deer.android.viewer.util.ContentUtils
+import org.the3deer.android.viewer.util.DialogUtils
+import java.net.URI
+import java.util.logging.Level
+import java.util.logging.Logger
+
+internal class RepositoryModelProvider(private val repoUrl: URI = REPO_URL) : ModelProvider {
+    private val TAG = "RepositoryModelProvider"
+
+    companion object {
+        val REPO_URL = URI.create("https://raw.githubusercontent.com/the3deer/android-3D-model-viewer/main/models/index")
+        const val SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae|gltf|glb|fbx|zip|index)"
+    }
+
+    override fun list(): Any {
+        return ContentUtils.readLines(repoUrl.toString())
+    }
+
+    override fun load(activity: Activity, callback: ModelProvider.Callback) {
+        if (activity is MainActivity) {
+            activity.setLoading(true, "Loading Repository...")
+        }
+
+        Thread {
+            try {
+                val files = ContentUtils.readLines(repoUrl.toString())
+                activity.runOnUiThread {
+                    if (activity is MainActivity) {
+                        activity.setLoading(false, null)
+                    }
+                    DialogUtils.createChooserDialog(activity, "Select file", null,
+                        files, SUPPORTED_FILE_TYPES_REGEX
+                    ) { file ->
+                        if (file != null) {
+                            if (file.endsWith(".index")) {
+                                RepositoryModelProvider(URI.create(file)).load(activity, callback)
+                            } else {
+                                callback.onModelSelected(resolve(URI.create(file)))
+                            }
+                        } else {
+                            callback.onModelSelected(null)
+                        }
+                    }.create().show()
+                }
+            } catch (e: Exception) {
+                Logger.getLogger(TAG).log(Level.SEVERE, "Error loading Repository", e)
+                activity.runOnUiThread {
+                    if (activity is MainActivity) {
+                        activity.setLoading(false, null)
+                    }
+                    callback.onModelSelected(null)
+                }
+            }
+        }.start()
+    }
+
+    override fun resolve(uri: URI): Model {
+        val model = Model(uri)
+        model.name = uri.path.substringAfterLast("/").substringBeforeLast(".")
+        model.type = uri.path.substringAfterLast(".", "gltf")
+        model.provider = "the3deer"
+        model.license = "Community / Open Source"
+        return model
+    }
+}

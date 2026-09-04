@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "org.the3deer.android.viewer"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "org.andresoviedo.dddmodel2"
-        minSdk = 24
-        targetSdk = 35
-        versionCode = 62
-        versionName = "5.0.6"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 63
+        versionName = "5.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -69,7 +69,6 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.preference.ktx)
-    implementation(libs.androidx.core.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

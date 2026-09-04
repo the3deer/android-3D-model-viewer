@@ -3,7 +3,6 @@ package org.the3deer.android.viewer
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Uri
-import androidx.core.net.toUri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -15,17 +14,18 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.TooltipCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
+import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.core.view.MenuItemCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.appcompat.widget.TooltipCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
@@ -36,17 +36,9 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.the3deer.android.engine.ModelEngineViewModel
-import org.the3deer.android.util.ContentUtils
-import org.the3deer.android.viewer.databinding.ActivityMainBinding
-import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
-import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
-import org.the3deer.android.viewer.ui.dialogs.ModelInfoDialogFragment
-import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
-import org.the3deer.android.viewer.ui.load.LoadContentDialog
-import org.the3deer.android.viewer.ui.settings.SettingsFragment
 import org.the3deer.android.engine.Model
 import org.the3deer.android.engine.ModelEngine
+import org.the3deer.android.engine.ModelEngineViewModel
 import org.the3deer.android.engine.camera.CameraManager
 import org.the3deer.android.engine.camera.FirstPersonCameraHandler
 import org.the3deer.android.engine.event.CameraEvent
@@ -55,14 +47,21 @@ import org.the3deer.android.engine.event.FPSEvent
 import org.the3deer.android.engine.event.SceneEvent
 import org.the3deer.android.engine.model.ModelEvent
 import org.the3deer.android.engine.model.Object3D
-import org.the3deer.util.event.EventListener
-import org.the3deer.util.event.EventManager
 import org.the3deer.android.engine.services.LoaderRegistry
 import org.the3deer.android.engine.services.collada.ColladaLoaderTask
 import org.the3deer.android.engine.services.fbx.FbxLoaderTask
 import org.the3deer.android.engine.services.gltf.GltfLoaderTask
 import org.the3deer.android.engine.services.stl.STLLoaderTask
 import org.the3deer.android.engine.services.wavefront.WavefrontLoaderTask
+import org.the3deer.android.viewer.databinding.ActivityMainBinding
+import org.the3deer.android.viewer.settings.SettingsFragment
+import org.the3deer.android.viewer.ui.dialogs.AnimationDialogFragment
+import org.the3deer.android.viewer.ui.dialogs.CameraDialogFragment
+import org.the3deer.android.viewer.ui.dialogs.ModelInfoDialogFragment
+import org.the3deer.android.viewer.ui.dialogs.SceneDialogFragment
+import org.the3deer.android.viewer.util.ContentUtils
+import org.the3deer.util.event.EventListener
+import org.the3deer.util.event.EventManager
 import java.net.URI
 import java.util.EventObject
 import java.util.concurrent.CompletableFuture
@@ -72,16 +71,17 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
     init {
         // Register only the formats your game uses
-        LoaderRegistry.register("obj") { uri, listener -> WavefrontLoaderTask(uri, listener) }
-        LoaderRegistry.register("gltf") { uri, listener -> GltfLoaderTask(uri, listener) }
-        LoaderRegistry.register("glb") { uri, listener -> GltfLoaderTask(uri, listener) }
-        LoaderRegistry.register("fbx") { uri, listener -> FbxLoaderTask(uri, listener) }
-        LoaderRegistry.register("stl") { uri, listener -> STLLoaderTask(uri, listener) }
-        LoaderRegistry.register("dae") { uri, listener -> ColladaLoaderTask(uri, listener) }
+        LoaderRegistry.register("obj") { model, listener -> WavefrontLoaderTask(model, listener) }
+        LoaderRegistry.register("gltf") { model, listener -> GltfLoaderTask(model, listener) }
+        LoaderRegistry.register("glb") { model, listener -> GltfLoaderTask(model, listener) }
+        LoaderRegistry.register("fbx") { model, listener -> FbxLoaderTask(model, listener) }
+        LoaderRegistry.register("stl") { model, listener -> STLLoaderTask(model, listener) }
+        LoaderRegistry.register("dae") { model, listener -> ColladaLoaderTask(model, listener) }
     }
 
     private val TAG = "MainActivity"
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
     private var immersiveMode = false
 
@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
-                        LoadContentDialog(this@MainActivity).load(URI.create(it.toString()))
+                        loadModel(it)
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) {
                             Log.e(TAG, "Error loading uri: $it", e)
@@ -171,7 +171,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
         val navHostFragment =
             (supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment?)!!
-        val navController = navHostFragment.navController
+        navController = navHostFragment.navController
 
         appBarConfiguration = AppBarConfiguration(
             setOf(R.id.nav_home, R.id.nav_settings, R.id.nav_about),
@@ -194,25 +194,13 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             navigationView.setNavigationItemSelectedListener { item ->
                 when (item.groupId) {
                     R.id.group_recent -> {
-                        val uriString =
-                            MenuItemCompat.getTooltipText(item)?.toString() ?: item.title.toString()
-                                .lowercase()
-                        val title = item.title.toString()
-
-                        // Set URI and navigate
-                        val arguments = Bundle()
-                        arguments.putString("uri", uriString)
-                        arguments.putString("name", title)
-
-                        // Try to find the type in history
-                        sharedViewModel.history.value?.find { it.startsWith("$uriString|$title|") }?.let {
-                            val parts = it.split("|")
-                            if (parts.size > 2) {
-                                arguments.putString("type", parts[2])
-                            }
+                        val model = sharedViewModel.history.value?.getOrNull(item.order)
+                        if (model != null) {
+                            sharedViewModel.loadModel(model)
+                        } else {
+                            val uriString = MenuItemCompat.getTooltipText(item)?.toString() ?: item.title.toString().lowercase()
+                            sharedViewModel.loadModelByUri(uriString)
                         }
-
-                        navController.navigate(R.id.nav_home, arguments)
 
                         binding.drawerLayout.closeDrawers()
                         true
@@ -242,7 +230,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             navController.addOnDestinationChangedListener { _, destination, _ ->
                 if (destination.id == R.id.nav_home) {
                     modelEngineViewModel.activeEngine.value?.let {
-                        supportActionBar?.title = shortenUri(it.model.name)
+                        supportActionBar?.title = shortenUri(it.model.name ?: it.model.uri.toString())
                     }
                     navigationView.setCheckedItem(destination.id)
                 }
@@ -257,6 +245,55 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             sharedViewModel.history.observe(this) { history ->
                 updateRecentModels(navigationView, history)
             }
+        }
+
+        // Listen for AI-triggered application actions from SharedViewModel
+        sharedViewModel.navigationRequest.observe(this) { screenId ->
+            val navId = when (screenId.lowercase()) {
+                "home" -> R.id.nav_home
+                "settings" -> R.id.nav_settings
+                "about" -> R.id.nav_about
+                "load" -> R.id.nav_load
+                else -> null
+            }
+            navId?.let { navController.navigate(it) }
+        }
+        sharedViewModel.restartRequest.observe(this) { timestamp ->
+            if (timestamp != null) {
+                sharedViewModel.clearRestartRequest()
+                recreate()
+            }
+        }
+        sharedViewModel.loadRequest.observe(this) { model ->
+            val arguments = Bundle().apply {
+                putString("uri", model.uri.toString())
+            }
+            navController.navigate(R.id.nav_home, arguments)
+        }
+
+        // Restore active model on app launch if no explicit intent URI was passed
+        if (savedInstanceState == null) {
+            val intentData = intent?.data
+            if (intentData != null) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        loadModel(intentData)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error loading intent data: $intentData", e)
+                    }
+                }
+            } else {
+                val activeUri = sharedViewModel.getActiveUri()
+                if (!activeUri.isNullOrBlank()) {
+                    sharedViewModel.loadModelByUri(activeUri)
+                }
+            }
+        }
+        modelEngineViewModel.loadRequest.observe(this) { model ->
+            sharedViewModel.loadModel(model)
+        }
+        sharedViewModel.exitRequest.observe(this) {
+            finish()
         }
 
         // Action stack buttons setup
@@ -341,7 +378,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             // Register this activity as a listener for the active engine
             engine.addOrReplace(this@MainActivity.javaClass.name, this@MainActivity)
 
-            supportActionBar?.title = shortenUri(engine.model.name)
+            supportActionBar?.title = shortenUri(engine.model.name ?: engine.model.uri.toString())
 
             refreshOverlayButtons()
             ViewCompat.requestApplyInsets(binding.root)
@@ -355,7 +392,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                     recreate()
                 }
                 "pick" -> {
-                    LoadContentDialog(this@MainActivity).start()
+                    pick("*/*")
                 }
                 "load" -> {
                     val uri = bundle.getString("uri")
@@ -383,8 +420,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
                     return
                 }
-
-                val navController = findNavController(R.id.nav_host_fragment_content_main)
 
                 // 2. If we are NOT on the Home screen, let the system handle it (go back to Home)
                 if (navController.currentDestination?.id != R.id.nav_home) {
@@ -463,7 +498,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
     private fun checkNotification() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val notified = prefs.getBoolean("notification.v50.upgrade", false)
+        val notified = prefs.getBoolean("notification.v51.upgrade", false)
         if (!notified) {
             // TODO: Update this with your NEW package name
             val newPackageName = "org.the3deer.android.viewer" 
@@ -474,7 +509,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                 .setMessage(getString(R.string.dialog_new_version_message, newAppName))
                 .setPositiveButton(R.string.dialog_new_version_button) { _, _ ->
                     // Optional: Mark as notified so it doesn't show again
-                    prefs.edit().putBoolean("notification.v50.upgrade", true).apply()
+                    prefs.edit().putBoolean("notification.v51.upgrade", true).apply()
                     try {
                         startActivity(Intent(Intent.ACTION_VIEW, "market://details?id=$newPackageName".toUri()))
                     } catch (e: Exception) {
@@ -490,8 +525,8 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         modelEngineViewModel.glScreen?.let { screen ->
             screen.setInsets(insets.left, insets.top, insets.right, insets.bottom)
 
-            // Update toolbar height (including status bar if visible)
-            val toolbarHeight = if (immersiveMode) 0 else (binding.appBarMain.toolbar.height + insets.top)
+            // Update toolbar height
+            val toolbarHeight = if (immersiveMode) 0 else binding.appBarMain.toolbar.height
             screen.setToolbarHeight(toolbarHeight)
 
             Log.d(TAG, "Shared Screen insets updated: $insets, toolbar=$toolbarHeight")
@@ -513,7 +548,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                 val scene = model.activeScene
 
                 val scenesEnabled = (model.scenes?.size ?: 0) > 1
-                val camerasEnabled = (scene?.cameras?.size ?: 0) > 1
+                val camerasEnabled = (model?.allCameras?.size ?: 0) > 1
                 val animationsEnabled = (scene?.animations?.size ?: 0) > 0
 
                 binding.appBarMain.btnScene.alpha = if (scenesEnabled) 1.0f else 0.25f
@@ -550,7 +585,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
                 infoItem?.icon?.setTint(color)
 
                 // Show joysticks and toggle action containers based on First Person Mode AND current destination
-                val isHome = findNavController(R.id.nav_host_fragment_content_main).currentDestination?.id == R.id.nav_home
+                val isHome = navController.currentDestination?.id == R.id.nav_home
                 val cameraManager = engine.beanFactory.find(CameraManager::class.java)
                 val isFirstPerson = cameraManager?.activeController is FirstPersonCameraHandler
 
@@ -633,20 +668,46 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         getContent.launch(arrayOf(mimeType))
     }
 
+    private fun loadModel(uri: Uri) {
+        val uriString = uri.toString()
+        val javaUri = URI.create(uriString)
+
+        // detect model type
+        val fileName = ContentUtils.getFileName(applicationContext, javaUri)
+        val fileType = fileName?.substringAfterLast('.', "unsupported")?.lowercase() ?: "unsupported"
+
+        // check
+        if (fileName == null) throw IllegalArgumentException("No filename found for $uri")
+
+        // check extension
+        val supported = listOf("obj", "stl", "dae", "gltf", "glb", "fbx", "zip")
+        if (fileType !in supported) {
+            throw IllegalArgumentException(
+                "Unknown extension: $fileName. Valid extensions are ${supported.joinToString(", ")}"
+            )
+        }
+
+        // Use AppAPI to load the model. It will handle resolution if needed.
+        val model = Model(javaUri).apply {
+            setName(fileName.substringBeforeLast('.'))
+            setType(fileType)
+        }
+        sharedViewModel.loadModel(model)
+    }
+
     /**
      * Update the recent models' menu. That is, it adds a menu item for each URI in the history with an Icon.
      */
-    private fun updateRecentModels(navigationView: NavigationView, history: List<String>) {
+    private fun updateRecentModels(navigationView: NavigationView, history: List<Model>) {
         val menu = navigationView.menu
         val recentWrapper = menu.findItem(R.id.nav_recent_wrapper)
         val subMenu = recentWrapper?.subMenu
 
         if (subMenu != null) {
             subMenu.clear()
-            history.forEachIndexed { index, historyItem ->
-                val parts = historyItem.split("|")
-                val uriString = parts[0]
-                val title = if (parts.size > 1) parts[1] else shortenUri(uriString)
+            history.forEachIndexed { index, model ->
+                val uriString = model.uri.toString()
+                val title = model.name ?: shortenUri(uriString)
                 subMenu.add(R.id.group_recent, Menu.NONE, index, title).apply {
                     icon = ContextCompat.getDrawable(
                         this@MainActivity,
@@ -658,10 +719,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         } else {
             // Fallback to old behavior if XML ID is missing or not a submenu
             menu.removeGroup(R.id.group_recent)
-            history.forEachIndexed { index, historyItem ->
-                val parts = historyItem.split("|")
-                val uriString = parts[0]
-                val title = if (parts.size > 1) parts[1] else shortenUri(uriString)
+            history.forEachIndexed { index, model ->
+                val uriString = model.uri.toString()
+                val title = model.name ?: shortenUri(uriString)
                 menu.add(R.id.group_recent, Menu.NONE, index, title).apply {
                     icon = ContextCompat.getDrawable(
                         this@MainActivity,
@@ -733,7 +793,7 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.nav_settings) {
-            findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.nav_settings)
+            navController.navigate(R.id.nav_settings)
         } else if (item.itemId == R.id.nav_info) {
             ModelInfoDialogFragment().show(supportFragmentManager, "model_info_dialog")
         }
@@ -741,7 +801,6 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }

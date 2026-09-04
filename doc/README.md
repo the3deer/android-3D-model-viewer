@@ -30,7 +30,7 @@ The `HomeFragment` displays the OpenGL content. To allow standard Android UI to 
 
 ### Modal Navigation
 - **Load Dialog**: A `DialogFragment` that allows browsing and switching models without leaving the 3D context.
-- **Settings Dialog**: Hosted via `PreferenceFragmentCompat`, allowing real-time adjustments to rendering properties (like skybox or language).
+  - **Settings Dialog**: Hosted via `PreferenceFragmentCompat`, allowing real-time adjustments to rendering properties (like skybox or language).
 
 ## Preferences & Settings System
 
@@ -44,3 +44,10 @@ The UI is dynamically built by scanning for `@Bean` and `@BeanProperty` annotati
 
 ### Persistence
 Settings are stored in `SharedPreferences`. The `SharedViewModel` initializes by reading these values and injecting them into the Engine's configuration beans on startup.
+
+### URI and Downloads
+
+All the models are identified by an `URI`. This URIs may be `URL`s pointing to online resources.
+The HTTP connections are accessed or intercepted via the `ContentUtils` interface.
+The `ContentUtils` sends a User-Agent to identify the application over HTTP connections.
+The .zip files are extracted to the android application cache directory.

@@ -1,4 +1,4 @@
-package org.the3deer.android.viewer.ui.settings
+package org.the3deer.android.viewer.settings
 
 import android.os.Bundle
 import android.view.LayoutInflater

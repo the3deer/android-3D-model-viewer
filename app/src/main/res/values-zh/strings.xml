@@ -16,6 +16,19 @@
     <string name="dialog_load_title">菜单</string>
     <string name="dialog_load_in_progress_message">加载中…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">管理应用存储和缓存</string>
+    <string name="preference_manage_storage_summary">打开 Android 系统设置以查看存储使用情况或清除缓存</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">示例</string>
+    <string name="provider_the3deer">存储库 (the3deer)</string>
+    <string name="provider_khronos">存储库 (Khronos)</string>
+    <string name="provider_open_source_3d_assets">存储库 (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">存储库 (Poly Haven)</string>
+    <string name="provider_android_explorer">Android 资源管理器</string>
+    <string name="provider_sdcard">文件管理器</string>
+
     <string name="white">白色</string>
     <string name="gray">灰色</string>
     <string name="black">黑色</string>
@@ -24,7 +37,7 @@
     <!-- 关于页面 -->
     <string name="about_title_app">3D模型查看器</string>
     <string name="about_version">版本 1.0.0</string>
-    <string name="about_intro">一个致力于学习在 Android 上使用 OpenGL ES 进行 3D 渲染的开源项目。</string>
+    <string name="about_intro">一个使用 OpenGL ES 的 Android 开源 3D 渲染引擎。</string>
 
     <string name="about_header_formats">支持的格式</string>
     <string name="about_formats_list">OBJ, STL, DAE, GLTF, GLB 和 FBX。</string>
@@ -46,7 +59,7 @@
     <string name="about_warning_experimental">⚠ 警告：此引擎处于实验阶段。某些文件特性可能无法完美渲染。</string>
 
     <string name="about_header_privacy">隐私</string>
-    <string name="about_privacy_text">此应用程序不收集或共享任何个人信息。</string>
+    <string name="about_privacy_text">此应用程序不收集或共享 any 个人信息。</string>
 
     <string name="scenes">场景</string>
     <string name="cameras">相机</string>
@@ -61,14 +74,25 @@
     <string name="tooltip_no_animations">该模型没有动画</string>
 
     <!-- 类别 -->
-    <string name="category_decorators_label">装饰器</string>
-    <string name="category_renderers_label">渲染器</string>
-    <string name="category_gui_label">图形用户界面</string>
+    <string name="category_render_label">渲染</string>
+    <string name="category_render_description">场景渲染设置</string>
+    <string name="category_gui_label">用户界面</string>
+    <string name="category_gui_description">屏幕显示和导航控制</string>
     <string name="category_general_label">通用</string>
+    <string name="category_general_description">全局应用程序首选项</string>
+    <string name="category_decorators_label">装饰器</string>
+    <string name="category_decorators_description">视觉辅助工具</string>
+    <string name="category_debug_label">调试</string>
+    <string name="category_debug_description">故障排除和诊断工具</string>
+    <string name="category_opengl_label">图形 API</string>
+    <string name="category_opengl_description">OpenGL ES 配置</string>
 
     <!-- Beans -->
     <string name="bean_settings_label">通用设置</string>
     <string name="bean_gl_renderer_label">OpenGL 设置</string>
+    <string name="bean_gl_renderer_description">渲染引擎配置</string>
+    <string name="bean_font_manager_label">字体管理器</string>
+    <string name="bean_font_manager_description">文本渲染选项</string>
     <string name="bean_animation_controller_label">动画控制器</string>
     <string name="bean_collision_drawer_label">碰撞点绘制器</string>
     <string name="bean_collision_drawer_description">绘制射线与对象发生碰撞的点</string>
@@ -90,6 +114,7 @@
     <string name="bean_shadow_drawer_description">在地面平面上投射对象的阴影</string>
     <string name="bean_shadow_drawer_label">阴影渲染器</string>
     <string name="bean_shader_manager_label">着色器管理器</string>
+    <string name="bean_shader_manager_description">OpenGL 和着色器版本配置</string>
 
     <!-- Bean 属性 -->
     <string name="property_settings_language_label">语言</string>
@@ -116,11 +141,15 @@
     <string name="property_gui_drawer_showFPS_label">每秒帧数</string>
     <string name="property_gui_drawer_showFPS_description">显示或隐藏 FPS 计数器</string>
     <string name="property_shadow_drawer_enabled_description">启用或禁用阴影渲染</string>
+    <string name="property_shader_manager_openGLVersion_label">OpenGL 版本</string>
+    <string name="property_shader_manager_openGLVersion_description">选择渲染和着色器的 OpenGL ES 版本</string>
+    <string name="property_font_manager_factory_label">字体工厂</string>
+    <string name="property_font_manager_factory_description">选择用于渲染文本的字体实现</string>
 
     <!-- 特性 -->
     <string name="feature_collision_description">在模型上方绘制的组件</string>
     <string name="feature_decorator_description">在模型上方绘制的组件</string>
     <string name="feature_gui_description">显示 FPS、轴和信息</string>
-    <string name="feature_renderer_description">渲染器在屏幕上绘制</string>
+    <string name="feature_renderer_description">核心引擎渲染</string>
 
 </resources>
