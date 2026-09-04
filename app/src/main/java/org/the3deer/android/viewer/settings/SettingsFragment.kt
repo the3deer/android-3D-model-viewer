@@ -48,7 +48,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             val category = PreferenceCategory(context).apply {
                 title = categoryName
                 summary = categoryBeans.firstOrNull()?.categoryDescription
-                layoutResource = R.layout.preference_category
+                //layoutResource = R.layout.preference_category
                 isIconSpaceReserved = false
             }
             screen.addPreference(category)
@@ -69,11 +69,11 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     }
                     category.addPreference(masterSwitch)
                     masterDependencyKey = masterSwitch.key
-                } else {
+                } /*else {
                     // No master toggle. Add a descriptive header if a description exists.
                     if (bean.description != null && !bean.description.isEmpty()) {
                         category.addPreference(Preference(context).apply {
-                            layoutResource = R.layout.preference_category
+                            //layoutResource = R.layout.preference_category
                             title = bean.name
                             summary = bean.description
                             isSelectable = false
@@ -82,13 +82,13 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     } else {
                         // Just a title header if no description
                         category.addPreference(Preference(context).apply {
-                            layoutResource = R.layout.preference_category
+                            // layoutResource = R.layout.preference_category
                             title = bean.name
                             isSelectable = false
                             isIconSpaceReserved = false
                         })
                     }
-                }
+                }*/
 
                 // Add all other properties (indented/dependent if a master switch exists)
                 otherProps.forEach { prop ->
@@ -101,6 +101,33 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                 }
             }
         }
+
+
+        // Add App Storage & Cache management preference
+        val storageCategory = PreferenceCategory(context).apply {
+            title = getString(R.string.category_general_label)
+            isIconSpaceReserved = false
+        }
+        screen.addPreference(storageCategory)
+
+        val manageStoragePref = Preference(context).apply {
+            key = "pref_manage_storage"
+            title = getString(R.string.preference_manage_storage_title)
+            summary = getString(R.string.preference_manage_storage_summary)
+            isIconSpaceReserved = false
+            setOnPreferenceClickListener {
+                try {
+                    val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = android.net.Uri.fromParts("package", context.packageName, null)
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Log.e("SettingsFragment", "Error opening App Details Settings", e)
+                }
+                true
+            }
+        }
+        storageCategory.addPreference(manageStoragePref)
     }
 
     private fun getEnabledProperty(bean: BeanInfo): BeanPropertyInfo? {

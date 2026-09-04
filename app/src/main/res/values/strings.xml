@@ -16,6 +16,10 @@
     <string name="dialog_load_title">Menu</string>
     <string name="dialog_load_in_progress_message">Loading…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title" translatable="false">Manage App Storage &amp; Cache</string>
+    <string name="preference_manage_storage_summary" translatable="false">Open Android System Settings to view storage usage or clear cache</string>
+
     <!-- Providers -->
     <string name="provider_assets" translatable="false">Samples</string>
     <string name="provider_the3deer" translatable="false">Repository (the3deer)</string>

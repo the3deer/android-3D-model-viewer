@@ -160,8 +160,40 @@ public class ModelInfoDialogFragment extends DialogFragment {
             modelMemory = active.getModel().getMemoryUsage();
         }
 
-        return String.format(Locale.getDefault(), "Memory: %d/%d MB\nModel: %d MB",
-                usedMemory / 1024 / 1024, maxMemory / 1024 / 1024, modelMemory / 1024 / 1024);
+        return String.format(Locale.getDefault(), "Memory: %d/%d MB\n%s\nModel: %d MB",
+                usedMemory / 1024 / 1024, maxMemory / 1024 / 1024, getCacheSizeInfo(), modelMemory / 1024 / 1024);
+    }
+
+    private String getCacheSizeInfo() {
+        android.content.Context context = getContext();
+        if (context == null) return "Cache Storage: 0 MB";
+
+        long cacheBytes = 0;
+        java.io.File internalCache = context.getCacheDir();
+        if (internalCache != null) {
+            cacheBytes += getFolderSize(internalCache);
+        }
+        java.io.File externalCache = context.getExternalCacheDir();
+        if (externalCache != null) {
+            cacheBytes += getFolderSize(externalCache);
+        }
+
+        return String.format(Locale.getDefault(), "Cache Storage: %.1f MB", cacheBytes / 1024.0 / 1024.0);
+    }
+
+    private static long getFolderSize(java.io.File folder) {
+        long length = 0;
+        java.io.File[] files = folder.listFiles();
+        if (files != null) {
+            for (java.io.File file : files) {
+                if (file.isFile()) {
+                    length += file.length();
+                } else if (file.isDirectory()) {
+                    length += getFolderSize(file);
+                }
+            }
+        }
+        return length;
     }
 
     private String getSceneDimensionsInfo() {
