@@ -16,6 +16,19 @@
     <string name="dialog_load_title">菜单</string>
     <string name="dialog_load_in_progress_message">加载中…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">管理应用存储和缓存</string>
+    <string name="preference_manage_storage_summary">打开 Android 系统设置以查看存储使用情况或清除缓存</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">示例</string>
+    <string name="provider_the3deer">存储库 (the3deer)</string>
+    <string name="provider_khronos">存储库 (Khronos)</string>
+    <string name="provider_open_source_3d_assets">存储库 (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">存储库 (Poly Haven)</string>
+    <string name="provider_android_explorer">Android 资源管理器</string>
+    <string name="provider_sdcard">文件管理器</string>
+
     <string name="white">白色</string>
     <string name="gray">灰色</string>
     <string name="black">黑色</string>

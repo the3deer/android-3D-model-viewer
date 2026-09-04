@@ -16,6 +16,19 @@
     <string name="dialog_load_title">Меню</string>
     <string name="dialog_load_in_progress_message">Завантаження…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">Керування пам’яттю та кешем додатка</string>
+    <string name="preference_manage_storage_summary">Відкрити системні налаштування Android для перегляду використання пам’яті або очищення кешу</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">Зразки</string>
+    <string name="provider_the3deer">Репозиторій (the3deer)</string>
+    <string name="provider_khronos">Репозиторій (Khronos)</string>
+    <string name="provider_open_source_3d_assets">Репозиторій (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">Репозиторій (Poly Haven)</string>
+    <string name="provider_android_explorer">Провідник Android</string>
+    <string name="provider_sdcard">Диспетчер файлів</string>
+
     <string name="white">Білий</string>
     <string name="gray">Сірий</string>
     <string name="black">Чорний</string>

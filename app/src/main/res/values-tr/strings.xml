@@ -16,6 +16,19 @@
     <string name="dialog_load_title">Menü</string>
     <string name="dialog_load_in_progress_message">Yükleniyor…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">Uygulama Depolama Alanını ve Önbelleği Yönet</string>
+    <string name="preference_manage_storage_summary">Depolama kullanımını görüntülemek veya önbelleği temizlemek için Android Sistem Ayarlarını açın</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">Örnekler</string>
+    <string name="provider_the3deer">Depo (the3deer)</string>
+    <string name="provider_khronos">Depo (Khronos)</string>
+    <string name="provider_open_source_3d_assets">Depo (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">Depo (Poly Haven)</string>
+    <string name="provider_android_explorer">Android Gezgini</string>
+    <string name="provider_sdcard">Dosya Yöneticisi</string>
+
     <string name="white">Beyaz</string>
     <string name="gray">Gri</string>
     <string name="black">Siyah</string>

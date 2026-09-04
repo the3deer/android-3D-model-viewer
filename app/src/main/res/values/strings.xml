@@ -17,17 +17,17 @@
     <string name="dialog_load_in_progress_message">Loading…</string>
 
     <!-- Storage & Cache -->
-    <string name="preference_manage_storage_title" translatable="false">Manage App Storage &amp; Cache</string>
-    <string name="preference_manage_storage_summary" translatable="false">Open Android System Settings to view storage usage or clear cache</string>
+    <string name="preference_manage_storage_title">Manage App Storage &amp; Cache</string>
+    <string name="preference_manage_storage_summary">Open Android System Settings to view storage usage or clear cache</string>
 
     <!-- Providers -->
-    <string name="provider_assets" translatable="false">Samples</string>
-    <string name="provider_the3deer" translatable="false">Repository (the3deer)</string>
-    <string name="provider_khronos" translatable="false">Repository (Khronos)</string>
-    <string name="provider_open_source_3d_assets" translatable="false">Repository (Open Source 3D Assets)</string>
-    <string name="provider_polyhaven" translatable="false">Repository (Poly Haven)</string>
-    <string name="provider_android_explorer" translatable="false">Android Explorer</string>
-    <string name="provider_sdcard" translatable="false">File Explorer</string>
+    <string name="provider_assets">Samples</string>
+    <string name="provider_the3deer">Repository (the3deer)</string>
+    <string name="provider_khronos">Repository (Khronos)</string>
+    <string name="provider_open_source_3d_assets">Repository (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">Repository (Poly Haven)</string>
+    <string name="provider_android_explorer">Android Explorer</string>
+    <string name="provider_sdcard">File Explorer</string>
 
     <string name="white">White</string>
     <string name="gray">Gray</string>

@@ -16,6 +16,19 @@
     <string name="dialog_load_title">القائمة</string>
     <string name="dialog_load_in_progress_message">جاري التحميل…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">إدارة سعة تخزين التطبيق والذاكرة المؤقتة</string>
+    <string name="preference_manage_storage_summary">فتح إعدادات نظام أندرويد لعرض استخدام التخزين أو مسح الذاكرة المؤقتة</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">العينات</string>
+    <string name="provider_the3deer">المستودع (the3deer)</string>
+    <string name="provider_khronos">المستودع (Khronos)</string>
+    <string name="provider_open_source_3d_assets">المستودع (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">المستودع (Poly Haven)</string>
+    <string name="provider_android_explorer">مستكشف أندرويد</string>
+    <string name="provider_sdcard">مستكشف الملفات</string>
+
     <string name="white">أبيض</string>
     <string name="gray">رمادي</string>
     <string name="black">أسود</string>

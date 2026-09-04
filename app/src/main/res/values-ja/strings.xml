@@ -16,6 +16,19 @@
     <string name="dialog_load_title">メニュー</string>
     <string name="dialog_load_in_progress_message">読み込み中…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">アプリのストレージとキャッシュの管理</string>
+    <string name="preference_manage_storage_summary">Androidのシステム設定を開いてストレージ使用状況の確認やキャッシュの消去を行います</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">サンプル</string>
+    <string name="provider_the3deer">リポジトリ (the3deer)</string>
+    <string name="provider_khronos">リポジトリ (Khronos)</string>
+    <string name="provider_open_source_3d_assets">リポジトリ (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">リポジトリ (Poly Haven)</string>
+    <string name="provider_android_explorer">Androidエクスプローラー</string>
+    <string name="provider_sdcard">ファイルエクスプローラー</string>
+
     <string name="white">ホワイト</string>
     <string name="gray">グレー</string>
     <string name="black">ブラック</string>

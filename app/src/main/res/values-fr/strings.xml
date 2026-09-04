@@ -16,6 +16,19 @@
     <string name="dialog_load_title">Menu</string>
     <string name="dialog_load_in_progress_message">Chargement…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">Gérer le stockage et le cache de l\'application</string>
+    <string name="preference_manage_storage_summary">Ouvrir les paramètres système d\'Android pour afficher l\'utilisation du stockage ou vider le cache</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">Échantillons</string>
+    <string name="provider_the3deer">Dépôt (the3deer)</string>
+    <string name="provider_khronos">Dépôt (Khronos)</string>
+    <string name="provider_open_source_3d_assets">Dépôt (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">Dépôt (Poly Haven)</string>
+    <string name="provider_android_explorer">Explorateur Android</string>
+    <string name="provider_sdcard">Explorateur de fichiers</string>
+
     <string name="white">Blanc</string>
     <string name="gray">Gris</string>
     <string name="black">Noir</string>

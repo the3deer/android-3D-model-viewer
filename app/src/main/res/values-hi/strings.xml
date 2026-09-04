@@ -16,6 +16,19 @@
     <string name="dialog_load_title">मेनू</string>
     <string name="dialog_load_in_progress_message">लोड हो रहा है…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">ऐप स्टोरेज और कैश प्रबंधित करें</string>
+    <string name="preference_manage_storage_summary">स्टोरेज उपयोग देखने या कैश साफ़ करने के लिए एंड्रॉइड सिस्टम सेटिंग्स खोलें</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">नमूने</string>
+    <string name="provider_the3deer">रिपॉजिटरी (the3deer)</string>
+    <string name="provider_khronos">रिपॉजिटरी (Khronos)</string>
+    <string name="provider_open_source_3d_assets">रिपॉजिटरी (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">रिपॉजिटरी (Poly Haven)</string>
+    <string name="provider_android_explorer">एंड्रॉइड एक्सप्लोरर</string>
+    <string name="provider_sdcard">फ़ाइल एक्सप्लोरर</string>
+
     <string name="white">सफेद</string>
     <string name="gray">सलेटी</string>
     <string name="black">काला</string>

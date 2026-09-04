@@ -16,6 +16,19 @@
     <string name="dialog_load_title">Menu</string>
     <string name="dialog_load_in_progress_message">Загрузка…</string>
 
+    <!-- Storage & Cache -->
+    <string name="preference_manage_storage_title">Управление памятью и кэшем приложения</string>
+    <string name="preference_manage_storage_summary">Открыть системные настройки Android для просмотра использования памяти или очистки кэша</string>
+
+    <!-- Providers -->
+    <string name="provider_assets">Образцы</string>
+    <string name="provider_the3deer">Репозиторий (the3deer)</string>
+    <string name="provider_khronos">Репозиторий (Khronos)</string>
+    <string name="provider_open_source_3d_assets">Репозиторий (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven">Репозиторий (Poly Haven)</string>
+    <string name="provider_android_explorer">Проводник Android</string>
+    <string name="provider_sdcard">Диспетчер файлов</string>
+
     <string name="white">Белый</string>
     <string name="gray">Серый</string>
     <string name="black">Черный</string>
