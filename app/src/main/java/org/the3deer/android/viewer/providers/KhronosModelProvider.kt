@@ -12,7 +12,7 @@ import java.net.URLEncoder
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class KhronosModelProvider : ModelProvider {
+internal class KhronosModelProvider : ModelProvider {
     private val TAG = "KhronosModelProvider"
 
     companion object {
@@ -127,6 +127,7 @@ class KhronosModelProvider : ModelProvider {
         model.name = uri.path.substringAfterLast("/").substringBeforeLast(".")
         model.type = "gltf"
         model.license = "CC0"
+        model.author = "Khronos Group"
         model.provider = "Khronos"
         return model
     }

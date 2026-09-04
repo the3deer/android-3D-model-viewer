@@ -4,14 +4,16 @@ import android.app.Activity
 import org.the3deer.android.engine.Model
 import java.net.URI
 
+fun interface ModelCallback {
+    fun onModelSelected(model: Model?)
+}
+
 /**
  * Interface for 3D model repositories.
  */
-interface ModelProvider {
+internal interface ModelProvider {
 
-    interface Callback {
-        fun onModelSelected(model: Model?)
-    }
+    fun interface Callback : ModelCallback
 
     /**
      * Returns the list or hierarchy of available models.
@@ -25,7 +27,7 @@ interface ModelProvider {
     fun load(activity: Activity, callback: Callback)
 
     /**
-     * Resolves a model URI to its fully populated entity.
+     * Resolves a model URI to its fully populated entity (e.g.: textures).
      */
     fun resolve(uri: URI): Model?
 }

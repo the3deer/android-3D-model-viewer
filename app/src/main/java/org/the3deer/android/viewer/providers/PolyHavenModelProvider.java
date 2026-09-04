@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  * 
  * @author Gemini AI
  */
-public class PolyHavenModelProvider implements ModelProvider {
+class PolyHavenModelProvider implements ModelProvider {
 
     private static final Logger logger = Logger.getLogger(PolyHavenModelProvider.class.getSimpleName());
     private static final String API_URL = "https://api.polyhaven.com";
@@ -39,7 +39,7 @@ public class PolyHavenModelProvider implements ModelProvider {
     public void load(Activity activity, Callback callback) {
         new LoadAssetsTask(activity, (assetId, url, includes) -> {
             if (url != null) {
-                callback.onModelSelected(buildModel(URI.create(url), url, includes)); 
+                callback.onModelSelected(buildModel(URI.create(url), includes)); 
             } else {
                 callback.onModelSelected(null);
             }
@@ -70,14 +70,13 @@ public class PolyHavenModelProvider implements ModelProvider {
 
         ModelMetadata meta = resolveAssetMetadata(assetId);
         if (meta != null) {
-            return buildModel(URI.create(meta.url), meta.url, meta.includes);
+            return buildModel(URI.create(meta.url), meta.includes);
         }
         return null;
     }
     
-    private Model buildModel(URI identity, String url, Map<String, String> includes) {
+    private Model buildModel(URI identity, Map<String, String> includes) {
         Model model = new Model(identity);
-        model.setUriModel(URI.create(url));
         
         // Extract name from the absolute URL
         String path = identity.getPath();
@@ -88,6 +87,7 @@ public class PolyHavenModelProvider implements ModelProvider {
         
         model.setType("gltf");
         model.setLicense("CC0");
+        model.setAuthor("Poly Haven Community");
         model.setProvider("Poly Haven");
 
         if (includes != null) {

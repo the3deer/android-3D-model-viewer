@@ -9,7 +9,7 @@ import java.net.URI
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class RepositoryModelProvider(private val repoUrl: URI = REPO_URL) : ModelProvider {
+internal class RepositoryModelProvider(private val repoUrl: URI = REPO_URL) : ModelProvider {
     private val TAG = "RepositoryModelProvider"
 
     companion object {
@@ -64,6 +64,7 @@ class RepositoryModelProvider(private val repoUrl: URI = REPO_URL) : ModelProvid
         model.name = uri.path.substringAfterLast("/").substringBeforeLast(".")
         model.type = uri.path.substringAfterLast(".", "gltf")
         model.provider = "the3deer"
+        model.license = "Community / Open Source"
         return model
     }
 }

@@ -32,11 +32,6 @@
             android:name="title"
             android:defaultValue="@string/menu_load"
             app:argType="reference" />
-        <argument
-            android:name="itemsId"
-            android:defaultValue="@array/dialog_load_from"
-            app:argType="reference"
-            app:nullable="false" />
     </dialog>
 
     <fragment

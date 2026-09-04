@@ -16,7 +16,7 @@ import java.util.logging.Logger
  *
  * @author Gemini AI
  */
-class OpenSource3DAssetsModelProvider : ModelProvider {
+internal class OpenSource3DAssetsModelProvider : ModelProvider {
 
     companion object {
         private const val TAG = "OpenSource3DAssetsModelProvider"
@@ -27,13 +27,16 @@ class OpenSource3DAssetsModelProvider : ModelProvider {
     private data class Project(
         val id: String,
         val name: String,
+        val creatorId: String,
         val description: String,
+        val license: String,
         val assetDataFile: String
     )
 
     private data class AssetItem(
         val id: String,
         val name: String,
+        val description: String,
         val modelFileUrl: String,
         val format: String
     )
@@ -79,11 +82,13 @@ class OpenSource3DAssetsModelProvider : ModelProvider {
                     val obj = jsonArray.getJSONObject(i)
                     val id = obj.optString("id", "")
                     val name = obj.optString("name", id)
+                    val creatorId = obj.optString("creator_id", "")
                     val description = obj.optString("description", "")
+                    val license = obj.optString("license", "CC0")
                     val assetDataFile = obj.optString("asset_data_file", "")
 
                     if (assetDataFile.isNotEmpty()) {
-                        projects.add(Project(id, name, description, assetDataFile))
+                        projects.add(Project(id, name, creatorId, description, license, assetDataFile))
                     }
                 }
 
@@ -144,11 +149,12 @@ class OpenSource3DAssetsModelProvider : ModelProvider {
                     val obj = jsonArray.getJSONObject(i)
                     val id = obj.optString("id", "")
                     val name = obj.optString("name", id)
+                    val description = obj.optString("description", "")
                     val modelUrl = obj.optString("model_file_url", "")
                     val format = obj.optString("format", "GLB")
 
                     if (modelUrl.isNotEmpty()) {
-                        items.add(AssetItem(id, name, modelUrl, format))
+                        items.add(AssetItem(id, name, description, modelUrl, format))
                     }
                 }
 
@@ -171,7 +177,22 @@ class OpenSource3DAssetsModelProvider : ModelProvider {
                         itemDisplayNames
                     ) { _, which ->
                         val selectedItem = items[which]
-                        callback.onModelSelected(resolve(URI.create(selectedItem.modelFileUrl)))
+                        val model = resolve(URI.create(selectedItem.modelFileUrl))
+                        if (project.creatorId.isNotBlank()) {
+                            model.author = project.creatorId
+                        }
+                        if (project.license.isNotBlank()) {
+                            model.license = project.license
+                        }
+                        if (project.description.isNotBlank()) {
+                            model.comment = project.description
+                        }
+                        if (selectedItem.description.isNotBlank()) {
+                            model.description = selectedItem.description
+                        } else if (project.description.isNotBlank()) {
+                            model.description = project.description
+                        }
+                        callback.onModelSelected(model)
                     }
                 }
             } catch (e: Exception) {

@@ -16,6 +16,15 @@
     <string name="dialog_load_title">Menu</string>
     <string name="dialog_load_in_progress_message">Loading…</string>
 
+    <!-- Providers -->
+    <string name="provider_assets" translatable="false">Samples</string>
+    <string name="provider_the3deer" translatable="false">Repository (the3deer)</string>
+    <string name="provider_khronos" translatable="false">Repository (Khronos)</string>
+    <string name="provider_open_source_3d_assets" translatable="false">Repository (Open Source 3D Assets)</string>
+    <string name="provider_polyhaven" translatable="false">Repository (Poly Haven)</string>
+    <string name="provider_android_explorer" translatable="false">Android Explorer</string>
+    <string name="provider_sdcard" translatable="false">File Explorer</string>
+
     <string name="white">White</string>
     <string name="gray">Gray</string>
     <string name="black">Black</string>

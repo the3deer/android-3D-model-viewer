@@ -72,17 +72,6 @@
         <item>About</item>
     </string-array>
 
-    <string-array name="dialog_load_from">
-        <item>Samples</item>
-        <item>Repository (the3deer)</item>
-        <item>Repository (Khronos)</item>
-        <item>Repository (Open Source 3D Assets)</item>
-        <item>Repository (Poly Haven)</item>
-        <!-- item>Repository (Assimp)</item -->
-        <item>Android Explorer</item>
-        <!-- item>File Explorer (Android &lt;= 10)</item -->
-    </string-array>
-
     <!-- beans -->
     <string-array name="property_settings_language_values">
         <item>ar</item>

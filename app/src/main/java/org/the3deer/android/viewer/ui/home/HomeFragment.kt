@@ -27,8 +27,6 @@ open class HomeFragment : Fragment(), EventListener {
     val TAG: String = HomeFragment::class.java.simpleName
 
     private var uriString: String = ""
-    private var modelName: String = ""
-    private var modelType: String = ""
     private var _binding: FragmentHomeBinding? = null
     private val sharedViewModel: SharedViewModel by activityViewModels()
     private val modelEngineViewModel: ModelEngineViewModel by activityViewModels()
@@ -46,8 +44,6 @@ open class HomeFragment : Fragment(), EventListener {
 
         // check arguments
         uriString = arguments?.getString("uri") ?: throw Exception("No Uri provided as argument")
-        modelName = arguments?.getString("name") ?: uriString.split("/").last()
-        modelType = arguments?.getString("type") ?: uriString.split(".").last()
 
         // Get UI binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -119,66 +115,18 @@ open class HomeFragment : Fragment(), EventListener {
     /**
      * Load, start and activate the engine for the given URI.
      */
-    private fun setupAndStartEngine(uriString : String) {
+    private fun setupAndStartEngine(uriString: String) {
         try {
-
             // debug
             Log.i(TAG, "setupAndStartEngine $uriString")
 
-            // 1. Check if the Model instance is already in the SharedViewModel (Technical Handoff)
             var model = sharedViewModel.loadRequest.value
-            if (model != null && model.uri.toString() == uriString) {
-                Log.i(TAG, "Using pre-hydrated model instance from SharedViewModel")
-            } else {
-                // 2. Fallback: Create and populate the model from the Bundle (Scenario B: History/Re-entry)
-                Log.i(TAG, "Building new model instance from Bundle arguments")
-                model = Model(java.net.URI.create(uriString))
-                model.name = modelName
-                model.type = modelType
-                model.provider = arguments?.getString("provider")
-                arguments?.getString("location")?.let { model.setUriModel(java.net.URI.create(it)) }
-
-                // Flat deserialize technical mappings from the bundle
-                arguments?.let { bundle ->
-                    bundle.keySet().filter { it.startsWith("include.") }.forEach { key ->
-                        val value = bundle.getString(key)
-                        if (value != null) {
-                            val modelKey = key.substring("include.".length)
-                            model.addUri(modelKey, java.net.URI.create(value))
-                        }
-                    }
-                }
+            if (model == null || model.uri.toString() != uriString) {
+                val provider = arguments?.getString("provider") ?: ""
+                model = sharedViewModel.providerManager.resolveModel(provider, java.net.URI.create(uriString))
             }
 
-            // 3. Resolution Phase: If the model has a provider and no includes, re-resolve it fully.
-            // This is critical for History reload to fetch textures and absolute URLs.
-            Thread {
-                try {
-                    val provider = model.provider
-                    if (provider != null && model.includes.isEmpty()) {
-                        Log.i(TAG, "Resolving model metadata for provider: $provider")
-                        val resolved = sharedViewModel.providerManager.resolveModel(provider, model.uri)
-                        if (resolved != null) {
-                            model.setUriModel(resolved.uriModel)
-                            model.name = resolved.name
-                            model.type = resolved.type
-                            resolved.includes.forEach { (k, v) -> model.addUri(k, v) }
-                            Log.i(TAG, "Model resolved successfully with ${model.includes.size} includes")
-                        } else {
-                            Log.w(TAG, "Provider $provider failed to resolve model ${model.uri}")
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error during model resolution", e)
-                } finally {
-                    // 4. Proceed to Engine Initialization on the UI thread if not destroyed
-                    handler.post {
-                        if (_binding != null) {
-                            initEngineInternal(model, uriString)
-                        }
-                    }
-                }
-            }.start()
+            initEngineInternal(model, uriString)
         } catch (ex: Exception) {
             Log.e(TAG, "setupAndStartEngine finished with exception", ex)
         }
@@ -233,7 +181,7 @@ open class HomeFragment : Fragment(), EventListener {
                         modelEngineViewModel.setActiveEngine(uriString)
 
                         // update shared state (history, etc)
-                        sharedViewModel.onModelOpened(engine.model, arguments?.getString("provider"))
+                        sharedViewModel.onModelOpened(engine.model)
 
                         // log success
                         Log.i(TAG, "setupAndStartEngine Engine activated successfully")

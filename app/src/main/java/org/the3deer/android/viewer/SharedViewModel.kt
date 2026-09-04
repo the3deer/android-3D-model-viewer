@@ -5,12 +5,17 @@ import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.the3deer.android.engine.Model
 import org.the3deer.android.viewer.api.AppAPI
 import org.the3deer.android.viewer.api.AppAPIImpl
+import org.the3deer.android.viewer.providers.ModelMetadataCache
 import org.the3deer.android.viewer.providers.ProviderManager
 import org.the3deer.android.viewer.settings.AppSettings
 import org.the3deer.android.viewer.settings.SettingsManager
+import java.net.URI
 
 class SharedViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -18,6 +23,7 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     val appSettings = AppSettings()
     val settings = SettingsManager(this, appSettings)
     val providerManager = ProviderManager(application)
+    val metadataCache = ModelMetadataCache(application.cacheDir)
 
     val api: AppAPI = AppAPIImpl(this)
 
@@ -33,8 +39,8 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     private val _exitRequest = MutableLiveData<Unit>()
     val exitRequest: LiveData<Unit> = _exitRequest
 
-    private val _history = MutableLiveData<List<String>>()
-    val history: LiveData<List<String>> = _history
+    private val _history = MutableLiveData<List<Model>>()
+    val history: LiveData<List<Model>> = _history
 
     private val _restartRequest = MutableLiveData<Long?>()
     val restartRequest: LiveData<Long?> = _restartRequest
@@ -42,52 +48,82 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     init {
         // Load history from AppSettings
         val savedHistory = prefs.getString(appSettings.javaClass.name + ".history", "") ?: ""
-        _history.value = if (savedHistory.isEmpty()) {
+        val historyLines = if (savedHistory.isEmpty()) {
             emptyList()
         } else if (savedHistory.contains("\n")) {
             savedHistory.split("\n")
         } else {
             savedHistory.split(",")
         }
+
+        for (item in historyLines) {
+            val parts = item.split("|")
+            val uriStr = parts[0].trim()
+            if (uriStr.isNotBlank()) {
+                if (parts.size > 1) {
+                    val name = parts.getOrNull(1)?.ifBlank { null }
+                    val type = parts.getOrNull(2)?.ifBlank { null }
+                    val provider = parts.getOrNull(3)?.ifBlank { null }
+                    val location = parts.getOrNull(4)?.ifBlank { null }
+
+                    try {
+                        val model = Model(URI.create(uriStr))
+                        if (name != null) model.name = name
+                        if (type != null) model.type = type
+                        if (provider != null) model.provider = provider
+                        if (location != null) model.uriModel = URI.create(location)
+                        metadataCache.put(model)
+                    } catch (e: Exception) {
+                        // ignore malformed legacy URI
+                    }
+                }
+            }
+        }
+        
+        refreshHistoryLiveData()
+    }
+
+    private fun refreshHistoryLiveData() {
+        _history.value = metadataCache.getRecentModels(10)
+    }
+
+    fun getActiveUri(): String? {
+        return prefs.getString(appSettings.javaClass.name + ".activeUri", null)
     }
 
     /**
      * Update the last active URI and the history.
      */
-    fun onModelOpened(model: Model, provider: String?) {
+    fun onModelOpened(model: Model) {
         val uri = model.uri.toString()
-        val name = model.name ?: uri
-        val type = model.type ?: "gltf"
-        val location = model.uriModel?.toString()
-        
+
+        // Save metadata to persistent .cache_model.json
+        metadataCache.put(model)
+
         // Save the last active URI to AppSettings (and persist)
         prefs.edit { putString(appSettings.javaClass.name + ".activeUri", uri) }
 
-        updateHistory(uri, name, type, provider, location)
+        updateHistory()
     }
 
-    private fun updateHistory(uri: String, name: String, type: String, provider: String?, location: String?) {
-        val currentHistory = _history.value?.toMutableList() ?: mutableListOf()
-        
-        // Remove existing entries for this URI (checking both old and new format)
-        currentHistory.removeAll { it == uri || it.startsWith("$uri|") }
-        
-        // Add new entry with name, type, provider and location
-        currentHistory.add(0, "$uri|$name|$type|${provider ?: ""}|${location ?: ""}")
-        
-        val newHistory = currentHistory.take(10)
-        _history.value = newHistory
-        
+    private fun updateHistory() {
+        refreshHistoryLiveData()
+
         // Save history to AppSettings (and persist)
-        prefs.edit { putString(appSettings.javaClass.name + ".history", newHistory.joinToString("\n")) }
+        val uriList = (_history.value ?: emptyList()).map { it.uri.toString() }
+        prefs.edit { putString(appSettings.javaClass.name + ".history", uriList.joinToString("\n")) }
     }
 
     fun removeFromHistory(uri: String) {
-        val currentHistory = _history.value?.toMutableList() ?: mutableListOf()
-        if (currentHistory.removeAll { it == uri || it.startsWith("$uri|") }) {
-            _history.value = currentHistory
-            prefs.edit { putString(appSettings.javaClass.name + ".history", currentHistory.joinToString("\n")) }
+        val pureUri = uri.substringBefore("|")
+        try {
+            metadataCache.remove(URI.create(pureUri))
+        } catch (e: Exception) {
+            // ignore
         }
+        refreshHistoryLiveData()
+        val uriList = (_history.value ?: emptyList()).map { it.uri.toString() }
+        prefs.edit { putString(appSettings.javaClass.name + ".history", uriList.joinToString("\n")) }
     }
 
     fun requestRestart() {
@@ -102,16 +138,46 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
         _navigationRequest.postValue(screenId)
     }
 
-    fun loadModel(model: Model) {
-        if (model.uriModel == null && !model.provider.isNullOrEmpty()) {
-            // Re-hydrate model to get absolute URLs and included files
-            val hydrated = providerManager.resolveModel(model.provider!!, model.uri)
-            if (hydrated != null) {
-                _loadRequest.postValue(hydrated)
-                return
+    fun loadModelByUri(uriString: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val uri = URI.create(uriString)
+                val model = Model(uri)
+                metadataCache.hydrate(model)
+
+                if (model.includes.isEmpty() && !model.provider.isNullOrEmpty()) {
+                    val resolved = providerManager.resolveModel(model.provider!!, uri)
+                    metadataCache.hydrate(resolved)
+                    metadataCache.put(resolved)
+                    _loadRequest.postValue(resolved)
+                } else {
+                    metadataCache.put(model)
+                    _loadRequest.postValue(model)
+                }
+            } catch (e: Exception) {
+                try {
+                    val model = Model(URI.create(uriString))
+                    _loadRequest.postValue(model)
+                } catch (e2: Exception) {
+                    // ignore
+                }
             }
         }
-        _loadRequest.postValue(model)
+    }
+
+    fun loadModel(model: Model) {
+        viewModelScope.launch(Dispatchers.IO) {
+            metadataCache.put(model)
+
+            if (model.includes.isEmpty() && !model.provider.isNullOrEmpty()) {
+                val hydrated = providerManager.resolveModel(model.provider!!, model.uri)
+                metadataCache.hydrate(hydrated)
+                metadataCache.put(hydrated)
+                _loadRequest.postValue(hydrated)
+                return@launch
+            }
+            _loadRequest.postValue(model)
+        }
     }
 
     fun exitApp() {

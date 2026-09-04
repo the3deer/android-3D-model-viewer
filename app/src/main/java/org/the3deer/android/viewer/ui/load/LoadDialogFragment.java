@@ -1,23 +1,19 @@
 package org.the3deer.android.viewer.ui.load;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.the3deer.android.viewer.SharedViewModel;
-import org.the3deer.android.viewer.providers.AndroidExplorerModelProvider;
-import org.the3deer.android.viewer.providers.AssetsModelProvider;
-import org.the3deer.android.viewer.providers.KhronosModelProvider;
-import org.the3deer.android.viewer.providers.ModelProvider;
-import org.the3deer.android.viewer.providers.OpenSource3DAssetsModelProvider;
-import org.the3deer.android.viewer.providers.PolyHavenModelProvider;
-import org.the3deer.android.viewer.providers.RepositoryModelProvider;
-import org.the3deer.android.viewer.providers.SdCardModelProvider;
+import org.the3deer.android.viewer.providers.ProviderInfo;
 import org.the3deer.android.viewer.ui.DialogFragment;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,40 +22,6 @@ public class LoadDialogFragment extends DialogFragment {
     private static final Logger logger = Logger.getLogger(LoadDialogFragment.class.getSimpleName());
 
     private SharedViewModel sharedViewModel;
-
-    /**
-     * This actions corresponds to the "dialog_load_from" string array defined in strings.xml
-     */
-    private enum Action {
-        SAMPLES, 
-        REPOSITORY_THE3DEER, 
-        REPOSITORY_KHRONOS, 
-        REPOSITORY_OPEN_SOURCE_3D_ASSETS,
-        REPOSITORY_POLYHAVEN,
-        ANDROID_EXPLORER,
-        FILE_EXPLORER;
-
-        ModelProvider getProvider(android.app.Application application) {
-            switch (this) {
-                case SAMPLES:
-                    return new AssetsModelProvider(application);
-                case REPOSITORY_THE3DEER:
-                    return new RepositoryModelProvider();
-                case REPOSITORY_KHRONOS:
-                    return new KhronosModelProvider();
-                case REPOSITORY_OPEN_SOURCE_3D_ASSETS:
-                    return new OpenSource3DAssetsModelProvider();
-                case REPOSITORY_POLYHAVEN:
-                    return new PolyHavenModelProvider();
-                case ANDROID_EXPLORER:
-                    return new AndroidExplorerModelProvider();
-                case FILE_EXPLORER:
-                    return new SdCardModelProvider();
-                default:
-                    return null;
-            }
-        }
-    }
 
     public static LoadDialogFragment newInstance(int title, String[] items) {
         LoadDialogFragment frag = new LoadDialogFragment();
@@ -76,27 +38,37 @@ public class LoadDialogFragment extends DialogFragment {
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        List<ProviderInfo> providers = sharedViewModel.getProviderManager().getProviderList();
+        this.items = new String[providers.size()];
+        for (int i = 0; i < providers.size(); i++) {
+            this.items[i] = getString(providers.get(i).getTitleResId());
+        }
+        return super.onCreateDialog(savedInstanceState);
+    }
+
     @Override
     public void onClick(DialogInterface dialogI, int position) {
+        List<ProviderInfo> providers = sharedViewModel.getProviderManager().getProviderList();
+        if (position < 0 || position >= providers.size()) return;
 
-        final Action action = position < Action.values().length ? Action.values()[position] : null;
-        if (action == null) return;
+        ProviderInfo providerInfo = providers.get(position);
+
+        if (providerInfo.getAutoDismiss()) {
+            dismiss();
+        }
 
         try {
-            ModelProvider provider = action.getProvider(activity.getApplication());
-            if (provider != null) {
-                provider.load(activity, (model) -> {
-                    if (model != null) {
-                        dismiss();
-                        sharedViewModel.getApi().loadModel(model);
-                    }
-                });
-                
-                // If it's the Android Explorer, we dismiss immediately because it triggers an external activity
-                if (action == Action.ANDROID_EXPLORER) dismiss();
-            }
+            sharedViewModel.getProviderManager().load(providerInfo.getId(), activity, (model) -> {
+                if (model != null) {
+                    dismiss();
+                    sharedViewModel.getApi().loadModel(model);
+                }
+            });
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, ex.getMessage(),ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
             Toast.makeText(activity, ex.getMessage(), Toast.LENGTH_LONG).show();
         }
     }

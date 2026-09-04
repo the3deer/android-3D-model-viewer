@@ -7,7 +7,7 @@ import org.the3deer.android.viewer.util.AssetUtils
 import org.the3deer.android.viewer.util.ContentUtils
 import java.net.URI
 
-class AssetsModelProvider(private val application: Application) : ModelProvider {
+internal class AssetsModelProvider(private val application: Application) : ModelProvider {
 
     companion object {
         const val SUPPORTED_FILE_TYPES_REGEX = "(?i).*\\.(obj|stl|dae|gltf|glb|fbx|zip|index)"
@@ -45,6 +45,7 @@ class AssetsModelProvider(private val application: Application) : ModelProvider 
         model.name = path.substringAfterLast("/")
         model.type = path.substringAfterLast(".", "gltf")
         model.provider = "Assets"
+        model.license = "Community / Open Source"
         return model
     }
 }

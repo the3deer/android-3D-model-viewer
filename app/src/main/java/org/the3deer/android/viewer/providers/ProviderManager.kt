@@ -1,35 +1,62 @@
 package org.the3deer.android.viewer.providers
 
+import android.app.Activity
 import android.app.Application
+import androidx.annotation.StringRes
 import org.the3deer.android.engine.Model
+import org.the3deer.android.viewer.R
 import java.net.URI
 import java.util.Locale
 
+class ProviderInfo internal constructor(
+    val id: String,
+    @get:StringRes val titleResId: Int,
+    val autoDismiss: Boolean = false,
+    internal val provider: ModelProvider
+)
+
 class ProviderManager(private val application: Application) {
 
-    private val providers: Map<String, ModelProvider> = mapOf(
-        "assets" to AssetsModelProvider(application),
-        "khronos" to KhronosModelProvider(),
-        "poly haven" to PolyHavenModelProvider(),
-        "open-source-3d-assets" to OpenSource3DAssetsModelProvider(),
-        "the3deer" to RepositoryModelProvider()
+    val providerList: List<ProviderInfo> = listOf(
+        ProviderInfo("assets", R.string.provider_assets, provider = AssetsModelProvider(application)),
+        ProviderInfo("the3deer", R.string.provider_the3deer, provider = RepositoryModelProvider()),
+        ProviderInfo("khronos", R.string.provider_khronos, provider = KhronosModelProvider()),
+        ProviderInfo("open-source-3d-assets", R.string.provider_open_source_3d_assets, provider = OpenSource3DAssetsModelProvider()),
+        ProviderInfo("poly haven", R.string.provider_polyhaven, provider = PolyHavenModelProvider()),
+        ProviderInfo("android_explorer", R.string.provider_android_explorer, autoDismiss = true, provider = AndroidExplorerModelProvider()),
     )
 
+    private val providersMap: Map<String, ProviderInfo> = providerList.associateBy { it.id }
+
     fun getProviders(): List<String> {
-        return providers.keys.map { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
+        return providerList.map { application.getString(it.titleResId) }
     }
 
-    fun getProvider(name: String?): ModelProvider? {
-        if (name == null) return null
-        val key = name.lowercase(Locale.getDefault())
-        return providers[key] ?: if (key == "polyhaven") providers["poly haven"] else null
+    fun load(index: Int, activity: Activity, callback: ModelCallback) {
+        val providerInfo = providerList.getOrNull(index)
+        if (providerInfo != null) {
+            load(providerInfo.id, activity, callback)
+        } else {
+            callback.onModelSelected(null)
+        }
     }
 
-    fun listModels(providerName: String): Any {
-        return getProvider(providerName)?.list() ?: emptyList<URI>()
+    fun load(providerId: String, activity: Activity, callback: ModelCallback) {
+        val info = providersMap[providerId] ?: providersMap[providerId.lowercase(Locale.getDefault())]
+        if (info != null) {
+            info.provider.load(activity, callback::onModelSelected)
+        } else {
+            callback.onModelSelected(null)
+        }
     }
 
-    fun resolveModel(providerName: String, uri: URI): Model? {
-        return getProvider(providerName)?.resolve(uri)
+    fun listModels(providerId: String): Any {
+        val info = providersMap[providerId] ?: providersMap[providerId.lowercase(Locale.getDefault())]
+        return info?.provider?.list() ?: emptyList<URI>()
+    }
+
+    fun resolveModel(providerId: String, uri: URI): Model {
+        val info = providersMap[providerId] ?: providersMap[providerId.lowercase(Locale.getDefault())]
+        return info?.provider?.resolve(uri) ?: Model(uri)
     }
 }

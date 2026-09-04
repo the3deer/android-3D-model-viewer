@@ -50,7 +50,7 @@ public class ModelInfoDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        builder.setTitle("Model Information")
+        builder.setTitle("Information")
                 .setMessage(buildInfoText())
                 .setPositiveButton(android.R.string.ok, (dialog, id) -> dialog.dismiss());
 
@@ -78,13 +78,34 @@ public class ModelInfoDialogFragment extends DialogFragment {
 
         final StringBuilder info = new StringBuilder();
 
-        // model info
         if (model != null) {
+
+            // model info
+            info.append("--- Model ---\n");
             info.append("Name: ").append(model.getName()).append("\n");
             info.append("Type: ").append(model.getType()).append("\n");
             info.append("Source: ").append(model.getUri()).append("\n");
             if (model.getUriModel() != null) {
                 info.append("Location: ").append(model.getUriModel()).append("\n");
+            }
+            if (model.getDescription() != null && !model.getDescription().trim().isEmpty()) {
+                info.append("Description: ").append(model.getDescription()).append("\n");
+            }
+            info.append("\n");
+
+            // metadata
+            info.append("--- Metadata ---\n");
+            if (model.getProvider() != null && !model.getProvider().trim().isEmpty()) {
+                info.append("Provider: ").append(model.getProvider()).append("\n");
+            }
+            if (model.getAuthor() != null && !model.getAuthor().trim().isEmpty()) {
+                info.append("Author: ").append(model.getAuthor()).append("\n");
+            }
+            if (model.getLicense() != null && !model.getLicense().trim().isEmpty()) {
+                info.append("License: ").append(model.getLicense()).append("\n");
+            }
+            if (model.getComment() != null) {
+                info.append("Comment: ").append(model.getComment()).append("\n");
             }
             info.append("\n");
         }

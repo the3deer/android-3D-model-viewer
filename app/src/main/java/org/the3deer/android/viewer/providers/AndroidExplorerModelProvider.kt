@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import org.the3deer.android.engine.Model
 import java.net.URI
 
-class AndroidExplorerModelProvider : ModelProvider {
+internal class AndroidExplorerModelProvider : ModelProvider {
 
     override fun list(): Any {
         return emptyList<URI>()

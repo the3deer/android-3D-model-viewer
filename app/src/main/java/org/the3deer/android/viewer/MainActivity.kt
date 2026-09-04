@@ -194,26 +194,13 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
             navigationView.setNavigationItemSelectedListener { item ->
                 when (item.groupId) {
                     R.id.group_recent -> {
-                        val uriString =
-                            MenuItemCompat.getTooltipText(item)?.toString() ?: item.title.toString()
-                                .lowercase()
-                        val title = item.title.toString()
-
-                        // Check if we have provider and location info in history
-                        val historyEntry = sharedViewModel.history.value?.find { it.startsWith("$uriString|$title|") }
-                        val parts = historyEntry?.split("|")
-                        val provider = if (parts != null && parts.size > 3) parts[3] else null
-                        val type = if (parts != null && parts.size > 2) parts[2] else null
-                        val location = if (parts != null && parts.size > 4 && parts[4].isNotEmpty()) parts[4] else null
-
-                        // Use AppAPI to load the model. It will handle resolution if needed.
-                        val model = Model(java.net.URI.create(uriString)).apply {
-                            setName(title)
-                            setType(type)
-                            setProvider(provider)
-                            if (location != null) setUriModel(URI.create(location))
+                        val model = sharedViewModel.history.value?.getOrNull(item.order)
+                        if (model != null) {
+                            sharedViewModel.loadModel(model)
+                        } else {
+                            val uriString = MenuItemCompat.getTooltipText(item)?.toString() ?: item.title.toString().lowercase()
+                            sharedViewModel.loadModelByUri(uriString)
                         }
-                        sharedViewModel.loadModel(model)
 
                         binding.drawerLayout.closeDrawers()
                         true
@@ -280,17 +267,27 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         sharedViewModel.loadRequest.observe(this) { model ->
             val arguments = Bundle().apply {
                 putString("uri", model.uri.toString())
-                putString("name", model.name)
-                putString("type", model.type)
-                putString("provider", model.provider)
-                model.uriModel?.let { putString("location", it.toString()) }
-                
-                // Flat serialize technical mappings into the bundle
-                model.includes.forEach { (key, value) ->
-                    putString("include." + key, value.toString())
-                }
             }
             navController.navigate(R.id.nav_home, arguments)
+        }
+
+        // Restore active model on app launch if no explicit intent URI was passed
+        if (savedInstanceState == null) {
+            val intentData = intent?.data
+            if (intentData != null) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        loadModel(intentData)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error loading intent data: $intentData", e)
+                    }
+                }
+            } else {
+                val activeUri = sharedViewModel.getActiveUri()
+                if (!activeUri.isNullOrBlank()) {
+                    sharedViewModel.loadModelByUri(activeUri)
+                }
+            }
         }
         modelEngineViewModel.loadRequest.observe(this) { model ->
             sharedViewModel.loadModel(model)
@@ -701,17 +698,16 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
     /**
      * Update the recent models' menu. That is, it adds a menu item for each URI in the history with an Icon.
      */
-    private fun updateRecentModels(navigationView: NavigationView, history: List<String>) {
+    private fun updateRecentModels(navigationView: NavigationView, history: List<Model>) {
         val menu = navigationView.menu
         val recentWrapper = menu.findItem(R.id.nav_recent_wrapper)
         val subMenu = recentWrapper?.subMenu
 
         if (subMenu != null) {
             subMenu.clear()
-            history.forEachIndexed { index, historyItem ->
-                val parts = historyItem.split("|")
-                val uriString = parts[0]
-                val title = if (parts.size > 1) parts[1] else shortenUri(uriString)
+            history.forEachIndexed { index, model ->
+                val uriString = model.uri.toString()
+                val title = model.name ?: shortenUri(uriString)
                 subMenu.add(R.id.group_recent, Menu.NONE, index, title).apply {
                     icon = ContextCompat.getDrawable(
                         this@MainActivity,
@@ -723,10 +719,9 @@ class MainActivity : AppCompatActivity(), EventListener, ContentUtils.ContentRes
         } else {
             // Fallback to old behavior if XML ID is missing or not a submenu
             menu.removeGroup(R.id.group_recent)
-            history.forEachIndexed { index, historyItem ->
-                val parts = historyItem.split("|")
-                val uriString = parts[0]
-                val title = if (parts.size > 1) parts[1] else shortenUri(uriString)
+            history.forEachIndexed { index, model ->
+                val uriString = model.uri.toString()
+                val title = model.name ?: shortenUri(uriString)
                 menu.add(R.id.group_recent, Menu.NONE, index, title).apply {
                     icon = ContextCompat.getDrawable(
                         this@MainActivity,
